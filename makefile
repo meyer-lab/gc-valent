@@ -24,6 +24,7 @@ Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
 
 Manuscript/Manuscript.docx: Manuscript/Text/*.md
+	mkdir -p ./Manuscript/Figures
 	cp -R $(fdir) ./
 	pandoc -s $(pan_common) -o $@
 	rm -r ./Figures
