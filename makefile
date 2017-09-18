@@ -6,6 +6,16 @@ pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filte
 
 all: Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
+$(fdir)/Figure%.svg: genFigures.py
+	mkdir -p ./Manuscript/Figures
+	python3 genFigures.py $*
+
+$(fdir)/Figure%pdf: $(fdir)/Figure%svg
+	rsvg-convert -f pdf $< -o $@
+
+$(fdir)/Figure%eps: $(fdir)/Figure%svg
+	rsvg-convert -f eps $< -o $@
+
 Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
@@ -13,7 +23,7 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
 
-Manuscript/Manuscript.docx: Manuscript/Text/*.md $(fdir)/Figure1.eps $(fdir)/Figure2.eps $(fdir)/Figure3.eps $(fdir)/Figure4.eps $(fdir)/FigureS2.eps $(fdir)/FigureAA.eps
+Manuscript/Manuscript.docx: Manuscript/Text/*.md
 	cp -R $(fdir) ./
 	pandoc -s $(pan_common) -o $@
 	rm -r ./Figures
