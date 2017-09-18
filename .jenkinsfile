@@ -8,15 +8,35 @@ pipeline {
       }
     }
     stage('Build') {
-      steps { sh 'make all' }
+      steps { sh 'make -j 8' }
     }
     stage('Test'){
       steps {
-        sh 'make test'
+        sh 'make testcover'
+        // TODO: Add pyflakes report
       }
     }
     stage('Report') {
       steps {
+        archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
+        publishHTML([
+          allowMissing: false,
+          alwaysLinkToLastBuild: false,
+          keepAll: false,
+          reportDir: 'Manuscript',
+          reportFiles: 'index.html',
+          reportName: 'Manuscript',
+          reportTitles: ''])
+        step([
+          $class: 'CoberturaPublisher',
+          autoUpdateHealth: true,
+          autoUpdateStability: true,
+          coberturaReportFile: 'coverage.xml',
+          failNoReports: true,
+          failUnhealthy: true,
+          failUnstable: true,
+          sourceEncoding: 'UTF_8',
+          zoomCoverageChart: true])
         step([
           $class: 'TasksPublisher',
           canComputeNew: false,
