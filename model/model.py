@@ -1,5 +1,6 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
 
 
 def dy_dt(y, t, IL2, k1fwd, k4fwd, k4rev, k5rev, k8rev, k11rev):
@@ -56,5 +57,10 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k4rev, k5rev, k8rev, k11rev):
 	dydt[9] = k8fwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + k9fwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + k10fwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc
 	
 	# added dydt[2] through dydt[9] based on the diagram pictured in type-I-ckine-model/model/graph.pdf on 9/19/17 by Adam; dydt[0] and dydt[1] were done by Aaron
-
+	print (dydt)
 	return dydt
+
+# print (dy_dt(np.array([1,1,1,1,1,1,1,1,1,1]), 10000000, 1, 1, 1, 1, 1, 1, 1))
+
+x = odeint(dy_dt, np.array([1,1,1,1,1,1,1,1,1,1]), 100000000, (1, 1, 1, 1, 1, 1, 1))
+print (x)
