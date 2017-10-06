@@ -23,9 +23,14 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     k1rev = k1fwd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
     k2fwd = k1fwd
     k2rev = k2fwd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
-    k3fwd = k1fwd / 10 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+    k3fwd = k1fwd / 10. # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
     k3rev = 50000 * k3fwd
 
+    # test to see that all three of the denominators in line 31 are non-zero
+    # print (k1rev)
+    # print (k6fwd)
+    # print (k3fwd)
+    
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
     k4rev = k1fwd * k4fwd * k6rev * k3rev / k1rev / k6fwd / k3fwd
@@ -52,15 +57,20 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
 
     return dydt
 
+
+
 ts = np.array([0.0, 100000.0])
 y0 = np.ones((10, ), dtype = np.float64)
-args = (1, 1, 1, 1, 1, 1, 0.5)
+args = (1., 1., 1., 1., 1., 1., 0.5) # these 7 float values represent the inputs IL2 through k11rev
 
 y, fullout = odeint(dy_dt, y0, ts, args,
                     full_output = True, mxstep = 5000)
 
-print(y)
+# full_output gives you more information about what you just ran, including hu, tcur, tolsf, etc.
+
+
+print(y) # this will print the array for all the y values for the two time points enterred
 print(fullout)
 
-print(np.linalg.norm(dy_dt(y[1, :], 0, *args)))
+print(np.linalg.norm(dy_dt(y[1, :], 0, *args))) # plugging in all the y values at the 1 position (end point of time) in which args were implemented... all of these dy_dt values were squared and summed to yield the sum of squares value
 
