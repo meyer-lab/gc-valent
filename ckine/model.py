@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import odeint
 
-def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
+def dy_dt(y, t, IL2, IL9, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
@@ -14,10 +14,21 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     IL2_IL2Rb_gc = y[8]
     IL2_IL2Ra_IL2Rb_gc = y[9]
 
+    IL7Ra = y[10]
+    IL7Ra_IL7 = y[11]
+    gc_IL7 = y[12]
+    IL7Ra_gc_IL7 = y[13]
+
+    IL9R = y[14]
+    IL9R_IL9 = y[15]
+    gc_IL9 = y[16]
+    IL9R_gc_IL9 = y[17]
+    # k17 - k20
 
     # The receptor-receptor forward rate is largely going to be determined by plasma membrane diffusion
     # so we're going to assume it's shared.
     k5fwd = k6fwd = k7fwd = k8fwd = k9fwd = k10fwd = k11fwd = k12fwd = k4fwd
+    k19fwd = k20fwd = k4fwd
 
     # These are probably measured in the literature
     k1rev = k1fwd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
@@ -25,6 +36,8 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     k2rev = k2fwd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
     k3fwd = k1fwd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
     k3rev = 50000 * k3fwd
+
+    k17fwd = k18fwd = k1fwd
 
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
@@ -48,6 +61,16 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     dydt[8] = -k8fwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + k5fwd * gc * IL2_IL2Rb - k5rev * IL2_IL2Rb_gc + k7fwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc
     dydt[9] = k8fwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + k9fwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + k10fwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc
     
+    dydt[10] = 0.0
+    dydt[11] = 0.0
+    dydt[12] = 0.0
+    dydt[13] = 0.0
+
+    dydt[14] = 0.0
+    dydt[15] = 0.0
+    dydt[16] = 0.0
+    dydt[17] = 0.0
+
     # added dydt[2] through dydt[9] based on the diagram pictured in type-I-ckine-model/model/graph.pdf on 9/19/17 by Adam; dydt[0] and dydt[1] were done by Aaron
 
     return dydt
