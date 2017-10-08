@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import odeint
 
-def dy_dt(y, t, IL2, IL9, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
+def dy_dt(y, t, IL2, IL9, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev, k17rev, k18rev, k19rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
@@ -18,6 +18,7 @@ def dy_dt(y, t, IL2, IL9, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     IL7Ra_IL7 = y[11]
     gc_IL7 = y[12]
     IL7Ra_gc_IL7 = y[13]
+    # k13 - k16
 
     IL9R = y[14]
     IL9R_IL9 = y[15]
@@ -48,6 +49,9 @@ def dy_dt(y, t, IL2, IL9, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     k9rev = k2rev * k10rev * k12rev / k2fwd / k10fwd / k12fwd / k3rev / k6rev * k3fwd * k6fwd * k9fwd
     k8rev = k2rev * k10rev * k12rev / k2fwd / k10fwd / k12fwd / k7rev / k3rev * k3fwd * k7fwd * k8fwd
 
+    # _One detailed balance IL9 loop
+    k20rev = k17rev * k19rev * k20fwd * k18fwd / k17fwd / k19fwd / k18rev
+
     dydt = np.zeros(y.shape, dtype = np.float64)
 
     dydt[0] = -k1fwd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - k6fwd * IL2Ra * IL2_gc - k6rev * IL2_IL2Ra_gc - k8fwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - k12fwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb
@@ -66,10 +70,11 @@ def dy_dt(y, t, IL2, IL9, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     dydt[12] = 0.0
     dydt[13] = 0.0
 
-    dydt[14] = 0.0
-    dydt[15] = 0.0
-    dydt[16] = 0.0
-    dydt[17] = 0.0
+    dydt[2] = dydt[2] - k18fwd * IL9 * gc + k18rev * gc_IL9 - k19fwd * gc * IL9R_IL9 + k19rev * IL9R_gc_IL9
+    dydt[14] = -k17fwd * IL9R * IL9 + k17rev * IL9R_IL9 - k20fwd * IL9R * gc_IL9 + k20rev * IL9R_gc_IL9
+    dydt[15] = k17fwd * IL9R * IL9 - k17rev * IL9R_IL9 - k19fwd * gc * IL9R_IL9 + k19rev * IL9R_gc_IL9
+    dydt[16] = -k20fwd * IL9R * gc_IL9 + k20rev * IL9R_gc_IL9 + k18fwd * IL9 * gc - k18rev * gc_IL9
+    dydt[17] = k20fwd * IL9R * gc_IL9 - k20rev * IL9R_gc_IL9 + k19fwd * gc * IL9R_IL9 - k19rev * IL9R_gc_IL9
 
     # added dydt[2] through dydt[9] based on the diagram pictured in type-I-ckine-model/model/graph.pdf on 9/19/17 by Adam; dydt[0] and dydt[1] were done by Aaron
 
