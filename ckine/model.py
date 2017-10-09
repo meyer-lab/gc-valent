@@ -56,8 +56,10 @@ ts = np.array([0.0, 100000.0])
 y0 = np.ones((10, ), dtype = np.float64)
 args = (1, 1, 1, 1, 1, 1, 0.5)
 
+
 y, fullout = odeint(dy_dt, y0, ts, args,
                     full_output = True, mxstep = 5000)
+
 
 print(y)
 print(fullout)
