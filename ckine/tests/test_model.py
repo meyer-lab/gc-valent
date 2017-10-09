@@ -15,5 +15,6 @@ class TestModel(unittest.TestCase):
         y, fullout = odeint(dy_dt, y0, ts, args,
                     full_output = True, mxstep = 5000)
         z = np.linalg.norm(dy_dt(y[1, :], 0, *args)) # have the sum of squares for all the dy_dt values be z
-        self.assertTrue(z < 1E-5)
         
+        self.assertEqual((dy_dt(y[1, :], 0, *args)),10)
+        self.assertTrue(z < 1E-5)
