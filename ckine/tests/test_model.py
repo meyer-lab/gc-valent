@@ -26,13 +26,13 @@ class TestModel(unittest.TestCase):
         IL2Rb_initial = y0[1] + y0[4] + y0[6] + y0[8] + y0[9]
         
         #Check for conservation of gc
-        self.assertEqual(gc_eq,gc_initial)
+        self.assertAlmostEqual(gc_eq,gc_initial)
         print("gc is conserved")
 
-        self.assertEqual(IL2Ra_eq, IL2Ra_initial)
+        self.assertAlmostEqual(IL2Ra_eq, IL2Ra_initial)
         print("IL2Ra is conserved")
 
-        self.assertEqual(IL2Rb_eq, IL2Rb_initial)
+        self.assertAlmostEqual(IL2Rb_eq, IL2Rb_initial)
         print("IL2Rb is conserved")
 
         
