@@ -40,7 +40,3 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(IL2Rb_eq, IL2Rb_initial)
 
         self.assertAlmostEqual(IL2Ra_eq, IL2Ra_initial)
-
-       
-
-        
