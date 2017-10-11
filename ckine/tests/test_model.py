@@ -16,9 +16,9 @@ class TestModel(unittest.TestCase):
                     full_output = True, mxstep = 5000)
         
        #Assign a value eq for the sum of amounts of receptors at equilirium
-        gc_eq = y[2] + y[5] + y[7] + y[8] + y[9]
-        IL2Ra_eq = y[0] + y[3] + y[6] + y[7] + y[9]
-        IL2Rb_eq = y[1] + y[4] + y[6] + y[8] + y[9]
+        gc_eq = y[1,2] + y[1,5] + y[1,7] + y[1,8] + y[1,9]
+        IL2Ra_eq = y[1,0] + y[1,3] + y[1,6] + y[1,7] + y[1,9]
+        IL2Rb_eq = y[1,1] + y[1,4] + y[1,6] + y[1,8] + y[1,9]
         
         #Assign a value for the sum of amounts of each receptor at initial conditions
         gc_initial = y0[2] + y0[5] + y0[7] + y0[8] + y0[9]
@@ -26,4 +26,13 @@ class TestModel(unittest.TestCase):
         IL2Rb_initial = y0[1] + y0[4] + y0[6] + y0[8] + y0[9]
         
         #Check for conservation of gc
+        self.assertEqual(gc_eq,gc_initial)
+        print("gc is conserved")
+
+        self.assertEqual(IL2Ra_eq, IL2Ra_initial)
+        print("IL2Ra is conserved")
+
+        self.assertEqual(IL2Rb_eq, IL2Rb_initial)
+        print("IL2Rb is conserved")
+
         
