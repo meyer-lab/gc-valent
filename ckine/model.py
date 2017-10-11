@@ -51,10 +51,3 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     # added dydt[2] through dydt[9] based on the diagram pictured in type-I-ckine-model/model/graph.pdf on 9/19/17 by Adam; dydt[0] and dydt[1] were done by Aaron
 
     return dydt
-
-ts = np.array([0.0, 100000.0])
-y0 = np.random.lognormal(0., 1., 10)
-args = np.random.lognormal(0., 1., 7)
-print (ts)
-print (y0)
-print (args)
