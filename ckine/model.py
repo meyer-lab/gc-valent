@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
+def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
@@ -13,8 +13,10 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     IL2_IL2Ra_gc = y[7]
     IL2_IL2Rb_gc = y[8]
     IL2_IL2Ra_IL2Rb_gc = y[9]
+    
+    
     IL15Ra = y[10]
-    IL2_IL2Ra = y[3]
+    IL15_IL15Ra = y[11]
 
 
     
