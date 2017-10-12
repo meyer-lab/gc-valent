@@ -37,7 +37,7 @@ class TestModel(unittest.TestCase):
         
         #Check for conservation of gc
         self.assertAlmostEqual(gc_eq,gc_initial)
-
+        #Check for conservation of IL2Rb
         self.assertAlmostEqual(IL2Rb_eq, IL2Rb_initial)
-
+        #Check for conservation of IL2Ra
         self.assertAlmostEqual(IL2Ra_eq, IL2Ra_initial)
