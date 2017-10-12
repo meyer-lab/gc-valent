@@ -13,7 +13,11 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     IL2_IL2Ra_gc = y[7]
     IL2_IL2Rb_gc = y[8]
     IL2_IL2Ra_IL2Rb_gc = y[9]
+    IL15Ra = y[10]
+    IL2_IL2Ra = y[3]
 
+
+    
 
     # The receptor-receptor forward rate is largely going to be determined by plasma membrane diffusion
     # so we're going to assume it's shared.
