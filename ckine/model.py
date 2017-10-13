@@ -54,9 +54,6 @@ def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev, k13fwd, k
     k15rev = 50000 * k15fwd
 
 
-
-
-
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
     k4rev = k1fwd * k4fwd * k6rev * k3rev / k1rev / k6fwd / k3fwd
@@ -65,7 +62,6 @@ def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev, k13fwd, k
     # _Based on formation of full complex
     k9rev = k2rev * k10rev * k12rev / k2fwd / k10fwd / k12fwd / k3rev / k6rev * k3fwd * k6fwd * k9fwd
     k8rev = k2rev * k10rev * k12rev / k2fwd / k10fwd / k12fwd / k7rev / k3rev * k3fwd * k7fwd * k8fwd
-
 
 
     ###Ali's Addition
@@ -108,5 +104,4 @@ def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev, k13fwd, k
     dydt[1] = dydt[1] -k14fwd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - k19fwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - k21fwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - k23fwd * IL2Rb * IL15_IL15Ra + k23rev * IL15_IL15Ra_IL2Rb
     dydt[2] = dydt[2] -k15fwd * IL15 * gc + k15rev * IL15_gc - k17fwd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc - k16fwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - k22fwd * IL15_IL15Ra_IL2Rb * gc + k10rev * IL15_IL15Ra_IL2Rb_gc
 
-    
     return dydt
