@@ -47,7 +47,11 @@ def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     
 
     ###Ali's Addition to literature values for k values for IL-15
-
+    k13rev = k13fwd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
+    k14fwd = k13fwd
+    k14rev = k14fwd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
+    k15fwd = k13fwd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+    k15rev = 50000 * k15fwd
 
 
 
@@ -102,7 +106,7 @@ def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     dydt[14] = -k22fwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc + k23fwd * IL15_IL15Ra * IL2Rb - k23rev * IL15_IL15Ra_IL2Rb + k24fwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb   
     dydt[15] = -k21fwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + k16fwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + k18fwd * IL15_gc * IL15Ra - k6rev * IL15_IL15Ra_gc
     dydt[16] = -k20fwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + k17fwd * gc * IL15_IL2Rb - k17rev * IL15_IL2Rb_gc + k19fwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc
-    dydt[17] = k20fwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + k21fwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + k122fwd * IL15_IL15Ra_IL2Rb * gc - k22rev * IL15_IL15Ra_IL2Rb_gc
+    dydt[17] =  k20fwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + k21fwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + k122fwd * IL15_IL15Ra_IL2Rb * gc - k22rev * IL15_IL15Ra_IL2Rb_gc
     
     dydt[1] = dydt[1] -k14fwd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - k19fwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - k21fwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - k23fwd * IL2Rb * IL15_IL15Ra + k23rev * IL15_IL15Ra_IL2Rb
     dydt[2] = dydt[2] -k15fwd * IL15 * gc + k15rev * IL15_gc - k17fwd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc - k16fwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - k22fwd * IL15_IL15Ra_IL2Rb * gc + k10rev * IL15_IL15Ra_IL2Rb_gc

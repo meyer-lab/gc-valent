@@ -9,13 +9,13 @@ class TestModel(unittest.TestCase):
         print("Setup testing")
 
         self.ts = np.array([0.0, 100000.0])
-        self.y0 = np.random.lognormal(0., 1., 10)
-        self.args1 = list(np.random.lognormal(0., 1., 7))
+        self.y0 = np.random.lognormal(0., 1., 18)
+        self.args1 = list(np.random.lognormal(0., 1., 8))
         self.args = tuple(self.args1)
         # need to convert args from an array to a tuple of numbers
 
     def test_length(self):                        
-        self.assertEqual(len(dy_dt(self.y0, 0, *self.args)),10)
+        self.assertEqual(len(dy_dt(self.y0, 0, *self.args)),18)
 
     def test_equilibrium(self):
         y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
