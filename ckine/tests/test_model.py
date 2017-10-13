@@ -37,12 +37,14 @@ class TestModel(unittest.TestCase):
         IL15Ra_initial = self.y0[10] + self.y0[11] + self.y0[14] + self.y0[15] + self.y0[17]
         IL2Rb_initial = self.y0[1] + self.y0[4] + self.y0[6] + self.y0[8] + self.y0[9] + self.y0[12] + self.y0[14] + self.y0[16] + self.y0[17]
         
-        #Check for conservation of gc
-        self.assertAlmostEqual(gc_eq,gc_initial)
+        
         #Check for conservation of IL2Rb
         self.assertAlmostEqual(IL2Rb_eq, IL2Rb_initial)
+        #Check for conservation of gc
+        self.assertAlmostEqual(gc_eq,gc_initial)
+        
+        
         #Check for conservation of IL2Ra
         self.assertAlmostEqual(IL2Ra_eq, IL2Ra_initial)
         #Check for conservation of IL15Ra
         self.assertAlmostEqual(IL15Ra_eq, IL15Ra_initial)
-
