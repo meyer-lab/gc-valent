@@ -6,16 +6,14 @@ from scipy.integrate import odeint
 
 class TestModel(unittest.TestCase):
     def setUp(self):
-        print("Setup testing")
-
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 18)
-        self.args1 = list(np.random.lognormal(0., 1., 13))
+        self.args1 = list(np.random.lognormal(0., 1., 10))
         self.args = tuple(self.args1)
         # need to convert args from an array to a tuple of numbers
 
     def test_length(self):                        
-        self.assertEqual(len(dy_dt(self.y0, 0, *self.args)),18)
+        self.assertEqual(len(dy_dt(self.y0, 0, *self.args)), 18)
 
     def test_equilibrium(self):
         y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
