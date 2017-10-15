@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev, k13fwd, k17rev, k18rev, k22rev, k23rev):
+def dy_dt(y, t, IL2, IL15, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev, k22rev, k23rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
@@ -30,11 +30,14 @@ def dy_dt(y, t, IL2, IL15, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev, k13fwd, k
     k17fwd = k18fwd = k19fwd = k20fwd = k21fwd = k22fwd = k23fwd = k24fwd = k16fwd = k4fwd
 
     # These are probably measured in the literature
+    k1fwd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
     k1rev = k1fwd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
     k2fwd = k1fwd
     k2rev = k2fwd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
     k3fwd = k1fwd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
     k3rev = 50000 * k3fwd
+    k10rev = 12.0 * k5rev * k10fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
+    k11rev = 63.0 * k5rev * k11fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
     
     # Literature values for k values for IL-15
     # TODO: Find actual literature values for these
