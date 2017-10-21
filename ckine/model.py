@@ -39,8 +39,7 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
     # The R-R fwd rate is largely going to be determined by p.m. diff so assume it's shared
     k5fwd = k6fwd = k7fwd = k8fwd = k9fwd = k10fwd = k11fwd = k12fwd = k4fwd
     k17fwd = k18fwd = k19fwd = k20fwd = k21fwd = k22fwd = k23fwd = k24fwd = k16fwd = k4fwd
-    k19fwd = k20fwd = k4fwd
-    k15fwd = k16fwd = k4fwd
+    k27fwd = k28fwd = k31fwd = k32fwd = k4fwd # IL7/9
 
     # These are probably measured in the literature
     k1fwd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
