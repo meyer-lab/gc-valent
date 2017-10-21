@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dy_dt(y, t, IL2, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev, k22rev, k23rev):
+def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev, k22rev, k23rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
