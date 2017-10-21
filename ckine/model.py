@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev, k22rev, k23rev):
+def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev, k22rev, k23rev, k25rev, k26rev, k27rev, k29rev, k30rev, k31rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
@@ -28,13 +28,13 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
     IL7Ra_IL7 = y[19]
     gc_IL7 = y[20]
     IL7Ra_gc_IL7 = y[21]
-    # k13 - k16 MOVED TO k25 - k28
+    # k25 - k28
 
     IL9R = y[22]
     IL9R_IL9 = y[23]
     gc_IL9 = y[24]
     IL9R_gc_IL9 = y[25]
-    # k17 - k20 MOVED TO k29 - k32
+    # k29 - k32
     
     # The R-R fwd rate is largely going to be determined by p.m. diff so assume it's shared
     k5fwd = k6fwd = k7fwd = k8fwd = k9fwd = k10fwd = k11fwd = k12fwd = k4fwd
@@ -62,6 +62,8 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
 
     k17fwd = k18fwd = k1fwd
     k13fwd = k14fwd = k1fwd
+    k25fwd = k26fwd = k1fwd
+    k29fwd = k30fwd = k1fwd
 
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
@@ -83,8 +85,8 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
     k20rev = k14rev * k22rev * k24rev / k14fwd / k22fwd / k24fwd / k19rev / k15rev * k15fwd * k19fwd * k20fwd
 
     # _One detailed balance IL7/9 loop
-    k20rev = k17rev * k19rev * k20fwd * k18fwd / k17fwd / k19fwd / k18rev
-    k16rev = k13rev * k15rev * k16fwd * k14fwd / k13fwd / k15fwd / k14rev
+    k32rev = k29rev * k31rev * k32fwd * k30fwd / k29fwd / k31fwd / k30rev
+    k28rev = k25rev * k27rev * k28fwd * k26fwd / k25fwd / k27fwd / k26rev
 
     dydt = np.zeros(y.shape, dtype = np.float64)
     
@@ -114,18 +116,18 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
     dydt[2] = dydt[2] - k15fwd * IL15 * gc + k15rev * IL15_gc - k17fwd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc - k16fwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - k22fwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc
     
     # IL7
-    dydt[2] = dydt[2] - k14fwd * IL7 * gc + k14rev * gc_IL7 - k15fwd * gc * IL7Ra_IL7 + k15rev * IL7Ra_gc_IL7
-    dydt[10] = -k13fwd * IL7Ra * IL7 + k13rev * IL7Ra_IL7 - k16fwd * IL7Ra * gc_IL7 + k16rev * IL7Ra_gc_IL7
-    dydt[11] = k13fwd * IL7Ra * IL7 - k13rev * IL7Ra_IL7 - k15fwd * gc * IL7Ra_IL7 + k15rev * IL7Ra_gc_IL7
-    dydt[12] = -k16fwd * IL7Ra * gc_IL7 + k16rev * IL7Ra_gc_IL7 + k14fwd * IL7 * gc - k14rev * gc_IL7
-    dydt[13] = k16fwd * IL7Ra * gc_IL7 - k16rev * IL7Ra_gc_IL7 + k15fwd * gc * IL7Ra_IL7 - k15rev * IL7Ra_gc_IL7
+    dydt[2] = dydt[2] - k26fwd * IL7 * gc + k26rev * gc_IL7 - k27fwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7
+    dydt[18] = -k25fwd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - k28fwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7
+    dydt[19] = k25fwd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - k27fwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7
+    dydt[20] = -k28fwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7 + k26fwd * IL7 * gc - k26rev * gc_IL7
+    dydt[21] = k28fwd * IL7Ra * gc_IL7 - k28rev * IL7Ra_gc_IL7 + k27fwd * gc * IL7Ra_IL7 - k27rev * IL7Ra_gc_IL7
 
     # IL9
-    dydt[2] = dydt[2] - k18fwd * IL9 * gc + k18rev * gc_IL9 - k19fwd * gc * IL9R_IL9 + k19rev * IL9R_gc_IL9
-    dydt[14] = -k17fwd * IL9R * IL9 + k17rev * IL9R_IL9 - k20fwd * IL9R * gc_IL9 + k20rev * IL9R_gc_IL9
-    dydt[15] = k17fwd * IL9R * IL9 - k17rev * IL9R_IL9 - k19fwd * gc * IL9R_IL9 + k19rev * IL9R_gc_IL9
-    dydt[16] = -k20fwd * IL9R * gc_IL9 + k20rev * IL9R_gc_IL9 + k18fwd * IL9 * gc - k18rev * gc_IL9
-    dydt[17] = k20fwd * IL9R * gc_IL9 - k20rev * IL9R_gc_IL9 + k19fwd * gc * IL9R_IL9 - k19rev * IL9R_gc_IL9
+    dydt[2] = dydt[2] - k30fwd * IL9 * gc + k30rev * gc_IL9 - k31fwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9
+    dydt[22] = -k29fwd * IL9R * IL9 + k29rev * IL9R_IL9 - k32fwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9
+    dydt[23] = k29fwd * IL9R * IL9 - k29rev * IL9R_IL9 - k31fwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9
+    dydt[24] = -k32fwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + k30fwd * IL9 * gc - k30rev * gc_IL9
+    dydt[25] = k32fwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + k31fwd * gc * IL9R_IL9 - k31rev * IL9R_gc_IL9
 
     return dydt
 
