@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import pandas as pds
+from pymc3 import Model, Normal, LogNormal
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -76,5 +77,16 @@ def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     dist_final = np.asscalar(np.array([root_sum_squared_dist])) # convert the numpy array of one float to a scalar float
     return dist_final
 
-
 print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
+
+
+with Model():
+    k4fwd = LogNormal('k4fwd', mu=0)
+    k5rev = LogNormal('k5rev', mu=0)
+    k6rev = LogNormal('k6rev', mu=0)
+    
+    Y = IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.)
+    mu = 
+    
+    Y_obs = Normal('Y_obs', mu=mu, observed=Y)
+    
