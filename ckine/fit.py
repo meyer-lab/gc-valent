@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import pandas as pds
-from pymc3 import Model, Normal, LogNormal
+from pymc3 import Model, Lognormal, Normal
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -68,25 +68,26 @@ def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     #print (activity_table[:,1])
     diff_data = np.zeros((8,1))
     diff_data[:,0] = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
+    # deciding to return diff_data for now
+    return diff_data
     #print (diff_data)
-    squared_data = diff_data**2
+    #squared_data = diff_data**2
     #print (squared_data)
-    sum_squared_dist = np.sum(squared_data, 0) # 0 indicates that we're summing on the 0 axis
+    #sum_squared_dist = np.sum(squared_data, 0) # 0 indicates that we're summing on the 0 axis
     #print (sum_squared_dist)
-    root_sum_squared_dist = sum_squared_dist**0.5
-    dist_final = np.asscalar(np.array([root_sum_squared_dist])) # convert the numpy array of one float to a scalar float
-    return dist_final
+    #root_sum_squared_dist = sum_squared_dist**0.5
+    #dist_final = np.asscalar(np.array([root_sum_squared_dist])) # convert the numpy array of one float to a scalar float
+    #return dist_final
 
 print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
 
 
 with Model():
-    k4fwd = LogNormal('k4fwd', mu=0)
-    k5rev = LogNormal('k5rev', mu=0)
-    k6rev = LogNormal('k6rev', mu=0)
+    k4fwd = Lognormal('k4fwd', mu=0, sd=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+    k5rev = Lognormal('k5rev', mu=0, sd=3)
+    k6rev = Lognormal('k6rev', mu=0, sd=3)
     
-    Y = IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.)
-    mu = 
+    Y = IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., k4fwd, k5rev, k6rev)
     
-    Y_obs = Normal('Y_obs', mu=mu, observed=Y)
+    Y_obs = Normal(mu=0, sd=np.stdev(Y), observed=Y) # nu=8 because there were 8 data points taken from the IL2Ra+ YT-1 cell data in CSV file
     
