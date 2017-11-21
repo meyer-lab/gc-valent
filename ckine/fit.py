@@ -6,7 +6,7 @@ import math
 import pandas as pds
 from theano.compile.ops import as_op
 import theano.tensor as T
-from pymc3 import Model, Lognormal, Normal
+import pymc3 as pm
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -78,13 +78,21 @@ def IL2_sum_squared_distance(k4fwd, k5rev, k6rev):
 
 #print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
 
+M = pm.Model()
 
-with Model():
-    k4fwd = Lognormal('k4fwd', mu=0, sd=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-    k5rev = Lognormal('k5rev', mu=0, sd=3)
-    k6rev = Lognormal('k6rev', mu=0, sd=3)
+with M:
+    k4fwd = pm.Lognormal('k4fwd', mu=0, sd=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+    k5rev = pm.Lognormal('k5rev', mu=0, sd=3)
+    k6rev = pm.Lognormal('k6rev', mu=0, sd=3)
     
     Y = IL2_sum_squared_distance(k4fwd, k5rev, k6rev)
     
-    Y_obs = Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
-    
+    Y_obs = pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
+
+
+with M:
+    start = pm.find_MAP()
+    step = pm.Metropolis()
+    trace = pm.sample(5000, step, start=start)
+
+_ = plt.hist(trace['k4fwd'],100)
