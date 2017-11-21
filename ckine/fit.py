@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import pandas as pds
+import theano
+from theano.compile.ops import as_op
+import theano.tensor as T
 from pymc3 import Model, Lognormal, Normal
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
@@ -43,17 +46,21 @@ def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
         new_table[ii, 0] = values[ii, 0] # IL2 values in first column are the same
         new_table[ii, 1] = 100. * values[ii, 1] / maximum # activity values in second column are converted to percents relative to maximum
         x[ii] = math.log10(new_table[ii,0]) # changing the x values to the log10(nM) values that were in the published graph
-    plt.rcParams.update({'font.size': 8})
-    plt.xlabel("IL2 concentration (log(nm))")
-    plt.ylabel("percent activation of pSTAT")
-    plt.scatter(x[:], new_table[:,1])
-    plt.show()
+    #plt.rcParams.update({'font.size': 8})
+    #plt.xlabel("IL2 concentration (log(nm))")
+    #plt.ylabel("percent activation of pSTAT")
+    #plt.scatter(x[:], new_table[:,1])
+    #plt.show()
     return new_table
 
 
-def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
+@as_op(itypes=[T.dscalar, T.dscalar, T.dscalar], otypes=[T.dvector])
+def IL2_sum_squared_distance(k4fwd, k5rev, k6rev):
+    y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
+    t = 50.
+
     activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev) # generates output from percent activity function
-    data = pds.read_csv("data\IL2_IL15_extracted_data.csv") # imports csv file into pandas array
+    data = pds.read_csv("./data/IL2_IL15_extracted_data.csv") # imports csv file into pandas array
     # the following tries to perform calculation using pandas arrays
     #data.columns = ['IL2_conc','h9_2Ra-','IL2_2Ra-','IL15_2Ra-','IL15_15Ra_2Ra-', 'h9_2Ra+','IL2_2Ra+','IL15_2Ra+','IL15_15Ra_2Ra+' ] #change the names of the pandas columns in data
     #print (data['IL2_2Ra-'])
@@ -69,7 +76,8 @@ def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     diff_data = np.zeros((8,1))
     diff_data[:,0] = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
     # deciding to return diff_data for now
-    return diff_data
+
+    return np.squeeze(diff_data)
     #print (diff_data)
     #squared_data = diff_data**2
     #print (squared_data)
@@ -79,7 +87,7 @@ def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     #dist_final = np.asscalar(np.array([root_sum_squared_dist])) # convert the numpy array of one float to a scalar float
     #return dist_final
 
-print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
+#print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
 
 
 with Model():
@@ -87,7 +95,7 @@ with Model():
     k5rev = Lognormal('k5rev', mu=0, sd=3)
     k6rev = Lognormal('k6rev', mu=0, sd=3)
     
-    Y = IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., k4fwd, k5rev, k6rev)
+    Y = IL2_sum_squared_distance(k4fwd, k5rev, k6rev)
     
-    Y_obs = Normal(mu=0, sd=np.stdev(Y), observed=Y) # nu=8 because there were 8 data points taken from the IL2Ra+ YT-1 cell data in CSV file
+    Y_obs = Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
     
