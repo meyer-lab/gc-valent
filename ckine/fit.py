@@ -61,20 +61,35 @@ def plot_IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
 
 
 @as_op(itypes=[T.dscalar, T.dscalar, T.dscalar], otypes=[T.dvector])
-def IL2_sum_squared_distance(k4fwd, k5rev, k6rev):
-    y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
-    t = 50.
 
-    activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev) # generates output from percent activity function
-    data = pds.read_csv("./data/IL2_IL15_extracted_data.csv") # imports csv file into pandas array
+class IL2_sum_squared_dist:
+    
+    def load(self):
+        data = pds.read_csv("./data/IL2_IL15_extracted_data.csv") # imports csv file into pandas array
+        self.numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
+        
+    def calc(self, k4fwd, k5rev, k6rev):
+        y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
+        t = 50.
+        activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev)
+        diff_data = self.numpy_data[:,6] - activity_table[:,1]
+        return np.squeeze(diff_data)
+        
+        
+#def IL2_sum_squared_distance(k4fwd, k5rev, k6rev):
+#    y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
+#    t = 50.
+
+#    activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev) # generates output from percent activity function
+#    data = pds.read_csv("./data/IL2_IL15_extracted_data.csv") # imports csv file into pandas array
     
     # trying to perform calculation using numpy arrays
-    numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
+#    numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
 
-    diff_data = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
+#    diff_data = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
     # deciding to return diff_data for now
-
-    return np.squeeze(diff_data)
+#
+#    return np.squeeze(diff_data)
 
 #print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
 
@@ -85,7 +100,8 @@ with M:
     k5rev = pm.Lognormal('k5rev', mu=0, sd=3)
     k6rev = pm.Lognormal('k6rev', mu=0, sd=3)
     
-    Y = IL2_sum_squared_distance(k4fwd, k5rev, k6rev)
+    dst = IL2_sum_squared_dist()
+    Y = dst.calc(k4fwd, k5rev, k6rev)
     
     Y_obs = pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
 
