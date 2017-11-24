@@ -7,6 +7,8 @@ import pandas as pds
 from theano.compile.ops import as_op
 import theano.tensor as T
 import pymc3 as pm
+import pickle as pk
+import bz2
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -76,23 +78,9 @@ class IL2_sum_squared_dist:
         diff_data = self.numpy_data[:,6] - activity_table[:,1]
         return np.squeeze(diff_data)
         
-        
-#def IL2_sum_squared_distance(k4fwd, k5rev, k6rev):
-#    y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
-#    t = 50.
+def store_data(class_name, fit_results):
+    pk.dump(class_name, bz2.BZ2File(fit_results, 'wb'))
 
-#    activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev) # generates output from percent activity function
-#    data = pds.read_csv("./data/IL2_IL15_extracted_data.csv") # imports csv file into pandas array
-    
-    # trying to perform calculation using numpy arrays
-#    numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
-
-#    diff_data = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
-    # deciding to return diff_data for now
-#
-#    return np.squeeze(diff_data)
-
-#print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
 
 dst = IL2_sum_squared_dist()
 dst.load()
@@ -115,3 +103,4 @@ with M:
     trace = pm.sample(5000, step, start=start)
 
 _ = plt.hist(trace['k4fwd'],100)
+store_data(M, "model_results")
