@@ -107,7 +107,7 @@ with M:
 with M:
     start = pm.find_MAP()
     step = pm.Metropolis()
-    trace = pm.sample(5000, step, start=start)
+    trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
 
 _ = plt.hist(trace['k4fwd'],100)
 store_data(M, "model_results")
