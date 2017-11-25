@@ -9,6 +9,10 @@ import theano.tensor as T
 import pymc3 as pm
 import pickle as pk
 import bz2
+import concurrent.futures
+
+
+pool = concurrent.futures.ProcessPoolExecutor()
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -31,13 +35,16 @@ def IL2_activity_values(k4fwd, k5rev, k6rev):
     y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
     t = 50.
     IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
-    activity = np.zeros(8)
-    table = np.zeros((8,2))
-    for ii in range (IL2s.shape[0]):
-        activity[ii] = IL2_activity_input(y0, t, IL2s[ii], k4fwd, k5rev, k6rev)
+    table = np.zeros((8, 2))
+    output = list()
+
+    for ii in range(len(IL2s)):
+        output.append(pool.submit(IL2_activity_input, y0, t, IL2s[ii], k4fwd, k5rev, k6rev))
+
+    for ii in range(len(IL2s)):
+        table[ii, 1] = output[ii].result()
     
     table[:, 0] = IL2s
-    table[:, 1] = activity
 
     return table
 
