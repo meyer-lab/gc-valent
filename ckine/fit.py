@@ -86,28 +86,34 @@ class IL2_sum_squared_dist:
         return np.squeeze(diff_data)
         
 def store_data(class_name, fit_results):
-    pk.dump(class_name, bz2.BZ2File(fit_results, 'wb'))
+    pk.dump(class_name, bz2.BZ2File(fit_results + '.pkl', 'wb'))
 
-
-dst = IL2_sum_squared_dist()
-dst.load()
-
-M = pm.Model()
-
-with M:
-    k4fwd = pm.Lognormal('k4fwd', mu=0, sd=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-    k5rev = pm.Lognormal('k5rev', mu=0, sd=3)
-    k6rev = pm.Lognormal('k6rev', mu=0, sd=3)
+class build_model:
     
-    Y = dst.calc(k4fwd, k5rev, k6rev)
+    def __init__(self):
+        self.dst = IL2_sum_squared_dist()
+        self.dst.load()
     
-    Y_obs = pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
+    def build(self):   
+        self.M = pm.Model()
+        
+        with self.M:
+            k4fwd = pm.Lognormal('k4fwd', mu=0, sd=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+            k5rev = pm.Lognormal('k5rev', mu=0, sd=3)
+            k6rev = pm.Lognormal('k6rev', mu=0, sd=3)
+            
+            Y = self.dst.calc(k4fwd, k5rev, k6rev)
+            
+            Y_obs = pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
+        
+        return Y_obs
+    
+    def sampling(self):
+        with self.M:
+            start = pm.find_MAP()
+            step = pm.Metropolis()
+            trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
+        _ = plt.hist(trace['k4fwd'],100)
 
 
-with M:
-    start = pm.find_MAP()
-    step = pm.Metropolis()
-    trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
-
-_ = plt.hist(trace['k4fwd'],100)
-store_data(M, "model_results")
+store_data(build_model, "model_results")
