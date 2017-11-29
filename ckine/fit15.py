@@ -123,5 +123,4 @@ M.sampling()
 
 # _ = plt.hist(build_model.M.trace['k4fwd'],100)
 
-store_data(M.build(), "build_results")
-store_data(M.sampling(), "sampling_results")
+store_data(M, "IL15_model_results")
