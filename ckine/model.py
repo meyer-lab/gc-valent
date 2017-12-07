@@ -63,19 +63,13 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev
     k10rev = 12.0 * k5rev * k10fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
     k11rev = 63.0 * k5rev * k11fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
     
-    
-    
     # Literature values for k values for IL-15
-    # TODO: Find actual literature values for these
     k13rev = k13fwd * 0.065 #based on the multiple papers suggesting 30-100 pM
     k14fwd = k13fwd
     k14rev = k14fwd * 438 # doi:10.1038/ni.2449, 438 nM
     
-    k15fwd = k1fwd
-    k17fwd = k18fwd = k1fwd
-    k13fwd = k14fwd = k1fwd
-    k25fwd = k26fwd = k1fwd
-    k29fwd = k30fwd = k1fwd
+    k15fwd = k17fwd = k18fwd = k29fwd = k30fwd = k1fwd
+    k13fwd = k14fwd = k25fwd = k26fwd = k1fwd
     
     # Literature values for IL-7
     k25rev = k25fwd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
@@ -147,45 +141,44 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev
     return dydt
 
 
-@jit
-def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
-    ''' Wrapper for dy_dt that is specific to IL2 '''
+def subset_wrapper(y, t, IL2i=None, IL15i=None, IL9i=None, IL7i=None, **kwargs):
+    ''' Wrapper function to only handle certain cytokines. '''
+
+    IDX = np.zeros(26)
     ys = np.zeros(26)
-    ys[0:10] = y[0:10] # set the first value in y to be IL2Ra
-    ret_val = dy_dt(ys, t, IL2, 0., 0., 0., k4fwd, k5rev, k6rev, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.) # set the IL15, IL7 and IL9 reaction rates to 1
-    return ret_val[0:10]
+    kw = dict(kwargs)
 
+    IDX[2] = 1 # Always need the gc
 
-@jit
-def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev):
-    ''' Wrapper function for dy_dt that is for IL15'''
-    # set the values of the receptor concentrations of IL2, IL7, and IL9 to zero in y for dy_dt
-    ys = np.zeros(26)
-    ys[1] = y[0] #Set the first value in y to be equal to IL2Rb
-    ys[2] = y[1] #Set the second value in y to be equal to gc
-    ys[10:18]= y[2:10] #Set the third value in y to be equal to IL15Ra
-    ret_value = dy_dt(ys, t, 0., IL15, 0., 0., 1., 1., 1., k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, 1., 1., 1., 1., 1., 1.) # set the IL2, IL7 and IL9 reaction rates to 1
-    ret_values = np.concatenate((ret_value[1:3], ret_value[10:18]), axis=0) #Need to use [2:3] to ensure storing as an array instead of a float number
-    return ret_values
+    if IL2i is None:
+        kw['k4fwd'] = kw['k5rev'] = kw['k6rev'] = 1.0
+        IL2 = 0.0
+    else:
+        IL2 = IL2i
+        IDX[0:10] = 1 # Set the first value in y to be IL2Ra
 
+    if IL15i is None:
+        kw['k13fwd'] = kw['k15rev'] = kw['k17rev'] = kw['k18rev'] = kw['k22rev'] = kw['k23rev'] = 1.0
+        IL15 = 0.0
+    else:
+        IL15 = IL15i
+        IDX[10:18]= 1 # Set the third value in y to be equal to IL15Ra
 
-@jit
-def dy_dt_IL9_wrapper(y, t, IL9, k29rev, k30rev, k31rev):
-    ''' Wrapper function for dy_dt that is for IL9'''
-    ys = np.zeros(26)
-    ys[2] = y[0] # set the first value of y to be the gamma chain
-    ys[22:26] = y[1:5]
-    ret_val = dy_dt(ys, t, 0., 0., 0., IL9, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., k29rev, k30rev, k31rev)
-    ret_values = np.concatenate((ret_val[2:3], ret_val[22:26]), axis=0) # need to use notation [2:3] so that value is stored in array instead of float
-    return ret_values
+    if IL7i is None:
+        kw['k26rev'] = kw['k27rev'] = 1.0
+        IL7 = 0.0
+    else:
+        IL7 = IL7i
+        IDX[18:22] = 1
 
+    if IL9i is None:
+        kw['k29rev'] = kw['k30rev'] = kw['k31rev'] = 1.0
+        IL9 = 0.0
+    else:
+        IL9 = IL9i
+        IDX[22:26] = 1
 
-@jit
-def dy_dt_IL7_wrapper(y, t, IL7, k25rev, k26rev, k27rev):
-    ''' Wrapper function for dy_dt that is for IL7'''
-    ys = np.zeros(26)
-    ys[2] = y[0] # set the first value of y to be the gamma chain
-    ys[18:22] = y[1:5] 
-    ret_val = dy_dt(ys, t, 0., 0., IL7, 0., 1., 1., 1., 1., 1., 1., 1., 1., 1., k25rev, k26rev, k27rev, 1., 1., 1.)
-    ret_values = np.concatenate((ret_val[2:3], ret_val[18:22]), axis=0)
-    return ret_values
+    ys[IDX] = y
+    ret_val = dy_dt(ys, t, IL2, IL15, IL9, IL7, **kw)
+
+    return ret_val[IDX]
