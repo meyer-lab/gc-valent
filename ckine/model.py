@@ -134,25 +134,26 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
 def subset_wrapper(y, t, IL2i=None, IL15i=None, IL9i=None, IL7i=None, **kwargs):
     ''' Wrapper function to only handle certain cytokines. '''
 
-    IDX = np.zeros(26)
+    IDX = np.zeros(26, dtype=np.bool)
     ys = np.zeros(26)
     kw = dict(kwargs)
 
     IDX[2] = 1 # Always need the gc
 
     if IL2i is None:
-        kw['k4fwd'] = kw['k5rev'] = kw['k6rev'] = 1.0
+        kw['k5rev'] = kw['k6rev'] = 1.0
         kw['IL2'] = 0.0
     else:
         kw['IL2'] = IL2i
         IDX[0:10] = 1 # Set the first value in y to be IL2Ra
 
     if IL15i is None:
-        kw['k13fwd'] = kw['k15rev'] = kw['k17rev'] = kw['k18rev'] = kw['k22rev'] = kw['k23rev'] = 1.0
+        kw['k15rev'] = kw['k17rev'] = kw['k18rev'] = kw['k22rev'] = kw['k23rev'] = 1.0
         kw['IL15'] = 0.0
     else:
         kw['IL15'] = IL15i
-        IDX[10:18]= 1 # Set the third value in y to be equal to IL15Ra
+        IDX[10:18] = 1
+        IDX[0] = 1 # Also need IL2Ra
 
     if IL7i is None:
         kw['k26rev'] = kw['k27rev'] = 1.0
