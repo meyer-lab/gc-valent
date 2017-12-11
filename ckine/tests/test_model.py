@@ -23,12 +23,6 @@ class TestModel(unittest.TestCase):
 
     def test_length(self):                        
         self.assertEqual(len(dy_dt(self.y0, 0, *self.args)), self.y0.size)
-
-    def test_equilibrium(self):
-        y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
-
-        z = np.linalg.norm(dy_dt(y[1, :], 0, *self.args)) # have the sum of squares for all the dy_dt values be z
-        self.assertLess(z, 1E-5)
   
     def test_conservation(self):
         y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
@@ -39,8 +33,8 @@ class TestModel(unittest.TestCase):
         IL2Ra_species = np.array([0, 3, 6, 7, 9])
         IL2Rb_species = np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])
         IL15Ra_species = np.array([10, 11, 14, 15, 17])
-        IL7Ra_species = np.array([18,19,21])
-        IL9R_species = np.array([22,23,25])
+        IL7Ra_species = np.array([18, 19, 21])
+        IL9R_species = np.array([22, 23, 25])
         
         #Check for conservation of gc
         self.assertAlmostEqual(np.sum(species_delta[gc_species]), 0.0)
@@ -54,6 +48,11 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IL7Ra_species]), 0.0)
         #Check for Conservation of IL9R
         self.assertAlmostEqual(np.sum(species_delta[IL9R_species]), 0.0)
+
+        # All the species abundances should be above zero
+        self.assertGreater(np.min(y), -1.0E-8)
+
+        # TODO: Test that it came to equilirbium
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 4, elements=floats(0.0001, 1)))
@@ -75,7 +74,12 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[np.array([0, 3, 6, 7, 9])]), 0.0, places=5)
         # Check for conservation of IL2Rb
         self.assertAlmostEqual(np.sum(species_delta[np.array([1, 4, 6, 8, 9])]), 0.0, places=5)
-        # TODO: Add mass balance checks here.
+
+        # All the species abundances should be above zero
+        self.assertGreater(np.min(retval), -1.0E-8)
+
+        # Test that the model has come to equilibrium
+        self.assertLess(np.linalg.norm(wrap(retval[1, :], 0)) / (1.0 + np.sum(retval[1, :])), 1E-7)
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 6, elements=floats(0.0001, 1)))
@@ -85,3 +89,10 @@ class TestModel(unittest.TestCase):
         retval = odeint(wrap, y0, self.ts, mxstep = 6000)
         self.assertEqual(len(retval[1]), 10)
         # TODO: Add mass balance checks here.
+
+
+        # All the species abundances should be above zero
+        self.assertGreater(np.min(retval), -1.0E-8)
+
+        # Test that the model has come to equilibrium
+        self.assertLess(np.linalg.norm(wrap(retval[1, :], 0)) / (1.0 + np.sum(retval[1, :])), 1E-7)
