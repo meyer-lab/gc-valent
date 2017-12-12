@@ -9,6 +9,14 @@ from hypothesis.extra.numpy import arrays as harrays
 
 
 class TestModel(unittest.TestCase):
+    def assertPosEquilibrium(self, X, func):
+        # All the species abundances should be above zero
+        self.assertGreater(np.min(X), -1.0E-8)
+
+        # Test that it came to equilirbium
+        self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 1E-6)
+
+
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
@@ -49,10 +57,8 @@ class TestModel(unittest.TestCase):
         #Check for Conservation of IL9R
         self.assertAlmostEqual(np.sum(species_delta[IL9R_species]), 0.0)
 
-        # All the species abundances should be above zero
-        self.assertGreater(np.min(y), -1.0E-8)
-
-        # TODO: Test that it came to equilirbium
+        # Assert positive and at equilibrium
+        self.assertPosEquilibrium(y[1, :], dy_dt)
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 4, elements=floats(0.0001, 1)))
@@ -75,11 +81,8 @@ class TestModel(unittest.TestCase):
         # Check for conservation of IL2Rb
         self.assertAlmostEqual(np.sum(species_delta[np.array([1, 4, 6, 8, 9])]), 0.0, places=5)
 
-        # All the species abundances should be above zero
-        self.assertGreater(np.min(retval), -1.0E-8)
-
-        # Test that the model has come to equilibrium
-        self.assertLess(np.linalg.norm(wrap(retval[1, :], 0)) / (1.0 + np.sum(retval[1, :])), 1E-7)
+        # Assert positive and at equilibrium
+        self.assertPosEquilibrium(retval[1, :], dy_dt)
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 6, elements=floats(0.0001, 1)))
@@ -91,8 +94,5 @@ class TestModel(unittest.TestCase):
         # TODO: Add mass balance checks here.
 
 
-        # All the species abundances should be above zero
-        self.assertGreater(np.min(retval), -1.0E-8)
-
-        # Test that the model has come to equilibrium
-        self.assertLess(np.linalg.norm(wrap(retval[1, :], 0)) / (1.0 + np.sum(retval[1, :])), 1E-7)
+        # Assert positive and at equilibrium
+        self.assertPosEquilibrium(retval[1, :], dy_dt)
