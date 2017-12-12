@@ -39,16 +39,11 @@ class TestModel(unittest.TestCase):
   
     def test_conservation(self):
         y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
-
-        species_delta = y[1, :] - self.y0
-
-        gc_species = np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25])
-        IL2Rb_species = np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])
         
         #Check for conservation of gc
-        self.assertAlmostEqual(np.sum(species_delta[gc_species]), 0.0)
+        self.assertConservation(y[1, :], self.y0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
         #Check for conservation of IL2Rb
-        self.assertAlmostEqual(np.sum(species_delta[IL2Rb_species]), 0.0)
+        self.assertConservation(y[1, :], self.y0, np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]))
         #Check for conservation of IL2Ra
         self.assertConservation(y[1, :], self.y0, np.array([0, 3, 6, 7, 9]))
         #Check for conservation of IL15Ra
@@ -59,7 +54,7 @@ class TestModel(unittest.TestCase):
         self.assertConservation(y[1, :], self.y0, np.array([22, 23, 25]))
 
         # Assert positive and at equilibrium
-        self.assertPosEquilibrium(y[1, :], dy_dt)
+        self.assertPosEquilibrium(y[1, :], lambda y, t: dy_dt(y, t, *self.args))
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 4, elements=floats(0.0001, 1)))
