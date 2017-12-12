@@ -16,6 +16,11 @@ class TestModel(unittest.TestCase):
         # Test that it came to equilirbium
         self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 1E-6)
 
+    def assertConservation(self, y, y0, IDX):
+        species_delta = y - y0
+
+        # Check for conservation of species sum
+        self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, places=5)
 
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
@@ -38,24 +43,20 @@ class TestModel(unittest.TestCase):
         species_delta = y[1, :] - self.y0
 
         gc_species = np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25])
-        IL2Ra_species = np.array([0, 3, 6, 7, 9])
         IL2Rb_species = np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])
-        IL15Ra_species = np.array([10, 11, 14, 15, 17])
-        IL7Ra_species = np.array([18, 19, 21])
-        IL9R_species = np.array([22, 23, 25])
         
         #Check for conservation of gc
         self.assertAlmostEqual(np.sum(species_delta[gc_species]), 0.0)
         #Check for conservation of IL2Rb
         self.assertAlmostEqual(np.sum(species_delta[IL2Rb_species]), 0.0)
         #Check for conservation of IL2Ra
-        self.assertAlmostEqual(np.sum(species_delta[IL2Ra_species]), 0.0)
+        self.assertConservation(y[1, :], self.y0, np.array([0, 3, 6, 7, 9]))
         #Check for conservation of IL15Ra
-        self.assertAlmostEqual(np.sum(species_delta[IL15Ra_species]), 0.0)
+        self.assertConservation(y[1, :], self.y0, np.array([10, 11, 14, 15, 17]))
         #Check for conservation of IL7Ra
-        self.assertAlmostEqual(np.sum(species_delta[IL7Ra_species]), 0.0)
+        self.assertConservation(y[1, :], self.y0, np.array([18, 19, 21]))
         #Check for Conservation of IL9R
-        self.assertAlmostEqual(np.sum(species_delta[IL9R_species]), 0.0)
+        self.assertConservation(y[1, :], self.y0, np.array([22, 23, 25]))
 
         # Assert positive and at equilibrium
         self.assertPosEquilibrium(y[1, :], dy_dt)
@@ -69,20 +70,17 @@ class TestModel(unittest.TestCase):
 
         retval = odeint(wrap, y0, self.ts, mxstep=9000)
 
-        # Diff the starting and stopping state to check mass conservation
-        species_delta = retval[1, :] - y0
-
         self.assertEqual(len(retval[1]), 10)
 
         # Check for conservation of gc
-        self.assertAlmostEqual(np.sum(species_delta[np.array([2, 5, 7, 8, 9])]), 0.0, places=5)
+        self.assertConservation(retval[1, :], y0, np.array([2, 5, 7, 8, 9]))
         # Check for conservation of IL2Ra
-        self.assertAlmostEqual(np.sum(species_delta[np.array([0, 3, 6, 7, 9])]), 0.0, places=5)
+        self.assertConservation(retval[1, :], y0, np.array([0, 3, 6, 7, 9]))
         # Check for conservation of IL2Rb
-        self.assertAlmostEqual(np.sum(species_delta[np.array([1, 4, 6, 8, 9])]), 0.0, places=5)
+        self.assertConservation(retval[1, :], y0, np.array([1, 4, 6, 8, 9]))
 
         # Assert positive and at equilibrium
-        self.assertPosEquilibrium(retval[1, :], dy_dt)
+        self.assertPosEquilibrium(retval[1, :], wrap)
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 6, elements=floats(0.0001, 1)))
@@ -95,4 +93,4 @@ class TestModel(unittest.TestCase):
 
 
         # Assert positive and at equilibrium
-        self.assertPosEquilibrium(retval[1, :], dy_dt)
+        self.assertPosEquilibrium(retval[1, :], wrap)
