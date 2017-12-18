@@ -14,7 +14,7 @@ class TestModel(unittest.TestCase):
         self.assertGreater(np.min(X), -1.0E-8)
 
         # Test that it came to equilirbium
-        self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 1E-6)
+        self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 2E-6)
 
     def assertConservation(self, y, y0, IDX):
         species_delta = y - y0
