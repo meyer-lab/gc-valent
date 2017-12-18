@@ -107,6 +107,55 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     return dydt
 
 
+def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, activeV):
+    """Implement trafficking."""
+
+    dydt = np.zeros_like(y)
+
+    for ii in range(len(y)/2):
+        if activeV[ii] is True:
+            dtraf = trafFunc(activeEndo, y[ii], y[ii + len(y)/2], kRec, kDeg, activeSortF)
+        else:
+            dtraf = trafFunc(endo, y[ii], y[ii + len(y)/2], kRec, kDeg, sortF)
+
+        dydt[ii] = dtraf[0]
+        dydt[ii + len(y)/2] = dtraf[1]
+
+    return dydt
+
+@jit(nopython=True)
+def trafFunc(intRate, extR, intR, kRec, kDeg, fElse, internalFrac):
+    return np.array([-extR*intRate + kRec*(1-fElse)*intR*internalFrac, # Endocytosis, recycling
+                     extR*intRate/internalFrac - kRec*(1-fElse)*intR - kDeg*fElse*intR]) # Endocytosis, recycling, degradation
+
+
+def fullModel(y, t, kwargs):
+    """Implement full model."""
+    # Initialize vector
+    dydt = np.zeros(26*2 + 4)
+
+    # Calculate cell surface reactions
+    dydt[0:26] = dy_dt(y[0:26], t, **kwargs)
+
+    # Make cytokines present in endosome
+    kwargs['IL2'], kwargs['IL15'], kwargs['IL7'], kwargs['IL9'] = y[26:30]
+
+    # Calculate endosomal reactions
+    dydt[30::] = dy_dt(y[30::], t, **kwargs)
+
+    activeV = np.zeros_like(y)
+
+    # Handle trafficking
+    # Leave off the ligands on the end 
+    dydt = dydt + trafficking(kwargs['endo'], kwargs['activeEndo'], kwargs['sortF'], kwargs['activeSortF'], kwargs['recycle'], activeV)
+
+
+    # TODO: Handle endosomal ligand balance.
+
+    return dydt
+
+
+
 def subset_wrapper(y, t, IL2i=None, IL15i=None, IL9i=None, IL7i=None, **kwargs):
     ''' Wrapper function to only handle certain cytokines. '''
 
