@@ -1,8 +1,6 @@
 import unittest
-from ..model import dy_dt, fullModel
+from ..model import dy_dt, fullModel, solveAutocrine
 import numpy as np
-from scipy.integrate import odeint
-from ..model import subset_wrapper
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
@@ -11,10 +9,10 @@ from hypothesis.extra.numpy import arrays as harrays
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
         # All the species abundances should be above zero
-        self.assertGreater(np.min(X), -1.0E-8)
+        self.assertGreater(np.min(X), -1.0E-7)
 
         # Test that it came to equilirbium
-        self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 1E-5)
+        self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
         species_delta = y - y0
@@ -33,71 +31,31 @@ class TestModel(unittest.TestCase):
         self.kwargs = dict(zip(self.argnames, self.args))
         self.endoargs = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))
         self.kwendo = dict(zip(self.trafnames, self.endoargs))
+        self.kwendo['exprV'] = np.random.lognormal(0., 1., 6)
         # need to convert args from an array to a tuple of numbers
 
     def test_length(self):                        
         self.assertEqual(len(dy_dt(self.y0, 0, *self.args)), self.y0.size)
-  
-    def test_conservation(self):
-        y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
+    
+    @settings(deadline=None)
+    @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
+    def test_conservation(self, y0):
+        dy = dy_dt(y0, self.ts, *self.args)
         
         #Check for conservation of gc
-        self.assertConservation(y[1, :], self.y0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
+        self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
         #Check for conservation of IL2Rb
-        self.assertConservation(y[1, :], self.y0, np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]))
+        self.assertConservation(dy, 0.0, np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]))
         #Check for conservation of IL2Ra
-        self.assertConservation(y[1, :], self.y0, np.array([0, 3, 6, 7, 9]))
+        self.assertConservation(dy, 0.0, np.array([0, 3, 6, 7, 9]))
         #Check for conservation of IL15Ra
-        self.assertConservation(y[1, :], self.y0, np.array([10, 11, 14, 15, 17]))
+        self.assertConservation(dy, 0.0, np.array([10, 11, 14, 15, 17]))
         #Check for conservation of IL7Ra
-        self.assertConservation(y[1, :], self.y0, np.array([18, 19, 21]))
+        self.assertConservation(dy, 0.0, np.array([18, 19, 21]))
         #Check for Conservation of IL9R
-        self.assertConservation(y[1, :], self.y0, np.array([22, 23, 25]))
+        self.assertConservation(dy, 0.0, np.array([22, 23, 25]))
 
-        # Assert positive and at equilibrium
-        self.assertPosEquilibrium(y[1, :], lambda y, t: dy_dt(y, t, *self.args))
+    def test_fullModel(self):
+        yOut = solveAutocrine(self.kwargs, self.kwendo)
 
-    @settings(deadline=None)
-    @given(y0=harrays(np.float, 26*2 + 4, elements=floats(0, 10)))
-    def test_fullModel(self, y0):
-
-        full_wrap = lambda y, t: fullModel(y, t, self.kwendo, self.kwargs, IL2i=1.0, IL15i=1.0, IL7i=1.0, IL9i=1.0)
-
-        y = odeint(full_wrap, y0, self.ts, mxstep = 5000)
-
-        # Assert positive and at equilibrium
-        self.assertPosEquilibrium(y[1, :], full_wrap)
-    
-    @settings(deadline=None)
-    @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 4, elements=floats(0.0001, 1)))
-    def test_IL2_wrapper(self, y0, args):
-        # run odeint on some of the values... make sure they compile correctly and then check the length of the output
-
-        wrap = lambda y, t: subset_wrapper(y, t, IL2i=args[0], kfwd=args[1], k5rev=args[2], k6rev=args[3])
-
-        retval = odeint(wrap, y0, self.ts, mxstep=9000)
-
-        self.assertEqual(len(retval[1]), 10)
-
-        # Check for conservation of gc
-        self.assertConservation(retval[1, :], y0, np.array([2, 5, 7, 8, 9]))
-        # Check for conservation of IL2Ra
-        self.assertConservation(retval[1, :], y0, np.array([0, 3, 6, 7, 9]))
-        # Check for conservation of IL2Rb
-        self.assertConservation(retval[1, :], y0, np.array([1, 4, 6, 8, 9]))
-
-        # Assert positive and at equilibrium
-        self.assertPosEquilibrium(retval[1, :], wrap)
-    
-    @settings(deadline=None)
-    @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 6, elements=floats(0.0001, 1)))
-    def test_IL15_wrapper(self, y0, args):
-        wrap = lambda y, t: subset_wrapper(y, t, IL15i=1.0, kfwd=args[0], k15rev=args[1], k17rev=args[2], k18rev=args[3], k22rev=args[4], k23rev=args[5])
-
-        retval = odeint(wrap, y0, self.ts, mxstep = 6000)
-        self.assertEqual(len(retval[1]), 10)
-        # TODO: Add mass balance checks here.
-
-
-        # Assert positive and at equilibrium
-        self.assertPosEquilibrium(retval[1, :], wrap)
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, self.kwargs, self.kwendo))

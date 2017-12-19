@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.integrate import odeint
 
 try:
     from numba import jit
@@ -17,11 +18,8 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     # IL15 in nM
     IL15Ra, IL15_IL15Ra, IL15_IL2Rb, IL15_gc, IL15_IL15Ra_IL2Rb, IL15_IL15Ra_gc, IL15_IL2Rb_gc, IL15_IL15Ra_IL2Rb_gc = y[10:18]
     
-    #IL7 in nM
-    IL7Ra, IL7Ra_IL7, gc_IL7, IL7Ra_gc_IL7 = y[18:22] # k25 - k28
-
-    #IL9 in nM
-    IL9R, IL9R_IL9, gc_IL9, IL9R_gc_IL9 = y[22:26] # k29 - k32
+    #IL7, IL9 in nM
+    IL7Ra, IL7Ra_IL7, gc_IL7, IL7Ra_gc_IL7, IL9R, IL9R_IL9, gc_IL9, IL9R_gc_IL9 = y[18:26] # k25 - k32
     
     # These are probably measured in the literature
     kfbnd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
@@ -42,26 +40,26 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
-    k4rev = kfbnd * kfwd * k6rev * k3rev / k1rev / kfwd / k3fwd
-    k7rev = k3fwd * kfwd * k2rev * k5rev / kfbnd / kfwd / k3rev
-    k12rev = kfbnd * kfwd * k1rev * k11rev / kfwd / kfbnd / k2rev
+    k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd
+    k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev
+    k12rev = k1rev * k11rev / k2rev
     # _Based on formation of full complex
-    k9rev = k2rev * k10rev * k12rev / kfbnd / kfwd / kfwd / k3rev / k6rev * k3fwd * kfwd * kfwd
-    k8rev = k2rev * k10rev * k12rev / kfbnd / kfwd / kfwd / k7rev / k3rev * k3fwd * kfwd * kfwd
+    k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / k6rev * k3fwd
+    k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd
 
     # IL15
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
-    k16rev = kfbnd * kfwd * k18rev * k15rev / k13rev / kfbnd / kfbnd
-    k19rev = kfbnd * kfwd * k14rev * k17rev / kfbnd / kfbnd / k15rev
-    k24rev = kfbnd * kfwd * k13rev * k23rev / kfwd / kfbnd / k14rev
+    k16rev = kfwd * k18rev * k15rev / k13rev / kfbnd
+    k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev
+    k24rev = k13rev * k23rev / k14rev
     # _Based on formation of full complex
-    k21rev = k14rev * k22rev * k24rev / kfbnd / kfwd / k15rev / k18rev * kfbnd * kfbnd
-    k20rev = k14rev * k22rev * k24rev / kfbnd / k19rev / k15rev * kfbnd
+    k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd
+    k20rev = k14rev * k22rev * k24rev / k19rev / k15rev
 
     # _One detailed balance IL7/9 loop
-    k32rev = k29rev * k31rev * kfbnd / kfbnd / k30rev
-    k28rev = k25rev * k27rev * kfbnd / kfbnd / k26rev
+    k32rev = k29rev * k31rev / k30rev
+    k28rev = k25rev * k27rev / k26rev
 
     dydt = y.copy()
     
@@ -108,22 +106,29 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
 
 
 @jit(nopython=True)
-def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg):
+def findLigConsume(dydt):
+    """ Calculate the ligand consumption. """
+    internalV = 623.0 # Same as that used in TAM model
+
+    return -np.array([np.sum(dydt[3:10]), np.sum(dydt[11:18]), np.sum(dydt[19:22]), np.sum(dydt[23:26])]) / internalV
+
+
+#@jit(nopython=True)
+def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
     """Implement trafficking."""
 
     dydt = np.empty_like(y)
 
     halfLen = len(y) // 2
 
+    activeV = getActiveSpecies()
+
     # Reconstruct a vector of active and inactive trafficking for vectorization
-    endoV = np.empty_like(activeV)
-    sortV = np.empty_like(activeV)
+    endoV = np.full_like(activeV, endo)
+    sortV = np.full_like(activeV, sortF)
 
     endoV[activeV == 1] = activeEndo
-    endoV[activeV == 0] = endo
-
     sortV[activeV == 1] = activeSortF
-    sortV[activeV == 0] = sortF
 
     internalFrac = 0.5 # Same as that used in TAM model
 
@@ -131,116 +136,65 @@ def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg):
     dydt[0:halfLen] = -y[0:halfLen]*endoV + kRec*(1-sortV)*y[halfLen::]*internalFrac # Endocytosis, recycling
     dydt[halfLen::] = y[0:halfLen]*endoV/internalFrac - kRec*(1-sortV)*y[halfLen::] - kDeg*sortV*y[halfLen::] # Endocytosis, recycling, degradation
 
+    # Expression
+    dydt[0:3] = dydt[0:3] + exprV[0:3] # IL2Ra, IL2Rb, gc
+    dydt[10] = dydt[10] + exprV[3] # IL15Ra
+    dydt[18] = dydt[18] + exprV[4] # IL7Ra
+    dydt[22] = dydt[22] + exprV[5] # IL9R
+
     return dydt
 
 
-def fullModel(y, t, endoP, kwargs, IL2i=None, IL15i=None, IL9i=None, IL7i=None):
+def fullModel(y, t, rxnRates, trafRates):
     """Implement full model."""
-
-    IDX = subset_IDX(IL2i, IL15i, IL9i, IL7i)
 
     # Initialize vector
     dydt = np.zeros_like(y)
 
+    rxnL = 26
+
     # Calculate cell surface reactions
-    dydt[0:np.sum(IDX)] = subset_wrapper(y[0:np.sum(IDX)], t, IL2i, IL15i, IL9i, IL7i, **kwargs)
+    dydt[0:rxnL] = dy_dt(y[0:rxnL], t, **rxnRates)
 
     # Make cytokines present at endosomal concentrations
-    ii = 0
-    if IL2i is not None:
-        kwargs['IL2'] = y[np.sum(IDX)*2]
-        ii = ii + 1
-
-    if IL15i is not None:
-        kwargs['IL15'] = y[np.sum(IDX)*2 + ii]
-        ii = ii + 1
-
-    if IL9i is not None:
-        kwargs['IL9'] = y[np.sum(IDX)*2 + ii]
-        ii = ii + 1
-
-    if IL7i is not None:
-        kwargs['IL7'] = y[np.sum(IDX)*2 + ii]
-        ii = ii + 1
+    rxnRates['IL2'], rxnRates['IL15'], rxnRates['IL9'], rxnRates['IL7'] = y[rxnL*2::]
 
     # Calculate endosomal reactions
-    dydt[np.sum(IDX):np.sum(IDX)*2] = subset_wrapper(y[np.sum(IDX):np.sum(IDX)*2], t, IL2i, IL15i, IL9i, IL7i, **kwargs)
+    dydt[rxnL:rxnL*2] = dy_dt(y[rxnL:rxnL*2], t, **rxnRates)
 
     # Handle trafficking
-    activeV = np.zeros((np.sum(IDX), ), dtype=np.bool)
-
-    # Leave off the ligands on the end
-    dydt[0:np.sum(IDX)*2] = dydt[0:np.sum(IDX)*2] + trafficking(y[0:np.sum(IDX)*2], activeV, **endoP)
-
-
-    internalV = 623 # Same as that used in TAM model
+    # _Leave off the ligands on the end
+    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], **trafRates)
 
     # Handle endosomal ligand balance.
-    #dydt[-4] = 0.0 # IL2
-    #dydt[-3] = 0.0 # IL15
-    #dydt[-2] = 0.0 # IL7
-    #dydt[-1] = 0.0 # IL9
-
-    # TODO: Handle endosomal ligand balance.
+    dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
 
     return dydt
 
 
-def subset_wrapper(y, t, IL2i=None, IL15i=None, IL9i=None, IL7i=None, **kwargs):
-    ''' Wrapper function to only handle certain cytokines. '''
+def solveAutocrine(rxnRates, trafRates):
+    autocrineT = np.array([0.0, 100000.0])
 
-    IDX = subset_IDX(IL2i, IL15i, IL9i, IL7i)
-    ys = np.zeros(26)
-    kw = dict(kwargs)
+    y0 = np.zeros(26*2 + 4, np.float64)
 
-    IDX[2] = 1 # Always need the gc
+    # For now assume 0 autocrine ligand
+    # TODO: Consider handling autocrine ligand more gracefully
+    rxnRates['IL2'] = rxnRates['IL15'] = rxnRates['IL9'] = rxnRates['IL7'] = 0.0
 
-    if IL2i is None:
-        kw['k5rev'] = kw['k6rev'] = 1.0
-        kw['IL2'] = 0.0
-    else:
-        kw['IL2'] = IL2i
+    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
 
-    if IL15i is None:
-        kw['k15rev'] = kw['k17rev'] = kw['k18rev'] = kw['k22rev'] = kw['k23rev'] = 1.0
-        kw['IL15'] = 0.0
-    else:
-        kw['IL15'] = IL15i
+    yOut = odeint(full_lambda, y0, autocrineT, mxstep=int(1E5))
 
-    if IL7i is None:
-        kw['k26rev'] = kw['k27rev'] = 1.0
-        kw['IL7'] = 0.0
-    else:
-        kw['IL7'] = IL7i
-
-    if IL9i is None:
-        kw['k29rev'] = kw['k30rev'] = kw['k31rev'] = 1.0
-        kw['IL9'] = 0.0
-    else:
-        kw['IL9'] = IL9i
-
-    ys[IDX] = y
-    ret_val = dy_dt(ys, t, **kw)
-
-    return ret_val[IDX]
+    return yOut[1, :]
 
 
-def subset_IDX(IL2i, IL15i, IL9i, IL7i):
-    """ Returns the indexing of values kept after expansion to full model. """
-    IDX = np.zeros(26, dtype=np.bool)
-    IDX[2] = 1 # Always need the gc
+def getActiveSpecies():
+    # TODO: Fill out values for activeV
+    outVal = np.zeros(26, dtype=np.bool)
 
-    if IL2i is not None:
-        IDX[0:10] = 1 # Set the first value in y to be IL2Ra
+    outVal[8] = 1
+    outVal[9] = 1
+    outVal[16] = 1
+    outVal[17] = 1
 
-    if IL15i is not None:
-        IDX[10:18] = 1
-        IDX[0] = 1 # Also need IL2Ra
-
-    if IL7i is not None:
-        IDX[18:22] = 1
-
-    if IL9i is not None:
-        IDX[22:26] = 1
-
-    return IDX
+    return outVal
