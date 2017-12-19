@@ -20,7 +20,7 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     
     #IL7, IL9 in nM
     IL7Ra, IL7Ra_IL7, gc_IL7, IL7Ra_gc_IL7, IL9R, IL9R_IL9, gc_IL9, IL9R_gc_IL9 = y[18:26] # k25 - k32
-    
+
     # These are probably measured in the literature
     kfbnd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
     k1rev = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
@@ -54,6 +54,7 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev
     k24rev = k13rev * k23rev / k14rev
     # _Based on formation of full complex
+
     k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd
     k20rev = k14rev * k22rev * k24rev / k19rev / k15rev
 
