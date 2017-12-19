@@ -107,19 +107,23 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     return dydt
 
 
-def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, activeV):
+#@jit
+def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg):
     """Implement trafficking."""
 
     dydt = np.zeros_like(y)
 
-    for ii in range(len(y)/2):
-        if activeV[ii] is True:
-            dtraf = trafFunc(activeEndo, y[ii], y[ii + len(y)/2], kRec, kDeg, activeSortF)
-        else:
-            dtraf = trafFunc(endo, y[ii], y[ii + len(y)/2], kRec, kDeg, sortF)
+    halfLen = len(y) // 2
+    internalFrac = 0.1 # TODO: Set to actual value
 
-        dydt[ii] = dtraf[0]
-        dydt[ii + len(y)/2] = dtraf[1]
+    for ii in range(halfLen):
+        if activeV[ii] is True:
+            output = trafFunc(activeEndo, y[ii], y[ii + halfLen], kRec, kDeg, activeSortF, internalFrac)
+        else:
+            output = trafFunc(endo, y[ii], y[ii + halfLen], kRec, kDeg, sortF, internalFrac)
+
+        dydt[ii] = output[0]
+        dydt[ii + halfLen] = output[1]
 
     return dydt
 
@@ -129,37 +133,58 @@ def trafFunc(intRate, extR, intR, kRec, kDeg, fElse, internalFrac):
                      extR*intRate/internalFrac - kRec*(1-fElse)*intR - kDeg*fElse*intR]) # Endocytosis, recycling, degradation
 
 
-def fullModel(y, t, kwargs):
+def fullModel(y, t, endoP, kwargs, IL2i=None, IL15i=None, IL9i=None, IL7i=None):
     """Implement full model."""
     # Initialize vector
-    dydt = np.zeros(26*2 + 4)
+    dydt = np.zeros_like(y)
+
+    IDX = subset_IDX(IL2i, IL15i, IL9i, IL7i)
 
     # Calculate cell surface reactions
-    dydt[0:26] = dy_dt(y[0:26], t, **kwargs)
+    dydt[0:np.sum(IDX)] = subset_wrapper(y[0:np.sum(IDX)], t, IL2i, IL15i, IL9i, IL7i, **kwargs)
 
-    # Make cytokines present in endosome
-    kwargs['IL2'], kwargs['IL15'], kwargs['IL7'], kwargs['IL9'] = y[26:30]
+    # Make cytokines present at endosomal concentrations
+    ii = 0
+    if IL2i is not None:
+        kwargs['IL2'] = y[np.sum(IDX)*2]
+        ii = ii + 1
+
+    if IL15i is not None:
+        kwargs['IL15'] = y[np.sum(IDX)*2 + ii]
+        ii = ii + 1
+
+    if IL9i is not None:
+        kwargs['IL9'] = y[np.sum(IDX)*2 + ii]
+        ii = ii + 1
+
+    if IL7i is not None:
+        kwargs['IL7'] = y[np.sum(IDX)*2 + ii]
+        ii = ii + 1
 
     # Calculate endosomal reactions
-    dydt[30::] = dy_dt(y[30::], t, **kwargs)
+    dydt[np.sum(IDX):np.sum(IDX)*2] = subset_wrapper(y[np.sum(IDX):np.sum(IDX)*2], t, IL2i, IL15i, IL9i, IL7i, **kwargs)
 
     activeV = np.zeros_like(y)
 
     # Handle trafficking
     # Leave off the ligands on the end 
-    dydt = dydt + trafficking(kwargs['endo'], kwargs['activeEndo'], kwargs['sortF'], kwargs['activeSortF'], kwargs['recycle'], activeV)
+    dydt[0:np.sum(IDX)*2] = dydt[0:np.sum(IDX)*2] + trafficking(y[0:np.sum(IDX)*2], activeV, **endoP)
 
+    # Handle endosomal ligand balance.
+    #dydt[-4] = 0.0 # IL2
+    #dydt[-3] = 0.0 # IL15
+    #dydt[-2] = 0.0 # IL7
+    #dydt[-1] = 0.0 # IL9
 
     # TODO: Handle endosomal ligand balance.
 
     return dydt
 
 
-
 def subset_wrapper(y, t, IL2i=None, IL15i=None, IL9i=None, IL7i=None, **kwargs):
     ''' Wrapper function to only handle certain cytokines. '''
 
-    IDX = np.zeros(26, dtype=np.bool)
+    IDX = subset_IDX(IL2i, IL15i, IL9i, IL7i)
     ys = np.zeros(26)
     kw = dict(kwargs)
 
@@ -170,31 +195,47 @@ def subset_wrapper(y, t, IL2i=None, IL15i=None, IL9i=None, IL7i=None, **kwargs):
         kw['IL2'] = 0.0
     else:
         kw['IL2'] = IL2i
-        IDX[0:10] = 1 # Set the first value in y to be IL2Ra
 
     if IL15i is None:
         kw['k15rev'] = kw['k17rev'] = kw['k18rev'] = kw['k22rev'] = kw['k23rev'] = 1.0
         kw['IL15'] = 0.0
     else:
         kw['IL15'] = IL15i
-        IDX[10:18] = 1
-        IDX[0] = 1 # Also need IL2Ra
 
     if IL7i is None:
         kw['k26rev'] = kw['k27rev'] = 1.0
         kw['IL7'] = 0.0
     else:
         kw['IL7'] = IL7i
-        IDX[18:22] = 1
 
     if IL9i is None:
         kw['k29rev'] = kw['k30rev'] = kw['k31rev'] = 1.0
         kw['IL9'] = 0.0
     else:
         kw['IL9'] = IL9i
-        IDX[22:26] = 1
 
     ys[IDX] = y
     ret_val = dy_dt(ys, t, **kw)
 
     return ret_val[IDX]
+
+
+def subset_IDX(IL2i, IL15i, IL9i, IL7i):
+    """ Returns the indexing of values kept after expansion to full model. """
+    IDX = np.zeros(26, dtype=np.bool)
+    IDX[2] = 1 # Always need the gc
+
+    if IL2i is not None:
+        IDX[0:10] = 1 # Set the first value in y to be IL2Ra
+
+    if IL15i is not None:
+        IDX[10:18] = 1
+        IDX[0] = 1 # Also need IL2Ra
+
+    if IL7i is not None:
+        IDX[18:22] = 1
+
+    if IL9i is not None:
+        IDX[22:26] = 1
+
+    return IDX

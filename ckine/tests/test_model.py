@@ -1,5 +1,5 @@
 import unittest
-from ..model import dy_dt
+from ..model import dy_dt, fullModel
 import numpy as np
 from scipy.integrate import odeint
 from ..model import subset_wrapper
@@ -14,7 +14,7 @@ class TestModel(unittest.TestCase):
         self.assertGreater(np.min(X), -1.0E-8)
 
         # Test that it came to equilirbium
-        self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 2E-6)
+        self.assertLess(np.linalg.norm(func(X, 0)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
         species_delta = y - y0
@@ -25,13 +25,14 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args1 = list(np.random.lognormal(0., 1., 17))
-        self.args = tuple(self.args1)
-
         self.argnames = ('IL2', 'IL15', 'IL7', 'IL9', 'kfwd', 'k5rev', 'k6rev', 'k15rev',
                          'k17rev', 'k18rev', 'k22rev', 'k23rev', 'k26rev', 'k27rev',
                          'k29rev', 'k30rev', 'k31rev')
-        self.kwargs = dict(zip(self.argnames, self.args1))
+        self.trafnames = ('endo', 'activeEndo', 'sortF', 'activeSortF', 'kRec', 'kDeg')
+        self.args = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))
+        self.kwargs = dict(zip(self.argnames, self.args))
+        self.endoargs = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))
+        self.kwendo = dict(zip(self.trafnames, self.endoargs))
         # need to convert args from an array to a tuple of numbers
 
     def test_length(self):                        
@@ -55,6 +56,17 @@ class TestModel(unittest.TestCase):
 
         # Assert positive and at equilibrium
         self.assertPosEquilibrium(y[1, :], lambda y, t: dy_dt(y, t, *self.args))
+
+    @settings(deadline=None)
+    @given(y0=harrays(np.float, 26*2 + 4, elements=floats(0, 10)))
+    def test_fullModel(self, y0):
+
+        full_wrap = lambda y, t: fullModel(y, t, self.kwendo, self.kwargs, IL2i=1.0, IL15i=1.0)
+
+        y = odeint(full_wrap, y0, self.ts, mxstep = 5000)
+
+        # Assert positive and at equilibrium
+        self.assertPosEquilibrium(y[1, :], full_wrap)
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 10, elements=floats(0, 100)), args=harrays(np.float, 4, elements=floats(0.0001, 1)))
