@@ -61,7 +61,7 @@ class TestModel(unittest.TestCase):
     @given(y0=harrays(np.float, 26*2 + 4, elements=floats(0, 10)))
     def test_fullModel(self, y0):
 
-        full_wrap = lambda y, t: fullModel(y, t, self.kwendo, self.kwargs, IL2i=1.0, IL15i=1.0)
+        full_wrap = lambda y, t: fullModel(y, t, self.kwendo, self.kwargs, IL2i=1.0, IL15i=1.0, IL7i=1.0, IL9i=1.0)
 
         y = odeint(full_wrap, y0, self.ts, mxstep = 5000)
 

@@ -107,38 +107,40 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     return dydt
 
 
-#@jit
+@jit(nopython=True)
 def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg):
     """Implement trafficking."""
 
-    dydt = np.zeros_like(y)
+    dydt = np.empty_like(y)
 
     halfLen = len(y) // 2
-    internalFrac = 0.1 # TODO: Set to actual value
 
-    for ii in range(halfLen):
-        if activeV[ii] is True:
-            output = trafFunc(activeEndo, y[ii], y[ii + halfLen], kRec, kDeg, activeSortF, internalFrac)
-        else:
-            output = trafFunc(endo, y[ii], y[ii + halfLen], kRec, kDeg, sortF, internalFrac)
+    # Reconstruct a vector of active and inactive trafficking for vectorization
+    endoV = np.empty_like(activeV)
+    sortV = np.empty_like(activeV)
 
-        dydt[ii] = output[0]
-        dydt[ii + halfLen] = output[1]
+    endoV[activeV == 1] = activeEndo
+    endoV[activeV == 0] = endo
+
+    sortV[activeV == 1] = activeSortF
+    sortV[activeV == 0] = sortF
+
+    internalFrac = 0.5 # Same as that used in TAM model
+
+    # Actually calculate the trafficking
+    dydt[0:halfLen] = -y[0:halfLen]*endoV + kRec*(1-sortV)*y[halfLen::]*internalFrac # Endocytosis, recycling
+    dydt[halfLen::] = y[0:halfLen]*endoV/internalFrac - kRec*(1-sortV)*y[halfLen::] - kDeg*sortV*y[halfLen::] # Endocytosis, recycling, degradation
 
     return dydt
-
-@jit(nopython=True)
-def trafFunc(intRate, extR, intR, kRec, kDeg, fElse, internalFrac):
-    return np.array([-extR*intRate + kRec*(1-fElse)*intR*internalFrac, # Endocytosis, recycling
-                     extR*intRate/internalFrac - kRec*(1-fElse)*intR - kDeg*fElse*intR]) # Endocytosis, recycling, degradation
 
 
 def fullModel(y, t, endoP, kwargs, IL2i=None, IL15i=None, IL9i=None, IL7i=None):
     """Implement full model."""
-    # Initialize vector
-    dydt = np.zeros_like(y)
 
     IDX = subset_IDX(IL2i, IL15i, IL9i, IL7i)
+
+    # Initialize vector
+    dydt = np.zeros_like(y)
 
     # Calculate cell surface reactions
     dydt[0:np.sum(IDX)] = subset_wrapper(y[0:np.sum(IDX)], t, IL2i, IL15i, IL9i, IL7i, **kwargs)
@@ -164,11 +166,14 @@ def fullModel(y, t, endoP, kwargs, IL2i=None, IL15i=None, IL9i=None, IL7i=None):
     # Calculate endosomal reactions
     dydt[np.sum(IDX):np.sum(IDX)*2] = subset_wrapper(y[np.sum(IDX):np.sum(IDX)*2], t, IL2i, IL15i, IL9i, IL7i, **kwargs)
 
-    activeV = np.zeros_like(y)
-
     # Handle trafficking
-    # Leave off the ligands on the end 
+    activeV = np.zeros((np.sum(IDX), ), dtype=np.bool)
+
+    # Leave off the ligands on the end
     dydt[0:np.sum(IDX)*2] = dydt[0:np.sum(IDX)*2] + trafficking(y[0:np.sum(IDX)*2], activeV, **endoP)
+
+
+    internalV = 623 # Same as that used in TAM model
 
     # Handle endosomal ligand balance.
     #dydt[-4] = 0.0 # IL2
