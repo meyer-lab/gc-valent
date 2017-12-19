@@ -189,12 +189,25 @@ def solveAutocrine(rxnRates, trafRates):
 
 
 def getActiveSpecies():
-    # TODO: Fill out values for activeV
+    """ Return a vector that indicates which species are active. """
     outVal = np.zeros(26, dtype=np.bool)
 
-    outVal[8] = 1
-    outVal[9] = 1
-    outVal[16] = 1
-    outVal[17] = 1
+    outVal[np.array([8, 9, 16, 17, 21, 25])] = 1
 
     return outVal
+
+
+def getCytokineSpecies():
+    """ Returns a list of vectors for which species are bound to which cytokines. """
+    return list((np.arange(3, 10), np.arange(11, 18), np.arange(19, 22), np.arange(23, 26)))
+
+
+def getActiveCytokine(cytokineIDX, yVec):
+    """ Get amount of active species. """
+    assert(len(yVec) == 26)
+    return np.sum((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]])
+
+
+def getTotalActiveCytokine(cytokineIDX, yVec):
+    """ Get amount of surface and endosomal active species. """
+    return getActiveCytokine(cytokineIDX, yVec[0:26]) + getActiveCytokine(cytokineIDX, yVec[26:26*2])

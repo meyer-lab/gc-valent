@@ -1,5 +1,5 @@
 import unittest
-from ..model import dy_dt, fullModel, solveAutocrine
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine
 import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
     @settings(deadline=None)
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
     def test_conservation(self, y0):
-        dy = dy_dt(y0, self.ts, *self.args)
+        dy = dy_dt(y0, 0.0, *self.args)
         
         #Check for conservation of gc
         self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
@@ -59,3 +59,6 @@ class TestModel(unittest.TestCase):
         yOut = solveAutocrine(self.kwargs, self.kwendo)
 
         self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, self.kwargs, self.kwendo))
+
+        # Autocrine condition assumes no cytokine present, and so no activity
+        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
