@@ -4,6 +4,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
+import copy
 
 
 class TestModel(unittest.TestCase):
@@ -96,7 +97,14 @@ class TestModel(unittest.TestCase):
     def test_fullModel(self):
         yOut = solveAutocrine(self.kwargs, self.kwendo)
 
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, self.kwargs, self.kwendo))
+        kw = copy.deepcopy(self.kwargs)
+
+        kw['IL2'] = 0.
+        kw['IL15'] = 0.
+        kw['IL7'] = 0.
+        kw['IL9'] = 0.
+
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.kwendo))
 
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)

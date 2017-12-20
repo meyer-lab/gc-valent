@@ -1,8 +1,4 @@
-if __name__ == "__main__":
-    from multiprocessing import set_start_method
-    set_start_method('forkserver')
-
-from model import solveAutocrine, fullModel, getTotalActiveCytokine
+from .model import solveAutocrine, fullModel, getTotalActiveCytokine
 from scipy.integrate import odeint
 import numpy as np
 import pandas as pds
@@ -10,7 +6,7 @@ from theano.compile.ops import as_op
 import theano.tensor as T
 import pymc3 as pm
 import copy
-import concurrent.futures
+import os
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
@@ -52,13 +48,11 @@ def IL2_activity_values(unkVec):
     trafRates['kDeg'] = unkVec[5]
     trafRates['exprV'] = np.array([unkVec[7], unkVec[8], unkVec[9], 0.0, 0.0, 0.0], dtype=np.float64)
 
-    yAutocrine = solveAutocrine(copy.deepcopy(rxnRates), trafRates)
+    yAutocrine = solveAutocrine(rxnRates, trafRates)
 
     if 'pool' in globals():
         for ii in range(len(IL2s)):
             output.append(pool.submit(IL2_activity_input, yAutocrine, IL2s[ii], copy.deepcopy(rxnRates), trafRates))
-
-        concurrent.futures.wait(output)
 
         for ii in range(len(IL2s)):
             table[ii, 1] = output[ii].result()
@@ -84,7 +78,8 @@ def IL2_percent_activity(unkVec):
 class IL2_sum_squared_dist:
     
     def load(self):
-        data = pds.read_csv("./data/IL2_IL15_extracted_data.csv") # imports csv file into pandas array
+        path = os.path.dirname(os.path.abspath(__file__))
+        data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")) # imports csv file into pandas array
         self.numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
         
     def calc(self, unkVec):
@@ -123,12 +118,3 @@ class build_model:
             start = pm.find_MAP()
             step = pm.Metropolis()
             self.trace = pm.sample(5000, step, start=start) # 5000 represents the number of steps taken in the walking process
-
-
-if __name__ == "__main__": #only go into this loop if you're running fit.py directly instead of running a file that calls fit.py
-    pool = concurrent.futures.ProcessPoolExecutor()
-
-    M = build_model()
-    M.build()
-    M.sampling()
-    pm.backends.text.dump("IL2_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
