@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
+import copy
 
 try:
     from numba import jit
@@ -114,15 +115,13 @@ def findLigConsume(dydt):
     return -np.array([np.sum(dydt[3:10]), np.sum(dydt[11:18]), np.sum(dydt[19:22]), np.sum(dydt[23:26])]) / internalV
 
 
-#@jit(nopython=True)
-def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
+@jit(nopython=True)
+def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
     """Implement trafficking."""
 
     dydt = np.empty_like(y)
 
     halfLen = len(y) // 2
-
-    activeV = getActiveSpecies()
 
     # Reconstruct a vector of active and inactive trafficking for vectorization
     endoV = np.full_like(activeV, endo)
@@ -149,6 +148,9 @@ def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
 def fullModel(y, t, rxnRates, trafRates):
     """Implement full model."""
 
+    rxnRates = copy.deepcopy(rxnRates)
+    trafRates = copy.deepcopy(trafRates)
+
     # Initialize vector
     dydt = np.zeros_like(y)
 
@@ -165,7 +167,7 @@ def fullModel(y, t, rxnRates, trafRates):
 
     # Handle trafficking
     # _Leave off the ligands on the end
-    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], **trafRates)
+    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], getActiveSpecies(), **trafRates)
 
     # Handle endosomal ligand balance.
     dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
