@@ -7,7 +7,10 @@ import theano.tensor as T
 import pymc3 as pm
 import copy
 import os
+from concurrent.futures import ProcessPoolExecutor
 
+global pool
+pool = ProcessPoolExecutor()
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
 def IL2_activity_input(y0, IL2, rxnRates, trafRates):
@@ -35,9 +38,7 @@ def IL2_activity_values(unkVec):
 
     rxnRates = dict({'IL15':0.0, 'IL7':0.0, 'IL9':0.0, 'k15rev':1.0, 'k17rev':1.0, 'k18rev':1.0,
                      'k22rev':1.0, 'k23rev':1.0, 'k26rev':1.0, 'k27rev':1.0, 'k29rev':1.0, 'k30rev':1.0, 'k31rev':1.0})
-    rxnRates['kfwd'] = unkVec[0]
-    rxnRates['k5rev'] = unkVec[1]
-    rxnRates['k6rev'] = unkVec[2]
+    rxnRates['kfwd'], rxnRates['k5rev'], rxnRates['k6rev'] = unkVec[0:3]
 
     trafRates = dict()
     trafRates['endo'] = unkVec[3]
@@ -50,15 +51,18 @@ def IL2_activity_values(unkVec):
 
     yAutocrine = solveAutocrine(rxnRates, trafRates)
 
-    if 'pool' in globals():
-        for ii in range(len(IL2s)):
-            output.append(pool.submit(IL2_activity_input, yAutocrine, IL2s[ii], copy.deepcopy(rxnRates), trafRates))
+    global pool
 
-        for ii in range(len(IL2s)):
-            table[ii, 1] = output[ii].result()
+    if 'pool' in globals():
+        for ii, ILc in enumerate(IL2s):
+            output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, copy.deepcopy(rxnRates), trafRates))
+
+        for ii, item in enumerate(output):
+            table[ii, 1] = item.result()
     else:
-        for ii in range(len(IL2s)):
-            table[ii, 1] = IL2_activity_input(yAutocrine, IL2s[ii], copy.deepcopy(rxnRates), trafRates)
+        print("Note: Not running parallel.")
+        for ii, ILc in enumerate(IL2s):
+            table[ii, 1] = IL2_activity_input(yAutocrine, ILc, copy.deepcopy(rxnRates), trafRates)
     
     table[:, 0] = IL2s
 

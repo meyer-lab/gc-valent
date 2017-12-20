@@ -1,11 +1,20 @@
+#!/usr/bin/env python3
+
+# Fix an error specific to MacOS
+if __name__ == "__main__":
+    from sys import platform
+    from multiprocessing import set_start_method
+
+    if platform == "darwin":
+        set_start_method('forkserver')
+
+# Set matplotlib backend so python remains in the background
+import matplotlib
+matplotlib.use("Agg")
 from ckine.fit import build_model
 import pymc3 as pm
-import concurrent.futures
-
 
 if __name__ == "__main__": #only go into this loop if you're running fit.py directly instead of running a file that calls fit.py
-    pool = concurrent.futures.ProcessPoolExecutor(max_workers=5)
-
     M = build_model()
     M.build()
     M.sampling()
