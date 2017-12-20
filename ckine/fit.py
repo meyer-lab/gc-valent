@@ -1,3 +1,7 @@
+if __name__ == "__main__":
+    from multiprocessing import set_start_method
+    set_start_method('forkserver')
+
 from model import solveAutocrine, fullModel, getTotalActiveCytokine
 from scipy.integrate import odeint
 import numpy as np
@@ -40,13 +44,13 @@ def IL2_activity_values(unkVec):
     rxnRates['k6rev'] = unkVec[2]
 
     trafRates = dict()
-    trafRates['endo'] = 0.1
-    trafRates['activeEndo'] = 0.4
+    trafRates['endo'] = unkVec[3]
+    trafRates['activeEndo'] = unkVec[6]
     trafRates['sortF'] = 0.1
     trafRates['activeSortF'] = 1.0
-    trafRates['kRec'] = 0.1
-    trafRates['kDeg'] = 0.1
-    trafRates['exprV'] = np.array([unkVec[3], unkVec[4], unkVec[5], 0.0, 0.0, 0.0], dtype=np.float64)
+    trafRates['kRec'] = unkVec[4]
+    trafRates['kDeg'] = unkVec[5]
+    trafRates['exprV'] = np.array([unkVec[7], unkVec[8], unkVec[9], 0.0, 0.0, 0.0], dtype=np.float64)
 
     yAutocrine = solveAutocrine(copy.deepcopy(rxnRates), trafRates)
 
@@ -63,8 +67,6 @@ def IL2_activity_values(unkVec):
             table[ii, 1] = IL2_activity_input(yAutocrine, IL2s[ii], copy.deepcopy(rxnRates), trafRates)
     
     table[:, 0] = IL2s
-
-    print(table)
 
     return table
 
@@ -103,14 +105,15 @@ class build_model:
         
         with self.M:
             rxnrates = pm.Lognormal('rxn', mu=0, sd=3, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            Rexpr = pm.Lognormal('IL2Raexpr', mu=2, sd=2, shape=3)
+            Rexpr = pm.Lognormal('trafR', mu=1, sd=2, shape=4)
+            trafR = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
 
-            unkVec = T.concatenate((rxnrates, Rexpr))
+            unkVec = T.concatenate((rxnrates, trafR, Rexpr))
             
             Y = self.dst.calc(unkVec) # fitting the data based on dst.calc for the given parameters
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
-            
+
             pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
 
             pm.Deterministic('logp', self.M.logpt)
@@ -123,7 +126,7 @@ class build_model:
 
 
 if __name__ == "__main__": #only go into this loop if you're running fit.py directly instead of running a file that calls fit.py
-    #pool = concurrent.futures.ProcessPoolExecutor()
+    pool = concurrent.futures.ProcessPoolExecutor()
 
     M = build_model()
     M.build()
