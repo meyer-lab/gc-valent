@@ -43,8 +43,7 @@ def IL2_activity_values(unkVec):
     trafRates = dict()
     trafRates['endo'] = unkVec[3]
     trafRates['activeEndo'] = unkVec[6]
-    trafRates['sortF'] = 0.1
-    trafRates['activeSortF'] = 1.0
+    trafRates['sortF'] = unkVec[10]
     trafRates['kRec'] = unkVec[4]
     trafRates['kDeg'] = unkVec[5]
     trafRates['exprV'] = np.array([unkVec[7], unkVec[8], unkVec[9], 0.0, 0.0, 0.0], dtype=np.float64)
@@ -106,8 +105,9 @@ class build_model:
             rxnrates = pm.Lognormal('rxn', mu=0, sd=3, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
             trafR = pm.Lognormal('trafR', mu=1, sd=2, shape=4)
             Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
+            sortF = pm.Uniform('sortF')
 
-            unkVec = T.concatenate((rxnrates, trafR, Rexpr))
+            unkVec = T.concatenate((rxnrates, trafR, Rexpr, sortF))
             
             Y = self.dst.calc(unkVec) # fitting the data based on dst.calc for the given parameters
             

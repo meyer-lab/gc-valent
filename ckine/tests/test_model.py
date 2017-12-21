@@ -27,7 +27,7 @@ class TestModel(unittest.TestCase):
         self.argnames = ('IL2', 'IL15', 'IL7', 'IL9', 'kfwd', 'k5rev', 'k6rev', 'k15rev',
                          'k17rev', 'k18rev', 'k22rev', 'k23rev', 'k26rev', 'k27rev',
                          'k29rev', 'k30rev', 'k31rev')
-        self.trafnames = ('endo', 'activeEndo', 'sortF', 'activeSortF', 'kRec', 'kDeg')
+        self.trafnames = ('endo', 'activeEndo', 'sortF', 'kRec', 'kDeg')
         self.args = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))
         self.kwargs = dict(zip(self.argnames, self.args))
         self.endoargs = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))

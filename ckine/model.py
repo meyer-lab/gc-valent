@@ -171,7 +171,8 @@ def fullModel(y, t, r, trafRates):
 
     # Handle trafficking
     # _Leave off the ligands on the end
-    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], getActiveSpecies(), **trafRates)
+    # _Assume active species mostly destroyed
+    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], getActiveSpecies(), activeSortF=1.0, **trafRates)
 
     # Handle endosomal ligand balance.
     dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
