@@ -134,7 +134,7 @@ def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg, ex
     endoV = np.full_like(activeV, endo)
     sortV = np.full_like(activeV, sortF)
 
-    endoV[activeV == 1] = activeEndo
+    endoV[activeV == 1] = activeEndo + endo
     sortV[activeV == 1] = activeSortF
 
     internalFrac = 0.5 # Same as that used in TAM model

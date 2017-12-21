@@ -103,11 +103,15 @@ class build_model:
         
         with self.M:
             rxnrates = pm.Lognormal('rxn', mu=0, sd=3, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            trafR = pm.Lognormal('trafR', mu=1, sd=2, shape=4)
+            endo = pm.Lognormal('endo', mu=1, sd=2)
+            kRec = pm.Lognormal('kRec', mu=1, sd=2)
+            kDeg = pm.Lognormal('kDeg', mu=1, sd=2)
+            activeEndo = pm.Lognormal('activeEndo', mu=1, sd=2)
+            
             Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
-            sortF = pm.Uniform('sortF')
+            sortF = pm.Beta('sortF', alpha=2, beta=5)
 
-            unkVec = T.concatenate((rxnrates, trafR, Rexpr, sortF))
+            unkVec = T.concatenate((rxnrates, endo, kRec, kDeg, activeEndo, Rexpr, sortF))
             
             Y = self.dst.calc(unkVec) # fitting the data based on dst.calc for the given parameters
             
