@@ -104,8 +104,8 @@ class build_model:
         
         with self.M:
             rxnrates = pm.Lognormal('rxn', mu=0, sd=3, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            Rexpr = pm.Lognormal('trafR', mu=1, sd=2, shape=4)
-            trafR = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
+            trafR = pm.Lognormal('trafR', mu=1, sd=2, shape=4)
+            Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
 
             unkVec = T.concatenate((rxnrates, trafR, Rexpr))
             
