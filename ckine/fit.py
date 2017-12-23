@@ -1,16 +1,10 @@
 from .model import solveAutocrine, fullModel, getTotalActiveCytokine
 from scipy.integrate import odeint
-import numpy as np
-import pandas as pds
-from theano.compile.ops import as_op
-import theano.tensor as T
-import pymc3 as pm
-import copy
-import os
-from concurrent.futures import ProcessPoolExecutor
+import numpy as np, pandas as pds
+from .differencing_op import centralDiff, centralDiffGrad
+import pymc3 as pm, theano.tensor as T
+import copy, os
 
-global pool
-pool = ProcessPoolExecutor()
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
 def IL2_activity_input(y0, IL2, rxnRates, trafRates):
@@ -26,69 +20,48 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
 
     return getTotalActiveCytokine(0, ys[1, :])
 
-# this takes all the desired IL2 values we want to test and gives us the maximum activity value
-# IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
-# need the theano decorator to get around the fact that there are if-else statements when running odeint but
-#  we don't necessarily know the values for the rxn rates when we call our model
-@as_op(itypes=[T.dvector], otypes=[T.dmatrix])
-def IL2_activity_values(unkVec):
-    IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
-    table = np.zeros((8, 2))
-    output = list()
 
+def IL2_convertRates(unkVec):
     rxnRates = dict({'IL15':0.0, 'IL7':0.0, 'IL9':0.0, 'k15rev':1.0, 'k17rev':1.0, 'k18rev':1.0,
                      'k22rev':1.0, 'k23rev':1.0, 'k26rev':1.0, 'k27rev':1.0, 'k29rev':1.0, 'k30rev':1.0, 'k31rev':1.0})
     rxnRates['kfwd'], rxnRates['k5rev'], rxnRates['k6rev'] = unkVec[0:3]
 
-    trafRates = dict()
-    trafRates['endo'] = unkVec[3]
-    trafRates['activeEndo'] = unkVec[6]
-    trafRates['sortF'] = unkVec[10]
-    trafRates['kRec'] = unkVec[4]
-    trafRates['kDeg'] = unkVec[5]
-    trafRates['exprV'] = np.array([unkVec[7], unkVec[8], unkVec[9], 0.0, 0.0, 0.0], dtype=np.float64)
+    tfR = dict()
+    tfR['endo'], tfR['kRec'], tfR['kDeg'], tfR['activeEndo'] = unkVec[3:7]
+    tfR['sortF'] = unkVec[10]
+    tfR['exprV'] = np.array([unkVec[7], unkVec[8], unkVec[9], 0.0, 0.0, 0.0], dtype=np.float64)
 
-    yAutocrine = solveAutocrine(rxnRates, trafRates)
-
-    global pool
-
-    if 'pool' in globals():
-        for ii, ILc in enumerate(IL2s):
-            output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, copy.deepcopy(rxnRates), trafRates))
-
-        for ii, item in enumerate(output):
-            table[ii, 1] = item.result()
-    else:
-        print("Note: Not running parallel.")
-        for ii, ILc in enumerate(IL2s):
-            table[ii, 1] = IL2_activity_input(yAutocrine, ILc, copy.deepcopy(rxnRates), trafRates)
-    
-    table[:, 0] = IL2s
-
-    return table
+    return (rxnRates, tfR)
 
 
-def IL2_percent_activity(unkVec):
-    values = IL2_activity_values(unkVec)
-    maximum = T.max(values[:,1], 0) # find the max value in the second column for all rows
-
-    new_table = T.stack((values[:, 0], 100. * values[:, 1] / maximum), axis=1) # IL2 values in first column are the same
-    # activity values in second column are converted to percents relative to maximum
-    
-    return new_table
-
-
+# this takes all the desired IL2 values we want to test and gives us the maximum activity value
+# IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
+# need the theano decorator to get around the fact that there are if-else statements when running odeint but
+#  we don't necessarily know the values for the rxn rates when we call our model
 class IL2_sum_squared_dist:
-    
     def load(self):
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")) # imports csv file into pandas array
         self.numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
+        self.IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
+        self.concs = len(self.IL2s)
         
     def calc(self, unkVec):
-        activity_table = IL2_percent_activity(unkVec)
-        diff_data = self.numpy_data[:,6] - activity_table[:,1] # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
-        return np.squeeze(diff_data)
+        # Convert the vector of values to dicts
+        rxnRates, tfR = IL2_convertRates(unkVec)
+
+        # Find autocrine state
+        yAutocrine = solveAutocrine(rxnRates, tfR)
+
+        # Loop over concentrations of IL2
+        actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, copy.deepcopy(rxnRates), tfR) for ILc in self.IL2s),
+                             np.float64, count=self.concs)
+
+        # Normalize to the maximal activity
+        actVec = actVec / np.max(actVec)
+
+        # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
+        return np.squeeze(self.numpy_data[:, 6] - actVec)
 
 
 class build_model:
@@ -111,9 +84,12 @@ class build_model:
             Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
             sortF = pm.Beta('sortF', alpha=2, beta=5)
 
-            unkVec = T.concatenate((rxnrates, endo, kRec, kDeg, activeEndo, Rexpr, sortF))
+            unkVec = T.concatenate((rxnrates, T.stack((endo, kRec, kDeg, activeEndo)), Rexpr, T.stack(sortF)))
             
-            Y = self.dst.calc(unkVec) # fitting the data based on dst.calc for the given parameters
+            Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
+
+            #dY = centralDiffGrad(self.dst)(unkVec)
+            #pm.Deterministic('dY', dY)
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
