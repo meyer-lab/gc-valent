@@ -87,9 +87,6 @@ class build_model:
             unkVec = T.concatenate((rxnrates, T.stack((endo, kRec, kDeg, activeEndo)), Rexpr, T.stack(sortF)))
             
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
-
-            #dY = centralDiffGrad(self.dst)(unkVec)
-            #pm.Deterministic('dY', dY)
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
