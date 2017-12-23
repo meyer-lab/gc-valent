@@ -1,7 +1,7 @@
 from .model import solveAutocrine, fullModel, getTotalActiveCytokine
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
-from .differencing_op import centralDiff, centralDiffGrad
+from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T
 import copy, os
 
@@ -46,7 +46,7 @@ class IL2_sum_squared_dist:
         self.IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
         self.concs = len(self.IL2s)
         
-    def calc(self, unkVec):
+    def calc(self, unkVec, pool=None):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
 
@@ -54,8 +54,16 @@ class IL2_sum_squared_dist:
         yAutocrine = solveAutocrine(rxnRates, tfR)
 
         # Loop over concentrations of IL2
-        actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, copy.deepcopy(rxnRates), tfR) for ILc in self.IL2s),
-                             np.float64, count=self.concs)
+        if pool is None:
+            actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, copy.deepcopy(rxnRates), tfR) for ILc in self.IL2s),
+                                 np.float64, count=self.concs)
+        else:
+            output = list()
+
+            for _, ILc in enumerate(self.IL2s):
+                output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, copy.deepcopy(rxnRates), tfR))
+
+            actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
 
         # Normalize to the maximal activity
         actVec = actVec / np.max(actVec)
@@ -76,10 +84,10 @@ class build_model:
         
         with self.M:
             rxnrates = pm.Lognormal('rxn', mu=0, sd=3, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            endo = pm.Lognormal('endo', mu=1, sd=2)
+            endo = pm.Lognormal('endo', mu=0, sd=1)
             kRec = pm.Lognormal('kRec', mu=1, sd=2)
             kDeg = pm.Lognormal('kDeg', mu=1, sd=2)
-            activeEndo = pm.Lognormal('activeEndo', mu=1, sd=2)
+            activeEndo = pm.Lognormal('activeEndo', mu=1, sd=1)
             
             Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
             sortF = pm.Beta('sortF', alpha=2, beta=5)
