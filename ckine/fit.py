@@ -96,6 +96,4 @@ class build_model:
     
     def sampling(self):
         with self.M:
-            start = pm.find_MAP()
-            step = pm.Metropolis()
-            self.trace = pm.sample(5000, step, start=start) # 5000 represents the number of steps taken in the walking process
+            self.trace = pm.sample(500) # 500 represents the number of steps taken in the walking process
