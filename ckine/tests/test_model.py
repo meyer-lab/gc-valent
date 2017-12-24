@@ -93,10 +93,6 @@ class TestModel(unittest.TestCase):
 
         yOut2 = solveAutocrineComplete(self.args, self.tfargs)
 
-        print(self.tfargs[np.array([0, 2, 3, 4])])
-
-        print((yOut / yOut2)[np.array([0, 26])])
-
         kw = self.args.copy()
 
         kw[0:4] = 0.

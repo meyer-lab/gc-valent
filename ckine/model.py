@@ -136,13 +136,13 @@ def trafficking(y, activeV, tfR, exprV):
     halfLen = len(y) // 2
 
     # Reconstruct a vector of active and inactive trafficking for vectorization
-    endoV = np.full_like(activeV, endo)
-    sortV = np.full_like(activeV, sortF)
+    endoV = np.full(activeV.shape, endo, dtype=np.float64)
+    sortV = np.full(activeV.shape, sortF, dtype=np.float64)
 
     endoV[activeV == 1] = activeEndo + endo
     sortV[activeV == 1] = 1.0 # Assume all active receptor is degraded
-    recV = kRec*(1-sortV)
-    degV = kDeg*sortV
+    recV = kRec * (1.0 - sortV)
+    degV = kDeg * sortV
 
     R = y[0:halfLen]
     Ri = y[halfLen::]
@@ -187,6 +187,7 @@ def fullModel(y, t, r, tfR, active_species_IDX):
     return dydt
 
 
+@jit(float64[52](float64[11]))
 def solveAutocrine(trafRates):
     y0 = np.zeros(26*2 + 4, np.float64)
 
@@ -206,8 +207,8 @@ def solveAutocrine(trafRates):
 
     # Assuming no autocrine ligand, so can solve steady state
     # Add the species
-    y0[recIDX + 26] = expr / kDeg / internalFrac * sortF
-    y0[recIDX] = y0[recIDX + 26] * (kRec + kDeg) / endo * internalFrac
+    y0[recIDX + 26] = expr / kDeg / internalFrac
+    y0[recIDX] = (expr + kRec*y0[recIDX + 26]*internalFrac)/endo
     # TODO: Check this math
 
     return y0
