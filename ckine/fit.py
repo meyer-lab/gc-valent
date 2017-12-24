@@ -44,31 +44,49 @@ class IL2_sum_squared_dist:
         self.numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
         self.IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
         self.concs = len(self.IL2s)
+        self.fit_data = np.concatenate((self.numpy_data[:, 6], self.numpy_data[:, 2]))
         
     def calc(self, unkVec, pool=None):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
 
+        # IL2Ra- cells
+        tfR2 = tfR.copy()
+        tfR2[5] = 0.0
+
         # Find autocrine state
         yAutocrine = solveAutocrine(rxnRates, tfR)
+        yAutocrine2 = solveAutocrine(rxnRates, tfR2)
 
         # Loop over concentrations of IL2
         if pool is None:
             actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, rxnRates.copy(), tfR) for ILc in self.IL2s),
                                  np.float64, count=self.concs)
+
+            actVec2 = np.fromiter((IL2_activity_input(yAutocrine2, ILc, rxnRates.copy(), tfR2) for ILc in self.IL2s),
+                                  np.float64, count=self.concs)
         else:
             output = list()
+            output2 = list()
 
             for _, ILc in enumerate(self.IL2s):
                 output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
 
+            for _, ILc in enumerate(self.IL2s):
+                output2.append(pool.submit(IL2_activity_input, yAutocrine2, ILc, rxnRates.copy(), tfR2))
+
             actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
+            actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
 
         # Normalize to the maximal activity
         actVec = actVec / np.max(actVec)
+        actVec2 = actVec2 / np.max(actVec2)
+
+        # Put together into one vector
+        actVec = np.concatenate((actVec, actVec2))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
-        return np.squeeze(self.numpy_data[:, 6] - actVec)
+        return np.squeeze(self.fit_data - actVec)
 
 
 class build_model:
