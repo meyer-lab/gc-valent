@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
+import copy
 
 try:
     from numba import jit, float64, boolean as numbabool
