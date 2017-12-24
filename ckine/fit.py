@@ -1,15 +1,16 @@
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine
+from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T
-import copy, os
+import os
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
 def IL2_activity_input(y0, IL2, rxnRates, trafRates):
-    rxnRates['IL2'] = IL2
-    ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates)
+    rxnRates[0] = IL2
+
+    ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
     ts = np.linspace(0., 500, 2)
 
     ys, infodict = odeint(ddfunc, y0, ts, mxstep=6000, full_output=True)
@@ -22,14 +23,12 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
 
 
 def IL2_convertRates(unkVec):
-    rxnRates = dict({'IL15':0.0, 'IL7':0.0, 'IL9':0.0, 'k15rev':1.0, 'k17rev':1.0, 'k18rev':1.0,
-                     'k22rev':1.0, 'k23rev':1.0, 'k26rev':1.0, 'k27rev':1.0, 'k29rev':1.0, 'k30rev':1.0, 'k31rev':1.0})
-    rxnRates['kfwd'], rxnRates['k5rev'], rxnRates['k6rev'] = unkVec[0:3]
+    rxnRates = np.ones(17, dtype=np.float64)
+    rxnRates[4:7] = unkVec[0:3] # kfwd, k5rev, k6rev
+    rxnRates[0:4] = 0.0 # ligands
 
-    tfR = dict()
-    tfR['endo'], tfR['kRec'], tfR['kDeg'], tfR['activeEndo'] = unkVec[3:7]
-    tfR['sortF'] = unkVec[10]
-    tfR['exprV'] = np.array([unkVec[7], unkVec[8], unkVec[9], 0.0, 0.0, 0.0], dtype=np.float64)
+    tfR = np.zeros(11, dtype=np.float64)
+    tfR[0:8] = unkVec[3:11]
 
     return (rxnRates, tfR)
 
@@ -55,13 +54,13 @@ class IL2_sum_squared_dist:
 
         # Loop over concentrations of IL2
         if pool is None:
-            actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, copy.deepcopy(rxnRates), tfR) for ILc in self.IL2s),
+            actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, rxnRates.copy(), tfR) for ILc in self.IL2s),
                                  np.float64, count=self.concs)
         else:
             output = list()
 
             for _, ILc in enumerate(self.IL2s):
-                output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, copy.deepcopy(rxnRates), tfR))
+                output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
 
             actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
 
@@ -92,7 +91,7 @@ class build_model:
             Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
             sortF = pm.Beta('sortF', alpha=2, beta=5)
 
-            unkVec = T.concatenate((rxnrates, T.stack((endo, kRec, kDeg, activeEndo)), Rexpr, T.stack(sortF)))
+            unkVec = T.concatenate((rxnrates, T.stack((endo, activeEndo, sortF, kRec, kDeg)), Rexpr))
             
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
             
