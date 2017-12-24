@@ -141,18 +141,20 @@ def trafficking(y, activeV, tfR, exprV):
 
     endoV[activeV == 1] = activeEndo + endo
     sortV[activeV == 1] = 1.0 # Assume all active receptor is degraded
+    recV = kRec*(1-sortV)
+    degV = kDeg*sortV
+
+    R = y[0:halfLen]
+    Ri = y[halfLen::]
 
     internalFrac = 0.5 # Same as that used in TAM model
 
     # Actually calculate the trafficking
-    dydt[0:halfLen] = -y[0:halfLen]*endoV + kRec*(1-sortV)*y[halfLen::]*internalFrac # Endocytosis, recycling
-    dydt[halfLen::] = y[0:halfLen]*endoV/internalFrac - kRec*(1-sortV)*y[halfLen::] - kDeg*sortV*y[halfLen::] # Endocytosis, recycling, degradation
+    dydt[0:halfLen] = -R*endoV + recV*Ri*internalFrac # Endocytosis, recycling
+    dydt[halfLen::] = R*endoV/internalFrac - recV*Ri - degV*Ri # Endocytosis, recycling, degradation
 
     # Expression
-    dydt[0:3] = dydt[0:3] + exprV[0:3] # IL2Ra, IL2Rb, gc
-    dydt[10] = dydt[10] + exprV[3] # IL15Ra
-    dydt[18] = dydt[18] + exprV[4] # IL7Ra
-    dydt[22] = dydt[22] + exprV[5] # IL9R
+    dydt[np.array([0, 1, 2, 10, 18, 22])] += exprV # IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R
 
     return dydt
 
@@ -177,7 +179,7 @@ def fullModel(y, t, r, tfR, active_species_IDX):
 
     # Handle trafficking
     # _Leave off the ligands on the end
-    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], active_species_IDX, tfR[0:5], tfR[5:11])
+    dydt[0:rxnL*2] += trafficking(y[0:rxnL*2], active_species_IDX, tfR[0:5], tfR[5:11])
 
     # Handle endosomal ligand balance.
     dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
@@ -185,7 +187,33 @@ def fullModel(y, t, r, tfR, active_species_IDX):
     return dydt
 
 
-def solveAutocrine(rxnRates, trafRates):
+def solveAutocrine(trafRates):
+    y0 = np.zeros(26*2 + 4, np.float64)
+
+    recIDX = np.array([0, 1, 2, 10, 18, 22], np.int)
+
+    # Expr
+    expr = trafRates[5:11]
+
+    internalFrac = 0.5 # Same as that used in TAM model
+
+    # Expand out trafficking terms
+    endo, sortF, kRec, kDeg = trafRates[np.array([0, 2, 3, 4])]
+
+    # Correct for sorting fraction
+    kRec = kRec*(1-sortF)
+    kDeg = kDeg*sortF
+
+    # Assuming no autocrine ligand, so can solve steady state
+    # Add the species
+    y0[recIDX + 26] = expr / kDeg / internalFrac * sortF
+    y0[recIDX] = y0[recIDX + 26] * (kRec + kDeg) / endo * internalFrac
+    # TODO: Check this math
+
+    return y0
+
+
+def solveAutocrineComplete(rxnRates, trafRates):
     rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
 
