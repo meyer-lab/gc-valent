@@ -4,6 +4,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
+import copy
 
 np.random.seed(seed=1)
 
