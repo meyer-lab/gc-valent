@@ -119,12 +119,16 @@ class build_model:
 
             pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
 
-            unkVecp = printing.Print('u-print')(unkVec)
-            unkVecc = ifelse(T.isnan(self.M.logpt), unkVecp, unkVec)
-
+            # Save likelihood
             pm.Deterministic('logp', self.M.logpt)
-            pm.Deterministic('unkVec', unkVecc)
     
     def sampling(self):
         with self.M:
-            self.trace = pm.sample(500) # 500 represents the number of steps taken in the walking process
+            try:
+                self.trace = pm.sample(draws=500)
+            except ValueError:
+                # Something went wrong, so print out the variables.
+                for RV in self.M.basic_RVs:
+                    print(RV.name, RV.logp(self.M.test_point))
+
+                raise
