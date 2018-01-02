@@ -2,10 +2,7 @@ from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_s
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
-import pymc3 as pm, theano.tensor as T
-from theano.ifelse import ifelse
-import os
-from theano import printing
+import pymc3 as pm, theano.tensor as T, os
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
@@ -130,5 +127,8 @@ class build_model:
                 # Something went wrong, so print out the variables.
                 for RV in self.M.basic_RVs:
                     print(RV.name, RV.logp(self.M.test_point))
+
+                print("Test point:")
+                print(self.M.test_point)
 
                 raise

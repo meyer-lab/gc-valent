@@ -1,5 +1,4 @@
-import theano.tensor as T
-import numpy as np
+import numpy as np, theano.tensor as T
 from concurrent.futures import ProcessPoolExecutor
 
 
