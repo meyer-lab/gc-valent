@@ -122,12 +122,9 @@ class build_model:
     def sampling(self):
         with self.M:
             try:
-                self.trace = pm.sample(draws=500)
+                self.trace = pm.sample(draws=500, init='advi+adapt_diag')
             except ValueError:
                 # Something went wrong, so print out the variables.
-                for RV in self.M.basic_RVs:
-                    print(RV.name, RV.logp(self.M.test_point))
-
                 print("Test point:")
                 print(self.M.test_point)
 
