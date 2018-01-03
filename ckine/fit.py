@@ -12,7 +12,7 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
     ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
     ts = np.linspace(0., 500, 2)
 
-    ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True)
+    ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
 
     if infodict['tcur'] < np.max(ts):
         print("IL2 conc: " + str(IL2))
