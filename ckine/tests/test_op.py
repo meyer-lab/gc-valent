@@ -12,6 +12,6 @@ class TestOp(unittest.TestCase):
 
         Opp = centralDiff(mdl, parallel=False)
 
-        XX = np.ones(11, dtype=np.float64)
+        XX = np.full(11, 0.5, dtype=np.float64)
 
         utt.verify_grad(Opp, [XX])
