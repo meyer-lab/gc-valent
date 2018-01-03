@@ -17,6 +17,7 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
     if infodict['tcur'] < np.max(ts):
         print("IL2 conc: " + str(IL2))
         printModel(rxnRates, trafRates)
+        print(infodict)
         return -100
 
     return getTotalActiveCytokine(0, ys[1, :])
