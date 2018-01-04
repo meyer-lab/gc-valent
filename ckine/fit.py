@@ -100,22 +100,19 @@ class build_model:
         self.M = pm.Model()
         
         with self.M:
-            rxnrates = pm.Lognormal('rxn', mu=0, sd=2, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=1)
-            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=1)
-            kDeg = pm.Lognormal('kDeg', mu=np.log(0.1), sd=1)
-            activeEndo = pm.Lognormal('activeEndo', mu=np.log(0.1), sd=1)
-            
-            Rexpr = pm.Lognormal('IL2Raexpr', mu=np.log(10), sd=1, shape=3)
-            sortF = pm.Beta('sortF', alpha=2, beta=7)
+            rxnrates = pm.Lognormal('rxn', sd=2., shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
+            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3)
+            sortF = T.as_tensor_variable(0.1) # pm.Beta('sortF', alpha=2, beta=7)
 
-            unkVec = T.concatenate((rxnrates, T.stack((endo, activeEndo, sortF, kRec, kDeg)), Rexpr))
+            unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
             
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
-            pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
+            pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
 
             # Save likelihood
             pm.Deterministic('logp', self.M.logpt)
