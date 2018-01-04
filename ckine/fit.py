@@ -127,8 +127,12 @@ class build_model:
             except ValueError:
                 # Something went wrong, so print out the variables.
                 print("Test point:")
-                print(self.M.test_point)
-                print(self.M.logp(self.M.test_point))
-                print(self.M.dlogp(self.M.test_point))
+                point = self.M.test_point
+                logp = self.M.logp
+                dlogp = self.M.dlogp()
+
+                print(point)
+                print(logp(point))
+                print(dlogp(point))
 
                 raise
