@@ -98,7 +98,7 @@ class build_model:
     
     def build(self):
         M = pm.Model()
-        
+
         with M:
             rxnrates = pm.Lognormal('rxn', sd=1., shape=3, testval=[0.1, 0.1, 0.1]) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
@@ -139,4 +139,3 @@ class build_model:
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
-
