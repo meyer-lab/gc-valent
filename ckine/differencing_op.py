@@ -103,3 +103,9 @@ class centralDiffGrad(T.Op):
             jac[i] = (self.M.calc_reduce(item) - f0)/epsilon
 
         outputs[0][0] = np.transpose(jac)
+
+    def grad(self, inputs, g):
+        raise RuntimeError("Someone just looked for the grad of grad. No hessians here!")
+        graddf = self.dg(inputs[0])
+
+        return [T.dot(g[0], graddf)]
