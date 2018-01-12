@@ -23,11 +23,11 @@ def IL15_activity_input(y0, IL15, rxnRates, trafRates):
 
 def IL15_convertRates(unkVec):
     rxnRates = np.ones(17, dtype=np.float64)
-    rxnRates[7:12] = unkVec[0:6] # k15rev, k17rev, k18rev, k22rev, k23rev
+    rxnRates[7:12] = unkVec[0:5] # k15rev, k17rev, k18rev, k22rev, k23rev
     rxnRates[0:4] = 0.0 # ligands
 
-    tfR = np.zeros(8, dtype=np.float64)
-    tfR[0:8] = unkVec[6:14]
+    tfR = np.zeros(11, dtype=np.float64)
+    tfR[0:9] = unkVec[5:14]
 
     return (rxnRates, tfR)
 
@@ -35,7 +35,7 @@ def IL15_convertRates(unkVec):
 # IL15 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
 # need the theano decorator to get around the fact that there are if-else statements when running odeint but
 #  we don't necessarily know the values for the rxn rates when we call our model
-class IL2_sum_squared_dist:
+class IL15_sum_squared_dist:
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")) # imports csv file into pandas array
@@ -44,7 +44,7 @@ class IL2_sum_squared_dist:
         self.concs = len(self.IL15s)
         self.fit_data = np.concatenate((self.numpy_data[:, 7], self.numpy_data[:, 3]))
 
-def calc_schedule(self, unkVec, pool):
+    def calc_schedule(self, unkVec, pool):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL15_convertRates(unkVec)
 
@@ -68,7 +68,7 @@ def calc_schedule(self, unkVec, pool):
 
         return (output, output2)
 
-def calc_reduce(self, inT):
+    def calc_reduce(self, inT):
         output, output2 = inT
 
         actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
@@ -76,15 +76,21 @@ def calc_reduce(self, inT):
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
+        print(actVec)
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
+    
+    def calc(self, unkVec, pool):
+        """ Just get the solution in one pass. """
+        inT = self.calc_schedule(unkVec, pool)
+        return self.calc_reduce(inT)
 
 class build_model:
     
     # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
     def __init__(self):
-        self.dst = IL2_sum_squared_dist()
+        self.dst = IL15_sum_squared_dist()
         self.M = self.build()
     
     def build(self):
@@ -94,7 +100,7 @@ class build_model:
             rxnrates = pm.Lognormal('rxn', sd=1., shape=5, testval=[0.1, 0.1, 0.1,0.1,0.1]) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
-            Rexpr = pm.Lognormal('IL15Raexpr', sd=1., shape=3, testval=[1., 1., 1.])
+            Rexpr = pm.Lognormal('IL15Raexpr', sd=1., shape=4, testval=[1., 1., 1.,1.])
             sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
@@ -110,7 +116,7 @@ class build_model:
 
         return M
 
-def sampling(self):
+    def sampling(self):
         with self.M:
             try:
                 self.trace = pm.sample()
@@ -127,6 +133,6 @@ def sampling(self):
 
                 raise
                 
-def profile(self):
+    def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
