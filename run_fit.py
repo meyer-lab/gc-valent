@@ -19,3 +19,4 @@ if __name__ == "__main__": #only go into this loop if you're running fit.py dire
     M.build()
     M.sampling()
     pm.backends.text.dump("IL15_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
+    
