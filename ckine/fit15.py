@@ -78,7 +78,7 @@ class IL15_sum_squared_dist:
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
         print(actVec)
-
+        print(len(actVec))
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     
