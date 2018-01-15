@@ -49,35 +49,24 @@ class IL15_sum_squared_dist:
         # Convert the vector of values to dicts
         rxnRates, tfR = IL15_convertRates(unkVec)
 
-        # IL2Ra- cells
-        tfR2 = tfR.copy()
-        tfR2[5] = 0.0
+        # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
 
         # Find autocrine state
         yAutocrine = solveAutocrine(tfR)
-        yAutocrine2 = solveAutocrine(tfR2)
 
         # Loop over concentrations of IL2
         output = list()
-        output2 = list()
 
         for _, ILc in enumerate(self.IL15s):
             output.append(pool.submit(IL15_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
 
-        for _, ILc in enumerate(self.IL15s):
-            output2.append(pool.submit(IL15_activity_input, yAutocrine2, ILc, rxnRates.copy(), tfR2))
-
-        return (output, output2)
+        return output
 
     def calc_reduce(self, inT):
-        output, output2 = inT
-
-        actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
-        actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
+        actVec = np.fromiter((item.result() for item in inT), np.float64, count=self.concs)
 
         # Normalize to the maximal activity, put together into one vector
-        actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
-        print(actVec)
+        actVec = np.concatenate((actVec / np.max(actVec), actVec / np.max(actVec)))
         
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
