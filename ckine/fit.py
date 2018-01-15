@@ -76,7 +76,7 @@ class IL2_sum_squared_dist:
 
         actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
         actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
-        
+
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
 
