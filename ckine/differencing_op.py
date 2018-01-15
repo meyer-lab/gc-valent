@@ -40,7 +40,7 @@ class centralDiff(T.Op):
 
         if parallel:
             self.parallel = True
-            self.pool = DummyExecutor()
+            self.pool = ProcessPoolExecutor()
         else:
             self.parallel = False
             self.pool = DummyExecutor()
