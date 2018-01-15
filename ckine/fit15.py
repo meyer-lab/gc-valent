@@ -20,7 +20,7 @@ def IL15_activity_input(y0, IL15, rxnRates, trafRates):
         print(infodict)
         return -100
 
-    return getTotalActiveCytokine(0, ys[1, :])
+    return getTotalActiveCytokine(1, ys[1, :])
 
 def IL15_convertRates(unkVec):
     rxnRates = np.ones(17, dtype=np.float64)
@@ -78,7 +78,7 @@ class IL15_sum_squared_dist:
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
         print(actVec)
-        print(len(actVec))
+        
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     
