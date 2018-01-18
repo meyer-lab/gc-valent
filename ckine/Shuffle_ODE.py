@@ -1,8 +1,6 @@
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel
+from .model import solveAutocrine, fullModel, __active_species_IDX
 from scipy.integrate import odeint
-import numpy as np, pandas as pds
-from .differencing_op import centralDiff
-import pymc3 as pm, theano.tensor as T, os
+import numpy as np
 
 _epsilon = np.sqrt(np.finfo(float).eps)
 
@@ -37,5 +35,5 @@ def approx_jacobian(x,func,epsilon,*args):
 trafRates = np.array([1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.])
 t = np.array([0.0, 100000.0])
 rxnRates = np.array([1.,1.,1.,1.,1.])
-y = np.ones(52)
+y = np.ones(56)
 approx_jacobian( solveAutocrine(trafRates) , fullModel, _epsilon, y, t, rxnRates, trafRates, __active_species_IDX)
