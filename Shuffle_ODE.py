@@ -6,17 +6,14 @@ def approx_jacobian():
     """Approximate the Jacobian matrix of callable function func
 
        * Parameters
-         x       - The state vector at which the Jacobian matrix is desired
-         func    - A vector-valued function of the form f(x,*args)
-         epsilon - The peturbation used to determine the partial derivatives
-         *args   - Additional arguments passed to func
+         None
 
        * Returns
          An array of dimensions (lenf, lenx) where lenf is the length
          of the outputs of func, and lenx is the number of
 
        * Notes
-         The approximation is done using forward differences
+         The approximation is done using forward differences. func in this case is the fullModel function from the main model file. 
 
     """
     active_species_IDX = __active_species_IDX
