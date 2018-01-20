@@ -14,6 +14,8 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
 
     ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
 
+    assert(ys.size == 56*2)
+
     if infodict['tcur'] < np.max(ts):
         print("IL2 conc: " + str(IL2))
         printModel(rxnRates, trafRates)

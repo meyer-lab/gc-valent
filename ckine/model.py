@@ -159,7 +159,7 @@ def trafficking(y, activeV, tfR, exprV):
     return dydt
 
 
-@jit(float64[52](float64[52], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
+@jit(float64[56](float64[56], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
 def fullModel(y, t, r, tfR, active_species_IDX):
     """Implement full model."""
 
@@ -182,7 +182,7 @@ def fullModel(y, t, r, tfR, active_species_IDX):
     dydt[0:rxnL*2] += trafficking(y[0:rxnL*2], active_species_IDX, tfR[0:5], tfR[5:11])
 
     # Handle endosomal ligand balance.
-    dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
+    dydt[rxnL*2:(rxnL*2+4)] = findLigConsume(dydt[rxnL:rxnL*2])
 
     return dydt
 
@@ -206,7 +206,7 @@ def printModel(rxnRates, trafRates):
     print(rxnRates[7::])
 
 
-@jit(float64[52](float64[11]))
+@jit(float64[56](float64[11]))
 def solveAutocrine(trafRates):
     y0 = np.zeros(26*2 + 4, np.float64)
 

@@ -86,7 +86,7 @@ class centralDiffGrad(T.Op):
         if np.any(np.isclose(f0, -100.)):
             raise RuntimeError("Activity calculation failed so not able to evaluate gradient.")
 
-        epsilon = 1.0E-7
+        epsilon = 1.0E-4
 
         output = list()
 
