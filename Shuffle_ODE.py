@@ -32,6 +32,4 @@ def approx_jacobian():
     return jac.transpose()
 
 a = approx_jacobian()
-np.savetxt('Nonzero Boolean', a, delimiter=',')
-print(a)
-print(a != 0)
+np.savetxt('Nonzero Boolean.csv', (a != 0).astype(np.int), fmt='%d', delimiter=' ')
