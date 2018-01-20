@@ -17,6 +17,12 @@ __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
 
 
+__IL2_assoc = np.zeros(56, dtype=np.bool)
+__IL2_assoc[0:10] = 1
+__IL2_assoc[26:36] = 1
+__IL2_assoc[52] = 1
+
+
 @jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
 def dy_dt(y, t, rxn):
     # Set the constant inputs
@@ -185,6 +191,19 @@ def fullModel(y, t, r, tfR, active_species_IDX):
     dydt[rxnL*2:(rxnL*2+4)] = findLigConsume(dydt[rxnL:rxnL*2])
 
     return dydt
+
+
+def wrapper(y, t, r, tfR, wrapIDX):
+    """ Bring back the wrapper! """
+    assert(y.size == np.sum(wrapIDX))
+
+    yInt = np.zeros(56, dtype = np.float64)
+
+    yInt[wrapIDX] = y
+
+    dydt = fullModel(yInt, t, r, tfR, __active_species_IDX)
+
+    return dydt[wrapIDX]
 
 
 def printModel(rxnRates, trafRates):
