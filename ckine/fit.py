@@ -3,8 +3,6 @@ from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
-from theano.ifelse import ifelse
-import theano
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
@@ -114,8 +112,7 @@ class build_model:
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
             
-            # Cover for crazy values
-            Y = ifelse(T.max(unkVec) > 1.0E5, -np.ones(16, dtype=np.float64)*np.inf, centralDiff(self.dst)(unkVec)) # fitting the data based on dst.calc for the given parameters
+            Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
