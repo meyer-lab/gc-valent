@@ -34,10 +34,12 @@ def approx_jacobian():
 
 a = approx_jacobian()
 np.savetxt('Nonzero Boolean.csv', (a != 0).astype(np.int), fmt='%d', delimiter=' ')
-b = a!=0
 
 
-bm= scipy.sparse.csr_matrix(b)
-permb = scipy.sparse.csgraph.reverse_cuthill_mckee(bm, False)
-B = bm[np.ix_(permb,permb)].A
-np.savetxt('Shuffled Nonzero Boolean.csv', B, fmt='%d', delimiter=' ')
+
+#b = a!=0
+
+#bm= scipy.sparse.csr_matrix(b)
+#permb = scipy.sparse.csgraph.reverse_cuthill_mckee(bm, False)
+#B = bm[np.ix_(permb,permb)].A
+#np.savetxt('Shuffled Nonzero Boolean.csv', B, fmt='%d', delimiter=' ')
