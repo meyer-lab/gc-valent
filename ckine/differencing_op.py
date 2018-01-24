@@ -47,9 +47,6 @@ class centralDiff(T.Op):
 
         self.dg = centralDiffGrad(calcModel, self.pool)
 
-    def infer_shape(self, node, i0_shapes):
-        return [(self.M.concs*2, )]
-
     def perform(self, node, inputs, outputs):
         if np.any(np.greater(inputs[0], 1.0E4)):
             mu = np.full((self.M.concs*2, ), -np.inf, dtype=np.float64)
