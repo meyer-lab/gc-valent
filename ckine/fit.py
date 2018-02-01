@@ -1,8 +1,8 @@
-from scipy.integrate import odeint
-from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
-import numpy as np, pandas as pds
-from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
+from scipy.integrate import odeint
+import numpy as np, pandas as pds
+from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
+from .differencing_op import centralDiff
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
@@ -94,7 +94,6 @@ class IL2_sum_squared_dist:
 
 
 class build_model:
-    
     # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
@@ -113,7 +112,6 @@ class build_model:
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
             
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
-            
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
             pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM

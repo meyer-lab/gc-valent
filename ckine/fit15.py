@@ -1,8 +1,8 @@
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel
+import pymc3 as pm, theano.tensor as T, os
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
+from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel
 from .differencing_op import centralDiff
-import pymc3 as pm, theano.tensor as T, os
 
 
 #this takes the values of input parameters and calls odeint, then puts the odeint output into IL15_pSTAT_activity
@@ -67,7 +67,6 @@ class IL15_sum_squared_dist:
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec / np.max(actVec)))
-        
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     

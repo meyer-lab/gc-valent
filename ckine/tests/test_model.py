@@ -121,4 +121,3 @@ class TestModel(unittest.TestCase):
 
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
-

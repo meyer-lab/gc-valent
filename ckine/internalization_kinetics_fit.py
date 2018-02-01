@@ -1,38 +1,38 @@
-from ckine.model import fullModel, __active_species_IDX, printModel, solveAutocrine
+import pymc3 as pm, theano.tensor as T, os
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
+from ckine.model import fullModel, __active_species_IDX, printModel, solveAutocrine
 from ckine.differencing_op import centralDiff
-import pymc3 as pm, theano.tensor as T, os
 from ckine.fit import IL2_convertRates
 
 def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
-        # times from experiment are hard-coded into this function      
-        ts = np.array(([0., 2., 5., 15., 30., 60., 90.]))
+    # times from experiment are hard-coded into this function      
+    ts = np.array(([0., 2., 5., 15., 30., 60., 90.]))
 
-        # If any of the unknowns are unreasonably high, let's just return inf.
-        if (np.max(rxnRates) > 1.0E4 or np.max(trafRates) > 1.0E4):
-            return np.full(ts.shape, np.inf)
+    # If any of the unknowns are unreasonably high, let's just return inf.
+    if np.max(rxnRates) > 1.0E4 or np.max(trafRates) > 1.0E4:
+        return np.full(ts.shape, np.inf)
 
-        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+    y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
         
-        rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
+    rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
                
-        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+    ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
         
-        ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+    ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-        if infodict['message'] != 'Integration successful.':
-            print("IL2 conc: " + str(IL2_conc))
-            printModel(rxnRates, trafRates)
-            print(infodict)
-            return -100
+    if infodict['message'] != 'Integration successful.':
+        print("IL2 conc: " + str(IL2_conc))
+        printModel(rxnRates, trafRates)
+        print(infodict)
+        return -100
         
-        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
-        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
+    surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
+    initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
             
-        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
+    percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
         
-        return percent_surface_IL2Rb
+    return percent_surface_IL2Rb
 
 
 class IL2Rb_trafficking:
