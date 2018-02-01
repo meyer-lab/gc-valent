@@ -1,5 +1,5 @@
-from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
 from scipy.integrate import odeint
+from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
