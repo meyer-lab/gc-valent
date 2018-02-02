@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from fit import build_model
+from fit import build_model, IL2_activity_input
 import pymc3 as pm
 import numpy as np
 
@@ -21,6 +21,7 @@ def generate_plot(sampling_data, rate):
 M = build_model()
 M.build()
 
+# name of the file we're loading is dependent on the output of run_fit.py
 sampling_data = pm.backends.text.load("IL2_model_results", model=M.M) # loads the results from running fit.py... we are not unpickling here
 
 #generate_plot(sampling_data, 'k4fwd')
@@ -42,10 +43,10 @@ def scatter_plot(sampling_data, rate1, rate2):
 #scatter_plot(sampling_data, 'k4fwd', 'k6rev')
 
 #can call this function to get a graph similar to that which was published
-def plot_IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
-    new_table = IL2_percent_activity(k4fwd, k5rev, k6rev)
+def plot_IL2_percent_activity(y0, IL2, rxnRates, trafRates):
+    new_table = IL2_activity_input(y0, IL2, rxnRates, trafRates)
 
-    x = math.log10(new_table[:, 0]) # changing the x values to the log10(nM) values that were in the published graph
+    x = np.log10(new_table[:, 0]) # changing the x values to the log10(nM) values that were in the published graph
 
     plt.rcParams.update({'font.size': 8})
     plt.xlabel("IL2 concentration (log(nm))")
