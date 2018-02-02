@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from fit import build_model
+from .fit import build_model
 import pymc3 as pm
 import numpy as np
 
