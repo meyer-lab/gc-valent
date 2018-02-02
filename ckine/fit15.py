@@ -6,6 +6,7 @@ from .differencing_op import centralDiff
 
 
 #this takes the values of input parameters and calls odeint, then puts the odeint output into IL15_pSTAT_activity
+
 def IL15_activity_input(y0, IL15, rxnRates, trafRates):
     rxnRates[1] = IL15
 
@@ -36,6 +37,7 @@ def IL15_convertRates(unkVec):
 # IL15 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
 # need the theano decorator to get around the fact that there are if-else statements when running odeint but
 #  we don't necessarily know the values for the rxn rates when we call our model
+
 class IL15_sum_squared_dist:
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
@@ -69,7 +71,7 @@ class IL15_sum_squared_dist:
         actVec = np.concatenate((actVec / np.max(actVec), actVec / np.max(actVec)))
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
-    
+
     def calc(self, unkVec, pool):
         """ Just get the solution in one pass. """
         inT = self.calc_schedule(unkVec, pool)
@@ -121,7 +123,7 @@ class build_model:
                 print(dlogp(point))
 
                 raise
-                
+    
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()

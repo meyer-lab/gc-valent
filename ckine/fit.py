@@ -98,7 +98,7 @@ class build_model:
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
         self.M = self.build()
-    
+
     def build(self):
         M = pm.Model()
 
@@ -120,7 +120,7 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
-    
+
     def sampling(self):
         with self.M:
             try:

@@ -45,7 +45,7 @@ def scatter_plot(sampling_data, rate1, rate2):
 def plot_IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     new_table = IL2_percent_activity(k4fwd, k5rev, k6rev)
 
-    x = math.log10(new_table[:, 0]) # changing the x values to the log10(nM) values that were in the published graph
+    x = np.log10(new_table[:, 0]) # changing the x values to the log10(nM) values that were in the published graph
 
     plt.rcParams.update({'font.size': 8})
     plt.xlabel("IL2 concentration (log(nm))")

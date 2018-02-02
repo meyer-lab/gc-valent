@@ -77,20 +77,17 @@ class IL2Rb_trafficking:
         all_diffs = np.concatenate((diff, diff2, diff3, diff4))
         
         return all_diffs
-        
-        
     def calc(self, unkVec, pool):
         """ Just get the solution in one pass. """
         inT = self.calc_schedule(unkVec, pool)
         return self.calc_reduce(inT)
 
 class build_model:
-    
     # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
     def __init__(self):
         self.IL2Rb = IL2Rb_trafficking()
         self.M = self.build()
-    
+
     def build(self):
         M = pm.Model()
 
@@ -102,9 +99,7 @@ class build_model:
             sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
-            
             Y = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on IL2Rb_trafficking class
-            
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
             pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
@@ -113,7 +108,7 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
-    
+
     def sampling(self):
         with self.M:
             try:

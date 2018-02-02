@@ -27,7 +27,7 @@ def findy():
         trafRates[5:8], trafRates[8], trafRates[9], trafRates[10] = mat[ii,4:7], mat[ii,7], mat[ii,8], mat[ii,9]
         y0 = solveAutocrine(trafRates)
         r[0:4] = mat[ii,0:4]
-        #Running odeint gives y for each of the 100 timepoints. 
+        #Running odeint gives y for each of the 100 timepoints.
         ddfunc = lambda y, t: fullModel(y, t, r, trafRates, __active_species_IDX)
         temp, d = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         if d['message'] == "Integration successful.":
@@ -53,7 +53,7 @@ def activity_surf_tot(y_of_combos):
     return values
 
 #Actually Return the 16 values per timepoint per combination
-y_of_combos = findy()
+y_of_combinations = findy()
 values = activity_surf_tot(y_of_combos)
 
 """Important Notes:
