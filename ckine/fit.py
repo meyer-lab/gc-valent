@@ -110,7 +110,7 @@ class build_model:
             sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
-            
+
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 

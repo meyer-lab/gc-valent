@@ -48,7 +48,7 @@ def dy_dt(y, t, rxn):
     k14rev = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
 
     # Literature values for IL-7
-    k25rev = kfbnd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM 
+    k25rev = kfbnd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
     k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd
@@ -70,8 +70,9 @@ def dy_dt(y, t, rxn):
     # _One detailed balance IL7/9 loop
     k32rev = k29rev * k31rev / k30rev
     k28rev = k25rev * k27rev / k26rev
-    
+
     dydt = y.copy()
+
     # IL2
     dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb
     dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - kfwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb

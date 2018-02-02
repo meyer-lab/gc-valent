@@ -14,24 +14,24 @@ def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
         return np.full(ts.shape, np.inf)
 
     y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
-        
+
     rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
-               
+
     ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        
+
     ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-        
+
     if infodict['message'] != 'Integration successful.':
         print("IL2 conc: " + str(IL2_conc))
         printModel(rxnRates, trafRates)
         print(infodict)
         return -100
-        
+
     surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
     initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
-            
+
     percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        
+
     return percent_surface_IL2Rb
 
 
@@ -42,7 +42,7 @@ class IL2Rb_trafficking:
         self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
         data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
         self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-        
+
     def calc_schedule(self, unkVec, pool):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
@@ -53,15 +53,15 @@ class IL2Rb_trafficking:
 
         # Loop over concentrations of IL2
         output = list()
-        
+
         output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 1)) # handle the IL2Ra+ and 1nM case
         output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 500)) # handle the IL2Ra+ and 500nM case
         output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 1)) # handle the IL2Ra- and 1nM case
         output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 500)) # handle the IL2Ra- and 500nM case
-        
+
         return output
-   
-    
+
+
     def calc_reduce(self, inT):
         actVec = list(item.result() for item in inT) 
         

@@ -64,6 +64,7 @@ class IL15_sum_squared_dist:
 
         return output
 
+
     def calc_reduce(self, inT):
         actVec = np.fromiter((item.result() for item in inT), np.float64, count=self.concs)
 
@@ -78,12 +79,12 @@ class IL15_sum_squared_dist:
         return self.calc_reduce(inT)
 
 class build_model:
-    
+
     # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
     def __init__(self):
         self.dst = IL15_sum_squared_dist()
         self.M = self.build()
-    
+
     def build(self):
         M = pm.Model()
 
@@ -95,9 +96,9 @@ class build_model:
             sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
-            
+
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
-            
+
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
             pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
@@ -123,7 +124,7 @@ class build_model:
                 print(dlogp(point))
 
                 raise
-    
+
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()

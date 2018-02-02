@@ -34,7 +34,7 @@ class TestModel(unittest.TestCase):
         if (self.tfargs[2] > 1.):
             self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
 
-    def test_length(self):                        
+    def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
     @settings(deadline=None)
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
