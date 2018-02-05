@@ -1,5 +1,5 @@
 """
-Unit test file. 
+Unit test file.
 """
 import unittest
 import numpy as np

@@ -7,7 +7,7 @@ from ckine.fit import IL2_convertRates
 
 
 def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
-    # times from experiment are hard-coded into this function      
+    # times from experiment are hard-coded into this function
     ts = np.array(([0., 2., 5., 15., 30., 60., 90.]))
 
     # If any of the unknowns are unreasonably high, let's just return inf.
@@ -64,8 +64,8 @@ class IL2Rb_trafficking:
 
 
     def calc_reduce(self, inT):
-        actVec = list(item.result() for item in inT) 
-        
+        actVec = list(item.result() for item in inT)
+
         # actVec[0] represents the IL2Ra+ and 1nM case
         # actVec[1] represents the IL2Ra+ and 500nM case
         # actVec[2] represents the IL2Ra- and 1nM case
@@ -74,9 +74,9 @@ class IL2Rb_trafficking:
         diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
         diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
         diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
-         
+
         all_diffs = np.concatenate((diff, diff2, diff3, diff4))
-        
+
         return all_diffs
     def calc(self, unkVec, pool):
         """ Just get the solution in one pass. """

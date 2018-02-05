@@ -1,5 +1,5 @@
 """
-This file includes the classes and functions necessary to fit the IL2 model to the experimental data. 
+This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
 """
 import pymc3 as pm, theano.tensor as T, os
 from scipy.integrate import odeint
@@ -112,7 +112,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', sd=1., shape=3, testval=[0.1, 0.1, 0.1]) 
+            rxnrates = pm.Lognormal('rxn', sd=1., shape=3, testval=[0.1, 0.1, 0.1])
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
             Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3, testval=[1., 1., 1.])

@@ -1,5 +1,5 @@
 """
-The file that runs the fitting process. 
+The file that runs the fitting process.
 """
 import pymc3 as pm
 import numpy as np
