@@ -1,3 +1,6 @@
+"""
+Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions. The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines. 
+"""
 import numpy as np
 from tqdm import tqdm
 from scipy.integrate import odeint
@@ -5,6 +8,7 @@ from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_s
 
 
 def findy():
+    "A function to find the different values of y at different timepoints and different initial conditions."
     t = 60. * 4 # let's let the system run for 4 hours
     ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
     IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=2)

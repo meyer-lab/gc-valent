@@ -1,3 +1,6 @@
+"""
+This file includes the classes and functions necessary to fit the IL15 model to the experimental data. 
+"""
 import pymc3 as pm, theano.tensor as T, os
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
@@ -8,6 +11,7 @@ from .differencing_op import centralDiff
 #this takes the values of input parameters and calls odeint, then puts the odeint output into IL15_pSTAT_activity
 
 def IL15_activity_input(y0, IL15, rxnRates, trafRates):
+    "Takes in the reaction rates, traficking rates, and the amount of IL15 that you want to simulate with, and it runs the model odeint. "
     rxnRates[1] = IL15
 
     ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
@@ -24,6 +28,7 @@ def IL15_activity_input(y0, IL15, rxnRates, trafRates):
     return getTotalActiveCytokine(1, ys[1, :])
 
 def IL15_convertRates(unkVec):
+    "This takes in a vector of the values that we are fitting and it assigns them to the different reaction rates and ligand concentrations."
     rxnRates = np.ones(17, dtype=np.float64)
     rxnRates[7:12] = unkVec[0:5] # k15rev, k17rev, k18rev, k22rev, k23rev
     rxnRates[0:4] = 0.0 # ligands
@@ -40,6 +45,7 @@ def IL15_convertRates(unkVec):
 
 class IL15_sum_squared_dist:
     def __init__(self):
+        "This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL15 concentrations that we are going to take care of."
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")) # imports csv file into pandas array
         self.numpy_data = data.as_matrix() #the IL15_IL2Ra- data is within the 4th column (index 3)
@@ -48,6 +54,7 @@ class IL15_sum_squared_dist:
         self.fit_data = np.concatenate((self.numpy_data[:, 7], self.numpy_data[:, 3]))
 
     def calc_schedule(self, unkVec, pool):
+        "Simulate the experiment with IL15. It is making a list of promises which will be calculated and returned as output."
         # Convert the vector of values to dicts
         rxnRates, tfR = IL15_convertRates(unkVec)
 
@@ -66,6 +73,7 @@ class IL15_sum_squared_dist:
 
 
     def calc_reduce(self, inT):
+        "After getting all of the promises first, calc_reduce is going to convert all those promises into actual values and return the difference between the measurements and the simulation."
         actVec = np.fromiter((item.result() for item in inT), np.float64, count=self.concs)
 
         # Normalize to the maximal activity, put together into one vector
@@ -79,13 +87,13 @@ class IL15_sum_squared_dist:
         return self.calc_reduce(inT)
 
 class build_model:
-
-    # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
+    "Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times"
     def __init__(self):
         self.dst = IL15_sum_squared_dist()
         self.M = self.build()
 
     def build(self):
+        "The PyMC model incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."
         M = pm.Model()
 
         with M:
@@ -109,6 +117,7 @@ class build_model:
         return M
 
     def sampling(self):
+        "This is the sampling that actually runs the model."
         with self.M:
             try:
                 self.trace = pm.sample()

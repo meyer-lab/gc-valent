@@ -102,7 +102,7 @@ class IL2_sum_squared_dist:
 
 
 class build_model:
-    "going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times"
+    "Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times"
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
         self.M = self.build()

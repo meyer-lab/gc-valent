@@ -1,3 +1,6 @@
+"""
+Unit test file. 
+"""
 import unittest
 import numpy as np
 from hypothesis import given, settings
@@ -11,6 +14,7 @@ np.random.seed(seed=1)
 
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
+        "Assert that all species came to equilibrium."
         # All the species abundances should be above zero
         self.assertGreater(np.min(X), -1.0E-7)
 
@@ -18,6 +22,7 @@ class TestModel(unittest.TestCase):
         self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
+        "Assert the conservation of species throughout the experiment."
         species_delta = y - y0
 
         # Check for conservation of species sum
@@ -40,6 +45,7 @@ class TestModel(unittest.TestCase):
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
 
     def test_conservation(self, y0):
+        "Check for the conservation of each of the initial receptors."
         dy = dy_dt(y0, 0.0, self.args)
         #Check for conservation of gc
         self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
@@ -89,6 +95,7 @@ class TestModel(unittest.TestCase):
         self.assertConservation(dy, 0.0, np.array([22, 23, 25]) + 26)
 
     def test_fullModel(self):
+        "Assert the two functions solveAutocrine and solveAutocrine complete return the same values."
         yOut = solveAutocrine(self.tfargs)
 
         yOut2 = solveAutocrineComplete(self.args, self.tfargs)

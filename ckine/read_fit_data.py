@@ -1,7 +1,11 @@
-import matplotlib.pyplot as plt
-from .fit import build_model
+"""
+The file that runs the fitting process. 
+"""
 import pymc3 as pm
 import numpy as np
+import matplotlib.pyplot as plt
+from .fit import build_model
+
 
 def generate_plot(sampling_data, rate):
 #    plt.hist(sampling_data[rate], bins=np.logspace(-3.3, 2.7, 8))

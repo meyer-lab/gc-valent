@@ -1,3 +1,6 @@
+"""
+A file that includes the model and important helper functions.
+"""
 import numpy as np
 from scipy.integrate import odeint
 
@@ -25,6 +28,7 @@ __IL2_assoc[52] = 1
 
 @jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
 def dy_dt(y, t, rxn):
+    "The model."
     # Set the constant inputs
     IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev = rxn
     # IL2 in nM
@@ -49,6 +53,7 @@ def dy_dt(y, t, rxn):
 
     # Literature values for IL-7
     k25rev = kfbnd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
     k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd
@@ -197,6 +202,7 @@ def wrapper(y, t, r, tfR, wrapIDX):
 
 
 def printModel(rxnRates, trafRates):
+    "A function to print out important values."
     # endo, activeEndo, sortF, kRec, kDeg
     print("Endocytosis: " + str(trafRates[0]))
     print("activeEndo: " + str(trafRates[1]))
@@ -217,6 +223,7 @@ def printModel(rxnRates, trafRates):
 
 @jit(float64[56](float64[11]))
 def solveAutocrine(trafRates):
+    "Faster approach to solve for steady state by directly calculating the starting point without needing odeint."
     y0 = np.zeros(26*2 + 4, np.float64)
 
     recIDX = np.array([0, 1, 2, 10, 18, 22], np.int)
@@ -242,6 +249,7 @@ def solveAutocrine(trafRates):
 
 
 def solveAutocrineComplete(rxnRates, trafRates):
+    "This function determines the starting point for odeint. It runs the model for a really long time with no cytokine present to come to some steady state."
     rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
 
