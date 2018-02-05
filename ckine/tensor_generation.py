@@ -8,7 +8,7 @@ from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_s
 
 
 def findy():
-    "A function to find the different values of y at different timepoints and different initial conditions."
+    """A function to find the different values of y at different timepoints and different initial conditions."""
     t = 60. * 4 # let's let the system run for 4 hours
     ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
     IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=2)

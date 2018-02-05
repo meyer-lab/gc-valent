@@ -10,7 +10,7 @@ from .differencing_op import centralDiff
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
 def IL2_activity_input(y0, IL2, rxnRates, trafRates):
-    "Takes in the reaction rates, traficking rates, and the amount of IL2 that you want to simulate with, and it runs the model odeint."
+    """Takes in the reaction rates, traficking rates, and the amount of IL2 that you want to simulate with, and it runs the model odeint."""
     rxnRates[0] = IL2
 
     ddfunc = lambda y, t: wrapper(y, t, rxnRates, trafRates, __IL2_assoc)
@@ -32,7 +32,7 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
 
 
 def IL2_convertRates(unkVec):
-    "This takes in a vector of the values that we are fitting and it assigns them to the different reaction rates and ligand concentrations."
+    """This takes in a vector of the values that we are fitting and it assigns them to the different reaction rates and ligand concentrations."""
     rxnRates = np.ones(17, dtype=np.float64)
     rxnRates[4:7] = unkVec[0:3] # kfwd, k5rev, k6rev
     rxnRates[0:4] = 0.0 # ligands
@@ -49,7 +49,7 @@ def IL2_convertRates(unkVec):
 #  we don't necessarily know the values for the rxn rates when we call our model
 class IL2_sum_squared_dist:
     def __init__(self):
-        "This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL2 concentrations that we are going to take care of."
+        """This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL2 concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")) # imports csv file into pandas array
         self.numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
@@ -58,7 +58,7 @@ class IL2_sum_squared_dist:
         self.fit_data = np.concatenate((self.numpy_data[:, 6], self.numpy_data[:, 2]))
 
     def calc_schedule(self, unkVec, pool):
-        "Simulate the 2 experiments: one w/ IL2Ra and one without it. It is making a list of promises which will be calculated and returned as output."
+        """Simulate the 2 experiments: one w/ IL2Ra and one without it. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
 
@@ -83,7 +83,7 @@ class IL2_sum_squared_dist:
         return (output, output2)
 
     def calc_reduce(self, inT):
-        "After getting all of the promises first, calc_reduce is going to convert all those promises into actual values and return the difference between the measurements and the simulation."
+        """After getting all of the promises first, calc_reduce is going to convert all those promises into actual values and return the difference between the measurements and the simulation."""
         output, output2 = inT
 
         actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
@@ -102,13 +102,13 @@ class IL2_sum_squared_dist:
 
 
 class build_model:
-    "Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times"
+    """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
         self.M = self.build()
 
     def build(self):
-        "The PyMC model that incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."
+        """The PyMC model that incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."""
         M = pm.Model()
 
         with M:
@@ -131,7 +131,7 @@ class build_model:
         return M
 
     def sampling(self):
-        "This is the sampling that actually runs the model."
+        """This is the sampling that actually runs the model."""
         with self.M:
             try:
                 self.trace = pm.sample()
