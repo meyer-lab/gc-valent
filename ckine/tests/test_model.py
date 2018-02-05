@@ -6,7 +6,6 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-import copy
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, getActiveSpecies, solveAutocrineComplete
 
 np.random.seed(seed=1)
@@ -41,9 +40,9 @@ class TestModel(unittest.TestCase):
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
+
     @settings(deadline=None)
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
-
     def test_conservation(self, y0):
         """Check for the conservation of each of the initial receptors."""
         dy = dy_dt(y0, 0.0, self.args)
@@ -62,7 +61,6 @@ class TestModel(unittest.TestCase):
 
     @settings(deadline=None)
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
-
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
         kw = np.zeros(11, dtype=np.float64)
@@ -114,7 +112,6 @@ class TestModel(unittest.TestCase):
 
     @settings(deadline=None)
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
-
     def test_reproducible(self, y0):
 
         dy1 = fullModel(y0, 0.0, self.args, self.tfargs, self.active)
