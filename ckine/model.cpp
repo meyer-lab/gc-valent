@@ -361,64 +361,64 @@ array<double, 56> solveAutocrine(array<double, 11> trafRates) {
 
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *user_data) {
-    if (error_code == CV_WARNING) return;
+	if (error_code == CV_WARNING) return;
 
-    std::cout << "Internal CVode error in " << function << std::endl;
-    std::cout << msg << std::endl;
-    std::cout << "In module: " << module << std::endl;
-    std::cout << "Error code: " << error_code << std::endl;
+	std::cout << "Internal CVode error in " << function << std::endl;
+	std::cout << msg << std::endl;
+	std::cout << "In module: " << module << std::endl;
+	std::cout << "Error code: " << error_code << std::endl;
 }
 
 void* solver_setup(N_Vector init, void * params) {
-    /* Call CVodeCreate to create the solver memory and specify the
-     * Backward Differentiation Formula and the use of a Newton iteration */
-    void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-    if (cvode_mem == NULL) {
-        CVodeFree(&cvode_mem);
-        throw runtime_error(string("Error calling CVodeCreate in solver_setup."));
-    }
-    
-    CVodeSetErrHandlerFn(cvode_mem, &errorHandler, params);
+	/* Call CVodeCreate to create the solver memory and specify the
+	 * Backward Differentiation Formula and the use of a Newton iteration */
+	void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+	if (cvode_mem == NULL) {
+		CVodeFree(&cvode_mem);
+		throw runtime_error(string("Error calling CVodeCreate in solver_setup."));
+	}
+	
+	CVodeSetErrHandlerFn(cvode_mem, &errorHandler, params);
 
-    /* Call CVodeInit to initialize the integrator memory and specify the
-     * user's right hand side function in y'=f(t,y), the inital time T0, and
-     * the initial dependent variable vector y. */
-    if (CVodeInit(cvode_mem, fullModelCVode, 0.0, init) < 0) {
-        CVodeFree(&cvode_mem);
-        throw runtime_error(string("Error calling CVodeInit in solver_setup."));
-    }
-    
-    N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(init));
-    N_VConst(abstolIn, abbstol);
-    
-    /* Call CVodeSVtolerances to specify the scalar relative tolerance
-     * and vector absolute tolerances */
-    if (CVodeSVtolerances(cvode_mem, reltolIn, abbstol) < 0) {
-        N_VDestroy_Serial(abbstol);
-        CVodeFree(&cvode_mem);
-        throw runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
-    }
-    N_VDestroy_Serial(abbstol);
+	/* Call CVodeInit to initialize the integrator memory and specify the
+	 * user's right hand side function in y'=f(t,y), the inital time T0, and
+	 * the initial dependent variable vector y. */
+	if (CVodeInit(cvode_mem, fullModelCVode, 0.0, init) < 0) {
+		CVodeFree(&cvode_mem);
+		throw runtime_error(string("Error calling CVodeInit in solver_setup."));
+	}
+	
+	N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(init));
+	N_VConst(abstolIn, abbstol);
+	
+	/* Call CVodeSVtolerances to specify the scalar relative tolerance
+	 * and vector absolute tolerances */
+	if (CVodeSVtolerances(cvode_mem, reltolIn, abbstol) < 0) {
+		N_VDestroy_Serial(abbstol);
+		CVodeFree(&cvode_mem);
+		throw runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
+	}
+	N_VDestroy_Serial(abbstol);
 
-    SUNMatrix A = SUNDenseMatrix((int) NV_LENGTH_S(init), (int) NV_LENGTH_S(init));
+	SUNMatrix A = SUNDenseMatrix((int) NV_LENGTH_S(init), (int) NV_LENGTH_S(init));
 
-    SUNLinearSolver LS = SUNDenseLinearSolver(init, A);
-    
-    // Call CVDense to specify the CVDENSE dense linear solver
-    if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
-        CVodeFree(&cvode_mem);
-        throw runtime_error(string("Error calling CVDense in solver_setup."));
-    }
-    
-    // Pass along the parameter structure to the differential equations
-    if (CVodeSetUserData(cvode_mem, params) < 0) {
-        CVodeFree(&cvode_mem);
-        throw runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
-    }
+	SUNLinearSolver LS = SUNDenseLinearSolver(init, A);
+	
+	// Call CVDense to specify the CVDENSE dense linear solver
+	if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
+		CVodeFree(&cvode_mem);
+		throw runtime_error(string("Error calling CVDense in solver_setup."));
+	}
+	
+	// Pass along the parameter structure to the differential equations
+	if (CVodeSetUserData(cvode_mem, params) < 0) {
+		CVodeFree(&cvode_mem);
+		throw runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
+	}
 
-    CVodeSetMaxNumSteps(cvode_mem, 2000000);
-    
-    return cvode_mem;
+	CVodeSetMaxNumSteps(cvode_mem, 2000000);
+	
+	return cvode_mem;
 }
 
 
