@@ -11,8 +11,6 @@
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvode/cvode_direct.h>
 #include <iostream>
-#define NDEBUG
-#include <cassert>
 
 using std::array;
 using std::copy;
@@ -27,11 +25,13 @@ struct ratesS {
 	std::array<double, 17> rxn;
 };
 
-const double abstolIn = 1E-3;
-const double reltolIn = 1E-5;
+const double abstolIn = 1E-5;
+const double reltolIn = 1E-7;
 const double internalV = 623.0; // Same as that used in TAM model
 const double internalFrac = 0.5; // Same as that used in TAM model
 
+// The indices carried over in the reduced IL2 model
+const array<size_t, 21> IL2_assoc = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 52}};
 
 array<bool, 26> __active_species_IDX() {
 	array<bool, 26> __active_species_IDX;
@@ -256,64 +256,28 @@ void fullModel(const double * const y, const array<double, 17> r, array<double, 
 }
 
 
-array<bool, 56> IL2_assoc() {
-	array<bool, 56> IL2_assoc;
-
-	fill(IL2_assoc.begin(), IL2_assoc.end(), false);
-
-	for (size_t i = 0; i < 10; i++) {
-		IL2_assoc[i] = true;
-		IL2_assoc[i + 26] = true;
-	}
-
-	IL2_assoc[52] = true;
-
-	return IL2_assoc;
-}
-
-size_t IL2_nassoc() {
-	array<bool, 56> x = IL2_assoc();
-
-	return std::count(x.begin(), x.end(), true);
-}
-
 int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
 	ratesS *rIn = static_cast<ratesS *>(user_data);
 
 	array<double, 56> xxArr;
-	size_t curIDX = 0;
-	array<bool, 56> wrapIDX;
 
 	// Get the data in the right form
 	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
 		fullModel(xxArr.data(), rIn->rxn, rIn->trafRates, NV_DATA_S(dxxdt));
-	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) { // If it looks like we're using the IL2 model
-		wrapIDX = IL2_assoc();
+	} else if (NV_LENGTH_S(xx) == IL2_assoc.size()) { // If it looks like we're using the IL2 model
+		fill(xxArr.begin(), xxArr.end(), 0.0);
 
-		for (size_t ii = 0; ii < xxArr.size(); ii++) {
-			if (wrapIDX[ii]) {
-				xxArr[ii] = NV_Ith_S(xx, curIDX);
-				curIDX++;
-			} else {
-				xxArr[ii] = 0.0;
-			}
+		for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
+			xxArr[IL2_assoc[ii]] = NV_Ith_S(xx, ii);
 		}
-
-		assert(curIDX == IL2_nassoc());
 
 		array<double, 56> dydt;
 
 		fullModel(xxArr.data(), rIn->rxn, rIn->trafRates, dydt.data());
 
-		curIDX = 0;
-		for (size_t ii = 0; ii < xxArr.size(); ii++) {
-			if (wrapIDX[ii]) {
-				NV_Ith_S(dxxdt, curIDX) = dydt[ii];
-				curIDX++;
-			}
+		for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
+			NV_Ith_S(dxxdt, ii) = dydt[IL2_assoc[ii]];
 		}
-
-		assert(curIDX == IL2_nassoc());
 	} else {
 		throw runtime_error(string("Failed to find the right wrapper."));
 	}
@@ -424,29 +388,23 @@ void* solver_setup(N_Vector init, void * params) {
 
 extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
 	ratesS rattes;
-	
+
 	copy_n(rxnRatesIn, rattes.rxn.size(), rattes.rxn.begin());
 	copy_n(trafRatesIn, rattes.trafRates.size(), rattes.trafRates.begin());
 
 	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
-	array<bool, 56> wrapIDX;
-	size_t curIDX = 0;
 	N_Vector state;
+
+	// Fill output values with 0's
+	fill(out, out + ntps*y0.size(), 0.0);
 
 	// Can we use the reduced IL2 only model
 	if (rattes.trafRates[8] + rattes.trafRates[9] + rattes.trafRates[10] == 0.0) {
-		wrapIDX = IL2_assoc();
-		state = N_VNew_Serial((long) IL2_nassoc());
+		state = N_VNew_Serial((long) IL2_assoc.size());
 
-		curIDX = 0;
-		for (size_t ii = 0; ii < wrapIDX.size(); ii++) {
-			if (wrapIDX[ii]) {
-				NV_Ith_S(state, curIDX) = y0[ii];
-				curIDX++;
-			}
+		for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
+			NV_Ith_S(state, ii) = y0[IL2_assoc[ii]];
 		}
-
-		assert(curIDX == IL2_nassoc());
 	} else { // Just the full model
 		state = N_VMake_Serial((long) y0.size(), y0.data());
 	}
@@ -458,36 +416,28 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	for (size_t itps = 0; itps < ntps; itps++) {
 		if (tps[itps] < tret) {
 			std::cout << "Can't go backwards." << std::endl;
-	        N_VDestroy_Serial(state);
-	        CVodeFree(&cvode_mem);
-	        return -1;
+			N_VDestroy_Serial(state);
+			CVodeFree(&cvode_mem);
+			return -1;
 		}
 
-	    int returnVal = CVode(cvode_mem, tps[itps], state, &tret, CV_NORMAL);
-	    
-	    if (returnVal < 0) {
-	        std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
-	        N_VDestroy_Serial(state);
-	        CVodeFree(&cvode_mem);
-	        return returnVal;
-	    }
+		int returnVal = CVode(cvode_mem, tps[itps], state, &tret, CV_NORMAL);
+		
+		if (returnVal < 0) {
+			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+			N_VDestroy_Serial(state);
+			CVodeFree(&cvode_mem);
+			return returnVal;
+		}
 
-	    // Copy out result
-	    if (NV_LENGTH_S(state) == y0.size()) {
-	    	copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
-	    } else { // If we're dealing with a reduced model
-	    	curIDX = 0;
-	    	for (size_t ii = 0; ii < wrapIDX.size(); ii++) {
-				if (wrapIDX[ii]) {
-					out[y0.size()*itps + ii] = NV_Ith_S(state, curIDX);
-					curIDX++;
-				} else {
-					out[y0.size()*itps + ii] = 0.0;
-				}
+		// Copy out result
+		if (NV_LENGTH_S(state) == y0.size()) {
+			copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+		} else { // If we're dealing with a reduced model
+			for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
+				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(state, ii);
 			}
-
-			assert(curIDX == IL2_nassoc());
-	    }
+		}
 	}
 
 	N_VDestroy_Serial(state);
