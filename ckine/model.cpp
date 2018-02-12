@@ -47,6 +47,8 @@ array<bool, 26> __active_species_IDX() {
 	return __active_species_IDX;
 }
 
+const array<bool, 26> activeV = __active_species_IDX();
+
 
 void dy_dt(const double * const y, const double * const rxn, double *dydt) {
 	// Set the constant inputs
@@ -205,8 +207,6 @@ void trafficking(const double * const y, array<double, 11> tfR, double *dydt) {
 	double sortF = tfR[2];
 	double kRec = tfR[3];
 	double kDeg = tfR[4];
-
-	array<bool, 26> activeV = __active_species_IDX();
 
 	size_t halfL = activeV.size();
 
