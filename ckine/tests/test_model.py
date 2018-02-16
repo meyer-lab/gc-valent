@@ -1,16 +1,17 @@
+"""
+Unit test file.
+"""
 import unittest
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, getActiveSpecies, solveAutocrineComplete
 import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-import copy
-
-np.random.seed(seed=1)
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete
 
 
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
+        """Assert that all species came to equilibrium."""
         # All the species abundances should be above zero
         self.assertGreater(np.min(X), -1.0E-7)
 
@@ -18,6 +19,7 @@ class TestModel(unittest.TestCase):
         self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
+        """Assert the conservation of species throughout the experiment."""
         species_delta = y - y0
 
         # Check for conservation of species sum
@@ -28,20 +30,19 @@ class TestModel(unittest.TestCase):
         self.y0 = np.random.lognormal(0., 1., 26)
         self.args = np.random.lognormal(0., 1., 17)
         self.tfargs = np.random.lognormal(0., 1., 11)
-        self.active = getActiveSpecies()
         # need to convert args from an array to a tuple of numbers
 
         if (self.tfargs[2] > 1.):
             self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
 
-    def test_length(self):                        
+    def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
-    
+
     @settings(deadline=None)
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
     def test_conservation(self, y0):
+        """Check for the conservation of each of the initial receptors."""
         dy = dy_dt(y0, 0.0, self.args)
-        
         #Check for conservation of gc
         self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
         #Check for conservation of IL2Rb
@@ -61,8 +62,8 @@ class TestModel(unittest.TestCase):
         """In the absence of trafficking, mass balance should hold in both compartments."""
         kw = np.zeros(11, dtype=np.float64)
 
-        dy = fullModel(y0, 0.0, self.args, kw, self.active)
-        
+        dy = fullModel(y0, 0.0, self.args, kw)
+
         #Check for conservation of gc
         self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
         #Check for conservation of IL2Rb
@@ -90,6 +91,7 @@ class TestModel(unittest.TestCase):
         self.assertConservation(dy, 0.0, np.array([22, 23, 25]) + 26)
 
     def test_fullModel(self):
+        """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
         yOut = solveAutocrine(self.tfargs)
 
         yOut2 = solveAutocrineComplete(self.args, self.tfargs)
@@ -104,21 +106,20 @@ class TestModel(unittest.TestCase):
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut2), 0.0, places=5)
 
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs, self.active))
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs))
 
     @settings(deadline=None)
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
     def test_reproducible(self, y0):
 
-        dy1 = fullModel(y0, 0.0, self.args, self.tfargs, self.active)
+        dy1 = fullModel(y0, 0.0, self.args, self.tfargs)
 
-        dy2 = fullModel(y0, 1.0, self.args, self.tfargs, self.active)
+        dy2 = fullModel(y0, 1.0, self.args, self.tfargs)
 
-        dy3 = fullModel(y0, 2.0, self.args, self.tfargs, self.active)
+        dy3 = fullModel(y0, 2.0, self.args, self.tfargs)
 
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy2), 1E-8)
 
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
-
