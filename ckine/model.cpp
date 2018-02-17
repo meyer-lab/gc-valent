@@ -11,6 +11,7 @@
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvode/cvode_direct.h>
 #include <iostream>
+#include <cvodes/cvodes.h>
 
 using std::array;
 using std::copy;
@@ -20,10 +21,14 @@ using std::fill;
 using std::string;
 using std::runtime_error;
 
+const size_t plen = 28;
+
 struct ratesS {
-	std::array<double, 11> trafRates;
-	std::array<double, 17> rxn;
+	std::array<double, plen> p;
+	double *rxn;
+	double *trafRates;
 };
+
 
 const double abstolIn = 1E-5;
 const double reltolIn = 1E-7;
@@ -201,7 +206,7 @@ void findLigConsume(DD *dydt) {
 
 
 template<typename DD>
-void trafficking(const DD * const y, DD *tfR, DD *dydt) {
+void trafficking(const DD * const y, const DD * const tfR, DD *dydt) {
 	// Implement trafficking.
 
 	// Set the rates
@@ -240,20 +245,21 @@ void trafficking(const DD * const y, DD *tfR, DD *dydt) {
 
 
 template<typename DD>
-void fullModel(const DD * const y, const array<DD, 17> r, array<DD, 11> tfR, DD *dydt) {
+void fullModel(const DD * const y, const DD * const r, const DD * const tfR, DD *dydt) {
 	// Implement full model.
 	fill(dydt, dydt + 56, 0.0);
 
 	// Calculate endosomal reactions
-	array<DD, 17> rr = r;
+	array<DD, 17> rr;
+	copy_n(r, rr.size(), rr.begin());
 	copy_n(y + 52, 4, rr.begin());
 
 	// Calculate cell surface and endosomal reactions
-	dy_dt(y, r.data(), dydt);
+	dy_dt(y, r, dydt);
 	dy_dt(y + 26, rr.data(), dydt + 26);
 
 	// Handle trafficking
-	trafficking(y, tfR.data(), dydt);
+	trafficking(y, tfR, dydt);
 
 	// Handle endosomal ligand balance.
 	findLigConsume(dydt);
@@ -291,19 +297,11 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 
 extern "C" void fullModel_C(const double * const y_in, double t, double *dydt_out, double *rxn_in, double *tfr_in) {
-	// Bring back the wrapper!
-
-	array<double, 17> r;
-	array<double, 11> tf;
-
-	copy_n(rxn_in, r.size(), r.begin());
-	copy_n(tfr_in, tf.size(), tf.begin());
-
-	fullModel(y_in, r, tf, dydt_out);
+	fullModel(y_in, rxn_in, tfr_in, dydt_out);
 }
 
 
-array<double, 56> solveAutocrine(array<double, 11> trafRates) {
+array<double, 56> solveAutocrine(const double * const trafRates) {
 	array<double, 56> y0;
 	fill(y0.begin(), y0.end(), 0.0);
 
@@ -381,11 +379,40 @@ void* solver_setup(N_Vector init, void * params) {
 }
 
 
+void sensi_setup(void *cvode_mem, N_Vector init, ratesS *params) {
+	// Setup all the initial sensitivities
+	N_Vector *uS = N_VCloneVectorArray(plen, init);
+	for(size_t is = 0; is < plen; is++) N_VConst(0.0, uS[is]);
+
+	auto checkReturn = [&cvode_mem] (int retVal, string name) {
+		if (retVal < 0) {
+			CVodeFree(&cvode_mem);
+			throw runtime_error(string("Error calling ") + name + string(" in solver_setup."));
+		}
+	};
+
+	checkReturn(CVodeSensInit1(cvode_mem, plen, CV_SIMULTANEOUS, NULL, uS), "CVodeSensInit1");
+	N_VDestroyVectorArray_Serial(uS, plen);
+
+	array<double, plen> abstol;
+	fill(abstol.begin(), abstol.end(), 1.0E-2);
+	checkReturn(CVodeSensSStolerances(cvode_mem, 1.0E-2, abstol.data()), "CVodeSensSStolerances");
+
+	checkReturn(CVodeSetSensErrCon(cvode_mem, true), "CVodeSetSensErrCon");
+
+	checkReturn(CVodeSetSensDQMethod(cvode_mem, CV_CENTERED, 0.0), "CVodeSetSensDQMethod");
+
+	checkReturn(CVodeSetSensParams(cvode_mem, params->p.data(), NULL, NULL), "CVodeSetSensParams");
+}
+
+
 extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
 	ratesS rattes;
+	rattes.rxn = rattes.p.data();
+	rattes.trafRates = rattes.p.data() + 17;
 
-	copy_n(rxnRatesIn, rattes.rxn.size(), rattes.rxn.begin());
-	copy_n(trafRatesIn, rattes.trafRates.size(), rattes.trafRates.begin());
+	copy_n(rxnRatesIn, 17, rattes.rxn);
+	copy_n(trafRatesIn, 11, rattes.trafRates);
 
 	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
 	N_Vector state;
@@ -405,6 +432,8 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	}
 
 	void *cvode_mem = solver_setup(state, (void *) &rattes);
+
+	sensi_setup(cvode_mem, state, &rattes);
 
 	double tret = 0;
 
