@@ -433,8 +433,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	void *cvode_mem = solver_setup(state, (void *) &rattes);
 
-	sensi_setup(cvode_mem, state, &rattes);
-
 	double tret = 0;
 
 	for (size_t itps = 0; itps < ntps; itps++) {
@@ -462,6 +460,62 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(state, ii);
 			}
 		}
+	}
+
+	N_VDestroy_Serial(state);
+	CVodeFree(&cvode_mem);
+	return 0;
+}
+
+
+extern "C" int runCkineSens (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
+	ratesS rattes;
+	rattes.rxn = rattes.p.data();
+	rattes.trafRates = rattes.p.data() + 17;
+
+	copy_n(rxnRatesIn, 17, rattes.rxn);
+	copy_n(trafRatesIn, 11, rattes.trafRates);
+
+	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
+	N_Vector state;
+
+	// Fill output values with 0's
+	fill(out, out + ntps*y0.size(), 0.0);
+
+	state = N_VMake_Serial((long) y0.size(), y0.data());
+
+	N_Vector *uS = N_VCloneVectorArray(plen, state);
+	for(size_t is = 0; is < plen; is++) N_VConst(0.0, uS[is]);
+
+	void *cvode_mem = solver_setup(state, (void *) &rattes);
+
+	sensi_setup(cvode_mem, state, &rattes);
+
+	double tret = 0;
+
+	for (size_t itps = 0; itps < ntps; itps++) {
+		if (tps[itps] < tret) {
+			std::cout << "Can't go backwards." << std::endl;
+			N_VDestroy_Serial(state);
+			CVodeFree(&cvode_mem);
+			return -1;
+		}
+
+		int returnVal = CVode(cvode_mem, tps[itps], state, &tret, CV_NORMAL);
+		
+		if (returnVal < 0) {
+			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+			N_VDestroy_Serial(state);
+			CVodeFree(&cvode_mem);
+			return returnVal;
+		}
+
+		CVodeGetSens(cvode_mem, &tret, uS);
+
+		N_VPrint_Serial(uS[0]);
+
+		// Copy out result
+		// TODO: ADD THIS
 	}
 
 	N_VDestroy_Serial(state);
