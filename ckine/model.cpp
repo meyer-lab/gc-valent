@@ -22,95 +22,105 @@ using std::runtime_error;
 
 struct ratesS {
 	std::array<double, 11> trafRates;
-	std::array<double, 17> rxn;
-};
-
-const double abstolIn = 1E-5;
-const double reltolIn = 1E-7;
-const double internalV = 623.0; // Same as that used in TAM model
-const double internalFrac = 0.5; // Same as that used in TAM model
-
-// The indices carried over in the reduced IL2 model
-const array<size_t, 21> IL2_assoc = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 52}};
-
-array<bool, 26> __active_species_IDX() {
-	array<bool, 26> __active_species_IDX;
-	fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
-
-	__active_species_IDX[8] = true;
-	__active_species_IDX[9] = true;
-	__active_species_IDX[16] = true;
-	__active_species_IDX[17] = true;
-	__active_species_IDX[21] = true;
-	__active_species_IDX[25] = true;
-
-	return __active_species_IDX;
-}
-
-const array<bool, 26> activeV = __active_species_IDX();
-
-
-void dy_dt(const double * const y, const double * const rxn, double *dydt) {
 	// Set the constant inputs
-	double IL2 = rxn[0];
-	double IL15 = rxn[1];
-	double IL7 = rxn[2];
-	double IL9 = rxn[3];
-	double kfwd = rxn[4];
-	double k5rev = rxn[5];
-	double k6rev = rxn[6];
-	double k15rev = rxn[7];
-	double k17rev = rxn[8];
-	double k18rev = rxn[9];
-	double k22rev = rxn[10];
-	double k23rev = rxn[11];
-	double k26rev = rxn[12];
-	double k27rev = rxn[13];
-	double k29rev = rxn[14];
-	double k30rev = rxn[15];
-	double k31rev = rxn[16];
-
-	// IL2 in nM
-	double IL2Ra = y[0];
-	double IL2Rb = y[1];
-	double gc = y[2];
-	double IL2_IL2Ra = y[3];
-	double IL2_IL2Rb = y[4];
-	double IL2_gc = y[5];
-	double IL2_IL2Ra_IL2Rb = y[6];
-	double IL2_IL2Ra_gc = y[7];
-	double IL2_IL2Rb_gc = y[8];
-	double IL2_IL2Ra_IL2Rb_gc = y[9];
-	
-	// IL15 in nM
-	double IL15Ra = y[10];
-	double IL15_IL15Ra = y[11];
-	double IL15_IL2Rb = y[12];
-	double IL15_gc = y[13];
-	double IL15_IL15Ra_IL2Rb = y[14];
-	double IL15_IL15Ra_gc = y[15];
-	double IL15_IL2Rb_gc = y[16];
-	double IL15_IL15Ra_IL2Rb_gc = y[17];
-	
-	// IL7, IL9 in nM
-	double IL7Ra = y[18];
-	double IL7Ra_IL7 = y[19];
-	double gc_IL7 = y[20];
-	double IL7Ra_gc_IL7 = y[21];
-	double IL9R = y[22];
-	double IL9R_IL9 = y[23];
-	double gc_IL9 = y[24];
-	double IL9R_gc_IL9 = y[25];
+	double IL2;
+	double IL15;
+	double IL7;
+	double IL9;
+	double kfwd;
+	double k5rev;
+	double k6rev;
+	double k15rev;
+	double k17rev;
+	double k18rev;
+	double k22rev;
+	double k23rev;
+	double k26rev;
+	double k27rev;
+	double k29rev;
+	double k30rev;
+	double k31rev;
 
 	// These are probably measured in the literature
-	double kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
-	double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+	double kfbnd; // Assuming on rate of 10^7 M-1 sec-1
+	const double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
 
-	double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
-	double k3fwd = kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
-	double k3rev = 50000 * k3fwd;
-	double k10rev = 12.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	double k11rev = 63.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+	const double k3fwd = kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+	const double k3rev = 50000 * k3fwd;
+	const double k10rev = 12.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k11rev = 63.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	
+	// Literature values for k values for IL-15
+	double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
+	double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
+	
+	// Literature values for IL-7
+	double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+	
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	double k4rev;
+	double k7rev;
+	double k12rev = k1rev * k11rev / k2rev;
+	// _Based on formation of full complex
+	double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / k6rev * k3fwd;
+	double k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
+
+	// IL15
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	double k16rev = kfwd * k18rev * k15rev / k13rev / kfbnd;
+	double k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev;
+	double k24rev = k13rev * k23rev / k14rev;
+	// _Based on formation of full complex
+
+	double k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd;
+	double k20rev = k14rev * k22rev * k24rev / k19rev / k15rev;
+
+	// _One detailed balance IL7/9 loop
+	double k32rev = k29rev * k31rev / k30rev;
+	double k28rev = k25rev * k27rev / k26rev;
+
+	// Set the rates
+	double endo = tfR[0];
+	double activeEndo = tfR[1];
+	double sortF = tfR[2];
+	double kRec = tfR[3];
+	double kDeg = tfR[4];
+};
+
+
+ratesS param(const double * const rxn, const double * const tfr) {
+	ratesS r;
+
+	r.IL2 = rxn[0];
+	r.IL15 = rxn[1];
+	r.IL7 = rxn[2];
+	r.IL9 = rxn[3];
+	r.kfwd = rxn[4];
+	r.k5rev = rxn[5];
+	r.k6rev = rxn[6];
+	r.k15rev = rxn[7];
+	r.k17rev = rxn[8];
+	r.k18rev = rxn[9];
+	r.k22rev = rxn[10];
+	r.k23rev = rxn[11];
+	r.k26rev = rxn[12];
+	r.k27rev = rxn[13];
+	r.k29rev = rxn[14];
+	r.k30rev = rxn[15];
+	r.k31rev = rxn[16];
+
+	// These are probably measured in the literature
+	r.kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
+	r.k1rev = r.kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+
+	r.k2rev = r.kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+	r.k3fwd = r.kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+	r.k3rev = 50000 * r.k3fwd;
+	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	r.k11rev = 63.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	
 	// Literature values for k values for IL-15
 	double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
@@ -142,6 +152,75 @@ void dy_dt(const double * const y, const double * const rxn, double *dydt) {
 	// _One detailed balance IL7/9 loop
 	double k32rev = k29rev * k31rev / k30rev;
 	double k28rev = k25rev * k27rev / k26rev;
+
+	// Set the rates
+	double endo = tfR[0];
+	double activeEndo = tfR[1];
+	double sortF = tfR[2];
+	double kRec = tfR[3];
+	double kDeg = tfR[4];
+
+	return r;
+}
+
+
+const double abstolIn = 1E-5;
+const double reltolIn = 1E-7;
+const double internalV = 623.0; // Same as that used in TAM model
+const double internalFrac = 0.5; // Same as that used in TAM model
+
+// The indices carried over in the reduced IL2 model
+const array<size_t, 21> IL2_assoc = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 52}};
+
+array<bool, 26> __active_species_IDX() {
+	array<bool, 26> __active_species_IDX;
+	fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
+
+	__active_species_IDX[8] = true;
+	__active_species_IDX[9] = true;
+	__active_species_IDX[16] = true;
+	__active_species_IDX[17] = true;
+	__active_species_IDX[21] = true;
+	__active_species_IDX[25] = true;
+
+	return __active_species_IDX;
+}
+
+const array<bool, 26> activeV = __active_species_IDX();
+
+
+void dy_dt(const double * const y, const double * const rxn, double *dydt) {
+	// IL2 in nM
+	double IL2Ra = y[0];
+	double IL2Rb = y[1];
+	double gc = y[2];
+	double IL2_IL2Ra = y[3];
+	double IL2_IL2Rb = y[4];
+	double IL2_gc = y[5];
+	double IL2_IL2Ra_IL2Rb = y[6];
+	double IL2_IL2Ra_gc = y[7];
+	double IL2_IL2Rb_gc = y[8];
+	double IL2_IL2Ra_IL2Rb_gc = y[9];
+	
+	// IL15 in nM
+	double IL15Ra = y[10];
+	double IL15_IL15Ra = y[11];
+	double IL15_IL2Rb = y[12];
+	double IL15_gc = y[13];
+	double IL15_IL15Ra_IL2Rb = y[14];
+	double IL15_IL15Ra_gc = y[15];
+	double IL15_IL2Rb_gc = y[16];
+	double IL15_IL15Ra_IL2Rb_gc = y[17];
+	
+	// IL7, IL9 in nM
+	double IL7Ra = y[18];
+	double IL7Ra_IL7 = y[19];
+	double gc_IL7 = y[20];
+	double IL7Ra_gc_IL7 = y[21];
+	double IL9R = y[22];
+	double IL9R_IL9 = y[23];
+	double gc_IL9 = y[24];
+	double IL9R_gc_IL9 = y[25];
 	
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
@@ -200,14 +279,6 @@ void findLigConsume(double *dydt) {
 
 void trafficking(const double * const y, array<double, 11> tfR, double *dydt) {
 	// Implement trafficking.
-
-	// Set the rates
-	double endo = tfR[0];
-	double activeEndo = tfR[1];
-	double sortF = tfR[2];
-	double kRec = tfR[3];
-	double kDeg = tfR[4];
-
 	size_t halfL = activeV.size();
 
 	// Actually calculate the trafficking
