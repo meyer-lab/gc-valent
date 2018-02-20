@@ -11,6 +11,7 @@
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvode/cvode_direct.h>
 #include <iostream>
+#include <cvodes/cvodes.h>
 
 using std::array;
 using std::copy;
@@ -20,10 +21,14 @@ using std::fill;
 using std::string;
 using std::runtime_error;
 
+const size_t plen = 28;
+
 struct ratesS {
-	std::array<double, 11> trafRates;
-	std::array<double, 17> rxn;
+	std::array<double, plen> p;
+	double *rxn;
+	double *trafRates;
 };
+
 
 const double abstolIn = 1E-5;
 const double reltolIn = 1E-7;
@@ -50,98 +55,99 @@ array<bool, 26> __active_species_IDX() {
 const array<bool, 26> activeV = __active_species_IDX();
 
 
-void dy_dt(const double * const y, const double * const rxn, double *dydt) {
+template<typename DD>
+void dy_dt(const DD * const y, const DD * const rxn, DD *dydt) {
 	// Set the constant inputs
-	double IL2 = rxn[0];
-	double IL15 = rxn[1];
-	double IL7 = rxn[2];
-	double IL9 = rxn[3];
-	double kfwd = rxn[4];
-	double k5rev = rxn[5];
-	double k6rev = rxn[6];
-	double k15rev = rxn[7];
-	double k17rev = rxn[8];
-	double k18rev = rxn[9];
-	double k22rev = rxn[10];
-	double k23rev = rxn[11];
-	double k26rev = rxn[12];
-	double k27rev = rxn[13];
-	double k29rev = rxn[14];
-	double k30rev = rxn[15];
-	double k31rev = rxn[16];
+	DD IL2 = rxn[0];
+	DD IL15 = rxn[1];
+	DD IL7 = rxn[2];
+	DD IL9 = rxn[3];
+	DD kfwd = rxn[4];
+	DD k5rev = rxn[5];
+	DD k6rev = rxn[6];
+	DD k15rev = rxn[7];
+	DD k17rev = rxn[8];
+	DD k18rev = rxn[9];
+	DD k22rev = rxn[10];
+	DD k23rev = rxn[11];
+	DD k26rev = rxn[12];
+	DD k27rev = rxn[13];
+	DD k29rev = rxn[14];
+	DD k30rev = rxn[15];
+	DD k31rev = rxn[16];
 
 	// IL2 in nM
-	double IL2Ra = y[0];
-	double IL2Rb = y[1];
-	double gc = y[2];
-	double IL2_IL2Ra = y[3];
-	double IL2_IL2Rb = y[4];
-	double IL2_gc = y[5];
-	double IL2_IL2Ra_IL2Rb = y[6];
-	double IL2_IL2Ra_gc = y[7];
-	double IL2_IL2Rb_gc = y[8];
-	double IL2_IL2Ra_IL2Rb_gc = y[9];
+	DD IL2Ra = y[0];
+	DD IL2Rb = y[1];
+	DD gc = y[2];
+	DD IL2_IL2Ra = y[3];
+	DD IL2_IL2Rb = y[4];
+	DD IL2_gc = y[5];
+	DD IL2_IL2Ra_IL2Rb = y[6];
+	DD IL2_IL2Ra_gc = y[7];
+	DD IL2_IL2Rb_gc = y[8];
+	DD IL2_IL2Ra_IL2Rb_gc = y[9];
 	
 	// IL15 in nM
-	double IL15Ra = y[10];
-	double IL15_IL15Ra = y[11];
-	double IL15_IL2Rb = y[12];
-	double IL15_gc = y[13];
-	double IL15_IL15Ra_IL2Rb = y[14];
-	double IL15_IL15Ra_gc = y[15];
-	double IL15_IL2Rb_gc = y[16];
-	double IL15_IL15Ra_IL2Rb_gc = y[17];
+	DD IL15Ra = y[10];
+	DD IL15_IL15Ra = y[11];
+	DD IL15_IL2Rb = y[12];
+	DD IL15_gc = y[13];
+	DD IL15_IL15Ra_IL2Rb = y[14];
+	DD IL15_IL15Ra_gc = y[15];
+	DD IL15_IL2Rb_gc = y[16];
+	DD IL15_IL15Ra_IL2Rb_gc = y[17];
 	
 	// IL7, IL9 in nM
-	double IL7Ra = y[18];
-	double IL7Ra_IL7 = y[19];
-	double gc_IL7 = y[20];
-	double IL7Ra_gc_IL7 = y[21];
-	double IL9R = y[22];
-	double IL9R_IL9 = y[23];
-	double gc_IL9 = y[24];
-	double IL9R_gc_IL9 = y[25];
+	DD IL7Ra = y[18];
+	DD IL7Ra_IL7 = y[19];
+	DD gc_IL7 = y[20];
+	DD IL7Ra_gc_IL7 = y[21];
+	DD IL9R = y[22];
+	DD IL9R_IL9 = y[23];
+	DD gc_IL9 = y[24];
+	DD IL9R_gc_IL9 = y[25];
 
 	// These are probably measured in the literature
-	double kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
-	double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+	DD kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
+	DD k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
 
-	double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
-	double k3fwd = kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
-	double k3rev = 50000 * k3fwd;
-	double k10rev = 12.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	double k11rev = 63.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	DD k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+	DD k3fwd = kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+	DD k3rev = 50000 * k3fwd;
+	DD k10rev = 12.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	DD k11rev = 63.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	
 	// Literature values for k values for IL-15
-	double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
-	double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
+	DD k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
+	DD k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
 	
 	// Literature values for IL-7
-	double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+	DD k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
 	
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
-	double k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd;
-	double k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev;
-	double k12rev = k1rev * k11rev / k2rev;
+	DD k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd;
+	DD k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev;
+	DD k12rev = k1rev * k11rev / k2rev;
 	// _Based on formation of full complex
-	double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / k6rev * k3fwd;
-	double k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
+	DD k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / k6rev * k3fwd;
+	DD k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
 
 	// IL15
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
-	double k16rev = kfwd * k18rev * k15rev / k13rev / kfbnd;
-	double k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev;
-	double k24rev = k13rev * k23rev / k14rev;
+	DD k16rev = kfwd * k18rev * k15rev / k13rev / kfbnd;
+	DD k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev;
+	DD k24rev = k13rev * k23rev / k14rev;
 	// _Based on formation of full complex
 
-	double k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd;
-	double k20rev = k14rev * k22rev * k24rev / k19rev / k15rev;
+	DD k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd;
+	DD k20rev = k14rev * k22rev * k24rev / k19rev / k15rev;
 
 	// _One detailed balance IL7/9 loop
-	double k32rev = k29rev * k31rev / k30rev;
-	double k28rev = k25rev * k27rev / k26rev;
+	DD k32rev = k29rev * k31rev / k30rev;
+	DD k28rev = k25rev * k27rev / k26rev;
 	
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
@@ -189,7 +195,8 @@ extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in)
 }
 
 
-void findLigConsume(double *dydt) {
+template<typename DD>
+void findLigConsume(DD *dydt) {
 	// Calculate the ligand consumption.
 	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
 	dydt[53] -= std::accumulate(dydt+11, dydt+18, 0) / internalV;
@@ -198,15 +205,16 @@ void findLigConsume(double *dydt) {
 }
 
 
-void trafficking(const double * const y, array<double, 11> tfR, double *dydt) {
+template<typename DD>
+void trafficking(const DD * const y, const DD * const tfR, DD *dydt) {
 	// Implement trafficking.
 
 	// Set the rates
-	double endo = tfR[0];
-	double activeEndo = tfR[1];
-	double sortF = tfR[2];
-	double kRec = tfR[3];
-	double kDeg = tfR[4];
+	DD endo = tfR[0];
+	DD activeEndo = tfR[1];
+	DD sortF = tfR[2];
+	DD kRec = tfR[3];
+	DD kDeg = tfR[4];
 
 	size_t halfL = activeV.size();
 
@@ -236,16 +244,18 @@ void trafficking(const double * const y, array<double, 11> tfR, double *dydt) {
 }
 
 
-void fullModel(const double * const y, const array<double, 17> r, array<double, 11> tfR, double *dydt) {
+template<typename DD>
+void fullModel(const DD * const y, const DD * const r, const DD * const tfR, DD *dydt) {
 	// Implement full model.
 	fill(dydt, dydt + 56, 0.0);
 
 	// Calculate endosomal reactions
-	array<double, 17> rr = r;
+	array<DD, 17> rr;
+	copy_n(r, rr.size(), rr.begin());
 	copy_n(y + 52, 4, rr.begin());
 
 	// Calculate cell surface and endosomal reactions
-	dy_dt(y, r.data(), dydt);
+	dy_dt(y, r, dydt);
 	dy_dt(y + 26, rr.data(), dydt + 26);
 
 	// Handle trafficking
@@ -287,19 +297,11 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 
 extern "C" void fullModel_C(const double * const y_in, double t, double *dydt_out, double *rxn_in, double *tfr_in) {
-	// Bring back the wrapper!
-
-	array<double, 17> r;
-	array<double, 11> tf;
-
-	copy_n(rxn_in, r.size(), r.begin());
-	copy_n(tfr_in, tf.size(), tf.begin());
-
-	fullModel(y_in, r, tf, dydt_out);
+	fullModel(y_in, rxn_in, tfr_in, dydt_out);
 }
 
 
-array<double, 56> solveAutocrine(array<double, 11> trafRates) {
+array<double, 56> solveAutocrine(const double * const trafRates) {
 	array<double, 56> y0;
 	fill(y0.begin(), y0.end(), 0.0);
 
@@ -337,48 +339,39 @@ void* solver_setup(N_Vector init, void * params) {
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
 	void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+
 	if (cvode_mem == NULL) {
 		CVodeFree(&cvode_mem);
 		throw runtime_error(string("Error calling CVodeCreate in solver_setup."));
 	}
+
+	auto checkReturn = [&cvode_mem] (int retVal, string name) {
+		if (retVal < 0) {
+			CVodeFree(&cvode_mem);
+			throw runtime_error(string("Error calling ") + name + string(" in solver_setup."));
+		}
+	};
 	
 	CVodeSetErrHandlerFn(cvode_mem, &errorHandler, params);
 
 	/* Call CVodeInit to initialize the integrator memory and specify the
 	 * user's right hand side function in y'=f(t,y), the inital time T0, and
 	 * the initial dependent variable vector y. */
-	if (CVodeInit(cvode_mem, fullModelCVode, 0.0, init) < 0) {
-		CVodeFree(&cvode_mem);
-		throw runtime_error(string("Error calling CVodeInit in solver_setup."));
-	}
-	
-	N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(init));
-	N_VConst(abstolIn, abbstol);
+	checkReturn(CVodeInit(cvode_mem, fullModelCVode, 0.0, init), "CVodeInit");
 	
 	/* Call CVodeSVtolerances to specify the scalar relative tolerance
 	 * and vector absolute tolerances */
-	if (CVodeSVtolerances(cvode_mem, reltolIn, abbstol) < 0) {
-		N_VDestroy_Serial(abbstol);
-		CVodeFree(&cvode_mem);
-		throw runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
-	}
-	N_VDestroy_Serial(abbstol);
+	checkReturn(CVodeSStolerances(cvode_mem, reltolIn, abstolIn), "CVodeSVtolerances");
 
 	SUNMatrix A = SUNDenseMatrix((int) NV_LENGTH_S(init), (int) NV_LENGTH_S(init));
 
 	SUNLinearSolver LS = SUNDenseLinearSolver(init, A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
-	if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
-		CVodeFree(&cvode_mem);
-		throw runtime_error(string("Error calling CVDense in solver_setup."));
-	}
+	checkReturn(CVDlsSetLinearSolver(cvode_mem, LS, A), "CVDlsSetLinearSolver");
 	
 	// Pass along the parameter structure to the differential equations
-	if (CVodeSetUserData(cvode_mem, params) < 0) {
-		CVodeFree(&cvode_mem);
-		throw runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
-	}
+	checkReturn(CVodeSetUserData(cvode_mem, params), "CVodeSetUserData");
 
 	CVodeSetMaxNumSteps(cvode_mem, 2000000);
 	
@@ -386,11 +379,40 @@ void* solver_setup(N_Vector init, void * params) {
 }
 
 
+void sensi_setup(void *cvode_mem, N_Vector init, ratesS *params) {
+	// Setup all the initial sensitivities
+	N_Vector *uS = N_VCloneVectorArray(plen, init);
+	for(size_t is = 0; is < plen; is++) N_VConst(0.0, uS[is]);
+
+	auto checkReturn = [&cvode_mem] (int retVal, string name) {
+		if (retVal < 0) {
+			CVodeFree(&cvode_mem);
+			throw runtime_error(string("Error calling ") + name + string(" in solver_setup."));
+		}
+	};
+
+	checkReturn(CVodeSensInit1(cvode_mem, plen, CV_SIMULTANEOUS, NULL, uS), "CVodeSensInit1");
+	N_VDestroyVectorArray_Serial(uS, plen);
+
+	array<double, plen> abstol;
+	fill(abstol.begin(), abstol.end(), 1.0E-2);
+	checkReturn(CVodeSensSStolerances(cvode_mem, 1.0E-2, abstol.data()), "CVodeSensSStolerances");
+
+	checkReturn(CVodeSetSensErrCon(cvode_mem, true), "CVodeSetSensErrCon");
+
+	checkReturn(CVodeSetSensDQMethod(cvode_mem, CV_CENTERED, 0.0), "CVodeSetSensDQMethod");
+
+	checkReturn(CVodeSetSensParams(cvode_mem, params->p.data(), NULL, NULL), "CVodeSetSensParams");
+}
+
+
 extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
 	ratesS rattes;
+	rattes.rxn = rattes.p.data();
+	rattes.trafRates = rattes.p.data() + 17;
 
-	copy_n(rxnRatesIn, rattes.rxn.size(), rattes.rxn.begin());
-	copy_n(trafRatesIn, rattes.trafRates.size(), rattes.trafRates.begin());
+	copy_n(rxnRatesIn, 17, rattes.rxn);
+	copy_n(trafRatesIn, 11, rattes.trafRates);
 
 	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
 	N_Vector state;
@@ -438,6 +460,62 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(state, ii);
 			}
 		}
+	}
+
+	N_VDestroy_Serial(state);
+	CVodeFree(&cvode_mem);
+	return 0;
+}
+
+
+extern "C" int runCkineSens (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
+	ratesS rattes;
+	rattes.rxn = rattes.p.data();
+	rattes.trafRates = rattes.p.data() + 17;
+
+	copy_n(rxnRatesIn, 17, rattes.rxn);
+	copy_n(trafRatesIn, 11, rattes.trafRates);
+
+	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
+	N_Vector state;
+
+	// Fill output values with 0's
+	fill(out, out + ntps*y0.size(), 0.0);
+
+	state = N_VMake_Serial((long) y0.size(), y0.data());
+
+	N_Vector *uS = N_VCloneVectorArray(plen, state);
+	for(size_t is = 0; is < plen; is++) N_VConst(0.0, uS[is]);
+
+	void *cvode_mem = solver_setup(state, (void *) &rattes);
+
+	sensi_setup(cvode_mem, state, &rattes);
+
+	double tret = 0;
+
+	for (size_t itps = 0; itps < ntps; itps++) {
+		if (tps[itps] < tret) {
+			std::cout << "Can't go backwards." << std::endl;
+			N_VDestroy_Serial(state);
+			CVodeFree(&cvode_mem);
+			return -1;
+		}
+
+		int returnVal = CVode(cvode_mem, tps[itps], state, &tret, CV_NORMAL);
+		
+		if (returnVal < 0) {
+			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+			N_VDestroy_Serial(state);
+			CVodeFree(&cvode_mem);
+			return returnVal;
+		}
+
+		CVodeGetSens(cvode_mem, &tret, uS);
+
+		N_VPrint_Serial(uS[0]);
+
+		// Copy out result
+		// TODO: ADD THIS
 	}
 
 	N_VDestroy_Serial(state);
