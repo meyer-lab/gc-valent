@@ -337,6 +337,7 @@ void* solver_setup(N_Vector init, void * params) {
 	N_VDestroy_Serial(abbstol);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
+	// Also SUNSPBCGS and SUNSPTFQMR options
 	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
 		CVodeFree(&cvode_mem);
 		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
@@ -347,8 +348,6 @@ void* solver_setup(N_Vector init, void * params) {
 		CVodeFree(&cvode_mem);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
-
-	// TODO: Add preconditioning.
 
 	CVodeSetMaxNumSteps(cvode_mem, 2000000);
 	
