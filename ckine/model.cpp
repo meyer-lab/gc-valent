@@ -6,6 +6,10 @@
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
+#include <cvode/cvode_spils.h>           /* access to CVSpils interface       */
+#include <sunlinsol/sunlinsol_spgmr.h>   /* access to SPGMR SUNLinearSolver   */
+#include <sunlinsol/sunlinsol_spbcgs.h>  /* access to SPBCGS SUNLinearSolver  */
+#include <sunlinsol/sunlinsol_sptfqmr.h> /* access to SPTFQMR SUNLinearSolver */
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
@@ -331,15 +335,11 @@ void* solver_setup(N_Vector init, void * params) {
 		throw std::runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
 	}
 	N_VDestroy_Serial(abbstol);
-
-	SUNMatrix A = SUNDenseMatrix((int) NV_LENGTH_S(init), (int) NV_LENGTH_S(init));
-
-	SUNLinearSolver LS = SUNDenseLinearSolver(init, A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
-	if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
+	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
 		CVodeFree(&cvode_mem);
-		throw std::runtime_error(string("Error calling CVDense in solver_setup."));
+		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
 	
 	// Pass along the parameter structure to the differential equations
@@ -347,6 +347,8 @@ void* solver_setup(N_Vector init, void * params) {
 		CVodeFree(&cvode_mem);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
+
+	// TODO: Add preconditioning.
 
 	CVodeSetMaxNumSteps(cvode_mem, 2000000);
 	
