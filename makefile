@@ -44,6 +44,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out
+	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
@@ -57,6 +58,6 @@ stats.dat: ckine/ckine.so
 testprofile: stats.dat
 	pyprof2calltree -i stats.dat -k
 
-doc:
-	sphinx-apidoc -o doc/source ckine
-	sphinx-build doc/source doc/build
+doc: ckine/ckine.so
+	sphinx-apidoc -o docs/source ckine
+	sphinx-build docs/source docs/build
