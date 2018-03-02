@@ -19,7 +19,6 @@
 
 using std::array;
 using std::copy;
-using std::copy_n;
 using std::vector;
 using std::fill;
 using std::string;
@@ -93,7 +92,7 @@ ratesS param(const double * const rxn, const double * const tfR) {
 	r.kRec = tfR[3];
 	r.kDeg = tfR[4];
 
-	copy_n(tfR + 5, 6, r.Rexpr.begin());
+	std::copy_n(tfR + 5, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -397,7 +396,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 		// Copy out result
 		if (NV_LENGTH_S(state) == y0.size()) {
-			copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+			std::copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
 		} else { // If we're dealing with a reduced model
 			for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
 				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(state, ii);
