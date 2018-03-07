@@ -36,31 +36,12 @@ pipeline {
           failUnstable: true,
           sourceEncoding: 'UTF_8',
           zoomCoverageChart: true])
-        step([
-          $class: 'TasksPublisher',
-          canComputeNew: false,
-          defaultEncoding: '', 
-          excludePattern: '',
-          healthy: '',
-          high: 'TODO,FIXME,XXX',
-          low: '',
-          normal: 'CITE',
-          pattern: '**/*.py, **/*.md',
-          unHealthy: ''])
-        step([
-          $class                     : 'WarningsPublisher',
-          parserConfigurations       : [[parserName: 'PYLint', pattern: 'pylint.log']],
-          unstableTotalAll           : '1000',
-          usePreviousBuildAsReference: true
-          ])
-        publishHTML([
-          allowMissing: false,
-          alwaysLinkToLastBuild: false,
-          keepAll: true,
-          reportDir: 'docs/build',
-          reportFiles: 'index.html',
-          reportName: 'Sphinx Documentation',
-          reportTitles: ''])
+        step([$class:'TasksPublisher', canComputeNew:false, defaultEncoding:'', excludePattern:'',
+          healthy:'', high:'TODO,FIXME,XXX', low:'', normal:'CITE', pattern:'**/*.py, **/*.md', unHealthy:''])
+        step([$class:'WarningsPublisher', parserConfigurations: [[parserName:'PYLint', pattern:'pylint.log']],
+          unstableTotalAll:'1000', usePreviousBuildAsReference:true])
+        publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true,
+          reportDir:'docs/build', reportFiles:'index.html', reportName:'Sphinx Documentation', reportTitles:''])
       }
     }
   }
