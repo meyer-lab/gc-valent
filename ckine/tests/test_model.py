@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
 
 
 class TestModel(unittest.TestCase):
@@ -123,3 +123,17 @@ class TestModel(unittest.TestCase):
 
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
+    
+    @settings(deadline=None)
+    @given(vec=harrays(np.float, 28, elements=floats(0.1, 2.0)))
+    def test_runCkine(self.y0):
+        ts = np.array([500.])
+        # 11 trafRates and 17 rxnRates
+        trafRates = vec[0:11]
+        rxnRates = vec[11:28]
+        ys, retVal = runCkine(ts, rxnRates, trafRates)
+        
+        # test that return value of runCkine isn't negative (model run didn't fail)
+        self.assertTrue(retVal >= 0)
+        
+        
