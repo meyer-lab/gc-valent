@@ -21,13 +21,13 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp
-	g++    -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
+	clang++    -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
 
 ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
-	g++ -g -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
+	clang++ -g -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
 
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
-	g++ -g -std=c++11 -L./ckine -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp -lsundials_cvode -lsundials_nvecserial -lcppunit -lckine.debug -lm -o $@
+	clang++ -g -std=c++11 -L./ckine -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp -lsundials_cvode -lsundials_nvecserial -lcppunit -lckine.debug -lm -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -51,7 +51,7 @@ clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
 	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
-	rm -rf ckine/cppcheck.dSYM
+	rm -rf ckine/*.dSYM
 	rm -f ckine/libckine.debug.so
 
 test: ckine/ckine.so
