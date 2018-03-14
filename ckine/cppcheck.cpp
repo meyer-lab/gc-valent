@@ -3,6 +3,7 @@
 #include <random>
 #include <array>
 #include <random>
+#include <algorithm>
 
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/XmlOutputter.h>
