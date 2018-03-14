@@ -353,6 +353,7 @@ void* solver_setup(N_Vector init, void * params) {
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	// Also SUNSPBCGS and SUNSPTFQMR options
+	// TODO: Fix linear solver memory leak here.
 	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
 		CVodeFree(&cvode_mem);
 		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));

@@ -8,7 +8,7 @@ from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
 
-settings.register_profile("ci", max_examples=2000)
+settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
 
 class TestModel(unittest.TestCase):
@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @given(vec=harrays(np.float, 27, elements=floats(0.001, 10.0)), sortF=floats(0.01, 0.99))
+    @given(vec=harrays(np.float, 27, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
     def test_runCkine(self, vec, sortF):
         vec = np.insert(vec, 2, sortF)
         # 11 trafRates and 17 rxnRates

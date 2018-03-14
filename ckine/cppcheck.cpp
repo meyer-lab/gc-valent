@@ -25,7 +25,9 @@ public:
 	}
  
 	/// Teardown method
-	void tearDown() {}
+	void tearDown() {
+		free(gen);
+	}
 
 	// method to create a suite of tests
 	static CppUnit::Test *suite() {
@@ -70,9 +72,9 @@ int main () {
 
 	runner.addTest(interfaceTestCase::suite());
 	
-	bool wasSuccessful = runner.run();
+	runner.run();
 
 	outputFile.close();
 
-	return wasSuccessful;
+	return 0;
 }
