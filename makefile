@@ -1,8 +1,9 @@
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
+compile_common = -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm
 
-.PHONY: clean test all testprofile testcover doc
+.PHONY: clean test all testprofile testcover doc testcpp
 
 all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
@@ -20,8 +21,11 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
-ckine/ckine.so: ckine/model.cpp
-	g++ -std=c++11 -mavx -march=native ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
+ckine/ckine.so: ckine/model.cpp ckine/model.hpp
+	g++ $(compile_common) ckine/model.cpp --shared -fPIC -o $@
+
+ckine/cppcheck: ckine/model.cpp ckine/model.hpp ckine/cppcheck.cpp
+	g++ -g $(compile_common) -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp ckine/model.cpp -lcppunit -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -43,7 +47,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
-	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out
+	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck
 	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
 
 test: ckine/ckine.so
@@ -57,6 +61,9 @@ stats.dat: ckine/ckine.so
 
 testprofile: stats.dat
 	pyprof2calltree -i stats.dat -k
+
+testcpp: ckine/cppcheck
+	ckine/cppcheck
 
 doc: ckine/ckine.so
 	sphinx-apidoc -o docs/source ckine

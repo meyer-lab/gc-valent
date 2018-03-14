@@ -23,6 +23,22 @@ using std::vector;
 using std::fill;
 using std::string;
 
+std::array<bool, 26> __active_species_IDX() {
+	std::array<bool, 26> __active_species_IDX;
+	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
+
+	__active_species_IDX[8] = true;
+	__active_species_IDX[9] = true;
+	__active_species_IDX[16] = true;
+	__active_species_IDX[17] = true;
+	__active_species_IDX[21] = true;
+	__active_species_IDX[25] = true;
+
+	return __active_species_IDX;
+}
+
+const std::array<bool, 26> activeV = __active_species_IDX();
+
 ratesS param(const double * const rxn, const double * const tfR) {
 	ratesS r;
 
