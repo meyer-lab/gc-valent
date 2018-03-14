@@ -1,7 +1,6 @@
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
-compile_common = -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm
 
 .PHONY: clean test all testprofile testcover doc testcpp
 
@@ -22,10 +21,13 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp
-	g++ $(compile_common) ckine/model.cpp --shared -fPIC -o $@
+	g++    -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
 
-ckine/cppcheck: ckine/model.cpp ckine/model.hpp ckine/cppcheck.cpp
-	g++ -g $(compile_common) -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp ckine/model.cpp -lcppunit -o $@
+ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
+	g++ -g -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
+
+ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
+	g++ -g -std=c++11 -L./ckine -lckine.debug -lm -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp -lcppunit -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -50,6 +52,7 @@ clean:
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
 	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
 	rm -rf ckine/cppcheck.dSYM
+	rm -f ckine/libckine.debug.so
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
