@@ -8,6 +8,8 @@ from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
 
+settings.register_profile("ci", max_examples=2000)
+settings.load_profile("ci")
 
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
@@ -38,7 +40,6 @@ class TestModel(unittest.TestCase):
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
 
-    @settings(deadline=None)
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
     def test_conservation(self, y0):
         """Check for the conservation of each of the initial receptors."""
@@ -56,7 +57,6 @@ class TestModel(unittest.TestCase):
         #Check for Conservation of IL9R
         self.assertConservation(dy, 0.0, np.array([22, 23, 25]))
 
-    @settings(deadline=None)
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
@@ -108,7 +108,6 @@ class TestModel(unittest.TestCase):
 
         self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs))
 
-    @settings(deadline=None)
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
     def test_reproducible(self, y0):
 
@@ -123,16 +122,17 @@ class TestModel(unittest.TestCase):
 
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
-    
-    @settings(deadline=None)
-    @given(vec=harrays(np.float, 28, elements=floats(0.1, 2.0)))
-    def test_runCkine(self, vec):
+
+    @given(vec=harrays(np.float, 27, elements=floats(0.001, 10.0)), sortF=floats(0.01, 0.99))
+    def test_runCkine(self, vec, sortF):
+        vec = np.insert(vec, 2, sortF)
         # 11 trafRates and 17 rxnRates
         trafRates = vec[0:11]
         rxnRates = vec[11:28]
+
         ys, retVal = runCkine(self.ts, rxnRates, trafRates)
         
         # test that return value of runCkine isn't negative (model run didn't fail)
-        self.assertTrue(retVal >= 0)
+        self.assertGreaterEqual(retVal, 0)
         
         
