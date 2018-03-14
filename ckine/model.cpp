@@ -254,12 +254,12 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
 	ratesS *rIn = static_cast<ratesS *>(user_data);
 
-	array<double, 56> xxArr;
-
 	// Get the data in the right form
 	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
-		fullModel(xxArr.data(), rIn, NV_DATA_S(dxxdt));
+		fullModel(NV_DATA_S(xx), rIn, NV_DATA_S(dxxdt));
 	} else if (NV_LENGTH_S(xx) == IL2_assoc.size()) { // If it looks like we're using the IL2 model
+		array<double, 56> xxArr;
+
 		fill(xxArr.begin(), xxArr.end(), 0.0);
 
 		for (size_t ii = 0; ii < IL2_assoc.size(); ii++)
