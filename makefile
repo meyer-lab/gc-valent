@@ -27,7 +27,7 @@ ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
 	g++ -g -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
 
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
-	g++ -g -std=c++11 -L./ckine -lckine.debug -lm -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp -lcppunit -o $@
+	g++ -g -std=c++11 -L./ckine -Ickine/tests/rapidcheck/include ckine/cppcheck.cpp -lsundials_cvode -lsundials_nvecserial -lcppunit -lckine.debug -lm -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
