@@ -6,7 +6,6 @@
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
-#include <tuple>
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
@@ -18,8 +17,6 @@ using std::array;
 using std::copy;
 using std::vector;
 using std::fill;
-using std::tuple;
-using std::tie;
 using std::string;
 
 std::array<bool, 26> __active_species_IDX() {
