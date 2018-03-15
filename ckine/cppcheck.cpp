@@ -26,7 +26,7 @@ public:
  
 	/// Teardown method
 	void tearDown() {
-		free(gen);
+		delete gen;
 	}
 
 	// method to create a suite of tests
