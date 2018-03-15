@@ -6,6 +6,7 @@
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
+#include <tuple>
 #include <cvode/cvode_spils.h>           /* access to CVSpils interface       */
 #include <cvode/cvode_impl.h>           /* access to implementation interface       */
 #include <sunlinsol/sunlinsol_spgmr.h>   /* access to SPGMR SUNLinearSolver   */
@@ -22,6 +23,8 @@ using std::array;
 using std::copy;
 using std::vector;
 using std::fill;
+using std::tuple;
+using std::tie;
 using std::string;
 
 std::array<bool, 26> __active_species_IDX() {
@@ -321,7 +324,7 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "Error code: " << error_code << std::endl;
 }
 
-void* solver_setup(N_Vector init, void * params) {
+tuple<void*, SUNLinearSolver> solver_setup(N_Vector init, void * params) {
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
 	void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
@@ -351,24 +354,27 @@ void* solver_setup(N_Vector init, void * params) {
 		throw std::runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
 	}
 	N_VDestroy_Serial(abbstol);
+
+	SUNLinearSolver LS = SUNSPGMR(init, PREC_NONE, 0);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	// Also SUNSPBCGS and SUNSPTFQMR options
-	// TODO: Fix linear solver memory leak here.
-	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
+	if (CVSpilsSetLinearSolver(cvode_mem, LS) < 0) {
 		CVodeFree(&cvode_mem);
+		SUNLinSolFree(LS);
 		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(cvode_mem, params) < 0) {
 		CVodeFree(&cvode_mem);
+		SUNLinSolFree(LS);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
 	CVodeSetMaxNumSteps(cvode_mem, 2000000);
 	
-	return cvode_mem;
+	return std::make_tuple(cvode_mem, LS);
 }
 
 
@@ -397,7 +403,9 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		state = N_VMake_Serial((long) y0.size(), y0.data());
 	}
 
-	void *cvode_mem = solver_setup(state, (void *) &rattes);
+	void *cvode_mem;
+	SUNLinearSolver LS;
+	tie(cvode_mem, LS) = solver_setup(state, (void *) &rattes);
 
 	double tret = 0;
 
@@ -405,6 +413,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		if (tps[itps] < tret) {
 			std::cout << "Can't go backwards." << std::endl;
 			N_VDestroy_Serial(state);
+			SUNLinSolFree(LS);
 			CVodeFree(&cvode_mem);
 			return -1;
 		}
@@ -414,6 +423,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		if (returnVal < 0) {
 			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
 			N_VDestroy_Serial(state);
+			SUNLinSolFree(LS);
 			CVodeFree(&cvode_mem);
 			return returnVal;
 		}
@@ -429,6 +439,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	}
 
 	N_VDestroy_Serial(state);
+	SUNLinSolFree(LS);
 	CVodeFree(&cvode_mem);
 	return 0;
 }
