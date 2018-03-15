@@ -48,8 +48,8 @@ struct ratesS {
 	std::array<double, 6> Rexpr;
 };
 
-const double abstolIn = 1E-5;
-const double reltolIn = 1E-7;
+const double abstolIn = 1E-3;
+const double reltolIn = 1E-5;
 const double internalV = 623.0; // Same as that used in TAM model
 const double internalFrac = 0.5; // Same as that used in TAM model
 

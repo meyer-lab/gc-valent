@@ -6,6 +6,13 @@ pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filte
 
 all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    LINKFLAG = -Wl,-rpath=./ckine
+endif
+
+CPPLINKS = -lm -lsundials_cvode -lsundials_nvecserial -lcppunit
+
 $(fdir)/Figure%.svg: genFigures.py
 	mkdir -p ./Manuscript/Figures
 	python3 genFigures.py $*
@@ -21,13 +28,13 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp
-	clang++    -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
+	clang++    -std=c++11 -mavx -march=native -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
 ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
-	clang++ -g -std=c++11 -mavx -march=native -O3 -lsundials_cvode -lsundials_nvecserial -lm ckine/model.cpp --shared -fPIC -o $@
+	clang++ -g -std=c++11 -mavx -march=native -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
-	clang++ -g -std=c++11 -L./ckine ckine/cppcheck.cpp -lsundials_cvode -lsundials_nvecserial -lcppunit -lckine.debug -lm -Wl,-rpath=./ckine -o $@
+	clang++ -g -std=c++11 -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
