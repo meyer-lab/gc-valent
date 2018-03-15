@@ -356,15 +356,12 @@ void* solver_setup(N_Vector init, void * params) {
 	// Also SUNSPBCGS and SUNSPTFQMR options
 	// TODO: Fix linear solver memory leak here.
 	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
-		// This may be a fix for the memory leak.
-		((CVodeMem) cvode_mem)->cv_lfree((CVodeMem)cvode_mem);
 		CVodeFree(&cvode_mem);
 		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(cvode_mem, params) < 0) {
-		((CVodeMem) cvode_mem)->cv_lfree((CVodeMem) cvode_mem);
 		CVodeFree(&cvode_mem);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
@@ -408,7 +405,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		if (tps[itps] < tret) {
 			std::cout << "Can't go backwards." << std::endl;
 			N_VDestroy_Serial(state);
-			((CVodeMem) cvode_mem)->cv_lfree((CVodeMem)cvode_mem);
 			CVodeFree(&cvode_mem);
 			return -1;
 		}
@@ -418,7 +414,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		if (returnVal < 0) {
 			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
 			N_VDestroy_Serial(state);
-			((CVodeMem) cvode_mem)->cv_lfree((CVodeMem)cvode_mem);
 			CVodeFree(&cvode_mem);
 			return returnVal;
 		}
@@ -434,7 +429,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	}
 
 	N_VDestroy_Serial(state);
-	((CVodeMem) cvode_mem)->cv_lfree((CVodeMem)cvode_mem);
 	CVodeFree(&cvode_mem);
 	return 0;
 }
