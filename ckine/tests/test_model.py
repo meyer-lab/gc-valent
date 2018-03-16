@@ -135,4 +135,64 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
         
+    def test_failed_runCkine(self):
+        '''Internal CVode error in CVode
+        At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+        In module: CVODE
+        Error code: -4
+        CVode error in CVode. Code: -4
+        Model run failed
+        Endocytosis: 3.146053504525751e-304
+        activeEndo: 0.10614172503188912
+        sortF: 4.597500267118165e-237
+        kRec: 1.168921624346571e-212
+        kDeg: 6.175221406423857e-25
+        Receptor expression: [0.e+00 0.e+00 1.e-07 0.e+00 0.e+00 0.e+00]
+        .....Reaction rates.....
+        IL2: 500.0
+        IL15: 0.0
+        IL7: 0.0
+        IL9: 0.0
+        kfwd: 3.1356349315053714e-172
+        k5rev: 0.037367428484416224
+        k6rev: 0.07733074217829684
+        [1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]        '''
         
+        Endocytosis = 3.146053504525751e-304
+        activeEndo = 0.10614172503188912
+        sortF = 4.597500267118165e-237
+        kRec = 1.168921624346571e-212
+        kDeg = 6.175221406423857e-25
+        kfwd = 3.1356349315053714e-172
+        k5rev = 0.037367428484416224
+        k6rev = 0.07733074217829684
+        tfrRates = np.array([Endocytosis, activeEndo, sortF, kRec, kDeg, 0., 0., 1e-07, 0., 0., 0.])
+        rxnRates = np.array([500., 0., 0., 0., kfwd, k5rev, k6rev, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.])
+        
+        ys, retVal = runCkine(self.ts, rxnRates, trfRates)
+        
+        # test that return value of runCkine isn't negative (model run didn't fail)
+        self.assertGreaterEqual(retVal, 0)
+
+        '''Internal CVode error in CVode
+        At t = 82.2539 and h = 1.78983e-09, the error test failed repeatedly or with |h| = hmin.
+        In module: CVODE
+        Error code: -3
+        CVode error in CVode. Code: -3
+        Model run failed
+        Endocytosis: 0.0002682816512461031
+        activeEndo: 0.08750230849382867
+        sortF: 0.022692859699932316
+        kRec: 0.01237493760188316
+        kDeg: 5.048972752964616e-08
+        Receptor expression: [0.00000000e+00 1.00000000e-07 8.71966236e-15 0.00000000e+00
+         0.00000000e+00 0.00000000e+00]
+        .....Reaction rates.....
+        IL2: 500.0
+        IL15: 0.0
+        IL7: 0.0
+        IL9: 0.0
+        kfwd: 76.08505747988166
+        k5rev: 0.13781451657116525
+        k6rev: 0.14745955118122073
+        [1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]        '''
