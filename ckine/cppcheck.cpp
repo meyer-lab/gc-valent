@@ -45,18 +45,31 @@ protected:
 	void testrunCkine() {
 		uniform_real_distribution<> dis(0.0, 10.0);
 
-		array<double, 3> tps = {1.0, 2.0, 500.0};
-		array<double, 56*3> output;
+		array<double, 7> tps = {0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0};
+		array<double, 56*7> output;
 		array<double, 17> rxnRatesIn;
 		array<double, 11> trafRatesIn;
 
-		for (size_t ii = 0; ii < 100; ii++) {
+		for (size_t ii = 0; ii < 1000; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 			generate(trafRatesIn.begin(), trafRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
 			trafRatesIn[2] /= 10.0;
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), trafRatesIn.data());
+
+			if (retVal < 0) {
+				for (auto i = rxnRatesIn.begin(); i != rxnRatesIn.end(); ++i)
+					std::cout << *i << ' ';
+
+				cout << std::endl;
+
+				for (auto i = trafRatesIn.begin(); i != trafRatesIn.end(); ++i)
+					std::cout << *i << ' ';
+
+				cout << std::endl;
+			}
+
 			CPPUNIT_ASSERT(retVal >= 0);
 		}
 	}
