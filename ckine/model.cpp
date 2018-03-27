@@ -226,7 +226,7 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 
 	// Degradation does lead to some clearance of ligand in the endosome
 	for (size_t ii = 0; ii < 4; ii++) {
-		dydt[52 + ii] -= dydt[52 + ii] * r->kDeg;
+		dydt[52 + ii] -= y[52 + ii] * r->kDeg;
 	}
 }
 
@@ -424,8 +424,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		
 		if (returnVal < 0) {
 			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
-			std::cout << "Solver state: " << std::endl;
-			N_VPrint_Serial(sMem.state);
 			solverFree(&sMem);
 			return returnVal;
 		}
