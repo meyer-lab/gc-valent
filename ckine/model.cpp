@@ -424,6 +424,8 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		
 		if (returnVal < 0) {
 			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+			std::cout << "Solver state: " << std::endl;
+			N_VPrint_Serial(sMem.state);
 			solverFree(&sMem);
 			return returnVal;
 		}
