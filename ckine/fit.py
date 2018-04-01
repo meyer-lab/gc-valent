@@ -40,7 +40,7 @@ def IL2_convertRates(unkVec):
     rxnRates[0:4] = 0.0 # ligands
 
     tfR = np.zeros(11, dtype=np.float64)
-    tfR[0:8] = unkVec[3:11]
+    tfR[0:9] = unkVec[8:17]
 
     return (rxnRates, tfR)
 
