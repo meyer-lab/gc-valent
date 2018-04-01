@@ -68,7 +68,7 @@ def IL15_convertRates(unkVec):
     rxnRates[0:4] = 0.0 # ligands
 
     tfR = np.zeros(11, dtype=np.float64)
-    tfR[0:9] = unkVec[8:17] # last 4 are expr of IL2Ra, IL2Rb, gc, IL15Ra
+    tfR[0:9] = unkVec[8:17] # last 5 are expr of IL2Ra, IL2Rb, gc, IL15Ra, and sortF
 
     return (rxnRates, tfR)
 
