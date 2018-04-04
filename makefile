@@ -57,7 +57,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
+	rm -rf html
 	rm -rf ckine/*.dSYM
 	rm -f ckine/libckine.debug.so
 
@@ -76,6 +76,5 @@ testprofile: stats.dat
 testcpp: ckine/cppcheck
 	ckine/cppcheck
 
-doc: ckine/ckine.so
-	sphinx-apidoc -o docs/source ckine
-	sphinx-build docs/source docs/build
+doc:
+	doxygen Doxyfile
