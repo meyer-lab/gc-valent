@@ -192,6 +192,11 @@ extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in)
 }
 
 
+/**
+ * @brief      Solve for the ligand consumption rate in the endosome.
+ *
+ * @param      dydt  The rate of change vector solved for the receptor species.
+ */
 void findLigConsume(double *dydt) {
 	// Calculate the ligand consumption.
 	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
