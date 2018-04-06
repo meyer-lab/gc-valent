@@ -74,8 +74,8 @@ ratesS param(const double * const rxn, const double * const tfR) {
 	r.k16rev = r.kfwd * r.k18rev * r.k15rev / k13rev / kfbnd;
 	r.k19rev = r.kfwd * k14rev * r.k17rev / kfbnd / r.k15rev;
 	r.k24rev = k13rev * r.k23rev / k14rev;
-	// _Based on formation of full complex
 
+	// _Based on formation of full complex
 	r.k21rev = k14rev * r.k22rev * r.k24rev / r.kfwd / r.k15rev / r.k18rev * kfbnd;
 	r.k20rev = k14rev * r.k22rev * r.k24rev / r.k19rev / r.k15rev;
 
