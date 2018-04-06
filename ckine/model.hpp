@@ -13,10 +13,8 @@ struct ratesS {
 	double k18rev;
 	double k22rev;
 	double k23rev;
-	double k26rev;
 	double k27rev;
 	double k29rev;
-	double k30rev;
 	double k31rev;
 	double k10rev;
 	double k11rev;
@@ -54,6 +52,10 @@ constexpr double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
 
 // Literature values for IL-7
 constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+constexpr double k26rev = 50000 * kfbnd; // General assumption that cytokine doesn't bind to free gc
+
+// Literature values for IL-9
+constexpr double k30rev = 50000 * kfbnd; // General assumption that cytokine doesn't bind to free gc
 
 constexpr double abstolIn = 1E-3;
 constexpr double reltolIn = 1E-6;

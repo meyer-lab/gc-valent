@@ -50,11 +50,9 @@ ratesS param(const double * const rxn, const double * const tfR) {
 	r.k18rev = rxn[9];
 	r.k22rev = rxn[10];
 	r.k23rev = rxn[11];
-	r.k26rev = rxn[12];
-	r.k27rev = rxn[13];
-	r.k29rev = rxn[14];
-	r.k30rev = rxn[15];
-	r.k31rev = rxn[16];
+	r.k27rev = rxn[12];
+	r.k29rev = rxn[13];
+	r.k31rev = rxn[14];
 	
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -80,8 +78,8 @@ ratesS param(const double * const rxn, const double * const tfR) {
 	r.k20rev = k14rev * r.k22rev * r.k24rev / r.k19rev / r.k15rev;
 
 	// _One detailed balance IL7/9 loop
-	r.k32rev = r.k29rev * r.k31rev / r.k30rev;
-	r.k28rev = k25rev * r.k27rev / r.k26rev;
+	r.k32rev = r.k29rev * r.k31rev / k30rev;
+	r.k28rev = k25rev * r.k27rev / k26rev;
 
 	// Set the rates
 	r.endo = tfR[0];
@@ -154,17 +152,17 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[2] = dydt[2] - kfbnd * IL15 * gc + r->k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	// IL7
-	dydt[2] = dydt[2] - kfbnd * IL7 * gc + r->k26rev * gc_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
+	dydt[2] = dydt[2] - kfbnd * IL7 * gc + k26rev * gc_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
 	dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7;
 	dydt[19] = kfbnd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[20] = -r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - r->k26rev * gc_IL7;
+	dydt[20] = -r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7;
 	dydt[21] = r->kfwd * IL7Ra * gc_IL7 - r->k28rev * IL7Ra_gc_IL7 + r->kfwd * gc * IL7Ra_IL7 - r->k27rev * IL7Ra_gc_IL7;
 
 	// IL9
-	dydt[2] = dydt[2] - kfbnd * IL9 * gc + r->k30rev * gc_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
+	dydt[2] = dydt[2] - kfbnd * IL9 * gc + k30rev * gc_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
 	dydt[22] = -kfbnd * IL9R * IL9 + r->k29rev * IL9R_IL9 - r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9;
 	dydt[23] = kfbnd * IL9R * IL9 - r->k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[24] = -r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - r->k30rev * gc_IL9;
+	dydt[24] = -r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
 	dydt[25] = r->kfwd * IL9R * gc_IL9 - r->k32rev * IL9R_gc_IL9 + r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
 }
 
