@@ -1,6 +1,5 @@
 """
 Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions. The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines.
-
 Important Notes:
     y_of_combos is a multidimensional matrix of size (length mesh x 100 timeponts x 56 values of y)
     values is also a multidimensional matrix of size (length mesh x 100 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
@@ -27,6 +26,7 @@ def findy(lig, exp):
 
     trafRates = np.zeros(11)
     trafRates[0:5] = (5* 10**-2)
+    count = 0
 
     #Iterate through every combination of values and store odeint values in a y matrix
     for ii in tqdm(range(len(mat))):
@@ -38,7 +38,9 @@ def findy(lig, exp):
 
         if retVal >= 0:
             y_of_combos[ii] = temp # only assign values to ys if there isn't an error message; all errors will still be 0
-
+        else:
+            count += 1
+            print(count)
     return y_of_combos, mat
 
 

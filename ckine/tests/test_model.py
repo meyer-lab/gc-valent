@@ -7,6 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
+from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
@@ -135,3 +136,15 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
+    def test_tensor(self):
+        tensor = np.random.rand(35,100,20)
+        arr = []
+        for i in range(1,8):
+            R2X = find_R2X(tensor, i)
+            arr.append(R2X)
+        # confirm R2X for higher components is larger
+        for j in range(len(arr)-1):
+            self.assertTrue(arr[j] < arr[j+1])
+        #confirm R2X is >= 0 and <=1
+        self.assertGreaterEqual(np.min(arr),0)
+        self.assertLessEqual(np.max(arr),1)
