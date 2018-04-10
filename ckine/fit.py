@@ -192,13 +192,13 @@ class build_model:
             Y_15 = centralDiff(self.dst15)(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
 
-            pm.Deterministic('Y_2', Y_2) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
-            pm.Deterministic('Y_15', Y_15)
-            pm.Deterministic('Y_int', Y_int)
+            pm.Deterministic('Y_2', T.sum(T.square(Y_2))) # Save the sum of squared error to see if we're fitting
+            pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
+            pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_2', sd=0.1, observed=Y_2) # TODO: Find an empirical value for the SEM
-            pm.Normal('fitD_15', sd=0.1, observed=Y_15)
-            pm.Normal('fitD_int', sd=0.1, observed=Y_int) # TODO: Find an empirical value for the SEM
+            pm.Normal('fitD_2', sd=T.std(Y_2), observed=Y_2)
+            pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
+            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -207,21 +207,12 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
+        self.trace = pm.sample(init='advi', model=self.M)
+
+    def fit_ADVI(self):
         with self.M:
-            try:
-                self.trace = pm.sample(init='advi')
-            except ValueError:
-                # Something went wrong, so print out the variables.
-                print("Test point:")
-                point = self.M.test_point
-                logp = self.M.logp
-                dlogp = self.M.dlogp()
-
-                print(point)
-                print(logp(point))
-                print(dlogp(point))
-
-                raise
+            approx = pm.fit(80000, method='fullrank_advi')
+            self.trace = approx.sample()
 
     def profile(self):
         """ Profile the gradient calculation. """
