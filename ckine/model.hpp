@@ -48,4 +48,7 @@ constexpr double reltolIn = 1E-6;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
-extern "C" int runCkine (double *, size_t, double *, double *, bool);
+constexpr size_t Nparams = 26;
+constexpr size_t Nspecies = 56;
+
+extern "C" int runCkine (double *, size_t, double *, double *, bool, double *);

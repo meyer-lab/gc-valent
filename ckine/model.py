@@ -14,10 +14,11 @@ libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                              ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
-                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool)
+                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
+                          ct.c_bool, ct.POINTER(ct.c_double))
 
 
-def runCkine (tps, rxn, tfr, sensi=False):
+def runCkine (tps, rxn, tfr):
     global libb
 
     rxntfr = np.concatenate((rxn, tfr))
@@ -26,16 +27,45 @@ def runCkine (tps, rxn, tfr, sensi=False):
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
+    sensV = np.zeros(1, dtype=np.float64)
+
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), sensi)
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           False,
+                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     if retVal < 0:
         print("Model run failed")
         printModel(rxn, tfr)
 
     return (yOut, retVal)
+
+
+def runCkineSensi (tps, rxn, tfr):
+    global libb
+
+    rxntfr = np.concatenate((rxn, tfr))
+
+    assert(rxntfr.size == 26)
+
+    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+
+    sensV = np.zeros((56, 26, tps.size()), dtype=np.float64)
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           True,
+                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+    if retVal < 0:
+        print("Model run failed")
+        printModel(rxn, tfr)
+
+    return (yOut, retVal, sensV)
 
 
 def dy_dt(y, t, rxn):

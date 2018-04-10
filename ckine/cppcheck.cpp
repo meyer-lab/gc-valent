@@ -49,16 +49,18 @@ protected:
 		array<double, 56*7> output;
 		array<double, 56*7> output2;
 		array<double, 26> rxnRatesIn;
+		array<double, Nparams*Nspecies*tps.size()> soutput;
+		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 1000; ii++) {
+		for (size_t ii = 0; ii < 100; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
 			rxnRatesIn[15 + 2] /= 10.0;
 
-			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), false);
+			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
 
 			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), false);
+			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), true, soutput2.data());
 
 			std::transform(output.begin(), output.end(), output2.begin(), output2.begin(), std::minus<double>());
 			double sumDiff = inner_product(output2.begin(), output2.end(), output2.begin(), 0.0);
