@@ -7,9 +7,9 @@ from .model import getTotalActiveCytokine, runCkine
 from .differencing_op import centralDiff
 
 
-def IL2_activity_input(IL2, rxnRates, trafRates):
+def IL_activity_input(IL, rxnRates, trafRates, cytokineIDX):
     """Takes in the reaction rates, traficking rates, and the amount of IL2 that you want to simulate with, and it runs the model."""
-    rxnRates[0] = IL2
+    rxnRates[cytokineIDX] = IL
 
     ts = np.array([500.])
 
@@ -18,29 +18,17 @@ def IL2_activity_input(IL2, rxnRates, trafRates):
     if retVal < 0:
         return -100
 
-    return getTotalActiveCytokine(0, ys[0, :])
+    return getTotalActiveCytokine(cytokineIDX, ys[0, :])
 
-def IL15_activity_input(IL15, rxnRates, trafRates):
-    """Takes in the reaction rates, traficking rates, and the amount of IL15 that you want to simulate with, and it runs the model odeint. """
-    rxnRates[1] = IL15
 
-    ts = np.linspace(1., 500, 2)
-
-    ys, retVal = runCkine(ts, rxnRates, trafRates)
-
-    if retVal < 0:
-        return -100
-
-    return getTotalActiveCytokine(1, ys[1, :])
-
-def IL2_convertRates(unkVec):
+def convertRates(unkVec):
     """This takes in a vector of the values that we are fitting and it assigns them to the different reaction rates and ligand concentrations."""
     rxnRates = np.ones(15, dtype=np.float64)
-    rxnRates[4:7] = unkVec[0:3] # kfwd, k5rev, k6rev
+    rxnRates[4:12] = unkVec[0:8] # kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev
     rxnRates[0:4] = 0.0 # ligands
 
     tfR = np.zeros(11, dtype=np.float64)
-    tfR[0:8] = unkVec[8:16] # last 3 are expr of IL2Ra, IL2Rb, gc (should 15Ra be included?)
+    tfR[0:9] = unkVec[8:17] # last 4 are expr of IL2Ra, IL2Rb, gc, IL15Ra
 
     return (rxnRates, tfR)
 
@@ -60,18 +48,6 @@ def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
 
     return 10. * (sIL2Rb / sIL2Rb[0]) # % sIL2Rb relative to initial amount
 
-def IL15_convertRates(unkVec):
-    """This takes in a vector of the values that we are fitting and it assigns them to the different reaction rates and ligand concentrations."""
-    rxnRates = np.ones(17, dtype=np.float64)
-    rxnRates[4] = unkVec[0] # kfwd
-    rxnRates[7:12] = unkVec[3:8] # k15rev, k17rev, k18rev, k22rev, k23rev
-    rxnRates[0:4] = 0.0 # ligands
-
-    tfR = np.zeros(11, dtype=np.float64) # expr of IL7R and IL9R (last 2 elements of tfR) are kept at 0
-    tfR[0:9] = unkVec[8:17] # last 4 are expr of IL2Ra, IL2Rb, gc, IL15Ra
-
-    return (rxnRates, tfR)
-
 
 class IL2Rb_trafficking:
     def __init__(self):
@@ -85,7 +61,7 @@ class IL2Rb_trafficking:
 
     def calc(self, unkVec):
         # Convert the vector of values to dicts
-        rxnRates, tfR = IL2_convertRates(unkVec)
+        rxnRates, tfR = convertRates(unkVec)
 
         # IL2Ra- cells
         tfR2 = tfR.copy()
@@ -118,7 +94,7 @@ class IL2_sum_squared_dist:
     def calc(self, unkVec):
         """Simulate the 2 experiments: one w/ IL2Ra and one without it. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
-        rxnRates, tfR = IL2_convertRates(unkVec)
+        rxnRates, tfR = convertRates(unkVec)
 
         # IL2Ra- cells
         tfR2 = tfR.copy()
@@ -129,8 +105,8 @@ class IL2_sum_squared_dist:
 
         # Loop over concentrations of IL2
         for ii, ILc in enumerate(self.IL2s):
-            actVec[ii] = IL2_activity_input(ILc, rxnRates.copy(), tfR)
-            actVec2[ii] = IL2_activity_input(ILc, rxnRates.copy(), tfR2)
+            actVec[ii] = IL_activity_input(ILc, rxnRates.copy(), tfR, 0)
+            actVec2[ii] = IL_activity_input(ILc, rxnRates.copy(), tfR2, 0)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
@@ -152,14 +128,14 @@ class IL15_sum_squared_dist:
     def calc(self, unkVec):
         """Simulate the experiment with IL15. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
-        rxnRates, tfR = IL15_convertRates(unkVec)
+        rxnRates, tfR = convertRates(unkVec)
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
         actVec = np.zeros(self.concs, dtype=np.float64)
 
         # Loop over concentrations of IL15
         for ii, ILc in enumerate(self.IL15s):
-            actVec[ii] = IL15_activity_input(ILc, rxnRates.copy(), tfR)
+            actVec[ii] = IL_activity_input(ILc, rxnRates.copy(), tfR, 1)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec / np.max(actVec)))
