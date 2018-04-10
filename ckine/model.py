@@ -14,10 +14,10 @@ libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                              ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
-                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool)
 
 
-def runCkine (tps, rxn, tfr):
+def runCkine (tps, rxn, tfr, sensi=False):
     global libb
 
     rxntfr = np.concatenate((rxn, tfr))
@@ -29,7 +29,7 @@ def runCkine (tps, rxn, tfr):
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), sensi)
 
     if retVal < 0:
         print("Model run failed")

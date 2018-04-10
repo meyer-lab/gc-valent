@@ -372,12 +372,15 @@ void solver_setup(solver *sMem, double *params, bool sensi) {
 			throw std::runtime_error(string("Error calling CVodeSensInit in solver_setup."));
 		}
 
-		// Call CVodeSensEEtolerances to estimate tolerances for sensitivity 
+		array<double, Nparams> abs;
+		fill(abs.begin(), abs.end(), 1.0E-2);
+
+		// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 		// variables based on the rolerances supplied for states variables and 
 		// the scaling factor pbar
-		if (CVodeSensEEtolerances(sMem->cvode_mem) < 0) {
+		if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-2, abs.data()) < 0) {
 			solverFree(sMem);
-			throw std::runtime_error(string("Error calling CVodeSensEEtolerances in solver_setup."));
+			throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 		}
 
 		// Specify problem parameter information for sensitivity calculations
@@ -389,7 +392,7 @@ void solver_setup(solver *sMem, double *params, bool sensi) {
 }
 
 
-extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn) {
+extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi) {
 	ratesS rattes = param(rxnRatesIn);
 	size_t itps = 0;
 
@@ -408,7 +411,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	// Just the full model
 	sMem.state = N_VMake_Serial(static_cast<long>(y0.size()), y0.data());
 
-	solver_setup(&sMem, rxnRatesIn, false);
+	solver_setup(&sMem, rxnRatesIn, sensi);
 
 	double tret = 0;
 

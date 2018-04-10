@@ -48,4 +48,4 @@ constexpr double reltolIn = 1E-6;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
-extern "C" int runCkine (double *, size_t, double *, double *);
+extern "C" int runCkine (double *, size_t, double *, double *, bool);
