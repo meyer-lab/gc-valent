@@ -253,7 +253,7 @@ extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out,
 	fullModel(y_in, &r, dydt_out);
 }
 
-
+// TODO: Provide sensitivity of autocrine state.
 array<double, 56> solveAutocrine(const ratesS * const r) {
 	array<double, 56> y0;
 	fill(y0.begin(), y0.end(), 0.0);
