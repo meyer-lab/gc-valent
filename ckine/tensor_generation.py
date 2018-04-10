@@ -9,23 +9,23 @@ from tqdm import tqdm
 from .model import getTotalActiveCytokine, runCkine, surfaceReceptors, totalReceptors
 
 
-def findy(lig, exp):
+def findy(lig, expr):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     t = 60. * 4 # let's let the system run for 4 hours
     ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
     IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=lig)
-    IL2Ra = IL2Rb = gc = IL15Ra = IL7Ra = IL9R = np.logspace(-3, 2, num=exp)
+    IL2Ra = IL2Rb = gc = IL15Ra = IL7Ra = IL9R = np.logspace(-3, 2, num=expr) #Receptor Expression Rates
     mat = np.array(np.meshgrid(IL2,IL15,IL7,IL9,IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R)).T.reshape(-1, 10)
     #print (mat.shape[0]) gives 1024 for the above values; Need to update according to choice
 
-    y_of_combos = np.zeros((len(mat), 100,56))
+    y_of_combos = np.zeros((len(mat), len(ts),56))
 
     #Set some given parameters already determined from fitting
-    r = np.zeros(17)
-    r[4:17] = np.ones(13) * (5*10**-1)   #I am supposed to have these values
+    r = np.zeros(15)
+    r[4:15] = np.ones(11) * (5*10**-1)   #I am supposed to have these values
 
     trafRates = np.zeros(11)
-    trafRates[0:5] = (5* 10**-2)
+    trafRates[0:5] = (50* 10**-2)
     count = 0
 
     #Iterate through every combination of values and store odeint values in a y matrix
@@ -35,7 +35,7 @@ def findy(lig, exp):
         r[0:4] = mat[ii,0:4]
 
         temp, retVal = runCkine(ts, r, trafRates)
-
+        print(temp[0,:])
         if retVal >= 0:
             y_of_combos[ii] = temp # only assign values to ys if there isn't an error message; all errors will still be 0
         else:
