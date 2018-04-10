@@ -187,7 +187,7 @@ class build_model:
 
     def fit_ADVI(self):
         with self.M:
-            approx = pm.fit(80000, method='fullrank_advi')
+            approx = pm.fit(40000, method='fullrank_advi')
             self.trace = approx.sample()
 
     def profile(self):
