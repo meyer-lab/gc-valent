@@ -309,6 +309,7 @@ struct solver {
 void solverFree(solver *sMem) {
 	if (sMem->sensi) {
 		CVodeSensFree(sMem->cvode_mem);
+		N_VDestroyVectorArray(sMem->yS)
 	}
 
 	N_VDestroy_Serial(sMem->state);
