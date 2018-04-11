@@ -43,16 +43,37 @@ def runCkine (tps, rxn, tfr):
     return (yOut, retVal)
 
 
-def runCkineSensi (tps, rxn, tfr):
+def runCkineU (tps, rxntfr):
     global libb
-
-    rxntfr = np.concatenate((rxn, tfr))
 
     assert(rxntfr.size == 26)
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
-    sensV = np.zeros((56, 26, tps.size()), dtype=np.float64)
+    sensV = np.zeros(1, dtype=np.float64)
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           False,
+                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+    if retVal < 0:
+        print("Model run failed")
+        print(rxntfr)
+
+    return (yOut, retVal)
+
+
+def runCkineSensi (tps, rxntfr):
+    global libb
+
+    assert(rxntfr.size == 26)
+
+    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+
+    sensV = np.zeros((56, 26, tps.size), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -63,7 +84,7 @@ def runCkineSensi (tps, rxn, tfr):
 
     if retVal < 0:
         print("Model run failed")
-        printModel(rxn, tfr)
+        print(rxntfr)
 
     return (yOut, retVal, sensV)
 
