@@ -187,14 +187,15 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	
     array<array<double, 26>, 26> out;
     
+    // unless otherwise specified, assume all partial derivatives are 0
+    for (int ii = 0; ii < 26; ii++)    {
+        for (int jj=0; jj < 26; jj++)   {
+            out[jj][ii] = 0
+        }   }
+        
+    
     // partial derivative of IL2Ra with respect to IL2Ra
     out[0][0] = -kfbnd * IL2 - r->kfwd * IL2_gc - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb;
-    
-    // partial derivative of IL2Ra with respect to IL2Rb
-    out[0][1] = 0;
-    
-    // partial derivative of IL2Ra with respect to gc
-    out[0][2] = 0;
     
     // partial derivative of IL2Ra with respect to IL2_IL2Ra
     out[0][3] = k1rev;
@@ -217,9 +218,9 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
     // partial derivative of IL2Ra with respect to IL2_IL2Ra_IL2Rb_gc
     out[0][9] = r->k8rev;
     
-    // partial derivative of IL2Ra with respect to all species of IL15, IL7, and IL9
-    for (int ii = 0; ii < 26; ii++)    {
-        out[0][ii] = 0      // not sure how array slicing works in C so made a for-loop
-    }
+    // -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_gc + r->k7rev * IL2_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra_gc + r->k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
+    // partial derivative of IL2Rb with respect to IL2Rb
+    out[1][1] = 
+    
     
 }
