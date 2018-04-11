@@ -318,17 +318,12 @@ void solver_setup(solver *sMem, void * params) {
 		throw std::runtime_error(string("Error calling CVodeInit in solver_setup."));
 	}
 	
-	N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(sMem->state));
-	N_VConst(abstolIn, abbstol);
-	
 	/* Call CVodeSVtolerances to specify the scalar relative tolerance
 	 * and vector absolute tolerances */
-	if (CVodeSVtolerances(sMem->cvode_mem, reltolIn, abbstol) < 0) {
-		N_VDestroy_Serial(abbstol);
+	if (CVodeSStolerances(sMem->cvode_mem, reltolIn, abstolIn) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
 	}
-	N_VDestroy_Serial(abbstol);
 
 	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
 	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
