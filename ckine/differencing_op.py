@@ -99,4 +99,4 @@ class runCkineOpDiff(Op):
         if retVal < 0:
             sensi[:, :] = -np.inf
 
-        outputs[0][0] = np.squeeze(sensi.copy())
+        outputs[0][0] = np.squeeze(sensi)

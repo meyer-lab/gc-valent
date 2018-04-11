@@ -402,9 +402,11 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params) {
 }
 
 
-void copyOutSensi(double *out, const N_Vector * const yS) {
+void copyOutSensi(double *out, solver *sMem, double &t) {
+	CVodeGetSens(sMem->cvode_mem, &t, sMem->yS);
+
 	for (size_t ii = 0; ii < Nparams; ii++) {
-		std::copy_n(NV_DATA_S(yS[ii]), Nspecies, out + ii*Nspecies);
+		std::copy_n(NV_DATA_S(sMem->yS[ii]), Nspecies, out + ii*Nspecies);
 	}
 }
 
@@ -432,7 +434,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
 		std::copy_n(y0.begin(), y0.size(), out);
 
-		if (sensi) copyOutSensi(sensiOut, sMem.yS);
+		if (sensi) copyOutSensi(sensiOut, &sMem, tret);
 
 		itps = 1;
 	}
@@ -455,7 +457,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		// Copy out result
 		std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
 
-		if (sensi) copyOutSensi(sensiOut + Nspecies*Nparams, sMem.yS);
+		if (sensi) copyOutSensi(sensiOut + Nspecies*Nparams*itps, &sMem, tret);
 	}
 
 	solverFree(&sMem);
