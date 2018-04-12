@@ -11,6 +11,8 @@ filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so"
 libb = ct.cdll.LoadLibrary(filename)
 libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                         ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
+                        ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                              ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
                              ct.POINTER(ct.c_double))
