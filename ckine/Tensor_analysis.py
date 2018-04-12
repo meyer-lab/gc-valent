@@ -33,9 +33,9 @@ def perform_decomposition(tensor, r):
     factors = parafac(values_z,rank = r, random_state=93)
     return factors
 
-def find_R2X(values, n_comp):
+def find_R2X(valuess, n_comp):
     '''Compute R2X'''
-    factors = perform_decomposition(values , n_comp)
+    factors = perform_decomposition(valuess , n_comp)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     z_values = z_score_values(values)
     denominator = np.var(z_values)
