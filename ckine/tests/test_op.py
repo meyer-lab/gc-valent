@@ -13,8 +13,15 @@ class TestOp(unittest.TestCase):
 
         utt.verify_grad(centralDiff(mdl), [XX])
 
-    def test_runCkineOp(self):
+    def test_runCkineOp_T0(self):
         ts = np.array([0.0])
+
+        XX = np.full(26, 0.5, dtype=np.float64)
+
+        utt.verify_grad(runCkineOp(ts), [XX])
+
+    def test_runCkineOp(self):
+        ts = np.array([100000.])
 
         XX = np.full(26, 0.5, dtype=np.float64)
 

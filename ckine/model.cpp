@@ -404,12 +404,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0);
+	fill(abs.begin(), abs.end(), 0.0001);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-1, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-4, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -476,7 +476,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
 
 		if (sensi) {
-			CVodeGetSens(sMem.cvode_mem, &tret, sMem.yS);
+			CVodeGetSens(sMem.cvode_mem, &tps[itps], sMem.yS);
 			copyOutSensi(sensiOut + Nspecies*Nparams*itps, &sMem);
 		}
 	}
