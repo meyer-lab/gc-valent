@@ -53,6 +53,18 @@ def dy_dt(y, t, rxn):
     
     return yOut
 
+def jacobian(y, t, rxn):
+    global libb
+    
+    assert(rxn.size == 15)
+    
+    yOut = np.zeros((26,26)) # size of the Jacobian matrix
+    
+    libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return yOut
+
 
 def fullModel(y, t, rxn, tfr):
     global libb
