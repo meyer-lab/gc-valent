@@ -9,7 +9,7 @@ from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
 
 settings.register_profile("ci", max_examples=1000)
-settings.load_profile("ci")
+#settings.load_profile("ci")
 
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):

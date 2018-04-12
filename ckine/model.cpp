@@ -404,7 +404,7 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 0.0001);
+	fill(abs.begin(), abs.end(), 1.0E-4);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
@@ -414,8 +414,18 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
 
+	array<double, Nparams> paramArr;
+	array<int, Nparams> paramList;
+	std::copy_n(params, Nparams, paramArr.begin());
+	for(size_t is = 0; is < Nparams; is++) {
+		paramList[is] = static_cast<int>(is);
+
+		if (paramArr[is] < std::numeric_limits<double>::epsilon())
+			paramArr[is] = 0.1;
+	}
+
 	// Specify problem parameter information for sensitivity calculations
-	if (CVodeSetSensParams(sMem->cvode_mem, params, nullptr, nullptr) < 0) {
+	if (CVodeSetSensParams(sMem->cvode_mem, params, paramArr.data(), paramList.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
 	}
