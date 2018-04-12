@@ -27,14 +27,12 @@ def runCkine (tps, rxn, tfr):
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
-    sensV = np.zeros(1, dtype=np.float64)
-
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
                            False,
-                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
+                           ct.POINTER(ct.c_double)())
 
     if retVal < 0:
         print("Model run failed")
