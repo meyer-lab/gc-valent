@@ -144,15 +144,3 @@ def plot_combo_decomp(factors, mat, component_x, component_y):
         plt.ylabel('Component ' + str(component_y))
         plt.title(titles[i])
     return fig
-
-'''
-def subplot_values(values, n_components):
-    """This function creates subplots for factor components against each other."""
-    factors = perform_decomposition(values , n_components)
-    
-    fig, ax = plt.subplots(nrows=2, ncols=3)
-
-    for row in ax:
-        for col in row:
-            col.plot_values_decomposition(factors, component_x, component_y)
-'''

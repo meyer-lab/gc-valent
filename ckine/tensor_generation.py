@@ -26,7 +26,6 @@ def findy(lig, expr):
 
     trafRates = np.zeros(11)
     trafRates[0:5] = (50* 10**-2)
-    count = 0
 
     #Iterate through every combination of values and store odeint values in a y matrix
     for ii in tqdm(range(len(mat))):
@@ -35,12 +34,9 @@ def findy(lig, expr):
         r[0:4] = mat[ii,0:4]
 
         temp, retVal = runCkine(ts, r, trafRates)
-        print(temp[0,:])
         if retVal >= 0:
             y_of_combos[ii] = temp # only assign values to ys if there isn't an error message; all errors will still be 0
-        else:
-            count += 1
-            print(count)
+
     return y_of_combos, mat
 
 
