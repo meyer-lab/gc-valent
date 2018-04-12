@@ -276,53 +276,34 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
 /**
  * @brief      Setup the autocrine state sensitivities.
  *
- * @param[in]  r     { parameter_description }
- * @param      y0s   The y 0 s
+ * @param[in]  r     Rate parameters.
+ * @param      y0s   The autocrine state sensitivities.
  */
 void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &y0) {
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
-	// Endo (15)
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo;
-	}
+		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo; // Endo (15)
 
-
-	// sortF (17)
-	for (size_t is : recIDX) {
+		// sortF (17)
 		NV_Ith_S(y0s[17], is + 26) = -y0[is + 26]/r->sortF;
-		// TODO: Add surface gradient
-	}
+		NV_Ith_S(y0s[17], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[17], is + 26) - y0[is + 26]);
 
-
-	// kRec (18)
-	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo;
-	}
+		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
 
-
-
-	// kDeg (19)
-	for (size_t is : recIDX) {
+		// kDeg (19)
 		NV_Ith_S(y0s[19], is + 26) = -y0[is + 26]/r->kDeg;
-		// TODO: Add surface gradient
+		NV_Ith_S(y0s[19], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[19], is + 26)*internalFrac/r->endo;
 	}
-
-
 
 	// Rexpr (20-26)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
 		NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
+		NV_Ith_S(y0s[20 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
-
-
-
-
-
-	// TODO: Provide sensitivity of autocrine state.
 }
 
 
