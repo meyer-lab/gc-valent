@@ -36,7 +36,10 @@ def findy(lig, expr):
         temp, retVal = runCkine(ts, r, trafRates)
         if retVal >= 0:
             y_of_combos[ii] = temp # only assign values to ys if there isn't an error message; all errors will still be 0
+<<<<<<< HEAD
 
+=======
+>>>>>>> ac9589915bc8a092deeccc5edab65af9fbfede72
     return y_of_combos, mat
 
 
