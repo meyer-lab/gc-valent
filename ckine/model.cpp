@@ -20,6 +20,8 @@ using std::vector;
 using std::fill;
 using std::string;
 
+const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
+
 std::array<bool, 26> __active_species_IDX() {
 	std::array<bool, 26> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
@@ -256,8 +258,6 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
 	array<double, 56> y0;
 	fill(y0.begin(), y0.end(), 0.0);
 
-	array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
-
 	// Expand out trafficking terms
 	double kRec = r->kRec*(1-r->sortF);
 	double kDeg = r->kDeg*r->sortF;
@@ -279,9 +279,48 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     { parameter_description }
  * @param      y0s   The y 0 s
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s) {
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &y0) {
 	for (size_t is = 0; is < Nparams; is++)
-		N_VConst(0.0*r->kRec, y0s[is]);
+		N_VConst(0.0, y0s[is]);
+
+	// Endo (15)
+	for (size_t is : recIDX) {
+		// Endosomal amount doesn't depend on endo
+		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo;
+	}
+
+
+	// sortF (17)
+	for (size_t is : recIDX) {
+		NV_Ith_S(y0s[17], is + 26) = -y0[is + 26]/r->sortF;
+		// TODO: Add surface gradient
+	}
+
+
+	// kRec (18)
+	for (size_t is : recIDX) {
+		// Endosomal amount doesn't depend on kRec
+		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo;
+	}
+
+
+
+	// kDeg (19)
+	for (size_t is : recIDX) {
+		NV_Ith_S(y0s[19], is + 26) = -y0[is + 26]/r->kDeg;
+		// TODO: Add surface gradient
+	}
+
+
+
+	// Rexpr (20-26)
+	for (size_t ii = 0; ii < recIDX.size(); ii++) {
+		NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
+	}
+
+
+
+
 
 	// TODO: Provide sensitivity of autocrine state.
 }
@@ -366,13 +405,13 @@ void solver_setup(solver *sMem, double *params) {
 }
 
 
-void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params) {
+void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 56> &y0) {
 	// Now we are doing a sensitivity analysis
 	sMem->sensi = true;
 
 	// Set sensitivity initial conditions
 	sMem->yS = N_VCloneVectorArray(Nparams, sMem->state);
-	solveAutocrineS(rr, sMem->yS);
+	solveAutocrineS(rr, sMem->yS, y0);
 
 	// Call CVodeSensInit1 to activate forward sensitivity computations
 	// and allocate internal memory for CVODES related to sensitivity
@@ -402,9 +441,7 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params) {
 }
 
 
-void copyOutSensi(double *out, solver *sMem, double &t) {
-	CVodeGetSens(sMem->cvode_mem, &t, sMem->yS);
-
+void copyOutSensi(double *out, solver *sMem) {
 	for (size_t ii = 0; ii < Nparams; ii++) {
 		std::copy_n(NV_DATA_S(sMem->yS[ii]), Nspecies, out + ii*Nspecies);
 	}
@@ -427,14 +464,14 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	solver_setup(&sMem, rxnRatesIn);
 
-	if (sensi) solver_setup_sensi(&sMem, &rattes, rxnRatesIn);
+	if (sensi) solver_setup_sensi(&sMem, &rattes, rxnRatesIn, y0);
 
 	double tret = 0;
 
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
 		std::copy_n(y0.begin(), y0.size(), out);
 
-		if (sensi) copyOutSensi(sensiOut, &sMem, tret);
+		if (sensi) copyOutSensi(sensiOut, &sMem);
 
 		itps = 1;
 	}
@@ -457,7 +494,10 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		// Copy out result
 		std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
 
-		if (sensi) copyOutSensi(sensiOut + Nspecies*Nparams*itps, &sMem, tret);
+		if (sensi) {
+			CVodeGetSens(sMem.cvode_mem, &tret, sMem.yS);
+			copyOutSensi(sensiOut + Nspecies*Nparams*itps, &sMem);
+		}
 	}
 
 	solverFree(&sMem);
