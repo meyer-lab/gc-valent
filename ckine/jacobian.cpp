@@ -483,10 +483,299 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
     // partial derivative of IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
     out[9][9] = - r->k8rev - r->k9rev - r->k10rev;
     
+    // IL15Ra
     
-        
+    // partial derivative of IL15Ra with respect to IL15Ra
+    out[10][10] = -kfbnd * IL15 - kfbnd * IL15_gc - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb;
     
-        
-        
+    // partial derivative of IL15Ra with respect to IL15_IL15Ra
+    out[10][11] = k13rev;
+    
+    // partial derivative of IL15Ra with respect to IL15_IL2Rb
+    out[10][12] = - r->kfwd * IL15Ra;
+    
+    // partial derivative of IL15Ra with respect to IL15_gc
+    out[10][13] = - kfbnd * IL15Ra;
+    
+    // partial derivative of IL15Ra with respect to IL15_IL15Ra_IL2Rb
+    out[10][14] = r->k24rev;
+    
+    // partial derivative of IL15Ra with respect to IL15_IL15Ra_gc
+    out[10][15] = r->k18rev;
+    
+    // partial derivative of IL15Ra with respect to IL15_IL2Rb_gc
+    out[10][16] = - r->kfwd * IL15Ra;
+    
+    // partial derivative of IL15Ra with respect to IL15_IL15Ra_IL2Rb_gc
+    out[10][17] = r->k20rev;
+    
+    // IL15_IL15Ra
+    
+    // partial derivative of IL15_IL15Ra with respect to IL2Rb
+    out[11][1] = -r->kfwd * IL15_IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra with respect to gc
+    out[11][2] = - r->kfwd * IL15_IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra with respect to IL15Ra
+    out[11][10] = kfbnd * IL15;
+    
+    // partial derivative of IL15_IL15Ra with respect to IL15_IL15Ra
+    out[11][11] = -r->kfwd * IL2Rb- r->kfwd * gc - k13rev;
+    
+    // partial derivative of IL15_IL15Ra with respect to IL15_IL15Ra_IL2Rb
+    out[11][14] = r->k23rev;
+    
+    // partial derivative of IL15_IL15Ra with respect to IL15_IL15Ra_gc
+    out[11][15] = r->k16rev;
+    
+    // IL15_IL2Rb
+    
+    // partial derivative of IL15_IL2Rb with respect to IL2Rb
+    out[12][1] = kfbnd * IL15;
+    
+    // partial derivative of IL15_IL2Rb with respect to gc
+    out[12][2] = - kfbnd * IL15_IL2Rb;
+    
+    // partial derivative of IL15_IL2Rb with respect to IL15Ra
+    out[12][10] = -r->kfwd * IL15_IL2Rb;
+    
+    // partial derivative of IL15_IL2Rb with respect to IL15_IL2Rb
+    out[12][12] = -r->kfwd * IL15Ra - kfbnd * gc - k14rev;
+    
+    // partial derivative of IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
+    out[12][14] = r->k24rev;
+    
+    // partial derivative of IL15_IL2Rb with respect to IL15_IL2Rb_gc
+    out[12][16] = r->k17rev;
+    
+    // IL15_gc
+    
+    // partial derivative of IL15_gc with respect to IL2Rb
+    out[13][1] = - r->kfwd * IL15_gc;
+    
+    // partial derivative of IL15_gc with respect to gc
+    out[13][2] = kfbnd * IL15;
+    
+    // partial derivative of IL15_gc with respect to IL15Ra
+    out[13][10] = -kfbnd * IL15_gc;
+    
+    // partial derivative of IL15_gc with respect to IL15_gc
+    out[13][13] = -kfbnd * IL15Ra - r->kfwd * IL2Rb - r->k15rev * IL15_gc;
+    
+    // partial derivative of IL15_gc with respect to IL15_IL15Ra_gc
+    out[13][15] = r->k18rev;
+    
+    // partial derivative of IL15_gc with respect to IL15_IL2Rb_gc
+    out[13][16] = r->k19rev; 
+    
+    // IL15_IL15Ra_IL2Rb
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to IL2Rb
+    out[14][1] = r->kfwd * IL15_IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to gc
+    out[14][2] = -r->kfwd * IL15_IL15Ra_IL2Rb;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to IL15Ra
+    out[14][10] = r->kfwd * IL15_IL2Rb;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra
+    out[14][11] = r->kfwd * IL2Rb;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to IL15_IL2Rb
+    out[14][12] = r->kfwd * IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb
+    out[14][14] = -r->kfwd * gc - r->k23rev - r->k24rev;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
+    out[14][17] = r->k22rev;
+    
+    // IL15_IL15Ra_gc
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to IL2Rb
+    out[15][1] = -r->kfwd * IL15_IL15Ra_gc;
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to gc
+    out[15][2] = r->kfwd * IL15_IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to IL15Ra
+    out[15][10] = kfbnd * IL15_gc;
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to IL15_IL15Ra
+    out[15][11] = r->kfwd * gc;
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to IL15_gc
+    out[15][13] = kfbnd * IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to IL15_IL15Ra_gc
+    out[15][15] = -r->kfwd * IL2Rb - r->k16rev - r->k18rev;
+    
+    // partial derivative of IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
+    out[15][17] = r->k21rev;
+    
+    // IL15_IL2Rb_gc
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to IL2Rb
+    out[16][1] = r->kfwd * IL15_gc;
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to gc
+    out[16][2] = kfbnd * IL15_IL2Rb;
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to IL15Ra
+    out[16][10] = -r->kfwd * IL15_IL2Rb_gc;
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to IL15_IL2Rb
+    out[16][12] = kfbnd * gc;
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to IL15_gc
+    out[16][13] = r->kfwd * IL2Rb;
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to IL15_IL2Rb_gc
+    out[16][16] = -r->kfwd * IL15Ra - r->k17rev - r->k19rev;
+    
+    // partial derivative of IL15_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
+    out[16][17] = r->k20rev;
+    
+    // IL15_IL15Ra_IL2Rb_gc
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to IL2Rb
+    out[17][1] = r->kfwd * IL15_IL15Ra_gc;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to gc
+    out[17][2] = r->kfwd * IL15_IL15Ra_IL2Rb;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to IL15Ra
+    out[17][10] = r->kfwd * IL15_IL2Rb_gc;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb
+    out[17][14] = r->kfwd * gc;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_gc
+    out[17][15] = r->kfwd * IL2Rb;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL2Rb_gc
+    out[17][16] = r->kfwd * IL15Ra;
+    
+    // partial derivative of IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
+    out[17][17] = - r->k20rev - r->k21rev - r->k22rev;
+    
+    // IL7Ra 
+    
+    // partial derivative of IL7Ra with respect to IL7Ra 
+    out[18][18] = -kfbnd * IL7 - r->kfwd * gc_IL7;
+    
+    // partial derivative of IL7Ra with respect to IL7Ra_IL7
+    out[18][19] = k25rev;
+    
+    // partial derivative of IL7Ra with respect to gc_IL7
+    out[18][20] = - r->kfwd * IL7Ra;
+    
+    // partial derivative of IL7Ra with respect to IL7Ra_gc_IL7
+    out[18][21] = r->k28rev;
+    
+    // IL7Ra_IL7
+    
+    // partial derivative of IL7Ra_IL7 with respect to gc
+    out[19][2] = - r->kfwd * IL7Ra_IL7;
+    
+    // partial derivative of IL7Ra_IL7 with respect to IL7Ra
+    out[19][18] = kfbnd * IL7;
+    
+    // partial derivative of IL7Ra_IL7 with respect to IL7Ra_IL7
+    out[19][19] = - k25rev - r->kfwd * gc;
+    
+    // partial derivative of IL7Ra_IL7 with respect to IL7Ra_gc_IL7
+    out[19][21] = r->k27rev;
+    
+    // gc_IL7
+    
+    // partial derivative of gc_IL7 with respect to gc
+    out[20][2] = kfbnd * IL7;
+    
+    // partial derivative of gc_IL7 with respect to IL7Ra
+    out[20][18] = -r->kfwd * gc_IL7;
+    
+    // partial derivative of gc_IL7 with respect to gc_IL7
+    out[20][20] = -r->kfwd * IL7Ra - k26rev;
+    
+    // partial derivative of gc_IL7 with respect to IL7Ra_gc_IL7
+    out[20][21] = r->k28rev;
+    
+    // IL7Ra_gc_IL7
+    
+    // partial derivative of IL7Ra_gc_IL7 with respect to gc
+    out[21][2] = r->kfwd * IL7Ra_IL7;
+    
+    // partial derivative of IL7Ra_gc_IL7 with respect to IL7Ra
+    out[21][18] = r->kfwd * gc_IL7;
+    
+    // partial derivative of IL7Ra_gc_IL7 with respect to IL7Ra_IL7
+    out[21][19] = r->kfwd * gc;
+    
+    // partial derivative of IL7Ra_gc_IL7 with respect to gc_IL7
+    out[21][20] = r->kfwd * IL7Ra;
+    
+    // partial derivative of IL7Ra_gc_IL7 with respect to IL7Ra_gc_IL7
+    out[21][21] = - r->k28rev - r->k27rev;
+    
+    // IL9R
+    
+    // partial derivative of IL9R with respect to IL9R
+    out[22][22] = -kfbnd * IL9 - r->kfwd * gc_IL9;
+    
+    // partial derivative of IL9R with respect to IL9R_IL9
+    out[22][23] = r->k29rev;
+    
+    // partial derivative of IL9R with respect to gc_IL9
+    out[22][24] = - r->kfwd * IL9R;
+    
+    // partial derivative of IL9R with respect to IL9R_gc_IL9
+    out[22][25] = r->k32rev;
+    
+    // IL9R_IL9 
+   
+    // partial derivative of IL9R_IL9 with respect to gc
+    out[23][2] = - r->kfwd * IL9R_IL9;
+    
+    // partial derivative of IL9R_IL9 with respect to IL9R
+    out[23][22] = kfbnd * IL9; 
+    
+    // partial derivative of IL9R_IL9 with respect to IL9R_IL9
+    out[23][23] = - r->k29rev - r->kfwd * gc;
+    
+    // partial derivative of IL9R_IL9 with respect to IL9R_gc_IL9
+    out[23][25] = r->k31rev;
+    
+    // gc_IL9
 
+    // partial derivative of gc_IL9 with respect to gc
+    out[24][2] = kfbnd * IL9;
+    
+    // partial derivative of gc_IL9 with respect to IL9R
+    out[24][22] = -r->kfwd * gc_IL9;
+    
+    // partial derivative of gc_IL9 with respect to gc_IL9
+    out[24][24] = -r->kfwd * IL9R - k30rev;
+    
+    // partial derivative of gc_IL9 with respect to IL9R_gc_IL9
+    out[24][25] = r->k32rev;
+    
+    // IL9R_gc_IL9
+   
+    // partial derivative of IL9R_gc_IL9 with respect to gc
+    out[25][2] = r->kfwd * IL9R_IL9;
+    
+    // partial derivative of IL9R_gc_IL9 with respect to IL9R
+    out[25][22] = r->kfwd * gc_IL9;
+    
+    // partial derivative of IL9R_gc_IL9 with respect to IL9R_IL9
+    out[25][23] = r->kfwd * gc;
+    
+    // partial derivative of IL9R_gc_IL9 with respect to gc_IL9
+    out[25][24] = r->kfwd * IL9R;
+    
+    // partial derivative of IL9R_gc_IL9 with respect to IL9R_gc_IL9
+    out[25][25] = - r->k32rev - r->k31rev;
 }
