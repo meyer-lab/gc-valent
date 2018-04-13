@@ -163,7 +163,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	double IL2_IL2Ra_IL2Rb = y[6];
 	double IL2_IL2Ra_gc = y[7];
 	double IL2_IL2Rb_gc = y[8];
-	double IL2_IL2Ra_IL2Rb_gc = y[9];
 	
 	// IL15 in nM
 	double IL15Ra = y[10];
@@ -173,25 +172,20 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	double IL15_IL15Ra_IL2Rb = y[14];
 	double IL15_IL15Ra_gc = y[15];
 	double IL15_IL2Rb_gc = y[16];
-	double IL15_IL15Ra_IL2Rb_gc = y[17];
 	
 	// IL7, IL9 in nM
 	double IL7Ra = y[18];
 	double IL7Ra_IL7 = y[19];
 	double gc_IL7 = y[20];
-	double IL7Ra_gc_IL7 = y[21];
 	double IL9R = y[22];
 	double IL9R_IL9 = y[23];
 	double gc_IL9 = y[24];
-	double IL9R_gc_IL9 = y[25];
 	
     array<array<double, 26>, 26> out;
     
     // unless otherwise specified, assume all partial derivatives are 0
-    for (int ii = 0; ii < 26; ii++)    {
-        for (int jj=0; jj < 26; jj++)   {
-            out[jj][ii] = 0
-        }   }
+    for (array<double, 26> &aa : out)
+    	fill(aa.begin(), aa.end(), 0.0);
         
     // IL2Ra
     
