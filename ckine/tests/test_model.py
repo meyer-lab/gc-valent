@@ -6,7 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
+from ckine.util_analysis.Shuffle_ODE import approx_jacobian
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
@@ -123,15 +124,33 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
-    def test_runCkine(self, vec, sortF):
-        vec = np.insert(vec, 2, sortF)
-        # 11 trafRates and 15 rxnRates
-        trafRates = vec[0:11]
-        rxnRates = vec[11:26]
+    #@given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
+    #def test_runCkine(self, vec, sortF):
+    #    vec = np.insert(vec, 2, sortF)
+    #    # 11 trafRates and 15 rxnRates
+    #    trafRates = vec[0:11]
+    #    rxnRates = vec[11:26]
 
-        ys, retVal = runCkine(self.ts, rxnRates, trafRates)
+    #    ys, retVal = runCkine(self.ts, rxnRates, trafRates)
         
         # test that return value of runCkine isn't negative (model run didn't fail)
-        self.assertGreaterEqual(retVal, 0)
+    #    self.assertGreaterEqual(retVal, 0)
 
+
+    def test_runCkine_2(self):
+        '''Obtained these values from a failure case in test_runCkine'''
+        rxnRates = np.ones(15) * 0.047382082262539024
+        
+        trafRates = np.ones(11) * 0.047382082262539024
+        trafRates[0] = 0.001 # Endo
+        trafRates[2] = 0.1 # sortF
+        trafRates[4] = 0.001 # kDeg
+        
+        ys, retVal = runCkine(self.ts, rxnRates, trafRates)
+        
+        self.assertGreaterEqual(retVal, 0)
+        
+    def test_jacobian(self):
+        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
+        
+        
