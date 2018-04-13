@@ -7,7 +7,9 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
-from ckine.util_analysis.Shuffle_ODE import approx_jacobian
+import sys
+sys.path.append('../')
+from util_analysis.Shuffle_ODE import approx_jacobian
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")

@@ -1,4 +1,4 @@
-from ckine.model import fullModel, __active_species_IDX
+from ..model import fullModel
 import numpy as np, scipy
 
 
