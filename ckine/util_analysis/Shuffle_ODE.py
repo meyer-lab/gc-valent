@@ -16,15 +16,15 @@ def approx_jacobian():
          The approximation is done using forward differences. func in this case is the fullModel function from the main model file. 
 
     """
-    trafRates = np.random.sample(17)
-    rxnRates = np.random.sample(17)
+    trafRates = np.random.sample(11)
+    rxnRates = np.random.sample(15)
     x0 = np.random.sample(56)
-    f0 = fullModel(x0, 0.0 , rxnRates, trafRates, __active_species_IDX)
+    f0 = fullModel(x0, 0.0 , rxnRates, trafRates)
     jac = np.zeros([len(x0),len(f0)])
     dx = np.zeros(len(x0))
     for i in range(len(x0)):
        dx[i] = np.sqrt(np.finfo(float).eps)
-       jac[i] = (fullModel(x0 + dx, 0.0 , rxnRates, trafRates, __active_species_IDX) - f0)/(np.sqrt(np.finfo(float).eps))
+       jac[i] = (fullModel(x0 + dx, 0.0 , rxnRates, trafRates) - f0)/(np.sqrt(np.finfo(float).eps))
        dx[i] = 0.0
     return jac.transpose()
 
