@@ -435,7 +435,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
     // unless otherwise specified, assume all partial derivatives are 0
     for (int ii = 0; ii < 26; ii++)    {
         for (int jj=0; jj < 26; jj++)   {
-            out[jj][ii] = 0
+            out[jj][ii] = 0;
         }   }
         
     // IL2Ra
@@ -1023,13 +1023,15 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
     
     // partial derivative of IL9R_gc_IL9 with respect to IL9R_gc_IL9
     out[25][25] = - r->k32rev - r->k31rev;
+    
+    std::cout << "Jacobian function (C) called successfully." << std::endl;
 }
 
 
-extern "C" void jacobian_C(double *y_in, double, double *dydt_out, double *rxn_in) {
+extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	array<double, 12> tfr;
 
 	ratesS r = param(rxn_in, tfr.data());
 
-	dy_dt(y_in, &r, dydt_out, r.IL2, r.IL15, r.IL7, r.IL9);
+	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
