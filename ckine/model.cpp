@@ -1024,6 +1024,10 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
     // partial derivative of IL9R_gc_IL9 with respect to IL9R_gc_IL9
     out[25][25] = - r->k32rev - r->k31rev;
     
+    // Copy all the data from out to dydt
+    for (size_t ii = 0; ii < out.size(); ii++)
+    	copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
+    
     std::cout << "Jacobian function (C) called successfully." << std::endl;
 }
 
