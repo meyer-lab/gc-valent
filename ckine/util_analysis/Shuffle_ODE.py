@@ -1,4 +1,4 @@
-from ..model import fullModel
+from ckine.model import fullModel
 import numpy as np, scipy
 
 
