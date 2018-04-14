@@ -7,9 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
-import sys
-sys.path.append('../')
-from util_analysis.Shuffle_ODE import approx_jacobian
+from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
@@ -154,5 +152,12 @@ class TestModel(unittest.TestCase):
         
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
+        rxn = np.random.sample(15)
+        t = np.random.sample(1)
+        y = np.random.sample(26)
         
+        analytical = jacobian(y, t, rxn)
+        approx = approx_jac_dydt(y, t, rxn)
+        
+        self.assertEqual(analytica, approx)
         

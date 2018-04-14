@@ -1,4 +1,4 @@
-from ckine.model import fullModel
+from ckine.model import fullModel, dy_dt
 import numpy as np, scipy
 
 
@@ -23,19 +23,42 @@ def approx_jacobian():
     jac = np.zeros([len(x0),len(f0)])
     dx = np.zeros(len(x0))
     for i in range(len(x0)):
-       dx[i] = np.sqrt(np.finfo(float).eps)
-       jac[i] = (fullModel(x0 + dx, 0.0 , rxnRates, trafRates) - f0)/(np.sqrt(np.finfo(float).eps))
-       dx[i] = 0.0
+        dx[i] = np.sqrt(np.finfo(float).eps)
+        jac[i] = (fullModel(x0 + dx, 0.0 , rxnRates, trafRates) - f0)/(np.sqrt(np.finfo(float).eps))
+        dx[i] = 0.0
+        
     return jac.transpose()
 
-a = (approx_jacobian() != 0).astype(np.bool)
+#a = (approx_jacobian() != 0).astype(np.bool)
 
-np.savetxt('Nonzero Boolean.csv', a, fmt='%d', delimiter=' ')
+#np.savetxt('Nonzero Boolean.csv', a, fmt='%d', delimiter=' ')
 
-bm = scipy.sparse.csr_matrix(a)
+#bm = scipy.sparse.csr_matrix(a)
 
-permb = scipy.sparse.csgraph.reverse_cuthill_mckee(bm, False)
+#permb = scipy.sparse.csgraph.reverse_cuthill_mckee(bm, False)
 
-B = bm[np.ix_(permb,permb)].A
+#B = bm[np.ix_(permb,permb)].A
 
-np.savetxt('Shuffled Nonzero Boolean.csv', B, fmt='%d', delimiter=' ')
+#np.savetxt('Shuffled Nonzero Boolean.csv', B, fmt='%d', delimiter=' ')
+
+
+def approx_jac_dydt(y, t, rxn):
+    """Approximate the Jacobian matrix of callable function func
+
+       * Returns
+         An array of dimensions (lenf, lenx) where lenf is the length
+         of the outputs of func, and lenx is the number of
+
+       * Notes
+         The approximation is done using forward differences. func in this case is the fullModel function from the main model file. 
+
+    """
+    f0 = dy_dt(y, t, rxn)
+    jac = np.zeros([len(y),len(f0)])
+    dy = np.zeros(len(y))
+    for i in range(len(y)):
+        dy[i] = np.sqrt(np.finfo(float).eps)
+        jac[i] = (fullModel(y+dy, t, rxn) - f0)/(np.sqrt(np.finfo(float).eps))
+        dy[i] = 0.0
+        
+    return jac.transpose()
