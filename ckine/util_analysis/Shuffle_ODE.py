@@ -58,7 +58,7 @@ def approx_jac_dydt(y, t, rxn):
     dy = np.zeros(len(y))
     for i in range(len(y)):
         dy[i] = np.sqrt(np.finfo(float).eps)
-        jac[i] = (fullModel(y+dy, t, rxn) - f0)/(np.sqrt(np.finfo(float).eps))
+        jac[i] = (dy_dt(y+dy, t, rxn) - f0)/(np.sqrt(np.finfo(float).eps))
         dy[i] = 0.0
         
     return jac.transpose()
