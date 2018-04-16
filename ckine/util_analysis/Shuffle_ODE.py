@@ -29,18 +29,6 @@ def approx_jacobian():
         
     return jac.transpose()
 
-#a = (approx_jacobian() != 0).astype(np.bool)
-
-#np.savetxt('Nonzero Boolean.csv', a, fmt='%d', delimiter=' ')
-
-#bm = scipy.sparse.csr_matrix(a)
-
-#permb = scipy.sparse.csgraph.reverse_cuthill_mckee(bm, False)
-
-#B = bm[np.ix_(permb,permb)].A
-
-#np.savetxt('Shuffled Nonzero Boolean.csv', B, fmt='%d', delimiter=' ')
-
 
 def approx_jac_dydt(y, t, rxn):
     """Approximate the Jacobian matrix of callable function func
