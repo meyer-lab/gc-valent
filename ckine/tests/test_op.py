@@ -9,7 +9,7 @@ class TestOp(unittest.TestCase):
     def test_grad(self):
         mdl = IL2_sum_squared_dist()
 
-        XX = np.full(11, 0.5, dtype=np.float64)
+        XX = np.full(17, 0.5, dtype=np.float64)
 
         utt.verify_grad(centralDiff(mdl), [XX])
 
