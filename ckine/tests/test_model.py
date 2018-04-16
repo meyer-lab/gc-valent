@@ -8,6 +8,7 @@ from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
 from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
+from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
@@ -136,19 +137,6 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
     #    self.assertGreaterEqual(retVal, 0)
 
-
-    def test_runCkine_2(self):
-        '''Obtained these values from a failure case in test_runCkine'''
-        rxnRates = np.ones(15) * 0.047382082262539024
-        
-        trafRates = np.ones(11) * 0.047382082262539024
-        trafRates[0] = 0.001 # Endo
-        trafRates[2] = 0.1 # sortF
-        trafRates[4] = 0.001 # kDeg
-        
-        ys, retVal = runCkine(self.ts, rxnRates, trafRates)
-        
-        self.assertGreaterEqual(retVal, 0)
         
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
@@ -160,4 +148,35 @@ class TestModel(unittest.TestCase):
         approx = approx_jac_dydt(y, t, rxn)
         
         self.assertEqual(analytical.all(), approx.all())
+
+
+    def test_tensor(self):
+        tensor = np.random.rand(35,100,20)
+        arr = []
+        for i in range(1,8):
+            R2X = find_R2X(tensor, i)
+            arr.append(R2X)
+        # confirm R2X for higher components is larger
+        for j in range(len(arr)-1):
+            self.assertTrue(arr[j] < arr[j+1])
+        #confirm R2X is >= 0 and <=1
+        self.assertGreaterEqual(np.min(arr),0)
+        self.assertLessEqual(np.max(arr),1)
+
+
+    def test_initial(self):
+        #test to check that at least one nonzero is at timepoint zero
+        r = np.zeros(15)
+        r[4:15] = np.ones(11) * (5*10**-1)
+        r[0:4] = 10**-3, 10**-3, 10**-3, 10**-3
         
+        t = 60. * 4 # let's let the system run for 4 hours
+        ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
+        
+        trafRates = np.zeros(11)
+        trafRates[0:5] = (50* 10**-2)
+        trafRates[5:11] = 0.1,0.1,0.1,0.1,0.1,0.1
+        
+        temp, retVal = runCkine(ts, r, trafRates)
+        self.assertGreater(np.count_nonzero(temp[0,:]), 0)
+
