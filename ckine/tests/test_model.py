@@ -148,7 +148,7 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(y, t, rxn)
         approx = approx_jac_dydt(y, t, rxn)
         
-        self.assertTrue(np.allclose(analytical, approx))
+        self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 
 
 
@@ -182,4 +182,4 @@ class TestModel(unittest.TestCase):
         temp, retVal = runCkine(ts, r, trafRates)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
 
->>>>>>> ec310472a19e9e41f9b98b0448898394f3b3ec68
+
