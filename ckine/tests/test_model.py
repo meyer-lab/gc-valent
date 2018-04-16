@@ -147,9 +147,7 @@ class TestModel(unittest.TestCase):
         
         analytical = jacobian(y, t, rxn)
         approx = approx_jac_dydt(y, t, rxn)
-        output = np.isclose(analytical, approx, rtol=0.1, atol=0.1)
-        print(output)
-        
+
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 
 
