@@ -59,9 +59,6 @@ class runCkineOp(Op):
     otypes = [dvector]
 
     def __init__(self, ts):
-        if ts.size > 1:
-            raise NotImplementedError('This Op only works with a single time point.')
-
         self.ts = ts
 
     def infer_shape(self, node, i0_shapes):
@@ -88,9 +85,6 @@ class runCkineOpDiff(Op):
     otypes = [dmatrix]
 
     def __init__(self, ts):
-        if ts.size > 1:
-            raise NotImplementedError('This Op only works with a single time point.')
-
         self.ts = ts
 
     def perform(self, node, inputs, outputs):

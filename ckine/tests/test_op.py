@@ -26,3 +26,10 @@ class TestOp(unittest.TestCase):
         XX = np.full(26, 0.5, dtype=np.float64)
 
         utt.verify_grad(runCkineOp(ts), [XX], abs_tol=0.01, rel_tol=0.01)
+
+    def test_runCkineOpTPS(self):
+        ts = np.array([0., 1., 10., 100., 1000.])
+
+        XX = np.full(26, 0.5, dtype=np.float64)
+
+        utt.verify_grad(runCkineOp(ts), [XX], abs_tol=0.01, rel_tol=0.01)
