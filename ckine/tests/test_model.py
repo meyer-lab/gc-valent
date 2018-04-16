@@ -137,22 +137,7 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
     #    self.assertGreaterEqual(retVal, 0)
 
-<<<<<<< HEAD
 
-   # def test_runCkine_2(self):
-   #     '''Obtained these values from a failure case in test_runCkine'''
-   #     rxnRates = np.ones(15) * 0.047382082262539024
-   #     
-   #     trafRates = np.ones(11) * 0.047382082262539024
-   #     trafRates[0] = 0.001 # Endo
-   #     trafRates[2] = 0.1 # sortF
-   #     trafRates[4] = 0.001 # kDeg
-   #     
-   #     ys, retVal = runCkine(self.ts, rxnRates, trafRates)
-   #     
-   #     self.assertGreaterEqual(retVal, 0)
-=======
->>>>>>> ec310472a19e9e41f9b98b0448898394f3b3ec68
         
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
@@ -163,11 +148,8 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(y, t, rxn)
         approx = approx_jac_dydt(y, t, rxn)
         
-<<<<<<< HEAD
         self.assertTrue(np.allclose(analytical, approx))
-        
-=======
-        self.assertEqual(analytical.all(), approx.all())
+
 
 
     def test_tensor(self):
