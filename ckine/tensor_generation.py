@@ -12,7 +12,7 @@ from .model import getTotalActiveCytokine, runCkine, surfaceReceptors, totalRece
 def findy(lig, expr):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     t = 60. * 4 # let's let the system run for 4 hours
-    ts = np.linspace(0.0, t, 1000) #generate 100 evenly spaced timepoints
+    ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
     IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=lig)
     IL2Ra = IL2Rb = gc = IL15Ra = IL7Ra = IL9R = np.logspace(-3, 2, num=expr) #Receptor Expression Rates
     mat = np.array(np.meshgrid(IL2,IL15,IL7,IL9,IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R)).T.reshape(-1, 10)
@@ -50,9 +50,9 @@ def activity_surface_total(yVec):
 
 def activity_surf_tot(y_of_combos):
     """This function returns the activity and amounts of receptors both on the surface and total for every timepoint per combination of values"""
-    values = np.zeros((len(y_of_combos), 1000,16))
+    values = np.zeros((len(y_of_combos), 100,16))
 
     for i, _ in enumerate(y_of_combos):
-        for j in range(1000):
+        for j in range(100):
             values[i][j] = activity_surface_total(y_of_combos[i][j])
     return values
