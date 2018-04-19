@@ -2,9 +2,10 @@
 This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
 """
 import pymc3 as pm, theano.tensor as T, os
+from theano import shared
 import numpy as np, pandas as pds
-from .model import getTotalActiveCytokine, runCkine
-from .differencing_op import centralDiff
+from .model import getTotalActiveCytokine, runCkine, getActiveSpecies
+from .differencing_op import runCkineOp
 
 
 def IL_activity_input(IL, rxnRates, trafRates, cytokineIDX):
@@ -124,21 +125,23 @@ class IL15_sum_squared_dist:
         self.IL15s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
         self.concs = len(self.IL15s)
         self.fit_data = np.concatenate((self.numpy_data[:, 7], self.numpy_data[:, 3]))
+        self.npactivity = getActiveSpecies().astype(np.float64)
+        self.activity = shared(np.concatenate((self.npactivity, self.npactivity, np.zeros(4))))
 
     def calc(self, unkVec):
         """Simulate the experiment with IL15. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
-        rxnRates, tfR = convertRates(unkVec)
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
-        actVec = np.zeros(self.concs, dtype=np.float64)
+        Op = runCkineOp(ts=np.array(500.))
 
         # Loop over concentrations of IL15
-        for ii, ILc in enumerate(self.IL15s):
-            actVec[ii] = IL_activity_input(ILc, rxnRates.copy(), tfR, 1)
+        actVec = list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[1], x))), self.IL15s)) # Change condensation here for activity
+
+        actVec = T.stack(actVec)
 
         # Normalize to the maximal activity, put together into one vector
-        actVec = np.concatenate((actVec / np.max(actVec), actVec / np.max(actVec)))
+        actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec)))
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     
@@ -146,9 +149,9 @@ class IL15_sum_squared_dist:
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
-        self.dst2 = IL2_sum_squared_dist()
+        #self.dst2 = IL2_sum_squared_dist()
         self.dst15 = IL15_sum_squared_dist()
-        self.IL2Rb = IL2Rb_trafficking()
+        # self.IL2Rb = IL2Rb_trafficking()
         self.M = self.build()
 
     def build(self):
@@ -156,25 +159,28 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', sd=1., shape=8, testval=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
-            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4, testval=[1., 1., 1., 1.]) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
+            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
-            unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
+            ligands = T.zeros(4, dtype=np.float64)
 
-            Y_2 = centralDiff(self.dst2)(unkVec) # fitting the data based on dst2.calc for the given parameters
-            Y_15 = centralDiff(self.dst15)(unkVec) # fitting the data based on dst15.calc for the given parameters
-            Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
+            unkVec = T.concatenate((ligands, rxnrates, T.zeros(3, dtype=np.float64),
+                                    endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
 
-            pm.Deterministic('Y_2', T.sum(T.square(Y_2))) # Save the sum of squared error to see if we're fitting
+            #Y_2 = centralDiff(self.dst2)(unkVec) # fitting the data based on dst2.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            # Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
+
+            #pm.Deterministic('Y_2', T.sum(T.square(Y_2))) # Save the sum of squared error to see if we're fitting
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
-            pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
+            # pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_2', sd=T.std(Y_2), observed=Y_2)
+            #pm.Normal('fitD_2', sd=T.std(Y_2), observed=Y_2)
             pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            # pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
