@@ -11,32 +11,80 @@ filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so"
 libb = ct.cdll.LoadLibrary(filename)
 libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                         ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
+                        ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
-                             ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                             ct.POINTER(ct.c_double))
+                             ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
                           ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                          ct.POINTER(ct.c_double))
+                          ct.c_bool, ct.POINTER(ct.c_double))
 
 
 def runCkine (tps, rxn, tfr):
     global libb
 
-    assert(rxn.size == 15)
+    rxntfr = np.concatenate((rxn, tfr))
+
+    assert(rxntfr.size == 26)
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           False,
+                           ct.POINTER(ct.c_double)())
 
     if retVal < 0:
         print("Model run failed")
         printModel(rxn, tfr)
 
     return (yOut, retVal)
+
+
+def runCkineU (tps, rxntfr):
+    global libb
+
+    assert(rxntfr.size == 26)
+
+    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           False,
+                           ct.POINTER(ct.c_double)())
+
+    if retVal < 0:
+        print("Model run failed")
+        print(rxntfr)
+
+    return (yOut, retVal)
+
+
+def runCkineSensi (tps, rxntfr):
+    global libb
+
+    assert(rxntfr.size == 26)
+
+    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+
+    sensV = np.zeros((56, 26, tps.size), dtype=np.float64, order='F')
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           True,
+                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+    if retVal < 0:
+        print("Model run failed")
+        print(rxntfr)
+
+    return (yOut, retVal, sensV)
 
 
 def dy_dt(y, t, rxn):
@@ -51,17 +99,30 @@ def dy_dt(y, t, rxn):
     
     return yOut
 
+def jacobian(y, t, rxn):
+    global libb
+    
+    assert(rxn.size == 15)
+    
+    yOut = np.zeros((26,26)) # size of the Jacobian matrix
+    
+    libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return yOut
+
 
 def fullModel(y, t, rxn, tfr):
     global libb
 
-    assert(rxn.size == 15)
+    rxntfr = np.concatenate((rxn, tfr))
+
+    assert(rxntfr.size == 26)
 
     yOut = np.zeros_like(y)
 
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
-                     tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut
 
