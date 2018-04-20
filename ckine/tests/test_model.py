@@ -149,6 +149,17 @@ class TestModel(unittest.TestCase):
         approx = approx_jac_dydt(y, t, rxn)
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
+        
+    def test_fullJacobian(self):
+        rxn = np.random.sample(15)
+        t = np.random.sample(1)
+        y = np.random.sample(56)
+        tfr = np.random.sample(11)
+        
+        analytical = fullJacobian(y, t, rxn) # analytical will include tfr once fullJacobian is updated
+        approx = approx_jac_dydt(y, t, rxn, tfr)
+
+        self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 
 
 

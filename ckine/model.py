@@ -111,7 +111,7 @@ def jacobian(y, t, rxn):
     
     return yOut 
 
-def fullJacobian(y, t, rxn):
+def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
     global libb
     
     assert(rxn.size == 15)
