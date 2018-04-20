@@ -11,11 +11,6 @@ from tensorly.decomposition import parafac
 import matplotlib.pyplot as plt
 tensorly.set_backend('numpy')
 
-filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./data/Tensor_results/Sampling.pickle")
-with open(filename, 'rb') as file:
-    sample = pickle.load(file)
-
-mat, values = sample[0], sample[1]
 
 def z_score_values(A):
     '''Function that takes in the values tensor and z-scores it.'''
@@ -146,7 +141,7 @@ def plot_combo_decomp(factors, mat, component_x, component_y):
         plt.title(titles[i])
     return fig
 
-def calculate_correlation(tensor,r):
+def calculate_correlation(tensor,mat,r):
     "Make a pandas dataframe for coorelation coefficients between components and input variables."
     factors = perform_decomposition(tensor, r)
     cols = mat.shape[1]
