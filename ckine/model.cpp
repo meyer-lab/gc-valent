@@ -796,3 +796,32 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 
 	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
+
+void fullJacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
+	array<array<double, 56>, 56> out;
+	
+	// unless otherwise specified, assume all partial derivatives are 0
+	for (array<double, 56> &a : out)
+		fill(a.begin(), a.end(), 0.0);
+    
+    array <double, 26*26> surface_y;
+    jacobian(y, &r, surface_y.data(), IL2, IL15, IL7, IL9); // jacobian function assigns values to surface_y
+    for (int ii=0; ii<26; ii++) {
+        for (int jj=0; jj<26; jj++) {
+            out[ii][jj] = surface_y[ii][jj]  } } // TODO: fix notation for surface_y index 
+    
+    array <double, 26*26> endo_y;
+    jacobian(y, &r, endo_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
+    for (int ii=26; ii<52; ii++) {
+        for (int jj=26; jj<52; jj++) {
+            out[ii][jj] = endo_y[ii-26][jj-26]  } } // TODO: fix notation for endo_y index
+    
+    for (size_t ii = 0; ii < out.size(); ii++)
+		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
+}
+
+extern "C" void fullJacobian_C(double *y_in, double, double *out, double *rxn_in) {
+	ratesS r = param(rxn_in);
+
+	fullJacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
+    

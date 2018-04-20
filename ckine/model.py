@@ -104,14 +104,25 @@ def jacobian(y, t, rxn):
     
     assert(rxn.size == 15)
     
-    yOut = np.zeros((26,26)) # size of the Jacobian matrix
+    yOut = np.zeros((26,26)) # size of the surface Jacobian matrix
     
     libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
     
-    return yOut
+    return yOut 
 
-
+def fullJacobian(y, t, rxn):
+    global libb
+    
+    assert(rxn.size == 15)
+    
+    yOut = np.zeros((56,56)) # size of the full Jacobian matrix
+    
+    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return yOut 
+    
 def fullModel(y, t, rxn, tfr):
     global libb
 
