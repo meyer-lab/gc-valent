@@ -808,13 +808,13 @@ void fullJacobian(const double * const y, const ratesS * const r, double * const
     jacobian(y, r, surface_y.data(), IL2, IL15, IL7, IL9); // jacobian function assigns values to surface_y
     for (int ii=0; ii<26; ii++) {
         for (int jj=0; jj<26; jj++) {
-            out[ii][jj] = surface_y{ii}{jj}  } } // TODO: fix notation for surface_y index 
+            out[ii][jj] = surface_y[26*ii + jj];  } } // TODO: fix notation for surface_y index 
     
     array <double, 26*26> endo_y;
     jacobian(y, r, endo_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
     for (int ii=26; ii<52; ii++) {
         for (int jj=26; jj<52; jj++) {
-            out[ii][jj] = endo_y{ii-26}{jj-26}  } } // TODO: fix notation for endo_y index
+            out[ii][jj] = endo_y[26*ii + jj];  } } // TODO: fix notation for endo_y index
     
     for (size_t ii = 0; ii < out.size(); ii++)
 		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
