@@ -102,6 +102,7 @@ class runCkineOpDiff(Op):
         outputs[0][0] = np.squeeze(sensi)
 
 
+# TODO: Warning! This is not passing tests.
 class runCkineKineticOp(Op):
     itypes = [dvector]
     otypes = [dvector]
