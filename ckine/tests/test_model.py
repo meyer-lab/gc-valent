@@ -157,7 +157,7 @@ class TestModel(unittest.TestCase):
         tfr = np.random.sample(11)
         
         analytical = fullJacobian(y, t, rxn) # analytical will include tfr once fullJacobian is updated
-        approx = approx_jac_dydt(y, t, rxn, tfr)
+        approx = approx_jacobian(y, t, rxn, tfr)
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 
