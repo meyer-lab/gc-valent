@@ -35,7 +35,7 @@ class IL2Rb_trafficking:
     def calc(self, tfR):
         # IL2Ra- cells
         tfR2 = tfR.copy()
-        tfR2[15] = 0.0
+        tfR2[20] = 0.0 # TODO: Check that idx 20 is IL2ra
 
         diff1 = surf_IL2Rb(tfR, 1) - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
         diff2 = surf_IL2Rb(tfR, 500) - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
@@ -75,7 +75,8 @@ class IL2_15_activity:
         # Loop over concentrations of IL2
         actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[15], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[20], 0.0) # Set IL2Ra to zero
+        # TODO: Check that idx 20 is IL2ra
 
         # Loop over concentrations of IL2, IL2Ra-/-
         actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
@@ -98,7 +99,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=11) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
@@ -106,8 +107,7 @@ class build_model:
 
             ligands = T.zeros(4, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, rxnrates, T.zeros(3, dtype=np.float64),
-                                    endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
+            unkVec = T.concatenate((ligands, rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
