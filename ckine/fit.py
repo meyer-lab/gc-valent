@@ -19,9 +19,7 @@ def surf_IL2Rb(rxntraf, IL2_conc):
     if retVal < 0:
         return -100
 
-    sIL2Rb = ys[:, 1] # Surface IL2Rb value in fullModel
-
-    return 10. * (sIL2Rb / sIL2Rb[0]) # % sIL2Rb relative to initial amount
+    return 10. * (ys[:, 1] / ys[0, 1]) # % sIL2Rb relative to initial amount
 
 
 class IL2Rb_trafficking:
