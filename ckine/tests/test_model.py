@@ -140,13 +140,10 @@ class TestModel(unittest.TestCase):
 
         
     def test_jacobian(self):
-        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
-        rxn = np.random.sample(14)
-        t = np.random.sample(1)
-        y = np.random.sample(26)
-        
-        analytical = jacobian(y, t, rxn)
-        approx = approx_jac_dydt(y, t, rxn)
+        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
+        Both Jacobians are evaluating the partial derivatives of dydt.'''
+        analytical = jacobian(self.y0, self.ts[0], self.args)
+        approx = approx_jac_dydt(self.y0, self.ts[0], self.args)
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 
