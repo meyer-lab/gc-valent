@@ -78,7 +78,7 @@ def runCkineSensi (tps, rxntfr):
 def dy_dt(y, t, rxn):
     global libb
 
-    assert(rxn.size == 15)
+    assert(rxn.size == 14)
 
     yOut = np.zeros_like(y)
 
@@ -90,7 +90,7 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
     global libb
     
-    assert(rxn.size == 15)
+    assert(rxn.size == 14)
     
     yOut = np.zeros((26, 26)) # size of the Jacobian matrix
     
