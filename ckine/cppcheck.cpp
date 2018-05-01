@@ -48,11 +48,11 @@ protected:
 		array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, 56*7> output;
 		array<double, 56*7> output2;
-		array<double, 26> rxnRatesIn;
+		array<double, Nparams> rxnRatesIn;
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 3; ii++) {
+		for (size_t ii = 0; ii < 1000; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
 			rxnRatesIn[15 + 2] /= 10.0;
