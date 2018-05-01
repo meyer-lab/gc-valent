@@ -35,7 +35,7 @@ class IL2Rb_trafficking:
     def calc(self, tfR):
         # IL2Ra- cells
         tfR2 = tfR.copy()
-        tfR2[20] = 0.0 # TODO: Check that idx 20 is IL2ra
+        tfR2[19] = 0.0 # TODO: Check that idx 20 is IL2ra
 
         diff1 = surf_IL2Rb(tfR, 1) - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
         diff2 = surf_IL2Rb(tfR, 500) - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
