@@ -145,6 +145,8 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(self.y0, self.ts[0], self.args)
         approx = approx_jac_dydt(self.y0, self.ts[0], self.args)
 
+        self.assertTrue(analytical.shape == approx.shape)
+
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 
 
