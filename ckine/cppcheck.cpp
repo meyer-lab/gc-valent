@@ -55,7 +55,7 @@ protected:
 		for (size_t ii = 0; ii < 1000; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
-			rxnRatesIn[15 + 2] /= 10.0;
+			rxnRatesIn[14 + 2] /= 10.0;
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
 
