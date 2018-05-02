@@ -142,7 +142,7 @@ class TestModel(unittest.TestCase):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
         Both Jacobians are evaluating the partial derivatives of dydt.'''
         analytical = jacobian(self.y0, self.ts[0], self.args)
-        approx = approx_jac_dydt(self.y0, self.ts[0], self.args)
+        approx = approx_jac_dydt(self.y0, self.ts[0], self.args, delta=1.0E-4) # Large delta to prevent round-off error  
 
         self.assertTrue(analytical.shape == approx.shape)
 

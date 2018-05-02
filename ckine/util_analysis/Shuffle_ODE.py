@@ -30,7 +30,7 @@ def approx_jacobian():
     return jac.transpose()
 
 
-def approx_jac_dydt(y, t, rxn):
+def approx_jac_dydt(y, t, rxn, delta=1.0E-9):
     """Approximate the Jacobian matrix of callable function func
 
        * Returns
@@ -43,8 +43,6 @@ def approx_jac_dydt(y, t, rxn):
     """
     f0 = dy_dt(y, t, rxn)
     jac = np.zeros([y.size, f0.size])
-
-    delta = 1.0E-9
 
     for i in range(y.size):
         dy = y.copy()
