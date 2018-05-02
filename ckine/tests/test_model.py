@@ -144,6 +144,8 @@ class TestModel(unittest.TestCase):
         Both Jacobians are evaluating the partial derivatives of dydt.'''
         analytical = jacobian(self.y0, self.ts[0], self.args)
         approx = approx_jac_dydt(self.y0, self.ts[0], self.args)
+        
+        print(np.isclose(analytical, approx, rtol=0.1, atol=0.1))
 
         self.assertTrue(analytical.shape == approx.shape)
 
