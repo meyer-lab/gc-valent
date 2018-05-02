@@ -599,7 +599,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	
 	// gc
 	out[2][2] = -k3fwd * IL2 - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - kfbnd * IL15 - kfbnd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - kfbnd * IL7 - r->kfwd * IL7Ra_IL7 - kfbnd * IL9 - r->kfwd * IL9R_IL9; // gc with respect to gc
-	out[2][3] = - r->kfwd * gc; // gc with respect to IL2_IL2Ra 
+	out[2][3] = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
 	out[2][4] = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
 	out[2][5] = k3rev; // gc with respect to IL2_gc
 	out[2][6] = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
