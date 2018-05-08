@@ -19,7 +19,7 @@ class TestModel(unittest.TestCase):
         # All the species abundances should be above zero
         self.assertGreater(np.min(X), -1.0E-7)
 
-        # Test that it came to equilirbium
+        # Test that it came to equilibrium
         self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
@@ -32,7 +32,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 15)
+        self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
         # need to convert args from an array to a tuple of numbers
 
@@ -137,16 +137,11 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
     #    self.assertGreaterEqual(retVal, 0)
 
-
-        
     def test_jacobian(self):
-        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
-        rxn = np.random.sample(15)
-        t = np.random.sample(1)
-        y = np.random.sample(26)
-        
-        analytical = jacobian(y, t, rxn)
-        approx = approx_jac_dydt(y, t, rxn)
+        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
+        Both Jacobians are evaluating the partial derivatives of dydt.'''
+        analytical = jacobian(self.y0, self.ts[0], self.args)
+        approx = approx_jac_dydt(self.y0, self.ts[0], self.args, delta=1.0E-4) # Large delta to prevent round-off error  
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
         
@@ -158,9 +153,10 @@ class TestModel(unittest.TestCase):
         
         analytical = fullJacobian(y, t, rxn) # analytical will include tfr once fullJacobian is updated
         approx = approx_jacobian(y, t, rxn, tfr)
+		
+        self.assertTrue(analytical.shape == approx.shape)
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
-
 
 
     def test_tensor(self):
@@ -179,18 +175,9 @@ class TestModel(unittest.TestCase):
 
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
-        r = np.zeros(15)
-        r[4:15] = np.ones(11) * (5*10**-1)
-        r[0:4] = 10**-3, 10**-3, 10**-3, 10**-3
         
         t = 60. * 4 # let's let the system run for 4 hours
         ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
         
-        trafRates = np.zeros(11)
-        trafRates[0:5] = (50* 10**-2)
-        trafRates[5:11] = 0.1,0.1,0.1,0.1,0.1,0.1
-        
-        temp, retVal = runCkine(ts, r, trafRates)
+        temp, retVal = runCkine(ts, self.args, self.tfargs)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
-
-

@@ -21,32 +21,14 @@ libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
 
 
 def runCkine (tps, rxn, tfr):
-    global libb
-
-    rxntfr = np.concatenate((rxn, tfr))
-
-    assert(rxntfr.size == 26)
-
-    yOut = np.zeros((tps.size, 56), dtype=np.float64)
-
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           False,
-                           ct.POINTER(ct.c_double)())
-
-    if retVal < 0:
-        print("Model run failed")
-        printModel(rxn, tfr)
-
-    return (yOut, retVal)
+    """ Wrapper if rxn and tfr are separate. """
+    return runCkineU (tps, np.concatenate((rxn, tfr)))
 
 
 def runCkineU (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 26)
+    assert(rxntfr.size == 25)
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
@@ -56,10 +38,6 @@ def runCkineU (tps, rxntfr):
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
                            False,
                            ct.POINTER(ct.c_double)())
-
-    if retVal < 0:
-        print("Model run failed")
-        print(rxntfr)
 
     return (yOut, retVal)
 
@@ -67,11 +45,11 @@ def runCkineU (tps, rxntfr):
 def runCkineSensi (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 26)
+    assert(rxntfr.size == 25)
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
-    sensV = np.zeros((56, 26, tps.size), dtype=np.float64, order='F')
+    sensV = np.zeros((56, 25, tps.size), dtype=np.float64, order='F')
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -80,17 +58,13 @@ def runCkineSensi (tps, rxntfr):
                            True,
                            sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
 
-    if retVal < 0:
-        print("Model run failed")
-        print(rxntfr)
-
     return (yOut, retVal, sensV)
 
 
 def dy_dt(y, t, rxn):
     global libb
 
-    assert(rxn.size == 15)
+    assert(rxn.size == 14)
 
     yOut = np.zeros_like(y)
 
@@ -102,9 +76,9 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
     global libb
     
-    assert(rxn.size == 15)
+    assert(rxn.size == 14)
     
-    yOut = np.zeros((26,26)) # size of the surface Jacobian matrix
+    yOut = np.zeros((26, 26)) # size of the Jacobian matrix
     
     libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
@@ -128,7 +102,7 @@ def fullModel(y, t, rxn, tfr):
 
     rxntfr = np.concatenate((rxn, tfr))
 
-    assert(rxntfr.size == 26)
+    assert(rxntfr.size == 25)
 
     yOut = np.zeros_like(y)
 
@@ -140,26 +114,6 @@ def fullModel(y, t, rxn, tfr):
 
 __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
-
-
-def printModel(rxnRates, trafRates):
-    """A function to print out important values."""
-    # endo, activeEndo, sortF, kRec, kDeg
-    print("Endocytosis: " + str(trafRates[0]))
-    print("activeEndo: " + str(trafRates[1]))
-    print("sortF: " + str(trafRates[2]))
-    print("kRec: " + str(trafRates[3]))
-    print("kDeg: " + str(trafRates[4]))
-    print("Receptor expression: " + str(trafRates[5:11]))
-    print(".....Reaction rates.....")
-    print("IL2: " + str(rxnRates[0]))
-    print("IL15: " + str(rxnRates[1]))
-    print("IL7: " + str(rxnRates[2]))
-    print("IL9: " + str(rxnRates[3]))
-    print("kfwd: " + str(rxnRates[4]))
-    print("k5rev: " + str(rxnRates[5]))
-    print("k6rev: " + str(rxnRates[6]))
-    print(rxnRates[7::])
 
 
 def solveAutocrine(trafRates):
