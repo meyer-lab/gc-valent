@@ -88,7 +88,7 @@ def jacobian(y, t, rxn):
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
     global libb
     
-    assert(rxn.size == 15)
+    assert(rxn.size == 14)
     
     yOut = np.zeros((56,56)) # size of the full Jacobian matrix
     
