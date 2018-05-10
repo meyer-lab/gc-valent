@@ -29,7 +29,7 @@ All ligand-receptor binding processes had a rate constant of ‘kfbnd’ which w
 
 [insert a table of dissociation constants?]
 
-We used detailed balance to eliminate (number) unknown rate constants.
+We used detailed balance to eliminate 12 unknown rate constants. Detailed balance loops were based on formation of full complexes and initial assembly.
 
 The rate of endocytosis is quantified by a rate constant of ‘activeEndo’ for active complexes and ‘endo’ for all other species. The fraction of all endosomal species sent to lysosomes is ‘SortF’. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are ‘kDeg’ and ‘kRec’, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; these receptor synthesis rates are specific to each receptor.
 
