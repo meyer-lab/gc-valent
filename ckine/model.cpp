@@ -20,6 +20,8 @@ using std::vector;
 using std::fill;
 using std::string;
 
+int CVJacFn(double, N_Vector, N_Vector, SUNMatrix, void *user_data, N_Vector, N_Vector, N_Vector);
+
 const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
 std::array<bool, 26> __active_species_IDX() {
@@ -389,6 +391,8 @@ void solver_setup(solver *sMem, double *params) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
+
+	CVDlsSetJacFn(sMem->cvode_mem, CVJacFn);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -812,7 +816,7 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
 
-void fullJacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
+void fullJacobian(const double * const y, const ratesS * const r, double * const dydt) {
 	array<array<double, 56>, 56> out;
 	size_t halfL = activeV.size();
 	
@@ -821,7 +825,7 @@ void fullJacobian(const double * const y, const ratesS * const r, double * const
 		fill(a.begin(), a.end(), 0.0);
     
     array <double, 26*26> sub_y;
-    jacobian(y, r, sub_y.data(), IL2, IL15, IL7, IL9); // jacobian function assigns values to sub_y
+    jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
     for (size_t ii = 0; ii < halfL; ii++)
     	std::copy_n(sub_y.data() + halfL*ii, halfL, out[ii].data());
     
@@ -862,9 +866,17 @@ void fullJacobian(const double * const y, const ratesS * const r, double * const
 		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
 }
 
+int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vector, N_Vector, N_Vector) {
+	ratesS rattes = param(static_cast<double *>(user_data));
+
+	fullJacobian(NV_DATA_S(y), &rattes, SM_DATA_D(Jac));
+
+	return 0;
+}
+
 extern "C" void fullJacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	ratesS r = param(rxn_in);
 
-	fullJacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
+	fullJacobian(y_in, &r, out);
 }
     
