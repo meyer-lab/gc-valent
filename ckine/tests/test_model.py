@@ -32,7 +32,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 14)
+        self.args = np.random.lognormal(0., 1., 13)
         self.tfargs = np.random.lognormal(0., 1., 11)
         # need to convert args from an array to a tuple of numbers
 
