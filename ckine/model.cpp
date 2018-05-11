@@ -876,12 +876,16 @@ int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vect
 	double *data = SUNSparseMatrix_Data(Jac);
 
 	size_t dataAdded = 0;
+	int lastCol = -1;
 	for (size_t ii = 0; ii < out.size(); ii++) {
-		SUNSparseMatrix_IndexPointers(Jac)[ii] = static_cast<int>(dataAdded);
 		for (size_t jj = 0; jj < out.size(); jj++) {
 			if (out[ii][jj] != 0.0) {
 				data[dataAdded] = out[ii][jj];
 				SUNSparseMatrix_IndexValues(Jac)[dataAdded] = static_cast<int>(ii);
+				if (static_cast<int>(ii) < lastCol) {
+					SUNSparseMatrix_IndexPointers(Jac)[ii] = static_cast<int>(dataAdded);
+					lastCol = static_cast<int>(ii);
+				}
 				dataAdded++;
 			}
 		}
