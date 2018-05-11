@@ -284,24 +284,24 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[14], is) = -y0[is]/r->endo; // Endo (15)
+		NV_Ith_S(y0s[13], is) = -y0[is]/r->endo; // Endo (15)
 
 		// sortF (17)
-		NV_Ith_S(y0s[16], is + 26) = -y0[is + 26]/r->sortF;
-		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 26) - y0[is + 26]);
+		NV_Ith_S(y0s[15], is + 26) = -y0[is + 26]/r->sortF;
+		NV_Ith_S(y0s[15], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[15], is + 26) - y0[is + 26]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
+		NV_Ith_S(y0s[16], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
 
 		// kDeg (19)
-		NV_Ith_S(y0s[18], is + 26) = -y0[is + 26]/r->kDeg;
-		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 26)*internalFrac/r->endo;
+		NV_Ith_S(y0s[17], is + 26) = -y0[is + 26]/r->kDeg;
+		NV_Ith_S(y0s[17], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[17], is + 26)*internalFrac/r->endo;
 	}
 
 	// Rexpr (19-25)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
-		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[18 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
+		NV_Ith_S(y0s[18 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[18 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
