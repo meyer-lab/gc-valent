@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
-from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
+from ..util_analysis.Shuffle_ODE import approx_jac_dydt
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
