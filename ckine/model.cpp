@@ -814,22 +814,49 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 
 void fullJacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
 	array<array<double, 56>, 56> out;
+	size_t halfL = activeV.size();
 	
 	// unless otherwise specified, assume all partial derivatives are 0
 	for (array<double, 56> &a : out)
 		fill(a.begin(), a.end(), 0.0);
     
-    array <double, 26*26> surface_y;
-    jacobian(y, r, surface_y.data(), IL2, IL15, IL7, IL9); // jacobian function assigns values to surface_y
-    for (int ii=0; ii<26; ii++) {
-        for (int jj=0; jj<26; jj++) {
-            out[ii][jj] = surface_y[26*ii + jj];  } } // TODO: fix notation for surface_y index 
+    array <double, 26*26> sub_y;
+    jacobian(y, r, sub_y.data(), IL2, IL15, IL7, IL9); // jacobian function assigns values to sub_y
+    for (size_t ii = 0; ii < halfL; ii++)
+    	std::copy_n(sub_y.data() + halfL*ii, halfL, out[ii].data());
     
-    array <double, 26*26> endo_y;
-    jacobian(y, r, endo_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
-    for (int ii=26; ii<52; ii++) {
-        for (int jj=26; jj<52; jj++) {
-            out[ii][jj] = endo_y[26*ii + jj];  } } // TODO: fix notation for endo_y index
+    jacobian(y + halfL, r, sub_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
+    for (size_t ii = 0; ii < halfL; ii++)
+    	std::copy_n(sub_y.data() + halfL*ii, halfL, out[ii + halfL].data() + halfL);
+
+    // Implement trafficking
+    double endo = 0;
+    double deg = 0;
+    double rec = 0;
+	for (size_t ii = 0; ii < halfL; ii++) {
+		if (activeV[ii]) {
+			endo = r->endo + r->activeEndo;
+			deg = r->kDeg;
+			rec = 0.0;
+		} else {
+			endo = r->endo;
+			deg = r->kDeg*r->sortF;
+			rec = r->kRec*(1.0-r->sortF);
+		}
+
+		out[ii][ii] = out[ii][ii] - endo; // Endocytosis
+		out[ii + halfL][ii + halfL] -= deg + rec; // Degradation
+		out[ii + halfL][ii] += endo/internalFrac;
+		out[ii][ii + halfL] += rec*internalFrac; // Recycling
+	}
+
+	// Ligand degradation
+	for (size_t ii = 52; ii < 56; ii++)
+		out[ii][ii] -= r->kDeg;
+
+	// Ligand binding
+	out[26 + 0][52] = -kfbnd * y[26]; // IL2 binding to IL2Ra
+	// TODO: Fill in other species
     
     for (size_t ii = 0; ii < out.size(); ii++)
 		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
@@ -838,5 +865,6 @@ void fullJacobian(const double * const y, const ratesS * const r, double * const
 extern "C" void fullJacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	ratesS r = param(rxn_in);
 
-	fullJacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);   }
+	fullJacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
+}
     

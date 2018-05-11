@@ -1,8 +1,8 @@
 from ckine.model import fullModel, dy_dt
-import numpy as np, scipy
+import numpy as np
 
 
-def approx_jacobian(y, t, rxn, tfr):
+def approx_jacobian(y, t, rxn, tfr, delta=1.0E-9):
     """Approximate the Jacobian matrix of callable function func
 
        * Parameters
@@ -19,9 +19,9 @@ def approx_jacobian(y, t, rxn, tfr):
     f0 = fullModel(y, t, rxn, tfr)
     jac = np.zeros([len(y),len(f0)])
     dy = np.zeros(len(y))
-    for i in range(len(y)):
-        dy[i] = np.sqrt(np.finfo(float).eps)
-        jac[i] = (fullModel(y + dy, t, rxn, tfr) - f0)/(np.sqrt(np.finfo(float).eps))
+    for i in range(y.size):
+        dy[i] = delta
+        jac[i] = (fullModel(y + dy, t, rxn, tfr) - f0)/delta
         dy[i] = 0.0
         
     return jac.transpose()
