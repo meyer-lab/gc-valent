@@ -26,6 +26,8 @@ int CVJacFn(double, N_Vector, N_Vector, SUNMatrix, void *user_data, N_Vector, N_
 
 const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
+constexpr int JacDense = 405; // TODO: Add Jacobian density
+
 std::array<bool, 26> __active_species_IDX() {
 	std::array<bool, 26> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
@@ -385,7 +387,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
 
-	sMem->A = SUNSparseMatrix(Nspecies, Nspecies, Nspecies*Nspecies, CSC_MAT);
+	sMem->A = SUNSparseMatrix(Nspecies, Nspecies, JacDense, CSC_MAT);
 	sMem->LS = SUNKLU(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
@@ -869,18 +871,22 @@ array<array<double, 56>, 56> fullJacobian(const double * const y, const ratesS *
 
 int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
-	SUNMatZero(Jac);
-
+	
 	array<array<double, 56>, 56> out = fullJacobian(NV_DATA_S(y), &rattes);
 
-	double *data = SUNSparseMatrix_Data(Jac);
+	/* perform reallocation */
+	SM_NNZ_S(Jac) = JacDense; // TODO: Replace with actual size
+	SM_INDEXVALS_S(Jac) = (sunindextype *) realloc(SM_INDEXVALS_S(Jac), SM_NNZ_S(Jac)*sizeof(sunindextype));
+	SM_DATA_S(Jac) = (double *) realloc(SM_DATA_S(Jac), SM_NNZ_S(Jac)*sizeof(double));
+	
+	SUNMatZero(Jac);
 
 	size_t dataAdded = 0;
 	int lastCol = -1;
 	for (size_t ii = 0; ii < out.size(); ii++) {
 		for (size_t jj = 0; jj < out.size(); jj++) {
 			if (out[ii][jj] != 0.0) {
-				data[dataAdded] = out[ii][jj];
+				SUNSparseMatrix_Data(Jac)[dataAdded] = out[ii][jj];
 				SUNSparseMatrix_IndexValues(Jac)[dataAdded] = static_cast<int>(ii);
 				if (static_cast<int>(ii) < lastCol) {
 					SUNSparseMatrix_IndexPointers(Jac)[ii] = static_cast<int>(dataAdded);
@@ -890,8 +896,6 @@ int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vect
 			}
 		}
 	}
-
-	std::cout << dataAdded << std::endl;
 
 	return 0;
 }
