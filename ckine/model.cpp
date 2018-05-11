@@ -62,6 +62,10 @@ ratesS param(const double * const rxntfR) {
 	r.kRec = rxntfR[16];
 	r.kDeg = rxntfR[17];
 
+	if (r.sortF > 1.0) {
+		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
+	}
+
 	std::copy_n(rxntfR + 18, 6, r.Rexpr.begin());
 
 	return r;

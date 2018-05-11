@@ -25,4 +25,4 @@ class TestOp(unittest.TestCase):
 
         XX = np.full(24, 0.9, dtype=np.float64)
 
-        utt.verify_grad(runCkineKineticOp(ts, cond), [XX], abs_tol=0.2, rel_tol=0.2)
+        utt.verify_grad(runCkineKineticOp(ts, cond), [XX], abs_tol=0.1, rel_tol=0.1)
