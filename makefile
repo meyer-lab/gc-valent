@@ -12,7 +12,7 @@ ifeq ($(UNAME_S),Linux)
     LINKFLAG = -Wl,-rpath=./ckine
 endif
 
-CPPLINKS = -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
+CPPLINKS = -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lsundials_sunlinsolklu -lcppunit
 
 $(fdir)/Figure%.svg: genFigures.py
 	mkdir -p ./Manuscript/Figures

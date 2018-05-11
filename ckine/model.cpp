@@ -8,6 +8,8 @@
 #include <string>
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
+#include <sunmatrix/sunmatrix_sparse.h> /* access to sparse SUNMatrix           */
+#include <sunlinsol/sunlinsol_klu.h>    /* access to KLU sparse direct solver   */
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
@@ -383,8 +385,8 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
 
-	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
-	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
+	sMem->A = SUNSparseMatrix(Nspecies, Nspecies, Nspecies*Nspecies, CSC_MAT);
+	sMem->LS = SUNKLU(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
@@ -816,7 +818,7 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
 
-void fullJacobian(const double * const y, const ratesS * const r, double * const dydt) {
+array<array<double, 56>, 56> fullJacobian(const double * const y, const ratesS * const r) {
 	array<array<double, 56>, 56> out;
 	size_t halfL = activeV.size();
 	
@@ -862,21 +864,40 @@ void fullJacobian(const double * const y, const ratesS * const r, double * const
 	out[26 + 0][52] = -kfbnd * y[26]; // IL2 binding to IL2Ra
 	// TODO: Fill in other species
     
-    for (size_t ii = 0; ii < out.size(); ii++)
-		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
+    return out;
 }
 
 int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
+	SUNMatZero(Jac);
 
-	fullJacobian(NV_DATA_S(y), &rattes, SM_DATA_D(Jac));
+	array<array<double, 56>, 56> out = fullJacobian(NV_DATA_S(y), &rattes);
+
+	double *data = SUNSparseMatrix_Data(Jac);
+
+	size_t dataAdded = 0;
+	for (size_t ii = 0; ii < out.size(); ii++) {
+		SUNSparseMatrix_IndexPointers(Jac)[ii] = static_cast<int>(dataAdded);
+		for (size_t jj = 0; jj < out.size(); jj++) {
+			if (out[ii][jj] != 0.0) {
+				data[dataAdded] = out[ii][jj];
+				SUNSparseMatrix_IndexValues(Jac)[dataAdded] = static_cast<int>(ii);
+				dataAdded++;
+			}
+		}
+	}
+
+	std::cout << dataAdded << std::endl;
 
 	return 0;
 }
 
-extern "C" void fullJacobian_C(double *y_in, double, double *out, double *rxn_in) {
+extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
 	ratesS r = param(rxn_in);
 
-	fullJacobian(y_in, &r, out);
+	array<array<double, 56>, 56> out = fullJacobian(y_in, &r);
+
+	for (size_t ii = 0; ii < out.size(); ii++)
+		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
 }
     
