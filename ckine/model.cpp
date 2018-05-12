@@ -876,13 +876,22 @@ array<array<double, 56>, 56> fullJacobian(const double * const y, const ratesS *
 	out[26 + 4][52] = kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
 	out[26 + 5][52] = k3fwd * y[26 + 2]; // IL2 binding to gc
 
-	out[26 + 1][53] = -kfbnd * y[26 + 1]; // IL15 binding to IL2Rb
+	out[26 +  1][53] = -kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
+	out[26 + 10][53] = -kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
+	out[26 + 11][53] =  kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
+	out[26 + 12][53] =  kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
+	out[26 + 13][53] =  kfbnd * y[26 +  2]; // IL15 binding to gc
+	out[26 +  2][53] = -kfbnd * y[26 +  2]; // IL15 binding to gc
 
-
-	out[26 + 18][54] = -kfbnd * y[26 + 18]; // IL7 binding to IL7R
+	out[26 + 18][54] = -kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
+	out[26 + 19][54] =  kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
+	out[26 +  2][54] = -kfbnd * y[26 + 2];  // IL7 binding to gc
+	out[26 + 20][54] =  kfbnd * y[26 + 2];  // IL7 binding to gc
 
 	out[26 + 22][55] = -kfbnd * y[26 + 22]; // IL9 binding to IL9R
-	// TODO: Fill in other species
+	out[26 + 23][55] =  kfbnd * y[26 + 22]; // IL9 binding to IL9R
+	out[26 +  2][55] = -kfbnd * y[26 +  2]; // IL9 binding to gc
+	out[26 + 24][55] =  kfbnd * y[26 +  2]; // IL9 binding to gc
     
     return out;
 }

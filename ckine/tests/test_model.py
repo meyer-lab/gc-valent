@@ -30,11 +30,12 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, places=5)
 
     def setUp(self):
-        np.random.seed(10)
+        #np.random.seed(10)
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
         self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
+        self.fully = np.random.lognormal(0., 1., 56)
 
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
@@ -145,15 +146,13 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
         
     def test_fullJacobian(self):
-        y = np.random.sample(56)
-        
-        analytical = fullJacobian(y, 0.0, np.concatenate((self.args, self.tfargs)))
-        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), y, delta = 1.0E-7)
+        analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
+        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-7)
         
         np.set_printoptions(threshold=3500000, linewidth=1000, precision=1, suppress=True)
         print('')
         print(np.tanh(10*(analytical - approx)))
-        #print(np.tanh(10000*np.square(approx)))
+        # print(np.tanh(1000000*approx))
 		
         self.assertTrue(analytical.shape == approx.shape)
 
