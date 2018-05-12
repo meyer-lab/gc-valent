@@ -26,7 +26,7 @@ int CVJacFn(double, N_Vector, N_Vector, SUNMatrix, void *user_data, N_Vector, N_
 
 const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
-constexpr int JacDense = 405; // TODO: Add Jacobian density
+constexpr size_t JacDense = 405; // TODO: Add Jacobian density
 
 std::array<bool, 26> __active_species_IDX() {
 	std::array<bool, 26> __active_species_IDX;
@@ -387,8 +387,8 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
 
-	sMem->A = SUNSparseMatrix(Nspecies, Nspecies, JacDense, CSC_MAT);
-	sMem->LS = SUNKLU(sMem->state, sMem->A);
+	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));//SUNSparseMatrix(Nspecies, Nspecies, JacDense, CSC_MAT);
+	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);//SUNKLU(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
@@ -396,7 +396,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 
-	CVDlsSetJacFn(sMem->cvode_mem, CVJacFn);
+	//CVDlsSetJacFn(sMem->cvode_mem, CVJacFn);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -863,7 +863,19 @@ array<array<double, 56>, 56> fullJacobian(const double * const y, const ratesS *
 		out[ii][ii] -= r->kDeg;
 
 	// Ligand binding
-	out[26 + 0][52] = -kfbnd * y[26]; // IL2 binding to IL2Ra
+	out[26 + 0][52] = -kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
+	out[26 + 1][52] = -kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
+	out[26 + 2][52] = -k3fwd * y[26 + 2]; // IL2 binding to gc
+	out[26 + 3][52] = kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
+	out[26 + 4][52] = kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
+	out[26 + 5][52] = k3fwd * y[26 + 2]; // IL2 binding to gc
+
+	out[26 + 1][53] = -kfbnd * y[26 + 1]; // IL15 binding to IL2Rb
+
+
+	out[26 + 18][54] = -kfbnd * y[26 + 18]; // IL7 binding to IL7R
+
+	out[26 + 22][55] = -kfbnd * y[26 + 22]; // IL9 binding to IL9R
 	// TODO: Fill in other species
     
     return out;
@@ -874,10 +886,10 @@ int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vect
 	
 	array<array<double, 56>, 56> out = fullJacobian(NV_DATA_S(y), &rattes);
 
-	/* perform reallocation */
+	// Perform reallocation
 	SM_NNZ_S(Jac) = JacDense; // TODO: Replace with actual size
-	SM_INDEXVALS_S(Jac) = (sunindextype *) realloc(SM_INDEXVALS_S(Jac), SM_NNZ_S(Jac)*sizeof(sunindextype));
-	SM_DATA_S(Jac) = (double *) realloc(SM_DATA_S(Jac), SM_NNZ_S(Jac)*sizeof(double));
+	SM_INDEXVALS_S(Jac) = static_cast<sunindextype *>(realloc(SM_INDEXVALS_S(Jac), JacDense*sizeof(sunindextype)));
+	SM_DATA_S(Jac) = static_cast<double *>(realloc(SM_DATA_S(Jac), JacDense*sizeof(double)));
 	
 	SUNMatZero(Jac);
 
@@ -888,7 +900,7 @@ int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vect
 			if (out[ii][jj] != 0.0) {
 				SUNSparseMatrix_Data(Jac)[dataAdded] = out[ii][jj];
 				SUNSparseMatrix_IndexValues(Jac)[dataAdded] = static_cast<int>(ii);
-				if (static_cast<int>(ii) < lastCol) {
+				if (static_cast<int>(ii) < lastCol) { // If we've jumped to a new column
 					SUNSparseMatrix_IndexPointers(Jac)[ii] = static_cast<int>(dataAdded);
 					lastCol = static_cast<int>(ii);
 				}

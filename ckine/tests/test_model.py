@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian, fullJacobian
-from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
+from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -30,6 +30,7 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, places=5)
 
     def setUp(self):
+        np.random.seed(10)
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
         self.args = np.random.lognormal(0., 1., 14)
@@ -141,24 +142,20 @@ class TestModel(unittest.TestCase):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
         Both Jacobians are evaluating the partial derivatives of dydt.'''
         analytical = jacobian(self.y0, self.ts[0], self.args)
-        approx = approx_jac_dydt(self.y0, self.ts[0], self.args, delta=1.0E-4) # Large delta to prevent round-off error  
+        approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error  
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
         
     def test_fullJacobian(self):
-        rxn = np.random.sample(14)
-        t = np.random.sample(1)
         y = np.random.sample(56)
-        tfr = np.random.sample(11)
         
-        analytical = fullJacobian(y, t, np.concatenate((rxn, tfr))) # analytical will include tfr once fullJacobian is updated
-        approx = approx_jacobian(y, t, rxn, tfr)
+        analytical = fullJacobian(y, 0.0, np.concatenate((self.args, self.tfargs)))
+        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), y, delta = 1.0E-7)
         
         np.set_printoptions(threshold=3500000, linewidth=1000, precision=1, suppress=True)
         print('')
-        print(analytical - approx)
-
-        print(np.sum(np.square(analytical - approx)))
+        print(np.tanh(10*(analytical - approx)))
+        #print(np.tanh(10000*np.square(approx)))
 		
         self.assertTrue(analytical.shape == approx.shape)
 
