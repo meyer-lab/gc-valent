@@ -825,8 +825,8 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
 
-template<typename Derived>
-void fullJacobian(const double * const y, const ratesS * const r, Derived &out) {
+
+void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<JacMat> &out) {
 	size_t halfL = activeV.size();
 	
 	// unless otherwise specified, assume all partial derivatives are 0
