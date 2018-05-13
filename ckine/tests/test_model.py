@@ -30,7 +30,6 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, places=5)
 
     def setUp(self):
-        #np.random.seed(10)
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
         self.args = np.random.lognormal(0., 1., 14)
