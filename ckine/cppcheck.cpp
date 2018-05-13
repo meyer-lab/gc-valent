@@ -52,7 +52,7 @@ protected:
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 100; ii++) {
+		for (size_t ii = 0; ii < 1000; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
 			rxnRatesIn[14 + 2] /= 10.0;
