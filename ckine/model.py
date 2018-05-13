@@ -11,38 +11,60 @@ filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so"
 libb = ct.cdll.LoadLibrary(filename)
 libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                         ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
+                        ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
-                             ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                             ct.POINTER(ct.c_double))
+                             ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
                           ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                          ct.POINTER(ct.c_double))
+                          ct.c_bool, ct.POINTER(ct.c_double))
 
 
 def runCkine (tps, rxn, tfr):
+    """ Wrapper if rxn and tfr are separate. """
+    return runCkineU (tps, np.concatenate((rxn, tfr)))
+
+
+def runCkineU (tps, rxntfr):
     global libb
 
-    assert(rxn.size == 15)
+    assert(rxntfr.size == 25)
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    if retVal < 0:
-        print("Model run failed")
-        printModel(rxn, tfr)
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           False,
+                           ct.POINTER(ct.c_double)())
 
     return (yOut, retVal)
+
+
+def runCkineSensi (tps, rxntfr):
+    global libb
+
+    assert(rxntfr.size == 25)
+
+    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+
+    sensV = np.zeros((56, 25, tps.size), dtype=np.float64, order='F')
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           True,
+                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+    return (yOut, retVal, sensV)
 
 
 def dy_dt(y, t, rxn):
     global libb
 
-    assert(rxn.size == 15)
+    assert(rxn.size == 14)
 
     yOut = np.zeros_like(y)
 
@@ -51,43 +73,47 @@ def dy_dt(y, t, rxn):
     
     return yOut
 
+def jacobian(y, t, rxn):
+    global libb
+    
+    assert(rxn.size == 14)
+    
+    yOut = np.zeros((26, 26)) # size of the Jacobian matrix
+    
+    libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return yOut 
 
+def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
+    global libb
+    
+    assert(rxn.size == 25)
+    
+    yOut = np.zeros((56, 56)) # size of the full Jacobian matrix
+    
+    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return yOut 
+    
 def fullModel(y, t, rxn, tfr):
     global libb
 
-    assert(rxn.size == 15)
+    rxntfr = np.concatenate((rxn, tfr))
+
+    assert(rxntfr.size == 25)
 
     yOut = np.zeros_like(y)
 
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
-                     tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut
 
 
 __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
-
-
-def printModel(rxnRates, trafRates):
-    """A function to print out important values."""
-    # endo, activeEndo, sortF, kRec, kDeg
-    print("Endocytosis: " + str(trafRates[0]))
-    print("activeEndo: " + str(trafRates[1]))
-    print("sortF: " + str(trafRates[2]))
-    print("kRec: " + str(trafRates[3]))
-    print("kDeg: " + str(trafRates[4]))
-    print("Receptor expression: " + str(trafRates[5:11]))
-    print(".....Reaction rates.....")
-    print("IL2: " + str(rxnRates[0]))
-    print("IL15: " + str(rxnRates[1]))
-    print("IL7: " + str(rxnRates[2]))
-    print("IL9: " + str(rxnRates[3]))
-    print("kfwd: " + str(rxnRates[4]))
-    print("k5rev: " + str(rxnRates[5]))
-    print("k6rev: " + str(rxnRates[6]))
-    print(rxnRates[7::])
 
 
 def solveAutocrine(trafRates):
