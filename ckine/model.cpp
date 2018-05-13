@@ -8,12 +8,11 @@
 #include <string>
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
-#include <sunmatrix/sunmatrix_sparse.h> /* access to sparse SUNMatrix           */
-#include <sunlinsol/sunlinsol_klu.h>    /* access to KLU sparse direct solver   */
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
 #include <iostream>
+#include <Eigen/Core>
 #include "model.hpp"
 
 using std::array;
@@ -22,11 +21,11 @@ using std::vector;
 using std::fill;
 using std::string;
 
-int CVJacFn(double, N_Vector, N_Vector, SUNMatrix, void *user_data, N_Vector, N_Vector, N_Vector);
+typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
+
+int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
 
 const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
-
-constexpr size_t JacDense = 405; // TODO: Add Jacobian density
 
 std::array<bool, 26> __active_species_IDX() {
 	std::array<bool, 26> __active_species_IDX;
@@ -393,8 +392,8 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
 
-	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));//SUNSparseMatrix(Nspecies, Nspecies, JacDense, CSC_MAT);
-	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);//SUNKLU(sMem->state, sMem->A);
+	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
+	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
@@ -402,7 +401,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 
-	//CVDlsSetJacFn(sMem->cvode_mem, CVJacFn);
+	CVDlsSetJacFn(sMem->cvode_mem, Jac);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -433,12 +432,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-6);
+	fill(abs.begin(), abs.end(), abstolIn);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-6, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, reltolIn, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -826,22 +825,21 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
 
-array<array<double, 56>, 56> fullJacobian(const double * const y, const ratesS * const r) {
-	array<array<double, 56>, 56> out;
+template<typename Derived>
+void fullJacobian(const double * const y, const ratesS * const r, Derived &out) {
 	size_t halfL = activeV.size();
 	
 	// unless otherwise specified, assume all partial derivatives are 0
-	for (array<double, 56> &a : out)
-		fill(a.begin(), a.end(), 0.0);
+	out.setConstant(0.0);
     
     array <double, 26*26> sub_y;
     jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
     for (size_t ii = 0; ii < halfL; ii++)
-    	std::copy_n(sub_y.data() + halfL*ii, halfL, out[ii].data());
+    	std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
     
     jacobian(y + halfL, r, sub_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
     for (size_t ii = 0; ii < halfL; ii++)
-    	std::copy_n(sub_y.data() + halfL*ii, halfL, out[ii + halfL].data() + halfL);
+    	std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
 
     // Implement trafficking
     double endo = 0;
@@ -858,71 +856,52 @@ array<array<double, 56>, 56> fullJacobian(const double * const y, const ratesS *
 			rec = r->kRec*(1.0-r->sortF);
 		}
 
-		out[ii][ii] = out[ii][ii] - endo; // Endocytosis
-		out[ii + halfL][ii + halfL] -= deg + rec; // Degradation
-		out[ii + halfL][ii] += endo/internalFrac;
-		out[ii][ii + halfL] += rec*internalFrac; // Recycling
+		out(ii, ii) = out(ii, ii) - endo; // Endocytosis
+		out(ii + halfL, ii + halfL) -= deg + rec; // Degradation
+		out(ii + halfL, ii) += endo/internalFrac;
+		out(ii, ii + halfL) += rec*internalFrac; // Recycling
 	}
 
 	// Ligand degradation
 	for (size_t ii = 52; ii < 56; ii++)
-		out[ii][ii] -= r->kDeg;
+		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	out[26 + 0][52] = -kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
-	out[26 + 1][52] = -kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
-	out[26 + 2][52] = -k3fwd * y[26 + 2]; // IL2 binding to gc
-	out[26 + 3][52] = kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
-	out[26 + 4][52] = kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
-	out[26 + 5][52] = k3fwd * y[26 + 2]; // IL2 binding to gc
+	out(26 + 0, 52) = -kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
+	out(26 + 1, 52) = -kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
+	out(26 + 2, 52) = -k3fwd * y[26 + 2]; // IL2 binding to gc
+	out(26 + 3, 52) = kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
+	out(26 + 4, 52) = kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
+	out(26 + 5, 52) = k3fwd * y[26 + 2]; // IL2 binding to gc
 
-	out[26 +  1][53] = -kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
-	out[26 + 10][53] = -kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
-	out[26 + 11][53] =  kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
-	out[26 + 12][53] =  kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
-	out[26 + 13][53] =  kfbnd * y[26 +  2]; // IL15 binding to gc
-	out[26 +  2][53] = -kfbnd * y[26 +  2]; // IL15 binding to gc
+	out(26 +  1, 53) = -kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
+	out(26 + 10, 53) = -kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
+	out(26 + 11, 53) =  kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
+	out(26 + 12, 53) =  kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
+	out(26 + 13, 53) =  kfbnd * y[26 +  2]; // IL15 binding to gc
+	out(26 +  2, 53) = -kfbnd * y[26 +  2]; // IL15 binding to gc
 
-	out[26 + 18][54] = -kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
-	out[26 + 19][54] =  kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
-	out[26 +  2][54] = -kfbnd * y[26 + 2];  // IL7 binding to gc
-	out[26 + 20][54] =  kfbnd * y[26 + 2];  // IL7 binding to gc
+	out(26 + 18, 54) = -kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
+	out(26 + 19, 54) =  kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
+	out(26 +  2, 54) = -kfbnd * y[26 + 2];  // IL7 binding to gc
+	out(26 + 20, 54) =  kfbnd * y[26 + 2];  // IL7 binding to gc
 
-	out[26 + 22][55] = -kfbnd * y[26 + 22]; // IL9 binding to IL9R
-	out[26 + 23][55] =  kfbnd * y[26 + 22]; // IL9 binding to IL9R
-	out[26 +  2][55] = -kfbnd * y[26 +  2]; // IL9 binding to gc
-	out[26 + 24][55] =  kfbnd * y[26 +  2]; // IL9 binding to gc
-    
-    return out;
+	out(26 + 22, 55) = -kfbnd * y[26 + 22]; // IL9 binding to IL9R
+	out(26 + 23, 55) =  kfbnd * y[26 + 22]; // IL9 binding to IL9R
+	out(26 +  2, 55) = -kfbnd * y[26 +  2]; // IL9 binding to gc
+	out(26 + 24, 55) =  kfbnd * y[26 +  2]; // IL9 binding to gc
 }
 
-int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vector, N_Vector, N_Vector) {
+
+int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
-	
-	array<array<double, 56>, 56> out = fullJacobian(NV_DATA_S(y), &rattes);
 
-	// Perform reallocation
-	SM_NNZ_S(Jac) = JacDense; // TODO: Replace with actual size
-	SM_INDEXVALS_S(Jac) = static_cast<sunindextype *>(realloc(SM_INDEXVALS_S(Jac), JacDense*sizeof(sunindextype)));
-	SM_DATA_S(Jac) = static_cast<double *>(realloc(SM_DATA_S(Jac), JacDense*sizeof(double)));
-	
-	SUNMatZero(Jac);
+	Eigen::Map<JacMat> jac(SM_DATA_D(J));
 
-	size_t dataAdded = 0;
-	int lastCol = -1;
-	for (size_t ii = 0; ii < out.size(); ii++) {
-		for (size_t jj = 0; jj < out.size(); jj++) {
-			if (out[ii][jj] != 0.0) {
-				SUNSparseMatrix_Data(Jac)[dataAdded] = out[ii][jj];
-				SUNSparseMatrix_IndexValues(Jac)[dataAdded] = static_cast<int>(ii);
-				if (static_cast<int>(ii) < lastCol) { // If we've jumped to a new column
-					SUNSparseMatrix_IndexPointers(Jac)[ii] = static_cast<int>(dataAdded);
-					lastCol = static_cast<int>(ii);
-				}
-				dataAdded++;
-			}
-		}
-	}
+	// Actually get the Jacobian
+	fullJacobian(NV_DATA_S(y), &rattes, jac);
+
+	jac.transposeInPlace();
 
 	return 0;
 }
@@ -930,9 +909,8 @@ int CVJacFn(double, N_Vector y, N_Vector, SUNMatrix Jac, void *user_data, N_Vect
 extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
 	ratesS r = param(rxn_in);
 
-	array<array<double, 56>, 56> out = fullJacobian(y_in, &r);
+	Eigen::Map<JacMat> out(dydt);
 
-	for (size_t ii = 0; ii < out.size(); ii++)
-		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
+	fullJacobian(y_in, &r, out);
 }
     

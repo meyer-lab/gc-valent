@@ -149,14 +149,17 @@ class TestModel(unittest.TestCase):
         analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
         approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-7)
         
-        np.set_printoptions(threshold=3500000, linewidth=1000, precision=1, suppress=True)
-        print('')
-        print(np.tanh(10*(analytical - approx)))
-        # print(np.tanh(1000000*approx))
-		
         self.assertTrue(analytical.shape == approx.shape)
 
-        self.assertTrue(np.allclose(analytical, approx, rtol=0.2, atol=0.2))
+        closeness = np.isclose(analytical, approx, rtol=0.1, atol=0.1)
+
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+            print(analytical[IDXdiff])
+            print(approx[IDXdiff])
+
+        self.assertTrue(np.all(closeness))
 
 
     def test_tensor(self):
@@ -175,9 +178,6 @@ class TestModel(unittest.TestCase):
 
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
-        
-        t = 60. * 4 # let's let the system run for 4 hours
-        ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
-        
-        temp, retVal = runCkine(ts, self.args, self.tfargs)
+        temp, retVal = runCkine(self.ts, self.args, self.tfargs)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
+        self.assertGreaterEqual(retVal, 0)
