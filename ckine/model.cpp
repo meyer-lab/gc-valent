@@ -831,20 +831,20 @@ void fullJacobian(const double * const y, const ratesS * const r, Derived &out) 
 	
 	// unless otherwise specified, assume all partial derivatives are 0
 	out.setConstant(0.0);
-    
-    array <double, 26*26> sub_y;
-    jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
-    for (size_t ii = 0; ii < halfL; ii++)
-    	std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
-    
-    jacobian(y + halfL, r, sub_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
-    for (size_t ii = 0; ii < halfL; ii++)
-    	std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
 
-    // Implement trafficking
-    double endo = 0;
-    double deg = 0;
-    double rec = 0;
+	array <double, 26*26> sub_y;
+	jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
+	for (size_t ii = 0; ii < halfL; ii++)
+		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
+
+	jacobian(y + halfL, r, sub_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
+	for (size_t ii = 0; ii < halfL; ii++)
+		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
+
+	// Implement trafficking
+	double endo = 0;
+	double deg = 0;
+	double rec = 0;
 	for (size_t ii = 0; ii < halfL; ii++) {
 		if (activeV[ii]) {
 			endo = r->endo + r->activeEndo;
