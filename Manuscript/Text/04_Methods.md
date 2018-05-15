@@ -20,9 +20,9 @@ In this example, dC/dt is in units of number / cell * min, L is in units of mola
 
 Type I cytokine signaling follows the JAK-STAT signaling pathway which is initiated when two JAK subunits come in contact with one another. JAK proteins are found on the intracellular regions of the gc, IL2Rb, IL7Ra and IL9R receptors; therefore all complexes which contained at least two of those receptors were deemed to be active species.
 
-unit tests?
-
 ODE solver? ... absolute tolerance of 1E-9 and relative tolerance of 1E-12.
+
+We wrote conservation of species and equilibrium unit tests to ensure that all species in our model behaved in a manner consistent with biological intuition. We also wrote unit tests to analyze the functionality and reproducibility of functions and solvers associated with the full model.
 
 
 ### Parameters and assumptions
@@ -58,7 +58,7 @@ k11rev / kfwd = 63 nM (doi:10.1016/j.jmb.2004.04.038)
 
 We used detailed balance to eliminate 12 unknown rate constants. Detailed balance loops were based on formation of full complexes and initial assembly.
 
-The rate of endocytosis is quantified by a rate constant of ‘activeEndo’ for active complexes and ‘endo’ for all other species. The fraction of all endosomal species sent to lysosomes is ‘sortF’. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are ‘kDeg’ and ‘kRec’, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; these receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 623 (units unknown; got info from TAM paper). The surface area of the  endosome is half the size of the cell surface (got info from same TAM paper).
+The rate of endocytosis is quantified by a constant of ‘activeEndo’ for active complexes and ‘endo’ for all other species. The fraction of all endosomal species sent to lysosomes is ‘sortF’. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are ‘kDeg’ and ‘kRec’, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 623 (units unknown; got info from TAM paper). The surface area of the endosome is half the size of the cell surface (got info from same TAM paper).
 
 
 ### Model fitting
