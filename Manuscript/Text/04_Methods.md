@@ -20,9 +20,9 @@ In this example, dC/dt is in units of number / cell * min, L is in units of mola
 
 Type I cytokine signaling follows the JAK-STAT signaling pathway which is initiated when two JAK subunits come in contact with one another. JAK proteins are found on the intracellular regions of the gc, IL2Rb, IL7Ra and IL9R receptors; therefore all complexes which contained at least two of those receptors were deemed to be active species.
 
-ODE solver? ... absolute tolerance of 1E-9 and relative tolerance of 1E-12.
+We used a package called scipy.integrate.odeint to solve our ODEs. The inputs for odeint were the initial values of each receptor and complex, time, and all the unknown rate parameters. To determine the initial values of each receptor and complex, we ran the model for a really long time with no cytokine present, allowing the system to reach steady state. An absolute tolerance of 1E-2 and relative tolerance of 1E-3 were used when solving our ODEs.
 
-We wrote conservation of species and equilibrium unit tests to ensure that all species in our model behaved in a manner consistent with biological intuition. We also wrote unit tests to analyze the functionality and reproducibility of functions and solvers associated with the full model.
+We wrote conservation of species and equilibrium unit tests to ensure that all species in our model behaved in a manner consistent with biological intuition. We also wrote unit tests to ensure the functionality and reproducibility of components in the full model.
 
 
 ### Parameters and assumptions
