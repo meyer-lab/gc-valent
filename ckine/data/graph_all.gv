@@ -166,7 +166,25 @@ label = "Type I Cytokine Model";
 "IL15Ra" -> "k24" [dir=none,weight=1];
 "k24" -> "IL15-IL15Ra-IL2Rb" [dir=none, weight=2];
 
+"k25" [shape=diamond,style=filled,height=.1,width=.1];
+"IL7" -> "k25" [dir=none,weight=1];
+"IL7Ra" -> "k25" [dir=none,weight=1];
+"k25" -> "IL7-IL7Ra" [dir=none, weight=2];
 
+"k26" [shape=diamond,style=filled,height=.1,width=.1];
+"IL7" -> "k26" [dir=none,weight=1];
+"gc" -> "k26" [dir=none,weight=1];
+"k26" -> "IL7-gc" [dir=none, weight=2];
+
+"k27" [shape=diamond,style=filled,height=.1,width=.1];
+"IL7-IL7Ra" -> "k27" [dir=none,weight=1];
+"gc" -> "k27" [dir=none,weight=1];
+"k27" -> "IL7-IL7Ra-gc" [dir=none, weight=2];
+
+"k28" [shape=diamond,style=filled,height=.1,width=.1];
+"IL7-gc" -> "k28" [dir=none,weight=1];
+"IL7Ra" -> "k28" [dir=none,weight=1];
+"k28" -> "IL7-IL7Ra-gc" [dir=none, weight=2];
 
 "k29" [shape=diamond,style=filled,height=.1,width=.1];
 "IL9" -> "k29" [dir=none,weight=1];
