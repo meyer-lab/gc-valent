@@ -166,24 +166,26 @@ label = "Type I Cytokine Model";
 "IL15Ra" -> "k24" [dir=none,weight=1];
 "k24" -> "IL15-IL15Ra-IL2Rb" [dir=none, weight=2];
 
-"k17" [shape=diamond,style=filled,height=.1,width=.1];
-"IL9" -> "k17" [dir=none,weight=1];
-"IL9R" -> "k17" [dir=none,weight=1];
-"k17" -> "IL9-IL9R" [dir=none, weight=2];
 
-"k18" [shape=diamond,style=filled,height=.1,width=.1];
-"IL9" -> "k18" [dir=none,weight=1];
-"gc" -> "k18" [dir=none,weight=1];
-"k18" -> "IL9-gc" [dir=none, weight=2];
 
-"k19" [shape=diamond,style=filled,height=.1,width=.1];
-"IL9-IL9R" -> "k19" [dir=none,weight=1];
-"gc" -> "k19" [dir=none,weight=1];
-"k19" -> "IL9-IL9R-gc" [dir=none, weight=2];
+"k29" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9" -> "k29" [dir=none,weight=1];
+"IL9R" -> "k29" [dir=none,weight=1];
+"k29" -> "IL9-IL9R" [dir=none, weight=2];
 
-"k20" [shape=diamond,style=filled,height=.1,width=.1];
-"IL9-gc" -> "k20" [dir=none,weight=1];
-"IL9R" -> "k20" [dir=none,weight=1];
-"k20" -> "IL9-IL9R-gc" [dir=none, weight=2];
+"k30" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9" -> "k30" [dir=none,weight=1];
+"gc" -> "k30" [dir=none,weight=1];
+"k30" -> "IL9-gc" [dir=none, weight=2];
+
+"k31" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9-IL9R" -> "k31" [dir=none,weight=1];
+"gc" -> "k31" [dir=none,weight=1];
+"k31" -> "IL9-IL9R-gc" [dir=none, weight=2];
+
+"k32" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9-gc" -> "k32" [dir=none,weight=1];
+"IL9R" -> "k32" [dir=none,weight=1];
+"k32" -> "IL9-IL9R-gc" [dir=none, weight=2];
 
 }
