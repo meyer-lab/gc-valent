@@ -30,55 +30,41 @@ We wrote conservation of species and equilibrium unit tests to ensure that all s
 All ligand-receptor binding processes had a rate constant of $kfbnd$ which was assumed to be on rate of 10^7 M-1 sec-1 (0.6 nM-1 min-1); the only exception to this assumption was the binding of IL2 to gc which was assumed to be on rate of 10^6 M-1 sec-1 (Voss, et al (1993). PNAS. 90, 2428–2432). All forward reaction rates for dimerization were represented by $kfwd$. All reverse reaction rates were unique. We used detailed balance to eliminate 12 unknown rate constants. Detailed balance loops were based on formation of full complexes and initial assembly. Each forward and reverse reaction rate was related through an equilibrium dissociation constant ($Kd$). Many of these equilibrium dissociation constants were found in published surface plasmon resonance and isothermal calorimetry experiments.
 
 
-IL2:
-
-$$k1rev / kfbnd = 10$$ nM (doi:10.1016/j.jmb.2004.04.038)
-
-$$k2rev / kfbnd = 144$$ nM (doi:10.1016/j.jmb.2004.04.038)
-
-$$k3rev / k3fwd = 50000$$ nM (doi:10.1016/j.jmb.2004.04.038 -- says that there is no binding of IL2 to gc which means Kd is large
-
-$$k10rev / kfwd = 12$$ nM (doi:10.1016/j.jmb.2004.04.038)
-
-$$k11rev / kfwd = 63$$ nM (doi:10.1016/j.jmb.2004.04.038)
-
-$$k5rev / kfwd = 1.5$$ nM (doi:10.1016/j.jmb.2004.04.038) -- this applies when gc is soluble... our model has gc immobilized so we just use this to help set k10rev and k11rev in terms of k5rev
-
-IL15:
-
-$$k13rev / kfbnd = 0.065$$ nM (multiple papers suggesting 30-100 pM)
-
-$$k14rev / kfbnd = 438$$ nM (doi:10.1038/ni.2449)
-
-$$k15rev / kfbnd = 50000$$ nM (reference unknown) // gc-IL15 binding very weak (> 50 uM)
-
-IL7:
-
-$$k25rev / kfbnd = 59$$ nM (DOI:10.1111/j.1600-065X.2012.01160.x)
-
-$$k26rev / kfbnd = 50000$$ nM (reference unknown) // General assumption that cytokine doesn't bind to free gc
-
-IL9:
-
-$$k30rev / kfbnd = 50000$$ nM (reference unknown) // cytokine doesn't bind to free gc
-
-+------------------+------------------+-----------------------+
-| $Kd$             | Value            | Reference             |
-+==================+==================+=======================+
-| $k1rev$/$kfbnd$  | 10 nM            | doi:10.1016/j.jmb.2004.04.038 |
-+------------------+------------------+-----------------------+
-| $k2rev$/$kfbnd$  | 144 nM           | doi:10.1016/j.jmb.2004.04.038 |
-+------------------+------------------+-----------------------+
-| $k3rev$/$k3fwd$  | 50000 nM         | doi:10.1016/j.jmb.2004.04.038 |
-+------------------+------------------+-----------------------+
-| $k10rev$/$kfwd$  | 12 nM            | doi:10.1016/j.jmb.2004.04.038 |
-+------------------+------------------+-----------------------+
-| $k11rev$/$kfwd$  | 63 nM            | doi:10.1016/j.jmb.2004.04.038 |
-+------------------+------------------+-----------------------+
-| $k5rev$/$kfwd$   | 1.5 nM           | doi:10.1016/j.jmb.2004.04.038 |
-+------------------+------------------+-----------------------+
++------------------+------------------+--------------------------------------+
+| $Kd$             | Value            | Reference                            |
++==================+==================+======================================+
+| IL2                                                                        |
++------------------+------------------+--------------------------------------+
+| $k1rev$/$kfbnd$  | 10 nM            | doi:10.1016/j.jmb.2004.04.038        |
++------------------+------------------+--------------------------------------+
+| $k2rev$/$kfbnd$  | 144 nM           | doi:10.1016/j.jmb.2004.04.038        |
++------------------+------------------+--------------------------------------+
+| $k3rev$/$k3fwd$  | 50000 nM         | doi:10.1016/j.jmb.2004.04.038        |
++------------------+------------------+--------------------------------------+
+| $k10rev$/$kfwd$  | 12 nM            | doi:10.1016/j.jmb.2004.04.038        |
++------------------+------------------+--------------------------------------+
+| $k11rev$/$kfwd$  | 63 nM            | doi:10.1016/j.jmb.2004.04.038        |
++------------------+------------------+--------------------------------------+
+| $k5rev$/$kfwd$   | 1.5 nM           | doi:10.1016/j.jmb.2004.04.038        |
++------------------+------------------+--------------------------------------+
+| IL15                                                                       |
++------------------+------------------+--------------------------------------+
 | $k13rev$/$kfbnd$ | 0.065 nM         | multiple papers suggesting 30-100 pM |
-+------------------+------------------+-----------------------+
++------------------+------------------+--------------------------------------+
+| $k14rev$/$kfbnd$ | 438 nM           | doi:10.1038/ni.2449                  |
++------------------+------------------+--------------------------------------+
+| $k15rev$/$kfbnd$ | 50000 nM         | binding very weak                    |
++------------------+------------------+--------------------------------------+
+| IL7                                                                        |
++------------------+------------------+--------------------------------------+
+| $k25rev$/$kfbnd$ | 59 nM            | DOI:10.1111/j.1600-065X.2012.01160.x |
++------------------+------------------+--------------------------------------+
+| $k26rev$/$kfbnd$ | 50000 nM         | binding very weak                    |
++------------------+------------------+--------------------------------------+
+| IL9                                                                        |
++------------------+------------------+--------------------------------------+
+| $k30rev$/$kfbnd$ | 50000 nM         | binding very weak                    |
++------------------+------------------+--------------------------------------+
 
 
 The rate of endocytosis is quantified by a constant of $activeEndo$ for active complexes and $endo$ for all other species. The fraction of all endosomal species sent to lysosomes is $sortF$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $kDeg$ and $kRec$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 623 (units unknown; got info from TAM paper). The surface area of the endosome is half the size of the cell surface (got info from same TAM paper).
