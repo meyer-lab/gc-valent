@@ -6,8 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
-from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
+from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -19,7 +19,7 @@ class TestModel(unittest.TestCase):
         # All the species abundances should be above zero
         self.assertGreater(np.min(X), -1.0E-7)
 
-        # Test that it came to equilirbium
+        # Test that it came to equilibrium
         self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
@@ -32,12 +32,14 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 15)
+        self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
-        # need to convert args from an array to a tuple of numbers
+        self.fully = np.random.lognormal(0., 1., 56)
 
-        if (self.tfargs[2] > 1.):
-            self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
+        # Force sorting fraction to be less than 1.0
+        self.tfargs[2] = np.tanh(self.tfargs[2])*0.99
+        # High values of kfwd are dangerous
+        self.args[4] = self.args[4] / 1000
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -125,32 +127,40 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    #@given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
-    #def test_runCkine(self, vec, sortF):
-    #    vec = np.insert(vec, 2, sortF)
-    #    # 11 trafRates and 15 rxnRates
-    #    trafRates = vec[0:11]
-    #    rxnRates = vec[11:26]
+    @given(vec=harrays(np.float, 25, elements=floats(0.01, 10.0)))
+    def test_runCkine(self, vec):
+        # Force sorting fraction to be less than 1.0
+        vec[16] = np.tanh(vec[16])*0.99
+        vec[4] = vec[4] / 1000.0
 
-    #    ys, retVal = runCkine(self.ts, rxnRates, trafRates)
+        ys, retVal = runCkineU(self.ts, vec)
         
         # test that return value of runCkine isn't negative (model run didn't fail)
-    #    self.assertGreaterEqual(retVal, 0)
+        self.assertGreaterEqual(retVal, 0)
 
-
-        
     def test_jacobian(self):
-        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
-        rxn = np.random.sample(15)
-        t = np.random.sample(1)
-        y = np.random.sample(26)
-        
-        analytical = jacobian(y, t, rxn)
-        approx = approx_jac_dydt(y, t, rxn)
+        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
+        Both Jacobians are evaluating the partial derivatives of dydt.'''
+        analytical = jacobian(self.y0, self.ts[0], self.args)
+        approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error  
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
+        
+    def test_fullJacobian(self):
+        analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
+        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-6)
+        
+        self.assertTrue(analytical.shape == approx.shape)
 
+        closeness = np.isclose(analytical, approx, rtol=0.1, atol=0.1)
 
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+            print(analytical[IDXdiff])
+            print(approx[IDXdiff])
+
+        self.assertTrue(np.all(closeness))
 
     def test_tensor(self):
         tensor = np.random.rand(35,100,20)
@@ -165,21 +175,8 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(np.min(arr),0)
         self.assertLessEqual(np.max(arr),1)
 
-
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
-        r = np.zeros(15)
-        r[4:15] = np.ones(11) * (5*10**-1)
-        r[0:4] = 10**-3, 10**-3, 10**-3, 10**-3
-        
-        t = 60. * 4 # let's let the system run for 4 hours
-        ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
-        
-        trafRates = np.zeros(11)
-        trafRates[0:5] = (50* 10**-2)
-        trafRates[5:11] = 0.1,0.1,0.1,0.1,0.1,0.1
-        
-        temp, retVal = runCkine(ts, r, trafRates)
+        temp, retVal = runCkine(self.ts, self.args, self.tfargs)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
-
-
+        self.assertGreaterEqual(retVal, 0)
