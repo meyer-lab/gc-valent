@@ -2,7 +2,6 @@ import unittest
 from theano.tests import unittest_tools as utt
 import numpy as np
 from ..differencing_op import runCkineOp, runCkineKineticOp
-from ..fit import IL2Rb_trafficking
 
 
 class TestOp(unittest.TestCase):
@@ -26,4 +25,4 @@ class TestOp(unittest.TestCase):
 
         XX = np.full(25, 0.9, dtype=np.float64)
 
-        utt.verify_grad(runCkineKineticOp(ts, cond), [XX], abs_tol=0.2, rel_tol=0.2)
+        utt.verify_grad(runCkineKineticOp(ts, cond), [XX], abs_tol=0.1, rel_tol=0.1)

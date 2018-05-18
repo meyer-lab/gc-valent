@@ -12,6 +12,8 @@
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
 #include <iostream>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 #include "model.hpp"
 
 using std::array;
@@ -20,10 +22,14 @@ using std::vector;
 using std::fill;
 using std::string;
 
+typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
+
+int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
+
 const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
-std::array<bool, 26> __active_species_IDX() {
-	std::array<bool, 26> __active_species_IDX;
+std::array<bool, halfL> __active_species_IDX() {
+	std::array<bool, halfL> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
 
 	__active_species_IDX[8] = true;
@@ -36,7 +42,7 @@ std::array<bool, 26> __active_species_IDX() {
 	return __active_species_IDX;
 }
 
-const std::array<bool, 26> activeV = __active_species_IDX();
+const std::array<bool, halfL> activeV = __active_species_IDX();
 
 ratesS param(const double * const rxntfR) {
 	ratesS r;
@@ -56,12 +62,43 @@ ratesS param(const double * const rxntfR) {
 	r.k29rev = rxntfR[12];
 	r.k31rev = rxntfR[13];
 
+	// These are probably measured in the literature
+	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	r.k11rev = 63.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	r.k4rev = kfbnd * r.k6rev * k3rev / k1rev / k3fwd;
+	r.k7rev = k3fwd * k2rev * r.k5rev / kfbnd / k3rev;
+	r.k12rev = k1rev * r.k11rev / k2rev;
+	// _Based on formation of full complex
+	r.k9rev = k2rev * r.k10rev * r.k12rev / kfbnd / k3rev / r.k6rev * k3fwd;
+	r.k8rev = k2rev * r.k10rev * r.k12rev / kfbnd / r.k7rev / k3rev * k3fwd;
+
+	// IL15
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	r.k16rev = r.kfwd * r.k18rev * k15rev / k13rev / kfbnd;
+	r.k19rev = r.kfwd * k14rev * r.k17rev / kfbnd / k15rev;
+	r.k24rev = k13rev * r.k23rev / k14rev;
+
+	// _Based on formation of full complex
+	r.k21rev = k14rev * r.k22rev * r.k24rev / r.kfwd / k15rev / r.k18rev * kfbnd;
+	r.k20rev = k14rev * r.k22rev * r.k24rev / r.k19rev / k15rev;
+
+	// _One detailed balance IL7/9 loop
+	r.k32rev = r.k29rev * r.k31rev / k30rev;
+	r.k28rev = k25rev * r.k27rev / k26rev;
+
 	// Set the rates
 	r.endo = rxntfR[14];
 	r.activeEndo = rxntfR[15];
 	r.sortF = rxntfR[16];
 	r.kRec = rxntfR[17];
 	r.kDeg = rxntfR[18];
+
+	if (r.sortF > 1.0) {
+		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
+	}
 
 	std::copy_n(rxntfR + 19, 6, r.Rexpr.begin());
 
@@ -70,102 +107,75 @@ ratesS param(const double * const rxntfR) {
 
 void dy_dt(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
 	// IL2 in nM
-	double IL2Ra = y[0];
-	double IL2Rb = y[1];
-	double gc = y[2];
-	double IL2_IL2Ra = y[3];
-	double IL2_IL2Rb = y[4];
-	double IL2_gc = y[5];
-	double IL2_IL2Ra_IL2Rb = y[6];
-	double IL2_IL2Ra_gc = y[7];
-	double IL2_IL2Rb_gc = y[8];
-	double IL2_IL2Ra_IL2Rb_gc = y[9];
+	const double IL2Ra = y[0];
+	const double IL2Rb = y[1];
+	const double gc = y[2];
+	const double IL2_IL2Ra = y[3];
+	const double IL2_IL2Rb = y[4];
+	const double IL2_gc = y[5];
+	const double IL2_IL2Ra_IL2Rb = y[6];
+	const double IL2_IL2Ra_gc = y[7];
+	const double IL2_IL2Rb_gc = y[8];
+	const double IL2_IL2Ra_IL2Rb_gc = y[9];
 	
 	// IL15 in nM
-	double IL15Ra = y[10];
-	double IL15_IL15Ra = y[11];
-	double IL15_IL2Rb = y[12];
-	double IL15_gc = y[13];
-	double IL15_IL15Ra_IL2Rb = y[14];
-	double IL15_IL15Ra_gc = y[15];
-	double IL15_IL2Rb_gc = y[16];
-	double IL15_IL15Ra_IL2Rb_gc = y[17];
+	const double IL15Ra = y[10];
+	const double IL15_IL15Ra = y[11];
+	const double IL15_IL2Rb = y[12];
+	const double IL15_gc = y[13];
+	const double IL15_IL15Ra_IL2Rb = y[14];
+	const double IL15_IL15Ra_gc = y[15];
+	const double IL15_IL2Rb_gc = y[16];
+	const double IL15_IL15Ra_IL2Rb_gc = y[17];
 	
 	// IL7, IL9 in nM
-	double IL7Ra = y[18];
-	double IL7Ra_IL7 = y[19];
-	double gc_IL7 = y[20];
-	double IL7Ra_gc_IL7 = y[21];
-	double IL9R = y[22];
-	double IL9R_IL9 = y[23];
-	double gc_IL9 = y[24];
-	double IL9R_gc_IL9 = y[25];
-
-	// These are probably measured in the literature
-	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
-	const double k7rev = k3fwd * k2rev * r->k5rev / kfbnd / k3rev;
-	const double k12rev = k1rev * k11rev / k2rev;
-	// _Based on formation of full complex
-	const double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / r->k6rev * k3fwd;
-	const double k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
-
-	// IL15
-	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	const double k16rev = r->kfwd * r->k18rev * k15rev / k13rev / kfbnd;
-	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / k15rev;
-	const double k24rev = k13rev * r->k23rev / k14rev;
-
-	// _Based on formation of full complex
-	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / k15rev / r->k18rev * kfbnd;
-	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / k15rev;
-
-	// _One detailed balance IL7/9 loop
-	const double k32rev = r->k29rev * r->k31rev / k30rev;
-	const double k28rev = k25rev * r->k27rev / k26rev;
+	const double IL7Ra = y[18];
+	const double IL7Ra_IL7 = y[19];
+	const double gc_IL7 = y[20];
+	const double IL7Ra_gc_IL7 = y[21];
+	const double IL9R = y[22];
+	const double IL9R_IL9 = y[23];
+	const double gc_IL9 = y[24];
+	const double IL9R_gc_IL9 = y[25];
 	
 	// IL2
-	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_gc + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb;
-	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc;
-	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra;
-	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
-	dydt[5] = -r->kfwd * IL2_gc * IL2Ra + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2_gc * IL2Rb + k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc;
-	dydt[6] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[7] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - k4rev * IL2_IL2Ra_gc + r->kfwd * IL2_gc * IL2Ra - r->k6rev * IL2_IL2Ra_gc;
-	dydt[8] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc + r->kfwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc;
-	dydt[9] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc;
+	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_gc + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
+	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_gc + r->k7rev * IL2_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra_gc + r->k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
+	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc;
+	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + r->k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra;
+	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + r->k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
+	dydt[5] = -r->kfwd * IL2_gc * IL2Ra + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2_gc * IL2Rb + r->k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc;
+	dydt[6] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - r->k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - r->k12rev * IL2_IL2Ra_IL2Rb;
+	dydt[7] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - r->k4rev * IL2_IL2Ra_gc + r->kfwd * IL2_gc * IL2Ra - r->k6rev * IL2_IL2Ra_gc;
+	dydt[8] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc + r->kfwd * IL2_gc * IL2Rb - r->k7rev * IL2_IL2Rb_gc;
+	dydt[9] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - r->k10rev * IL2_IL2Ra_IL2Rb_gc;
 
 	// IL15
-	dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + k24rev * IL15_IL15Ra_IL2Rb;
-	dydt[11] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
-	dydt[12] = -r->kfwd * IL15_IL2Rb * IL15Ra + k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
-	dydt[13] = -kfbnd * IL15_gc * IL15Ra + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - k15rev * IL15_gc;
-	dydt[14] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb;
-	dydt[15] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - r->k18rev * IL15_IL15Ra_gc;
-	dydt[16] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc + r->kfwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc;
-	dydt[17] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
+	dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15Ra * IL15_IL2Rb_gc + r->k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + r->k24rev * IL15_IL15Ra_IL2Rb;
+	dydt[11] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
+	dydt[12] = -r->kfwd * IL15_IL2Rb * IL15Ra + r->k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
+	dydt[13] = -kfbnd * IL15_gc * IL15Ra + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15_gc * IL2Rb + r->k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - k15rev * IL15_gc;
+	dydt[14] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - r->k24rev * IL15_IL15Ra_IL2Rb;
+	dydt[15] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - r->k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - r->k18rev * IL15_IL15Ra_gc;
+	dydt[16] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + r->k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc + r->kfwd * IL15_gc * IL2Rb - r->k19rev * IL15_IL2Rb_gc;
+	dydt[17] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
-	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
-	dydt[2] = dydt[2] - kfbnd * IL15 * gc + k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
+	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_gc + r->k19rev * IL15_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
+	dydt[2] = dydt[2] - kfbnd * IL15 * gc + k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	// IL7
 	dydt[2] = dydt[2] - kfbnd * IL7 * gc + k26rev * gc_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - r->kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7;
+	dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7;
 	dydt[19] = kfbnd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[20] = -r->kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7;
-	dydt[21] = r->kfwd * IL7Ra * gc_IL7 - k28rev * IL7Ra_gc_IL7 + r->kfwd * gc * IL7Ra_IL7 - r->k27rev * IL7Ra_gc_IL7;
+	dydt[20] = -r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7;
+	dydt[21] = r->kfwd * IL7Ra * gc_IL7 - r->k28rev * IL7Ra_gc_IL7 + r->kfwd * gc * IL7Ra_IL7 - r->k27rev * IL7Ra_gc_IL7;
 
 	// IL9
 	dydt[2] = dydt[2] - kfbnd * IL9 * gc + k30rev * gc_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[22] = -kfbnd * IL9R * IL9 + r->k29rev * IL9R_IL9 - r->kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9;
+	dydt[22] = -kfbnd * IL9R * IL9 + r->k29rev * IL9R_IL9 - r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9;
 	dydt[23] = kfbnd * IL9R * IL9 - r->k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[24] = -r->kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
-	dydt[25] = r->kfwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
+	dydt[24] = -r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
+	dydt[25] = r->kfwd * IL9R * gc_IL9 - r->k32rev * IL9R_gc_IL9 + r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
 }
 
 
@@ -182,17 +192,18 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
  * @param      dydt  The rate of change vector solved for the receptor species.
  */
 void findLigConsume(double *dydt) {
+	double const * const dydti = dydt + 26;
+
 	// Calculate the ligand consumption.
-	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
-	dydt[53] -= std::accumulate(dydt+11, dydt+18, 0) / internalV;
-	dydt[54] -= std::accumulate(dydt+19, dydt+22, 0) / internalV;
-	dydt[55] -= std::accumulate(dydt+23, dydt+26, 0) / internalV;
+	dydt[52] -= std::accumulate(dydti+3,  dydti+10, 0) / internalV;
+	dydt[53] -= std::accumulate(dydti+11, dydti+18, 0) / internalV;
+	dydt[54] -= std::accumulate(dydti+19, dydti+22, 0) / internalV;
+	dydt[55] -= std::accumulate(dydti+23, dydti+26, 0) / internalV;
 }
 
 
 void trafficking(const double * const y, const ratesS * const r, double * const dydt) {
 	// Implement trafficking.
-	size_t halfL = activeV.size();
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
@@ -389,6 +400,8 @@ void solver_setup(solver *sMem, double *params) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
+
+	CVDlsSetJacFn(sMem->cvode_mem, Jac);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -419,12 +432,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-6);
+	fill(abs.begin(), abs.end(), abstolIn);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-6, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, reltolIn, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -510,299 +523,267 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 void jacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
 	// IL2 in nM
-	double IL2Ra = y[0];
-	double IL2Rb = y[1];
-	double gc = y[2];
-	double IL2_IL2Ra = y[3];
-	double IL2_IL2Rb = y[4];
-	double IL2_gc = y[5];
-	double IL2_IL2Ra_IL2Rb = y[6];
-	double IL2_IL2Ra_gc = y[7];
-	double IL2_IL2Rb_gc = y[8];
+	const double IL2Ra = y[0];
+	const double IL2Rb = y[1];
+	const double gc = y[2];
+	const double IL2_IL2Ra = y[3];
+	const double IL2_IL2Rb = y[4];
+	const double IL2_gc = y[5];
+	const double IL2_IL2Ra_IL2Rb = y[6];
+	const double IL2_IL2Ra_gc = y[7];
+	const double IL2_IL2Rb_gc = y[8];
 	
 	// IL15 in nM
-	double IL15Ra = y[10];
-	double IL15_IL15Ra = y[11];
-	double IL15_IL2Rb = y[12];
-	double IL15_gc = y[13];
-	double IL15_IL15Ra_IL2Rb = y[14];
-	double IL15_IL15Ra_gc = y[15];
-	double IL15_IL2Rb_gc = y[16];
+	const double IL15Ra = y[10];
+	const double IL15_IL15Ra = y[11];
+	const double IL15_IL2Rb = y[12];
+	const double IL15_gc = y[13];
+	const double IL15_IL15Ra_IL2Rb = y[14];
+	const double IL15_IL15Ra_gc = y[15];
+	const double IL15_IL2Rb_gc = y[16];
 	
 	// IL7, IL9 in nM
-	double IL7Ra = y[18];
-	double IL7Ra_IL7 = y[19];
-	double gc_IL7 = y[20];
-	double IL9R = y[22];
-	double IL9R_IL9 = y[23];
-	double gc_IL9 = y[24];
+	const double IL7Ra = y[18];
+	const double IL7Ra_IL7 = y[19];
+	const double gc_IL7 = y[20];
+	const double IL9R = y[22];
+	const double IL9R_IL9 = y[23];
+	const double gc_IL9 = y[24];
 
-	// These are probably measured in the literature
-	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
-	const double k7rev = k3fwd * k2rev * r->k5rev / kfbnd / k3rev;
-	const double k12rev = k1rev * k11rev / k2rev;
-	// _Based on formation of full complex
-	const double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / r->k6rev * k3fwd;
-	const double k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
-
-	// IL15
-	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	const double k16rev = r->kfwd * r->k18rev * k15rev / k13rev / kfbnd;
-	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / k15rev;
-	const double k24rev = k13rev * r->k23rev / k14rev;
-
-	// _Based on formation of full complex
-	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / k15rev / r->k18rev * kfbnd;
-	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / k15rev;
-
-	// _One detailed balance IL7/9 loop
-	const double k32rev = r->k29rev * r->k31rev / k30rev;
-	const double k28rev = k25rev * r->k27rev / k26rev;
-	
-	array<array<double, 26>, 26> out;
+	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
 	// unless otherwise specified, assume all partial derivatives are 0
-	for (array<double, 26> &a : out)
-		fill(a.begin(), a.end(), 0.0);
+	out.setConstant(0.0);
 		
 	// IL2Ra
-	out[0][0] = -kfbnd * IL2 - r->kfwd * IL2_gc - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
-	out[0][3] = k1rev; // IL2Ra with respect to IL2_IL2Ra
-	out[0][4] = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_IL2Rb
-	out[0][5] = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_gc
-	out[0][6] = k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
-	out[0][7] = r->k6rev; // IL2Ra with respect to IL2_IL2Ra_gc
-	out[0][8] = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_IL2Rb_gc
-	out[0][9] = k8rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb_gc
+	out(0, 0) = -kfbnd * IL2 - r->kfwd * IL2_gc - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
+	out(0, 3) = k1rev; // IL2Ra with respect to IL2_IL2Ra
+	out(0, 4) = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_IL2Rb
+	out(0, 5) = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_gc
+	out(0, 6) = r->k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
+	out(0, 7) = r->k6rev; // IL2Ra with respect to IL2_IL2Ra_gc
+	out(0, 8) = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_IL2Rb_gc
+	out(0, 9) = r->k8rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2Rb
-	out[1][1] = -kfbnd * IL2 - r->kfwd * IL2_gc - r->kfwd * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra - kfbnd * IL15 - r->kfwd * IL15_gc - r->kfwd * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra; // partial derivative of IL2Rb with respect to IL2Rb
-	out[1][3] = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_IL2Ra
-	out[1][4] = k2rev; // IL2Rb with respect to IL2_IL2Rb
-	out[1][5] = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_gc
-	out[1][6] = k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out[1][7] = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_IL2Ra_gc
-	out[1][8] = k7rev; // IL2Rb with respect to IL2_IL2Rb_gc
-	out[1][9] = k9rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
-	out[1][11] = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra
-	out[1][12] = k14rev; // IL2Rb with respect to IL15_IL2Rb
-	out[1][13] = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_gc
-	out[1][14] = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out[1][15] = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra_gc
-	out[1][16] = k19rev; // IL2Rb with respect to IL15_IL2Rb_gc
-	out[1][17] = k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
+	out(1, 1) = -kfbnd * IL2 - r->kfwd * IL2_gc - r->kfwd * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra - kfbnd * IL15 - r->kfwd * IL15_gc - r->kfwd * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra; // partial derivative of IL2Rb with respect to IL2Rb
+	out(1, 3) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_IL2Ra
+	out(1, 4) = k2rev; // IL2Rb with respect to IL2_IL2Rb
+	out(1, 5) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_gc
+	out(1, 6) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
+	out(1, 7) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_IL2Ra_gc
+	out(1, 8) = r->k7rev; // IL2Rb with respect to IL2_IL2Rb_gc
+	out(1, 9) = r->k9rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
+	out(1, 11) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra
+	out(1, 12) = k14rev; // IL2Rb with respect to IL15_IL2Rb
+	out(1, 13) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_gc
+	out(1, 14) = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
+	out(1, 15) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra_gc
+	out(1, 16) = r->k19rev; // IL2Rb with respect to IL15_IL2Rb_gc
+	out(1, 17) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc
-	out[2][2] = -k3fwd * IL2 - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - kfbnd * IL15 - kfbnd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - kfbnd * IL7 - r->kfwd * IL7Ra_IL7 - kfbnd * IL9 - r->kfwd * IL9R_IL9; // gc with respect to gc
-	out[2][3] = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
-	out[2][4] = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
-	out[2][5] = k3rev; // gc with respect to IL2_gc
-	out[2][6] = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
-	out[2][7] = k4rev; // gc with respect to IL2_IL2Ra_gc
-	out[2][8] = r->k5rev; // gc with respect to IL2_IL2Rb_gc
-	out[2][9] = k10rev; // gc with respect to IL2_IL2Ra_IL2Rb_gc
-	out[2][11] = - r->kfwd * gc; // gc with respect to IL15_IL15Ra
-	out[2][12] = - kfbnd * gc; // gc with respect to IL15_IL2Rb
-	out[2][13] = k15rev; // gc with respect to IL15_gc
-	out[2][14] = - r->kfwd * gc; // gc with respect to IL15_IL15Ra_IL2Rb
-	out[2][15] = k16rev; // gc with respect to IL15_IL15Ra_gc
-	out[2][16] = r->k17rev; // gc with respect to IL15_IL2Rb_gc
-	out[2][17] = r->k22rev; // gc with respect to IL15_IL15Ra_IL2Rb_gc
-	out[2][19] = - r->kfwd * gc; // gc with respect to IL7Ra_IL7
-	out[2][20] = k26rev; // gc with respect to gc_IL7
-	out[2][21] = r->k27rev; // gc with respect to IL7Ra_gc_IL7
-	out[2][23] = - r->kfwd * gc; // gc with respect to IL9R_IL9
-	out[2][24] = k30rev; // gc with respect to gc_IL9
-	out[2][25] = r->k31rev; // gc with respect to IL9R_gc_IL9
+	out(2, 2) = -k3fwd * IL2 - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - kfbnd * IL15 - kfbnd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - kfbnd * IL7 - r->kfwd * IL7Ra_IL7 - kfbnd * IL9 - r->kfwd * IL9R_IL9; // gc with respect to gc
+	out(2, 3) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
+	out(2, 4) = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
+	out(2, 5) = k3rev; // gc with respect to IL2_gc
+	out(2, 6) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
+	out(2, 7) = r->k4rev; // gc with respect to IL2_IL2Ra_gc
+	out(2, 8) = r->k5rev; // gc with respect to IL2_IL2Rb_gc
+	out(2, 9) = r->k10rev; // gc with respect to IL2_IL2Ra_IL2Rb_gc
+	out(2, 11) = - r->kfwd * gc; // gc with respect to IL15_IL15Ra
+	out(2, 12) = - kfbnd * gc; // gc with respect to IL15_IL2Rb
+	out(2, 13) = k15rev; // gc with respect to IL15_gc
+	out(2, 14) = - r->kfwd * gc; // gc with respect to IL15_IL15Ra_IL2Rb
+	out(2, 15) = r->k16rev; // gc with respect to IL15_IL15Ra_gc
+	out(2, 16) = r->k17rev; // gc with respect to IL15_IL2Rb_gc
+	out(2, 17) = r->k22rev; // gc with respect to IL15_IL15Ra_IL2Rb_gc
+	out(2, 19) = - r->kfwd * gc; // gc with respect to IL7Ra_IL7
+	out(2, 20) = k26rev; // gc with respect to gc_IL7
+	out(2, 21) = r->k27rev; // gc with respect to IL7Ra_gc_IL7
+	out(2, 23) = - r->kfwd * gc; // gc with respect to IL9R_IL9
+	out(2, 24) = k30rev; // gc with respect to gc_IL9
+	out(2, 25) = r->k31rev; // gc with respect to IL9R_gc_IL9
 	
 	// IL2_IL2Ra
-	out[3][0] = kfbnd * IL2; // IL2_IL2Ra with respect to IL2Ra
-	out[3][1] = -r->kfwd * IL2_IL2Ra; // IL2_IL2Ra with respect to IL2Rb
-	out[3][2] = - r->kfwd * IL2_IL2Ra; // IL2_IL2Ra with respect to gc
-	out[3][3] = -r->kfwd * IL2Rb - r->kfwd * gc - k1rev; // IL2_IL2Ra with respect to IL2_IL2Ra
-	out[3][6] = k11rev; // IL2_IL2Ra with respect to IL2_IL2Ra_IL2Rb
-	out[3][7] = k4rev; // IL2_IL2Ra with respect to IL2_IL2Ra_gc
+	out(3, 0) = kfbnd * IL2; // IL2_IL2Ra with respect to IL2Ra
+	out(3, 1) = -r->kfwd * IL2_IL2Ra; // IL2_IL2Ra with respect to IL2Rb
+	out(3, 2) = - r->kfwd * IL2_IL2Ra; // IL2_IL2Ra with respect to gc
+	out(3, 3) = -r->kfwd * IL2Rb - r->kfwd * gc - k1rev; // IL2_IL2Ra with respect to IL2_IL2Ra
+	out(3, 6) = r->k11rev; // IL2_IL2Ra with respect to IL2_IL2Ra_IL2Rb
+	out(3, 7) = r->k4rev; // IL2_IL2Ra with respect to IL2_IL2Ra_gc
 	
 	// IL2_IL2Rb
-	out[4][0] = -r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to IL2Ra
-	out[4][1] = kfbnd * IL2; // IL2_IL2Rb with respect to IL2Rb
-	out[4][2] = - r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to gc
-	out[4][4] = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
-	out[4][6] = k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out[4][8] = r->k5rev; // IL2_IL2Rb with respect to IL2_IL2Rb_gc
+	out(4, 0) = -r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to IL2Ra
+	out(4, 1) = kfbnd * IL2; // IL2_IL2Rb with respect to IL2Rb
+	out(4, 2) = - r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to gc
+	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
+	out(4, 6) = r->k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
+	out(4, 8) = r->k5rev; // IL2_IL2Rb with respect to IL2_IL2Rb_gc
 		
 	// IL2_gc
-	out[5][0] = -r->kfwd * IL2_gc; // IL2_gc with respect to IL2Ra
-	out[5][1] = - r->kfwd * IL2_gc; // IL2_gc with respect to IL2Rb
-	out[5][2] = k3fwd * IL2; // IL2_gc with respect to gc
-	out[5][5] = -r->kfwd * IL2Ra - r->kfwd * IL2Rb - k3rev; // IL2_gc with respect to IL2_gc
-	out[5][7] = r->k6rev; // IL2_gc with respect to IL2_IL2Ra_gc
-	out[5][8] = k7rev; // IL2_gc with respect to IL2_IL2Rb_gc
+	out(5, 0) = -r->kfwd * IL2_gc; // IL2_gc with respect to IL2Ra
+	out(5, 1) = - r->kfwd * IL2_gc; // IL2_gc with respect to IL2Rb
+	out(5, 2) = k3fwd * IL2; // IL2_gc with respect to gc
+	out(5, 5) = -r->kfwd * IL2Ra - r->kfwd * IL2Rb - k3rev; // IL2_gc with respect to IL2_gc
+	out(5, 7) = r->k6rev; // IL2_gc with respect to IL2_IL2Ra_gc
+	out(5, 8) = r->k7rev; // IL2_gc with respect to IL2_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb
-	out[6][0] = r->kfwd * IL2_IL2Rb; // IL2_IL2Ra_IL2Rb with respect to IL2Ra
-	out[6][1] = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_IL2Rb with respect to IL2Rb
-	out[6][2] = -r->kfwd * IL2_IL2Ra_IL2Rb; // IL2_IL2Ra_IL2Rb with respect to gc
-	out[6][3] = r->kfwd * IL2Rb; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra
-	out[6][4] = r->kfwd * IL2Ra; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Rb
-	out[6][6] = -r->kfwd * gc - k11rev - k12rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out[6][9] = k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
+	out(6, 0) = r->kfwd * IL2_IL2Rb; // IL2_IL2Ra_IL2Rb with respect to IL2Ra
+	out(6, 1) = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_IL2Rb with respect to IL2Rb
+	out(6, 2) = -r->kfwd * IL2_IL2Ra_IL2Rb; // IL2_IL2Ra_IL2Rb with respect to gc
+	out(6, 3) = r->kfwd * IL2Rb; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra
+	out(6, 4) = r->kfwd * IL2Ra; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Rb
+	out(6, 6) = -r->kfwd * gc - r->k11rev - r->k12rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb
+	out(6, 9) = r->k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_gc
-	out[7][0] = r->kfwd * IL2_gc; // IL2_IL2Ra_gc with respect to IL2Ra
-	out[7][1] = -r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_gc with respect to IL2Rb
-	out[7][2] = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_gc with respect to gc
-	out[7][3] = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
-	out[7][5] = r->kfwd * IL2Ra; // IL2_IL2Ra_gc with respect to IL2_gc
-	out[7][7] = -r->kfwd * IL2Rb - k4rev - r->k6rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_gc
-	out[7][9] = k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
+	out(7, 0) = r->kfwd * IL2_gc; // IL2_IL2Ra_gc with respect to IL2Ra
+	out(7, 1) = -r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_gc with respect to IL2Rb
+	out(7, 2) = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_gc with respect to gc
+	out(7, 3) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
+	out(7, 5) = r->kfwd * IL2Ra; // IL2_IL2Ra_gc with respect to IL2_gc
+	out(7, 7) = -r->kfwd * IL2Rb - r->k4rev - r->k6rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_gc
+	out(7, 9) = r->k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Rb_gc
-	out[8][0] = -r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Rb_gc with respect to IL2Ra
-	out[8][1] = r->kfwd * IL2_gc; // IL2_IL2Rb_gc with respect to IL2Rb
-	out[8][2] = r->kfwd * IL2_IL2Rb; // IL2_IL2Rb_gc with respect to gc
-	out[8][4] = r->kfwd * gc; // IL2_IL2Rb_gc with respect to IL2_IL2Rb
-	out[8][5] = r->kfwd * IL2Rb; // IL2_IL2Rb_gc with respect to IL2_gc
-	out[8][8] = -r->kfwd * IL2Ra - r->k5rev - k7rev; // IL2_IL2Rb_gc with respect to IL2_IL2Rb_gc
-	out[8][9] = k8rev; // IL2_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
+	out(8, 0) = -r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Rb_gc with respect to IL2Ra
+	out(8, 1) = r->kfwd * IL2_gc; // IL2_IL2Rb_gc with respect to IL2Rb
+	out(8, 2) = r->kfwd * IL2_IL2Rb; // IL2_IL2Rb_gc with respect to gc
+	out(8, 4) = r->kfwd * gc; // IL2_IL2Rb_gc with respect to IL2_IL2Rb
+	out(8, 5) = r->kfwd * IL2Rb; // IL2_IL2Rb_gc with respect to IL2_gc
+	out(8, 8) = -r->kfwd * IL2Ra - r->k5rev - r->k7rev; // IL2_IL2Rb_gc with respect to IL2_IL2Rb_gc
+	out(8, 9) = r->k8rev; // IL2_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb_gc
-	out[9][0] = r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Ra
-	out[9][1] = r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Rb
-	out[9][2] = r->kfwd * IL2_IL2Ra_IL2Rb; // IL2_IL2Ra_IL2Rb_gc with respect to gc
-	out[9][6] = r->kfwd * gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb
-	out[9][7] = r->kfwd * IL2Rb; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_gc
-	out[9][8] = r->kfwd * IL2Ra; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Rb_gc
-	out[9][9] = - k8rev - k9rev - k10rev; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
+	out(9, 0) = r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Ra
+	out(9, 1) = r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Rb
+	out(9, 2) = r->kfwd * IL2_IL2Ra_IL2Rb; // IL2_IL2Ra_IL2Rb_gc with respect to gc
+	out(9, 6) = r->kfwd * gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb
+	out(9, 7) = r->kfwd * IL2Rb; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_gc
+	out(9, 8) = r->kfwd * IL2Ra; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Rb_gc
+	out(9, 9) = - r->k8rev - r->k9rev - r->k10rev; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL15Ra
-	out[10][10] = -kfbnd * IL15 - kfbnd * IL15_gc - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
-	out[10][11] = k13rev; // IL15Ra with respect to IL15_IL15Ra
-	out[10][12] = - r->kfwd * IL15Ra; // IL15Ra with respect to IL15_IL2Rb
-	out[10][13] = - kfbnd * IL15Ra; // IL15Ra with respect to IL15_gc
-	out[10][14] = k24rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb
-	out[10][15] = r->k18rev; // IL15Ra with respect to IL15_IL15Ra_gc
-	out[10][16] = - r->kfwd * IL15Ra; // IL15Ra with respect to IL15_IL2Rb_gc
-	out[10][17] = k20rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb_gc
+	out(10, 10) = -kfbnd * IL15 - kfbnd * IL15_gc - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
+	out(10, 11) = k13rev; // IL15Ra with respect to IL15_IL15Ra
+	out(10, 12) = - r->kfwd * IL15Ra; // IL15Ra with respect to IL15_IL2Rb
+	out(10, 13) = - kfbnd * IL15Ra; // IL15Ra with respect to IL15_gc
+	out(10, 14) = r->k24rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb
+	out(10, 15) = r->k18rev; // IL15Ra with respect to IL15_IL15Ra_gc
+	out(10, 16) = - r->kfwd * IL15Ra; // IL15Ra with respect to IL15_IL2Rb_gc
+	out(10, 17) = r->k20rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra
-	out[11][1] = -r->kfwd * IL15_IL15Ra; // IL15_IL15Ra with respect to IL2Rb
-	out[11][2] = - r->kfwd * IL15_IL15Ra; // IL15_IL15Ra with respect to gc
-	out[11][10] = kfbnd * IL15; // IL15_IL15Ra with respect to IL15Ra
-	out[11][11] = -r->kfwd * IL2Rb - r->kfwd * gc - k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
-	out[11][14] = r->k23rev; // IL15_IL15Ra with respect to IL15_IL15Ra_IL2Rb
-	out[11][15] = k16rev; // IL15_IL15Ra with respect to IL15_IL15Ra_gc
+	out(11, 1) = -r->kfwd * IL15_IL15Ra; // IL15_IL15Ra with respect to IL2Rb
+	out(11, 2) = - r->kfwd * IL15_IL15Ra; // IL15_IL15Ra with respect to gc
+	out(11, 10) = kfbnd * IL15; // IL15_IL15Ra with respect to IL15Ra
+	out(11, 11) = -r->kfwd * IL2Rb - r->kfwd * gc - k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
+	out(11, 14) = r->k23rev; // IL15_IL15Ra with respect to IL15_IL15Ra_IL2Rb
+	out(11, 15) = r->k16rev; // IL15_IL15Ra with respect to IL15_IL15Ra_gc
 	
 	// IL15_IL2Rb
-	out[12][1] = kfbnd * IL15; // IL15_IL2Rb with respect to IL2Rb
-	out[12][2] = - kfbnd * IL15_IL2Rb; // IL15_IL2Rb with respect to gc
-	out[12][10] = -r->kfwd * IL15_IL2Rb; // IL15_IL2Rb with respect to IL15Ra
-	out[12][12] = -r->kfwd * IL15Ra - kfbnd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
-	out[12][14] = k24rev; // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out[12][16] = r->k17rev; // IL15_IL2Rb with respect to IL15_IL2Rb_gc
+	out(12, 1) = kfbnd * IL15; // IL15_IL2Rb with respect to IL2Rb
+	out(12, 2) = - kfbnd * IL15_IL2Rb; // IL15_IL2Rb with respect to gc
+	out(12, 10) = -r->kfwd * IL15_IL2Rb; // IL15_IL2Rb with respect to IL15Ra
+	out(12, 12) = -r->kfwd * IL15Ra - kfbnd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
+	out(12, 14) = r->k24rev; // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
+	out(12, 16) = r->k17rev; // IL15_IL2Rb with respect to IL15_IL2Rb_gc
 	
 	// IL15_gc
-	out[13][1] = - r->kfwd * IL15_gc; // IL15_gc with respect to IL2Rb
-	out[13][2] = kfbnd * IL15; // IL15_gc with respect to gc
-	out[13][10] = -kfbnd * IL15_gc; // IL15_gc with respect to IL15Ra
-	out[13][13] = -kfbnd * IL15Ra - r->kfwd * IL2Rb - k15rev; // IL15_gc with respect to IL15_gc
-	out[13][15] = r->k18rev; // IL15_gc with respect to IL15_IL15Ra_gc
-	out[13][16] = k19rev; // IL15_gc with respect to IL15_IL2Rb_gc
+	out(13, 1) = - r->kfwd * IL15_gc; // IL15_gc with respect to IL2Rb
+	out(13, 2) = kfbnd * IL15; // IL15_gc with respect to gc
+	out(13, 10) = -kfbnd * IL15_gc; // IL15_gc with respect to IL15Ra
+	out(13, 13) = -kfbnd * IL15Ra - r->kfwd * IL2Rb - k15rev; // IL15_gc with respect to IL15_gc
+	out(13, 15) = r->k18rev; // IL15_gc with respect to IL15_IL15Ra_gc
+	out(13, 16) = r->k19rev; // IL15_gc with respect to IL15_IL2Rb_gc
 	
 	// IL15_IL15Ra_IL2Rb
-	out[14][1] = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_IL2Rb with respect to IL2Rb
-	out[14][2] = -r->kfwd * IL15_IL15Ra_IL2Rb; // IL15_IL15Ra_IL2Rb with respect to gc
-	out[14][10] = r->kfwd * IL15_IL2Rb; // IL15_IL15Ra_IL2Rb with respect to IL15Ra
-	out[14][11] = r->kfwd * IL2Rb; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra
-	out[14][12] = r->kfwd * IL15Ra; // IL15_IL15Ra_IL2Rb with respect to IL15_IL2Rb
-	out[14][14] = -r->kfwd * gc - r->k23rev - k24rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out[14][17] = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
+	out(14, 1) = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_IL2Rb with respect to IL2Rb
+	out(14, 2) = -r->kfwd * IL15_IL15Ra_IL2Rb; // IL15_IL15Ra_IL2Rb with respect to gc
+	out(14, 10) = r->kfwd * IL15_IL2Rb; // IL15_IL15Ra_IL2Rb with respect to IL15Ra
+	out(14, 11) = r->kfwd * IL2Rb; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra
+	out(14, 12) = r->kfwd * IL15Ra; // IL15_IL15Ra_IL2Rb with respect to IL15_IL2Rb
+	out(14, 14) = -r->kfwd * gc - r->k23rev - r->k24rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb
+	out(14, 17) = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_gc
-	out[15][1] = -r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_gc with respect to IL2Rb
-	out[15][2] = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_gc with respect to gc
-	out[15][10] = kfbnd * IL15_gc; // IL15_IL15Ra_gc with respect to IL15Ra
-	out[15][11] = r->kfwd * gc; // IL15_IL15Ra_gc with respect to IL15_IL15Ra
-	out[15][13] = kfbnd * IL15Ra; // IL15_IL15Ra_gc with respect to IL15_gc
-	out[15][15] = -r->kfwd * IL2Rb - k16rev - r->k18rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_gc
-	out[15][17] = k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
+	out(15, 1) = -r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_gc with respect to IL2Rb
+	out(15, 2) = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_gc with respect to gc
+	out(15, 10) = kfbnd * IL15_gc; // IL15_IL15Ra_gc with respect to IL15Ra
+	out(15, 11) = r->kfwd * gc; // IL15_IL15Ra_gc with respect to IL15_IL15Ra
+	out(15, 13) = kfbnd * IL15Ra; // IL15_IL15Ra_gc with respect to IL15_gc
+	out(15, 15) = -r->kfwd * IL2Rb - r->k16rev - r->k18rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_gc
+	out(15, 17) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL2Rb_gc
-	out[16][1] = r->kfwd * IL15_gc; // IL15_IL2Rb_gc with respect to IL2Rb
-	out[16][2] = kfbnd * IL15_IL2Rb; // IL15_IL2Rb_gc with respect to gc
-	out[16][10] = -r->kfwd * IL15_IL2Rb_gc; // IL15_IL2Rb_gc with respect to IL15Ra
-	out[16][12] = kfbnd * gc; // IL15_IL2Rb_gc with respect to IL15_IL2Rb
-	out[16][13] = r->kfwd * IL2Rb; // IL15_IL2Rb_gc with respect to IL15_gc
-	out[16][16] = -r->kfwd * IL15Ra - r->k17rev - k19rev; // IL15_IL2Rb_gc with respect to IL15_IL2Rb_gc
-	out[16][17] = k20rev; // IL15_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
+	out(16, 1) = r->kfwd * IL15_gc; // IL15_IL2Rb_gc with respect to IL2Rb
+	out(16, 2) = kfbnd * IL15_IL2Rb; // IL15_IL2Rb_gc with respect to gc
+	out(16, 10) = -r->kfwd * IL15_IL2Rb_gc; // IL15_IL2Rb_gc with respect to IL15Ra
+	out(16, 12) = kfbnd * gc; // IL15_IL2Rb_gc with respect to IL15_IL2Rb
+	out(16, 13) = r->kfwd * IL2Rb; // IL15_IL2Rb_gc with respect to IL15_gc
+	out(16, 16) = -r->kfwd * IL15Ra - r->k17rev - r->k19rev; // IL15_IL2Rb_gc with respect to IL15_IL2Rb_gc
+	out(16, 17) = r->k20rev; // IL15_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_IL2Rb_gc
-	out[17][1] = r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL2Rb
-	out[17][2] = r->kfwd * IL15_IL15Ra_IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to gc
-	out[17][10] = r->kfwd * IL15_IL2Rb_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL15Ra
-	out[17][14] = r->kfwd * gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb
-	out[17][15] = r->kfwd * IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_gc
-	out[17][16] = r->kfwd * IL15Ra; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL2Rb_gc
-	out[17][17] = - k20rev - k21rev - r->k22rev; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
+	out(17, 1) = r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL2Rb
+	out(17, 2) = r->kfwd * IL15_IL15Ra_IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to gc
+	out(17, 10) = r->kfwd * IL15_IL2Rb_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL15Ra
+	out(17, 14) = r->kfwd * gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb
+	out(17, 15) = r->kfwd * IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_gc
+	out(17, 16) = r->kfwd * IL15Ra; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL2Rb_gc
+	out(17, 17) = - r->k20rev - r->k21rev - r->k22rev; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL7Ra 
-	out[18][18] = -kfbnd * IL7 - r->kfwd * gc_IL7; // IL7Ra with respect to IL7Ra 
-	out[18][19] = k25rev; // IL7Ra with respect to IL7Ra_IL7
-	out[18][20] = - r->kfwd * IL7Ra; // IL7Ra with respect to gc_IL7
-	out[18][21] = k28rev; // IL7Ra with respect to IL7Ra_gc_IL7
+	out(18, 18) = -kfbnd * IL7 - r->kfwd * gc_IL7; // IL7Ra with respect to IL7Ra 
+	out(18, 19) = k25rev; // IL7Ra with respect to IL7Ra_IL7
+	out(18, 20) = - r->kfwd * IL7Ra; // IL7Ra with respect to gc_IL7
+	out(18, 21) = r->k28rev; // IL7Ra with respect to IL7Ra_gc_IL7
 	
 	// IL7Ra_IL7
-	out[19][2] = - r->kfwd * IL7Ra_IL7; // IL7Ra_IL7 with respect to gc
-	out[19][18] = kfbnd * IL7; // IL7Ra_IL7 with respect to IL7Ra
-	out[19][19] = - k25rev - r->kfwd * gc; // IL7Ra_IL7 with respect to IL7Ra_IL7
-	out[19][21] = r->k27rev; // IL7Ra_IL7 with respect to IL7Ra_gc_IL7
+	out(19, 2) = - r->kfwd * IL7Ra_IL7; // IL7Ra_IL7 with respect to gc
+	out(19, 18) = kfbnd * IL7; // IL7Ra_IL7 with respect to IL7Ra
+	out(19, 19) = - k25rev - r->kfwd * gc; // IL7Ra_IL7 with respect to IL7Ra_IL7
+	out(19, 21) = r->k27rev; // IL7Ra_IL7 with respect to IL7Ra_gc_IL7
 	
 	// gc_IL7
-	out[20][2] = kfbnd * IL7; // gc_IL7 with respect to gc
-	out[20][18] = -r->kfwd * gc_IL7; // gc_IL7 with respect to IL7Ra
-	out[20][20] = -r->kfwd * IL7Ra - k26rev; // gc_IL7 with respect to gc_IL7
-	out[20][21] = k28rev; // gc_IL7 with respect to IL7Ra_gc_IL7
+	out(20, 2) = kfbnd * IL7; // gc_IL7 with respect to gc
+	out(20, 18) = -r->kfwd * gc_IL7; // gc_IL7 with respect to IL7Ra
+	out(20, 20) = -r->kfwd * IL7Ra - k26rev; // gc_IL7 with respect to gc_IL7
+	out(20, 21) = r->k28rev; // gc_IL7 with respect to IL7Ra_gc_IL7
 	
 	// IL7Ra_gc_IL7
-	out[21][2] = r->kfwd * IL7Ra_IL7; // IL7Ra_gc_IL7 with respect to gc
-	out[21][18] = r->kfwd * gc_IL7; // IL7Ra_gc_IL7 with respect to IL7Ra
-	out[21][19] = r->kfwd * gc; // IL7Ra_gc_IL7 with respect to IL7Ra_IL7
-	out[21][20] = r->kfwd * IL7Ra; // IL7Ra_gc_IL7 with respect to gc_IL7
-	out[21][21] = - k28rev - r->k27rev; // IL7Ra_gc_IL7 with respect to IL7Ra_gc_IL7
+	out(21, 2) = r->kfwd * IL7Ra_IL7; // IL7Ra_gc_IL7 with respect to gc
+	out(21, 18) = r->kfwd * gc_IL7; // IL7Ra_gc_IL7 with respect to IL7Ra
+	out(21, 19) = r->kfwd * gc; // IL7Ra_gc_IL7 with respect to IL7Ra_IL7
+	out(21, 20) = r->kfwd * IL7Ra; // IL7Ra_gc_IL7 with respect to gc_IL7
+	out(21, 21) = - r->k28rev - r->k27rev; // IL7Ra_gc_IL7 with respect to IL7Ra_gc_IL7
 	
 	// IL9R
-	out[22][22] = -kfbnd * IL9 - r->kfwd * gc_IL9; // IL9R with respect to IL9R
-	out[22][23] = r->k29rev; // IL9R with respect to IL9R_IL9
-	out[22][24] = - r->kfwd * IL9R; // IL9R with respect to gc_IL9
-	out[22][25] = k32rev; // IL9R with respect to IL9R_gc_IL9
+	out(22, 22) = -kfbnd * IL9 - r->kfwd * gc_IL9; // IL9R with respect to IL9R
+	out(22, 23) = r->k29rev; // IL9R with respect to IL9R_IL9
+	out(22, 24) = - r->kfwd * IL9R; // IL9R with respect to gc_IL9
+	out(22, 25) = r->k32rev; // IL9R with respect to IL9R_gc_IL9
 	
 	// IL9R_IL9 
-	out[23][2] = - r->kfwd * IL9R_IL9; // IL9R_IL9 with respect to gc
-	out[23][22] = kfbnd * IL9; // IL9R_IL9 with respect to IL9R
-	out[23][23] = - r->k29rev - r->kfwd * gc; // IL9R_IL9 with respect to IL9R_IL9
-	out[23][25] = r->k31rev; // IL9R_IL9 with respect to IL9R_gc_IL9
+	out(23, 2) = - r->kfwd * IL9R_IL9; // IL9R_IL9 with respect to gc
+	out(23, 22) = kfbnd * IL9; // IL9R_IL9 with respect to IL9R
+	out(23, 23) = - r->k29rev - r->kfwd * gc; // IL9R_IL9 with respect to IL9R_IL9
+	out(23, 25) = r->k31rev; // IL9R_IL9 with respect to IL9R_gc_IL9
 	
 	// gc_IL9
-	out[24][2] = kfbnd * IL9; // gc_IL9 with respect to gc
-	out[24][22] = -r->kfwd * gc_IL9; // gc_IL9 with respect to IL9R
-	out[24][24] = -r->kfwd * IL9R - k30rev; // gc_IL9 with respect to gc_IL9
-	out[24][25] = k32rev; // gc_IL9 with respect to IL9R_gc_IL9
+	out(24, 2) = kfbnd * IL9; // gc_IL9 with respect to gc
+	out(24, 22) = -r->kfwd * gc_IL9; // gc_IL9 with respect to IL9R
+	out(24, 24) = -r->kfwd * IL9R - k30rev; // gc_IL9 with respect to gc_IL9
+	out(24, 25) = r->k32rev; // gc_IL9 with respect to IL9R_gc_IL9
 	
 	// IL9R_gc_IL9
-	out[25][2] = r->kfwd * IL9R_IL9; // IL9R_gc_IL9 with respect to gc
-	out[25][22] = r->kfwd * gc_IL9; // IL9R_gc_IL9 with respect to IL9R
-	out[25][23] = r->kfwd * gc; // IL9R_gc_IL9 with respect to IL9R_IL9
-	out[25][24] = r->kfwd * IL9R; // IL9R_gc_IL9 with respect to gc_IL9
-	out[25][25] = - k32rev - r->k31rev; // IL9R_gc_IL9 with respect to IL9R_gc_IL9
-	
-	// Copy all the data from out to dydt
-	for (size_t ii = 0; ii < out.size(); ii++)
-		copy(out[ii].begin(), out[ii].end(), dydt + ii*out.size());
+	out(25, 2) = r->kfwd * IL9R_IL9; // IL9R_gc_IL9 with respect to gc
+	out(25, 22) = r->kfwd * gc_IL9; // IL9R_gc_IL9 with respect to IL9R
+	out(25, 23) = r->kfwd * gc; // IL9R_gc_IL9 with respect to IL9R_IL9
+	out(25, 24) = r->kfwd * IL9R; // IL9R_gc_IL9 with respect to gc_IL9
+	out(25, 25) = - r->k32rev - r->k31rev; // IL9R_gc_IL9 with respect to IL9R_gc_IL9
 }
 
 
@@ -811,3 +792,105 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 
 	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
+
+
+void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<JacMat> &out) {
+	size_t halfL = activeV.size();
+	
+	// unless otherwise specified, assume all partial derivatives are 0
+	out.setConstant(0.0);
+
+	array <double, 26*26> sub_y;
+	jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
+	for (size_t ii = 0; ii < halfL; ii++)
+		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
+
+	jacobian(y + halfL, r, sub_y.data(), y[52], y[53], y[54], y[55]); // different IL concs for internal case 
+	for (size_t ii = 0; ii < halfL; ii++)
+		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
+
+	// Implement trafficking
+	double endo = 0;
+	double deg = 0;
+	double rec = 0;
+	for (size_t ii = 0; ii < halfL; ii++) {
+		if (activeV[ii]) {
+			endo = r->endo + r->activeEndo;
+			deg = r->kDeg;
+			rec = 0.0;
+		} else {
+			endo = r->endo;
+			deg = r->kDeg*r->sortF;
+			rec = r->kRec*(1.0-r->sortF);
+		}
+
+		out(ii, ii) = out(ii, ii) - endo; // Endocytosis
+		out(ii + halfL, ii + halfL) -= deg + rec; // Degradation
+		out(ii + halfL, ii) += endo/internalFrac;
+		out(ii, ii + halfL) += rec*internalFrac; // Recycling
+	}
+
+	// Ligand degradation
+	for (size_t ii = 52; ii < 56; ii++)
+		out(ii, ii) -= r->kDeg;
+
+	// Ligand binding
+	out(26 + 0, 52) = -kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
+	out(26 + 1, 52) = -kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
+	out(26 + 2, 52) = -k3fwd * y[26 + 2]; // IL2 binding to gc
+	out(26 + 3, 52) = kfbnd * y[26 + 0]; // IL2 binding to IL2Ra
+	out(26 + 4, 52) = kfbnd * y[26 + 1]; // IL2 binding to IL2Rb
+	out(26 + 5, 52) = k3fwd * y[26 + 2]; // IL2 binding to gc
+
+	out(26 +  1, 53) = -kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
+	out(26 + 10, 53) = -kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
+	out(26 + 11, 53) =  kfbnd * y[26 + 10]; // IL15 binding to IL15Ra
+	out(26 + 12, 53) =  kfbnd * y[26 +  1]; // IL15 binding to IL2Rb
+	out(26 + 13, 53) =  kfbnd * y[26 +  2]; // IL15 binding to gc
+	out(26 +  2, 53) = -kfbnd * y[26 +  2]; // IL15 binding to gc
+
+	out(26 + 18, 54) = -kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
+	out(26 + 19, 54) =  kfbnd * y[26 + 18]; // IL7 binding to IL7Ra
+	out(26 +  2, 54) = -kfbnd * y[26 + 2];  // IL7 binding to gc
+	out(26 + 20, 54) =  kfbnd * y[26 + 2];  // IL7 binding to gc
+
+	out(26 + 22, 55) = -kfbnd * y[26 + 22]; // IL9 binding to IL9R
+	out(26 + 23, 55) =  kfbnd * y[26 + 22]; // IL9 binding to IL9R
+	out(26 +  2, 55) = -kfbnd * y[26 +  2]; // IL9 binding to gc
+	out(26 + 24, 55) =  kfbnd * y[26 +  2]; // IL9 binding to gc
+}
+
+constexpr bool debugOutput = false;
+
+
+int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	ratesS rattes = param(static_cast<double *>(user_data));
+
+	Eigen::Map<JacMat> jac(SM_DATA_D(J));
+
+	// Actually get the Jacobian
+	fullJacobian(NV_DATA_S(y), &rattes, jac);
+
+	jac.transposeInPlace();
+
+	if (debugOutput) {
+		JacMat A = jac;
+
+		Eigen::JacobiSVD<JacMat> svd(A);
+		double cond = svd.singularValues()(0) / svd.singularValues()(svd.singularValues().size()-1);
+
+		if (cond > 1E10)
+			std::cout << std::endl << std::endl << jac << std::endl;
+	}
+
+	return 0;
+}
+
+extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
+	ratesS r = param(rxn_in);
+
+	Eigen::Map<JacMat> out(dydt);
+
+	fullJacobian(y_in, &r, out);
+}
+    
