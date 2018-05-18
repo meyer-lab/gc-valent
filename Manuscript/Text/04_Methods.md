@@ -62,6 +62,25 @@ IL9:
 
 $$k30rev / kfbnd = 50000$$ nM (reference unknown) // cytokine doesn't bind to free gc
 
++------------------+------------------+-----------------------+
+| $Kd$             | Value            | Reference             |
++==================+==================+=======================+
+| $k1rev$/$kfbnd$  | 10 nM            | doi:10.1016/j.jmb.2004.04.038 |
++------------------+------------------+-----------------------+
+| $k2rev$/$kfbnd$  | 144 nM           | doi:10.1016/j.jmb.2004.04.038 |
++------------------+------------------+-----------------------+
+| $k3rev$/$k3fwd$  | 50000 nM         | doi:10.1016/j.jmb.2004.04.038 |
++------------------+------------------+-----------------------+
+| $k10rev$/$kfwd$  | 12 nM            | doi:10.1016/j.jmb.2004.04.038 |
++------------------+------------------+-----------------------+
+| $k11rev$/$kfwd$  | 63 nM            | doi:10.1016/j.jmb.2004.04.038 |
++------------------+------------------+-----------------------+
+| $k5rev$/$kfwd$   | 1.5 nM           | doi:10.1016/j.jmb.2004.04.038 |
++------------------+------------------+-----------------------+
+| $k13rev$/$kfbnd$ | 0.065 nM         | multiple papers suggesting 30-100 pM |
++------------------+------------------+-----------------------+
+
+
 The rate of endocytosis is quantified by a constant of $activeEndo$ for active complexes and $endo$ for all other species. The fraction of all endosomal species sent to lysosomes is $sortF$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $kDeg$ and $kRec$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 623 (units unknown; got info from TAM paper). The surface area of the endosome is half the size of the cell surface (got info from same TAM paper).
 
 
