@@ -45,7 +45,12 @@ label = "Type I Cytokine Model";
 "IL9-gc" [shape=box];
 "IL9-IL9R-gc" [shape=box ];
 
-
+subgraph cluster_IL2 {
+    style=filled;
+	color=lightgrey;
+	node [style=filled,color=white];
+    label= "IL2 Family"
+}
 "k1" [shape=diamond,style=filled,height=.1,width=.1];
 "IL2" -> "k1" [dir=none,weight=1];
 "IL2Ra" -> "k1" [dir=none,weight=1];
