@@ -47,8 +47,8 @@ label = "Type I Cytokine Model";
 
 subgraph cluster_IL2 {
     style=filled;
-	color=aquamarine1;
-	node [style=filled,color=aquamarine3];
+	color=mediumorchid2;
+	node [style=filled,color=mediumorchid4];
     label= "IL2 Family"
 
     "k1" [shape=diamond,style=filled,height=.1,width=.1];
@@ -114,8 +114,8 @@ subgraph cluster_IL2 {
 
 subgraph cluster_IL15 {
     style=filled;
-	color=coral1;
-	node [style=filled,color=coral3];
+	color=goldenrod1;
+	node [style=filled,color=goldenrod4];
     label= "IL15 Family"
 
     "k13" [shape=diamond,style=filled,height=.1,width=.1];
@@ -181,8 +181,8 @@ subgraph cluster_IL15 {
 
 subgraph cluster_IL7 {
     style=filled;
-	color=sienna2;
-	node [style=filled,color=sienna];
+	color=coral1;
+	node [style=filled,color=coral3];
     label= "IL7 Family"
     
     "k25" [shape=diamond,style=filled,height=.1,width=.1];
