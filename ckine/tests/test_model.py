@@ -39,7 +39,7 @@ class TestModel(unittest.TestCase):
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = np.tanh(self.tfargs[2])*0.99
         # High values of kfwd are dangerous
-        self.args[4] = self.args[4] / 1000
+        self.args[4] = self.args[4] / 100000.
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -131,7 +131,7 @@ class TestModel(unittest.TestCase):
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
         vec[16] = np.tanh(vec[16])*0.99
-        vec[4] = vec[4] / 1000.0
+        vec[4] = vec[4] / 100000.0
 
         ys, retVal = runCkineU(self.ts, vec)
         
