@@ -5,6 +5,7 @@ from ..differencing_op import runCkineOp, runCkineKineticOp
 
 
 class TestOp(unittest.TestCase):
+    @unittest.skip("Skip Theano Ops for the moment.")
     def test_runCkineOp_T0(self):
         ts = np.array([0.0])
 
@@ -12,6 +13,7 @@ class TestOp(unittest.TestCase):
 
         utt.verify_grad(runCkineOp(ts), [XX])
 
+    @unittest.skip("Skip Theano Ops for the moment.")
     def test_runCkineOp(self):
         ts = np.array([100000.])
 
@@ -19,6 +21,7 @@ class TestOp(unittest.TestCase):
 
         utt.verify_grad(runCkineOp(ts), [XX], abs_tol=0.01, rel_tol=0.01)
 
+    @unittest.skip("Skip Theano Ops for the moment.")
     def test_runCkineKineticOp(self):
         ts = np.linspace(0, 1000, dtype=np.float64)
         cond = np.ones(56, dtype=np.float64)

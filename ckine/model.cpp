@@ -401,7 +401,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 
-	CVDlsSetJacFn(sMem->cvode_mem, Jac);
+	// CVDlsSetJacFn(sMem->cvode_mem, Jac);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
