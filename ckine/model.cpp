@@ -228,11 +228,11 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 
 void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Implement full model.
-	fill(dydt, dydt + 56, 0.0);
+	fill(dydt, dydt + 48, 0.0);
 
 	// Calculate cell surface and endosomal reactions
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
-	dy_dt(y + 26, r, dydt + 26, y[52],   y[53],  y[54],  y[55]);
+	dy_dt(y + 22, r, dydt + 22, y[44],   y[45],  y[46],  y[47]);
 
 	// Handle trafficking
 	trafficking(y, r, dydt);
@@ -259,8 +259,8 @@ extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out,
 }
 
 
-array<double, 56> solveAutocrine(const ratesS * const r) {
-	array<double, 56> y0;
+array<double, 48> solveAutocrine(const ratesS * const r) {
+	array<double, 48> y0;
 	fill(y0.begin(), y0.end(), 0.0);
 
 	// Expand out trafficking terms
@@ -270,8 +270,8 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
 	// Assuming no autocrine ligand, so can solve steady state
 	// Add the species
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		y0[recIDX[ii] + 26] = r->Rexpr[ii] / kDeg / internalFrac;
-		y0[recIDX[ii]] = (r->Rexpr[ii] + kRec*y0[recIDX[ii] + 26]*internalFrac)/r->endo;
+		y0[recIDX[ii] + 22] = r->Rexpr[ii] / kDeg / internalFrac;
+		y0[recIDX[ii]] = (r->Rexpr[ii] + kRec*y0[recIDX[ii] + 22]*internalFrac)/r->endo;
 	}
 
 	return y0;
