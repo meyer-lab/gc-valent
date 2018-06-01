@@ -31,10 +31,10 @@ class TestModel(unittest.TestCase):
 
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
-        self.y0 = np.random.lognormal(0., 1., 26)
+        self.y0 = np.random.lognormal(0., 1., 22)
         self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
-        self.fully = np.random.lognormal(0., 1., 56)
+        self.fully = np.random.lognormal(0., 1., 48)
 
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = np.tanh(self.tfargs[2])*0.99
@@ -49,19 +49,19 @@ class TestModel(unittest.TestCase):
         """Check for the conservation of each of the initial receptors."""
         dy = dy_dt(y0, 0.0, self.args)
         #Check for conservation of gc
-        self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
+        self.assertConservation(dy, 0.0, np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]))
         #Check for conservation of IL2Rb
-        self.assertConservation(dy, 0.0, np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]))
+        self.assertConservation(dy, 0.0, np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]))
         #Check for conservation of IL2Ra
-        self.assertConservation(dy, 0.0, np.array([0, 3, 6, 7, 9]))
+        self.assertConservation(dy, 0.0, np.array([0, 3, 5, 6, 8]))
         #Check for conservation of IL15Ra
-        self.assertConservation(dy, 0.0, np.array([10, 11, 14, 15, 17]))
+        self.assertConservation(dy, 0.0, np.array([9, 10, 12, 13, 15]))
         #Check for conservation of IL7Ra
-        self.assertConservation(dy, 0.0, np.array([18, 19, 21]))
+        self.assertConservation(dy, 0.0, np.array([16, 17, 18]))
         #Check for Conservation of IL9R
-        self.assertConservation(dy, 0.0, np.array([22, 23, 25]))
+        self.assertConservation(dy, 0.0, np.array([19, 20, 21]))
 
-    @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
+    @given(y0=harrays(np.float, 2*22 + 4, elements=floats(0, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
         kw = np.zeros(11, dtype=np.float64)
@@ -69,30 +69,30 @@ class TestModel(unittest.TestCase):
         dy = fullModel(y0, 0.0, self.args, kw)
 
         #Check for conservation of gc
-        self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
+        self.assertConservation(dy, 0.0, np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]))
         #Check for conservation of IL2Rb
-        self.assertConservation(dy, 0.0, np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]))
+        self.assertConservation(dy, 0.0, np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]))
         #Check for conservation of IL2Ra
-        self.assertConservation(dy, 0.0, np.array([0, 3, 6, 7, 9]))
+        self.assertConservation(dy, 0.0, np.array([0, 3, 5, 6, 8]))
         #Check for conservation of IL15Ra
-        self.assertConservation(dy, 0.0, np.array([10, 11, 14, 15, 17]))
+        self.assertConservation(dy, 0.0, np.array([9, 10, 12, 13, 15]))
         #Check for conservation of IL7Ra
-        self.assertConservation(dy, 0.0, np.array([18, 19, 21]))
+        self.assertConservation(dy, 0.0, np.array([16, 17, 18]))
         #Check for Conservation of IL9R
-        self.assertConservation(dy, 0.0, np.array([22, 23, 25]))
+        self.assertConservation(dy, 0.0, np.array([19, 20, 21]))
 
         #Check for conservation of gc
-        self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]) + 26)
+        self.assertConservation(dy, 0.0, np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]) + 26)
         #Check for conservation of IL2Rb
-        self.assertConservation(dy, 0.0, np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]) + 26)
+        self.assertConservation(dy, 0.0, np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]) + 26)
         #Check for conservation of IL2Ra
-        self.assertConservation(dy, 0.0, np.array([0, 3, 6, 7, 9]) + 26)
+        self.assertConservation(dy, 0.0, np.array([0, 3, 5, 6, 8]) + 26)
         #Check for conservation of IL15Ra
-        self.assertConservation(dy, 0.0, np.array([10, 11, 14, 15, 17]) + 26)
+        self.assertConservation(dy, 0.0, np.array([9, 10, 12, 13, 15]) + 26)
         #Check for conservation of IL7Ra
-        self.assertConservation(dy, 0.0, np.array([18, 19, 21]) + 26)
+        self.assertConservation(dy, 0.0, np.array([16, 17, 18]) + 26)
         #Check for Conservation of IL9R
-        self.assertConservation(dy, 0.0, np.array([22, 23, 25]) + 26)
+        self.assertConservation(dy, 0.0, np.array([19, 20, 21]) + 26)
 
     def test_fullModel(self):
         """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
@@ -112,7 +112,7 @@ class TestModel(unittest.TestCase):
 
         self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs))
 
-    @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
+    @given(y0=harrays(np.float, 2*22 + 4, elements=floats(0, 10)))
     def test_reproducible(self, y0):
 
         dy1 = fullModel(y0, 0.0, self.args, self.tfargs)
@@ -127,6 +127,7 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
+    # TODO: double check that I should leave this alone because vec is only 'rxntfr' in runCkineU
     @given(vec=harrays(np.float, 25, elements=floats(0.01, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
