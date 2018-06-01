@@ -192,10 +192,10 @@ void findLigConsume(double *dydt) {
 
     // TODO: add the correct indices for the accumulate function
 	// Calculate the ligand consumption.
-	dydt[44] -= std::accumulate(dydti+3,  dydti+10, 0) / internalV;
-	dydt[45] -= std::accumulate(dydti+11, dydti+18, 0) / internalV;
-	dydt[46] -= std::accumulate(dydti+19, dydti+22, 0) / internalV;
-	dydt[47] -= std::accumulate(dydti+23, dydti+26, 0) / internalV;
+	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
+	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
+	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
+	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
 }
 
 
