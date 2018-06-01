@@ -32,12 +32,12 @@ std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
 
+	__active_species_IDX[7] = true;
 	__active_species_IDX[8] = true;
-	__active_species_IDX[9] = true;
-	__active_species_IDX[16] = true;
-	__active_species_IDX[17] = true;
+	__active_species_IDX[14] = true;
+	__active_species_IDX[15] = true;
+	__active_species_IDX[18] = true;
 	__active_species_IDX[21] = true;
-	__active_species_IDX[25] = true;
 
 	return __active_species_IDX;
 }
@@ -112,31 +112,27 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	const double gc = y[2];
 	const double IL2_IL2Ra = y[3];
 	const double IL2_IL2Rb = y[4];
-	const double IL2_gc = y[5];
-	const double IL2_IL2Ra_IL2Rb = y[6];
-	const double IL2_IL2Ra_gc = y[7];
-	const double IL2_IL2Rb_gc = y[8];
-	const double IL2_IL2Ra_IL2Rb_gc = y[9];
+	const double IL2_IL2Ra_IL2Rb = y[5];
+	const double IL2_IL2Ra_gc = y[6];
+	const double IL2_IL2Rb_gc = y[7];
+	const double IL2_IL2Ra_IL2Rb_gc = y[8];
 	
 	// IL15 in nM
-	const double IL15Ra = y[10];
-	const double IL15_IL15Ra = y[11];
-	const double IL15_IL2Rb = y[12];
-	const double IL15_gc = y[13];
-	const double IL15_IL15Ra_IL2Rb = y[14];
-	const double IL15_IL15Ra_gc = y[15];
-	const double IL15_IL2Rb_gc = y[16];
-	const double IL15_IL15Ra_IL2Rb_gc = y[17];
+	const double IL15Ra = y[9];
+	const double IL15_IL15Ra = y[10];
+	const double IL15_IL2Rb = y[11];
+	const double IL15_IL15Ra_IL2Rb = y[12];
+	const double IL15_IL15Ra_gc = y[13];
+	const double IL15_IL2Rb_gc = y[14];
+	const double IL15_IL15Ra_IL2Rb_gc = y[15];
 	
 	// IL7, IL9 in nM
-	const double IL7Ra = y[18];
-	const double IL7Ra_IL7 = y[19];
-	const double gc_IL7 = y[20];
-	const double IL7Ra_gc_IL7 = y[21];
-	const double IL9R = y[22];
-	const double IL9R_IL9 = y[23];
-	const double gc_IL9 = y[24];
-	const double IL9R_gc_IL9 = y[25];
+	const double IL7Ra = y[16];
+	const double IL7Ra_IL7 = y[17];
+	const double IL7Ra_gc_IL7 = y[18];
+	const double IL9R = y[19];
+	const double IL9R_IL9 = y[20];
+	const double IL9R_gc_IL9 = y[21];
 	
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_gc + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
