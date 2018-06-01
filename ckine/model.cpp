@@ -284,30 +284,31 @@ array<double, 48> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &y0) {
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &y0) {
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
+        // TODO: Do I need to change the indices of the y0s vector?
 		NV_Ith_S(y0s[14], is) = -y0[is]/r->endo; // Endo (15)
 
 		// sortF (17)
-		NV_Ith_S(y0s[16], is + 26) = -y0[is + 26]/r->sortF;
-		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 26) - y0[is + 26]);
+		NV_Ith_S(y0s[16], is + 22) = -y0[is + 22]/r->sortF;
+		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 22) - y0[is + 22]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
+		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 22]*internalFrac/r->endo; // kRec (18)
 
 		// kDeg (19)
-		NV_Ith_S(y0s[18], is + 26) = -y0[is + 26]/r->kDeg;
-		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 26)*internalFrac/r->endo;
+		NV_Ith_S(y0s[18], is + 22) = -y0[is + 22]/r->kDeg;
+		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 22)*internalFrac/r->endo;
 	}
 
 	// Rexpr (19-25)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
-		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 22) = y0[recIDX[ii] + 22]/r->Rexpr[ii];
+		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 22)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
