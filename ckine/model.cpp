@@ -53,45 +53,38 @@ ratesS param(const double * const rxntfR) {
 	r.IL9 = rxntfR[3];
 	r.kfwd = rxntfR[4];
 	r.k5rev = rxntfR[5];
-	r.k6rev = rxntfR[6];
+	r.k6rev = rxntfR[6]; // k6rev is no longer in model
 	r.k17rev = rxntfR[7];
-	r.k18rev = rxntfR[8];
+	r.k18rev = rxntfR[8]; // k18rev is no longer in model
 	r.k22rev = rxntfR[9];
-	r.k23rev = rxntfR[10];
+	r.k23rev = rxntfR[10]; 
 	r.k27rev = rxntfR[11];
 	r.k29rev = rxntfR[12];
 	r.k31rev = rxntfR[13];
 
-    // TODO: fix detailed balance equations
     
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	r.k11rev = 63.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	// r.k4rev = kfbnd * r.k6rev * k3rev / k1rev / k3fwd; // detailed balance loop for IL2_IL2Ra_gc no longer holds
-	// r.k7rev = k3fwd * k2rev * r.k5rev / kfbnd / k3rev; // detailed balance loop for IL2_IL2Rb_gc no longer holds
+	// Based on initial assembly steps
 	r.k12rev = k1rev * r.k11rev / k2rev; // loop for IL2_IL2Ra_IL2Rb
 	// Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
-	r.k9rev = k2rev * r.k10rev * r.k12rev / kfbnd / k3rev / r.k6rev * k3fwd;
-	r.k8rev = k2rev * r.k10rev * r.k12rev / kfbnd / r.k7rev / k3rev * k3fwd;
+    r.k9rev = r.k10rev * r.k11rev / kfwd;
+    r.k8rev = r.k10rev * r.k12rev / kfwd;
+    r.k4rev = kfwd * r.k10rev / r.k9rev;
+           
 
 	// IL15
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
-	// r.k16rev = r.kfwd * r.k18rev * k15rev / k13rev / kfbnd; // loop for IL15_IL15Ra_gc doesn't hold
-	// r.k19rev = r.kfwd * k14rev * r.k17rev / kfbnd / k15rev; // loop for IL15_IL2Rb_gc doesn't hold
 	r.k24rev = k13rev * r.k23rev / k14rev; // loop for IL15_IL15Ra_IL2Rb still holds
 
 	// _Based on formation of full complex
-    // These two need changing
-	r.k21rev = k14rev * r.k22rev * r.k24rev / r.kfwd / k15rev / r.k18rev * kfbnd;
-	r.k20rev = k14rev * r.k22rev * r.k24rev / r.k19rev / k15rev;
-
-	// _One detailed balance IL7/9 loop
-    // these no longer hold as there is only one path for active complex formation
-	// r.k32rev = r.k29rev * r.k31rev / k30rev;
-	// r.k28rev = k25rev * r.k27rev / k26rev;
+	r.k21rev = r.k22rev * r.k23rev / kfwd;
+    r.k20rev = r.k22rev * r.k24rev / kfwd;
+    r.k16rev = r.k17rev * r.k20rev / r.k21rev;
+    
 
 	// Set the rates
 	r.endo = rxntfR[14];
@@ -190,7 +183,6 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 void findLigConsume(double *dydt) {
 	double const * const dydti = dydt + 22;
 
-    // TODO: add the correct indices for the accumulate function
 	// Calculate the ligand consumption.
 	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
 	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;

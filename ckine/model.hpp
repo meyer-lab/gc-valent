@@ -45,8 +45,6 @@ constexpr double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
 // Literature values for IL-7
 constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
 
-// Literature values for IL-9
-
 constexpr double abstolIn = 1E-2;
 constexpr double reltolIn = 1E-3;
 constexpr double internalV = 623.0; // Same as that used in TAM model
