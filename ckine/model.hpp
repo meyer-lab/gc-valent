@@ -8,8 +8,6 @@ struct ratesS {
 	double kfwd;
 	double k4rev;
 	double k5rev;
-	double k6rev;
-	double k7rev;
 	double k8rev;
 	double k9rev;
 	double k10rev;
@@ -17,18 +15,15 @@ struct ratesS {
 	double k12rev;
 	double k16rev;
 	double k17rev;
-	double k18rev;
-	double k19rev;
 	double k20rev;
 	double k21rev;
 	double k22rev;
 	double k23rev;
 	double k24rev;
+    double k25rev;
 	double k27rev;
-	double k28rev;
 	double k29rev;
 	double k31rev;
-	double k32rev;
 	double endo;
 	double activeEndo;
 	double sortF;
