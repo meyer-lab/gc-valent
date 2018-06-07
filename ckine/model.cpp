@@ -68,9 +68,9 @@ ratesS param(const double * const rxntfR) {
 	// Based on initial assembly steps
 	r.k12rev = k1rev * r.k11rev / k2rev; // loop for IL2_IL2Ra_IL2Rb
 	// Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
-    r.k9rev = r.k10rev * r.k11rev / kfwd;
-    r.k8rev = r.k10rev * r.k12rev / kfwd;
-    r.k4rev = kfwd * r.k10rev / r.k9rev;
+    r.k9rev = r.k10rev * r.k11rev / r.kfwd;
+    r.k8rev = r.k10rev * r.k12rev / r.kfwd;
+    r.k4rev = r.kfwd * r.k10rev / r.k9rev;
            
 
 	// IL15
@@ -79,8 +79,8 @@ ratesS param(const double * const rxntfR) {
 	r.k24rev = k13rev * r.k23rev / k14rev; // loop for IL15_IL15Ra_IL2Rb still holds
 
 	// _Based on formation of full complex
-	r.k21rev = r.k22rev * r.k23rev / kfwd;
-    r.k20rev = r.k22rev * r.k24rev / kfwd;
+	r.k21rev = r.k22rev * r.k23rev / r.kfwd;
+    r.k20rev = r.k22rev * r.k24rev / r.kfwd;
     r.k16rev = r.k17rev * r.k20rev / r.k21rev;
     
 
