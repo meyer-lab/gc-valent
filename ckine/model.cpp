@@ -150,7 +150,7 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[15] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
-	dydt[2] = dydt[2] - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; // is there a reason why the first term is kfbnd instead of kfwd
+	dydt[2] = dydt[2] - kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
 	
 	// IL7
 	dydt[2] = dydt[2] - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
@@ -282,7 +282,6 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-        // TODO: Do I need to change the indices of the y0s vector?
 		NV_Ith_S(y0s[12], is) = -y0[is]/r->endo; // Endo (13)
 
 		// sortF (15)
