@@ -32,7 +32,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
-        self.args = np.random.lognormal(0., 1., 14)
+        self.args = np.random.lognormal(0., 1., 12)
         self.tfargs = np.random.lognormal(0., 1., 11)
         self.fully = np.random.lognormal(0., 1., 48)
 
@@ -44,7 +44,7 @@ class TestModel(unittest.TestCase):
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
 
-    @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
+    @given(y0=harrays(np.float, 22, elements=floats(0, 10)))
     def test_conservation(self, y0):
         """Check for the conservation of each of the initial receptors."""
         dy = dy_dt(y0, 0.0, self.args)
@@ -128,10 +128,10 @@ class TestModel(unittest.TestCase):
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
     # TODO: double check that I should leave this alone because vec is only 'rxntfr' in runCkineU
-    @given(vec=harrays(np.float, 25, elements=floats(0.01, 10.0)))
+    @given(vec=harrays(np.float, 23, elements=floats(0.01, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
-        vec[16] = np.tanh(vec[16])*0.99
+        vec[16] = np.tanh(vec[14])*0.99
         vec[4] = vec[4] / 1000.0
 
         ys, retVal = runCkineU(self.ts, vec)
