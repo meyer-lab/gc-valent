@@ -28,7 +28,7 @@ def runCkine (tps, rxn, tfr):
 def runCkineU (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 25) # TODO: make sure the rxn and tfr arrays stay the same size
+    assert(rxntfr.size == 23) # TODO: make sure the rxn and tfr arrays stay the same size
 
     yOut = np.zeros((tps.size, 48), dtype=np.float64)
 
@@ -45,11 +45,11 @@ def runCkineU (tps, rxntfr):
 def runCkineSensi (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 25)
+    assert(rxntfr.size == 23)
 
     yOut = np.zeros((tps.size, 48), dtype=np.float64)
 
-    sensV = np.zeros((48, 25, tps.size), dtype=np.float64, order='F')
+    sensV = np.zeros((48, 23, tps.size), dtype=np.float64, order='F')
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -64,7 +64,7 @@ def runCkineSensi (tps, rxntfr):
 def dy_dt(y, t, rxn):
     global libb
 
-    assert(rxn.size == 14)
+    assert(rxn.size == 12)
 
     yOut = np.zeros_like(y)
 
@@ -77,9 +77,9 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
     global libb
     
-    assert(rxn.size == 14)
+    assert(rxn.size == 12)
     
-    yOut = np.zeros((26, 26)) # size of the Jacobian matrix
+    yOut = np.zeros((22, 22)) # size of the Jacobian matrix
     
     libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
@@ -89,9 +89,9 @@ def jacobian(y, t, rxn):
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
     global libb
     
-    assert(rxn.size == 25)
+    assert(rxn.size == 23)
     
-    yOut = np.zeros((56, 56)) # size of the full Jacobian matrix
+    yOut = np.zeros((48, 48)) # size of the full Jacobian matrix
     
     libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
@@ -103,7 +103,7 @@ def fullModel(y, t, rxn, tfr):
 
     rxntfr = np.concatenate((rxn, tfr))
 
-    assert(rxntfr.size == 25)
+    assert(rxntfr.size == 23)
 
     yOut = np.zeros_like(y)
 
