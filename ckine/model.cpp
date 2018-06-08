@@ -807,4 +807,3 @@ extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_i
 
 	fullJacobian(y_in, &r, out);
 }
-	
