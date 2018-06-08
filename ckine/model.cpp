@@ -140,10 +140,10 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	// IL15
 	dydt[9] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - r->kfwd * IL15Ra * IL15_IL2Rb_gc + r->k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + r->k24rev * IL15_IL15Ra_IL2Rb;
 	dydt[10] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
-	dydt[11] = -r->kfwd * IL15_IL2Rb * IL15Ra + r->k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
+	dydt[11] = -r->kfwd * IL15_IL2Rb * IL15Ra + r->k24rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
 	dydt[12] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - r->k24rev * IL15_IL15Ra_IL2Rb;
 	dydt[13] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - r->k16rev * IL15_IL15Ra_gc;
-	dydt[14] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + r->k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc;
+	dydt[14] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc;
 	dydt[15] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
@@ -313,7 +313,7 @@ struct solver {
 
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
-	// if (error_code == CV_WARNING) return;
+	if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
 
 	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
@@ -385,7 +385,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 
-	// CVDlsSetJacFn(sMem->cvode_mem, Jac);
+	CVDlsSetJacFn(sMem->cvode_mem, Jac);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -393,8 +393,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
-	CVodeSetMaxNumSteps(sMem->cvode_mem, 2000000);
-	CVodeSetStabLimDet(sMem->cvode_mem, true);
+	CVodeSetMaxNumSteps(sMem->cvode_mem, 200000);
 }
 
 
@@ -639,9 +638,9 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	
 	// IL15_IL2Rb
 	out(11, 1) = kfbnd * IL15; // IL15_IL2Rb with respect to IL2Rb
-	out(11, 2) = - kfbnd * IL15_IL2Rb; // IL15_IL2Rb with respect to gc
+	out(11, 2) = -r->kfwd * IL15_IL2Rb; // IL15_IL2Rb with respect to gc
 	out(11, 9) = -r->kfwd * IL15_IL2Rb; // IL15_IL2Rb with respect to IL15Ra
-	out(11, 11) = -r->kfwd * IL15Ra - kfbnd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
+	out(11, 11) = -r->kfwd * IL15Ra - r->kfwd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
 	out(11, 12) = r->k24rev; // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	out(11, 14) = r->k17rev; // IL15_IL2Rb with respect to IL15_IL2Rb_gc
 	
@@ -662,9 +661,9 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(13, 15) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL2Rb_gc
-	out(14, 2) = kfbnd * IL15_IL2Rb; // IL15_IL2Rb_gc with respect to gc
+	out(14, 2) = r->kfwd * IL15_IL2Rb; // IL15_IL2Rb_gc with respect to gc
 	out(14, 9) = -r->kfwd * IL15_IL2Rb_gc; // IL15_IL2Rb_gc with respect to IL15Ra
-	out(14, 11) = kfbnd * gc; // IL15_IL2Rb_gc with respect to IL15_IL2Rb
+	out(14, 11) = r->kfwd * gc; // IL15_IL2Rb_gc with respect to IL15_IL2Rb
 	out(14, 14) = -r->kfwd * IL15Ra - r->k17rev; // IL15_IL2Rb_gc with respect to IL15_IL2Rb_gc
 	out(14, 15) = r->k20rev; // IL15_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
