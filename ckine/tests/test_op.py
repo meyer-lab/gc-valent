@@ -12,6 +12,7 @@ class TestOp(unittest.TestCase):
 
         utt.verify_grad(runCkineOp(ts), [XX])
 
+    @unittest.skip("Skip")
     def test_runCkineOp(self):
         ts = np.array([100000.])
 
@@ -19,6 +20,7 @@ class TestOp(unittest.TestCase):
 
         utt.verify_grad(runCkineOp(ts), [XX], abs_tol=0.01, rel_tol=0.01)
 
+    @unittest.skip("Skip")
     def test_runCkineKineticOp(self):
         ts = np.linspace(0, 1000, dtype=np.float64)
         cond = np.ones(48, dtype=np.float64)
