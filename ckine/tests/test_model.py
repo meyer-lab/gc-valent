@@ -105,8 +105,7 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @unittest.skip("Skip")
-    @given(vec=harrays(np.float, 23, elements=floats(0.01, 10.0)))
+    @given(vec=harrays(np.float, 23, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
         vec[14] = np.tanh(vec[14])*0.9
@@ -124,6 +123,12 @@ class TestModel(unittest.TestCase):
 
         closeness = np.isclose(analytical, approx, rtol=0.001, atol=0.001)
 
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+            print(analytical[IDXdiff])
+            print(approx[IDXdiff])
+
         self.assertTrue(np.all(closeness))
 
     def test_fullJacobian(self):
@@ -132,7 +137,7 @@ class TestModel(unittest.TestCase):
         
         self.assertTrue(analytical.shape == approx.shape)
 
-        closeness = np.isclose(analytical, approx, rtol=0.1, atol=0.1)
+        closeness = np.isclose(analytical, approx, rtol=0.001, atol=0.001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
