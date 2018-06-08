@@ -69,7 +69,6 @@ class IL2_15_activity:
         actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[17], 0.0) # Set IL2Ra to zero
-        # TODO: Check that idx 19 is IL2ra
 
         # Loop over concentrations of IL2, IL2Ra-/-
         actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
