@@ -13,6 +13,13 @@ from ..Tensor_analysis import find_R2X
 settings.register_profile("ci", max_examples=1000)
 #settings.load_profile("ci")
 
+conservation_IDX = [np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), # gc
+                    np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
+                    np.array([0, 3, 5, 6, 8]), # IL2Ra
+                    np.array([9, 10, 12, 13, 15]), # IL15Ra
+                    np.array([16, 17, 18]), # IL7Ra
+                    np.array([19, 20, 21])] # IL9R
+
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
         """Assert that all species came to equilibrium."""
@@ -27,19 +34,17 @@ class TestModel(unittest.TestCase):
         species_delta = y - y0
 
         # Check for conservation of species sum
-        self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, places=5)
+        self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0)
 
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
-        self.args = np.random.lognormal(0., 1., 14)
+        self.args = np.random.lognormal(0., 1., 12)
         self.tfargs = np.random.lognormal(0., 1., 11)
         self.fully = np.random.lognormal(0., 1., 48)
 
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = np.tanh(self.tfargs[2])*0.9
-        # High values of kfwd are dangerous
-        self.args[4] = self.args[4] / 1000
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -48,51 +53,24 @@ class TestModel(unittest.TestCase):
     def test_conservation(self, y0):
         """Check for the conservation of each of the initial receptors."""
         dy = dy_dt(y0, 0.0, self.args)
-        #Check for conservation of gc
-        self.assertConservation(dy, 0.0, np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]))
-        #Check for conservation of IL2Rb
-        self.assertConservation(dy, 0.0, np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]))
-        #Check for conservation of IL2Ra
-        self.assertConservation(dy, 0.0, np.array([0, 3, 5, 6, 8]))
-        #Check for conservation of IL15Ra
-        self.assertConservation(dy, 0.0, np.array([9, 10, 12, 13, 15]))
-        #Check for conservation of IL7Ra
-        self.assertConservation(dy, 0.0, np.array([16, 17, 18]))
-        #Check for Conservation of IL9R
-        self.assertConservation(dy, 0.0, np.array([19, 20, 21]))
+        # Check for conservation of each receptor
+        for idxs in conservation_IDX:
+            self.assertConservation(dy, 0.0, idxs)
 
     @given(y0=harrays(np.float, 2*22 + 4, elements=floats(0, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
-        kw = np.zeros(11, dtype=np.float64)
+        kw = np.zeros(self.tfargs.shape, dtype=np.float64)
 
         dy = fullModel(y0, 0.0, self.args, kw)
 
-        #Check for conservation of gc
-        self.assertConservation(dy, 0.0, np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]))
-        #Check for conservation of IL2Rb
-        self.assertConservation(dy, 0.0, np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]))
-        #Check for conservation of IL2Ra
-        self.assertConservation(dy, 0.0, np.array([0, 3, 5, 6, 8]))
-        #Check for conservation of IL15Ra
-        self.assertConservation(dy, 0.0, np.array([9, 10, 12, 13, 15]))
-        #Check for conservation of IL7Ra
-        self.assertConservation(dy, 0.0, np.array([16, 17, 18]))
-        #Check for Conservation of IL9R
-        self.assertConservation(dy, 0.0, np.array([19, 20, 21]))
+        # Check for conservation of each surface receptor
+        for idxs in conservation_IDX:
+            self.assertConservation(dy, 0.0, idxs)
 
-        #Check for conservation of gc
-        self.assertConservation(dy, 0.0, np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]) + 26)
-        #Check for conservation of IL2Rb
-        self.assertConservation(dy, 0.0, np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]) + 26)
-        #Check for conservation of IL2Ra
-        self.assertConservation(dy, 0.0, np.array([0, 3, 5, 6, 8]) + 26)
-        #Check for conservation of IL15Ra
-        self.assertConservation(dy, 0.0, np.array([9, 10, 12, 13, 15]) + 26)
-        #Check for conservation of IL7Ra
-        self.assertConservation(dy, 0.0, np.array([16, 17, 18]) + 26)
-        #Check for Conservation of IL9R
-        self.assertConservation(dy, 0.0, np.array([19, 20, 21]) + 26)
+        # Check for conservation of each endosomal receptor
+        for idxs in conservation_IDX:
+            self.assertConservation(dy, 0.0, idxs + 22)
 
     def test_fullModel(self):
         """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
@@ -127,19 +105,16 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    # TODO: double check that I should leave this alone because vec is only 'rxntfr' in runCkineU
     @given(vec=harrays(np.float, 23, elements=floats(0.01, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
-        vec[16] = np.tanh(vec[16])*0.9
-        vec[4] = vec[4] / 1000.0
+        vec[14] = np.tanh(vec[14])*0.9
 
         ys, retVal = runCkineU(self.ts, vec)
         
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
-    @unittest.skip("Jacobian broken for the moment")
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
         Both Jacobians are evaluating the partial derivatives of dydt.'''
@@ -147,8 +122,7 @@ class TestModel(unittest.TestCase):
         approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error  
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
-    
-    @unittest.skip("Jacobian broken for the moment")
+
     def test_fullJacobian(self):
         analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
         approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-6)
@@ -166,7 +140,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.all(closeness))
 
     def test_tensor(self):
-        tensor = np.random.rand(35,100,20)
+        tensor = np.random.rand(35, 100, 20)
         arr = []
         for i in range(1,8):
             R2X = find_R2X(tensor, i)
