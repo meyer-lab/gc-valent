@@ -67,14 +67,16 @@ def dy_dt(y, t, rxn):
 
     assert(rxn.size == 12)
 
+    rxntfr = np.concatenate((rxn, np.ones(15, dtype=np.float64)*0.9))
+
     yOut = np.zeros_like(y)
 
     libb.dydt_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut
 
-# TODO: fix indices of jacobian after editing it in model.cpp
+
 def jacobian(y, t, rxn):
     global libb
     
@@ -87,6 +89,7 @@ def jacobian(y, t, rxn):
     
     return yOut 
 
+
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
     global libb
     
@@ -98,7 +101,8 @@ def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument on
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut 
-    
+
+
 def fullModel(y, t, rxn, tfr):
     global libb
 
