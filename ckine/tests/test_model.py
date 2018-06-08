@@ -32,12 +32,12 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
-        self.args = np.random.lognormal(0., 1., 12)
+        self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
         self.fully = np.random.lognormal(0., 1., 48)
 
         # Force sorting fraction to be less than 1.0
-        self.tfargs[2] = np.tanh(self.tfargs[2])*0.99
+        self.tfargs[2] = np.tanh(self.tfargs[2])*0.9
         # High values of kfwd are dangerous
         self.args[4] = self.args[4] / 1000
 
@@ -131,7 +131,7 @@ class TestModel(unittest.TestCase):
     @given(vec=harrays(np.float, 23, elements=floats(0.01, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
-        vec[16] = np.tanh(vec[14])*0.99
+        vec[16] = np.tanh(vec[16])*0.9
         vec[4] = vec[4] / 1000.0
 
         ys, retVal = runCkineU(self.ts, vec)
