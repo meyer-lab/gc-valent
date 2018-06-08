@@ -773,15 +773,15 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
 
 	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
-	out(22 + 10, 45) = -kfbnd * y[22 + 10]; // IL15 binding to IL15Ra
-	out(22 + 11, 45) =  kfbnd * y[22 + 10]; // IL15 binding to IL15Ra
-	out(22 + 12, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
 
-	out(22 + 18, 46) = -kfbnd * y[22 + 18]; // IL7 binding to IL7Ra
-	out(22 + 19, 46) =  kfbnd * y[22 + 18]; // IL7 binding to IL7Ra
+	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
 
-	out(22 + 22, 47) = -kfbnd * y[22 + 22]; // IL9 binding to IL9R
-	out(22 + 23, 47) =  kfbnd * y[22 + 22]; // IL9 binding to IL9R
+	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
 }
 
 constexpr bool debugOutput = false;
