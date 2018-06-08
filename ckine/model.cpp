@@ -515,7 +515,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL2_IL2Ra_IL2Rb = y[5];
 	const double IL2_IL2Ra_gc = y[6];
 	const double IL2_IL2Rb_gc = y[7];
-	const double IL2_IL2Ra_IL2Rb_gc = y[8];
 	
 	// IL15 in nM
 	const double IL15Ra = y[9];
@@ -524,15 +523,10 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL15_IL15Ra_IL2Rb = y[12];
 	const double IL15_IL15Ra_gc = y[13];
 	const double IL15_IL2Rb_gc = y[14];
-	const double IL15_IL15Ra_IL2Rb_gc = y[15];
 	
 	// IL7, IL9 in nM
-	const double IL7Ra = y[16];
 	const double IL7Ra_IL7 = y[17];
-	const double IL7Ra_gc_IL7 = y[18];
-	const double IL9R = y[19];
 	const double IL9R_IL9 = y[20];
-	const double IL9R_gc_IL9 = y[21];
 
 	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
@@ -593,7 +587,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(4, 2) = - r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to gc
 	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
 	out(4, 5) = r->k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out(4, 6) = r->k5rev; // IL2_IL2Rb with respect to IL2_IL2Rb_gc
+	out(4, 7) = r->k5rev; // IL2_IL2Rb with respect to IL2_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb
 	out(5, 0) = r->kfwd * IL2_IL2Rb; // IL2_IL2Ra_IL2Rb with respect to IL2Ra
