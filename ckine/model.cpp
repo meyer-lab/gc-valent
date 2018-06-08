@@ -401,7 +401,7 @@ void solver_setup(solver *sMem, double *params) {
 }
 
 
-void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 56> &y0) {
+void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 48> &y0) {
 	// Now we are doing a sensitivity analysis
 	sMem->sensi = true;
 
