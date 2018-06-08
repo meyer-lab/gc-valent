@@ -9,6 +9,7 @@
 #include <sunlinsol/sunlinsol_spbcgs.h>  /* access to SPGMR SUNLinearSolver             */
 #include <cvode/cvode_spils.h>          /* access to CVSpils interface                 */
 #include <sunmatrix/sunmatrix_dense.h>
+#include <cvode/cvode_bandpre.h>       /* access to CVBANDPRE module           */
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
 #include <iostream>
@@ -312,7 +313,7 @@ struct solver {
 
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
-	if (error_code == CV_WARNING) return;
+	//if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
 
 	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
@@ -375,7 +376,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 
 	// Use Krylov methods with the SPBCGS solver
-	sMem->LS = SUNSPBCGS(sMem->state, PREC_NONE, 40);
+	sMem->LS = SUNSPBCGS(sMem->state, PREC_LEFT, 0);
 
 	// Call CVSpilsSetLinearSolver to specify the SPBCGS solver
 	if (CVSpilsSetLinearSolver(sMem->cvode_mem, sMem->LS) < 0) {
@@ -383,11 +384,13 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
 
+	CVBandPrecInit(sMem->cvode_mem, Nspecies, 9, 9);
+
 	// Call CVSpilsSetJacTimes to specify the Jv function
-	//if (CVSpilsSetJacTimes(sMem->cvode_mem, nullptr, JacTimes) < 0) {
-	//	solverFree(sMem);
-	//	throw std::runtime_error(string("Error calling CVSpilsSetJacTimes in solver_setup."));
-	//}
+	if (CVSpilsSetJacTimes(sMem->cvode_mem, nullptr, JacTimes) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVSpilsSetJacTimes in solver_setup."));
+	}
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -418,12 +421,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), abstolIn);
+	fill(abs.begin(), abs.end(), 1.0E-2);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, reltolIn, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-3, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -760,7 +763,6 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	// TODO: change the indexing after the '+' signs
 	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
 	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
 	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
