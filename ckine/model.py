@@ -28,7 +28,8 @@ def runCkine (tps, rxn, tfr):
 def runCkineU (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 23) # TODO: make sure the rxn and tfr arrays stay the same size
+    assert(rxntfr.size == 23)
+    assert(rxntfr[14] < 1.0) # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, 48), dtype=np.float64)
 

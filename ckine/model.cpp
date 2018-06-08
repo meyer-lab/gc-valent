@@ -26,7 +26,7 @@ typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
 
-const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
+const array<size_t, 6> recIDX = {{0, 1, 2, 9, 16, 19}};
 
 std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
@@ -60,7 +60,6 @@ ratesS param(const double * const rxntfR) {
 	r.k29rev = rxntfR[10];
 	r.k31rev = rxntfR[11];
 
-    
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	r.k11rev = 63.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -68,10 +67,9 @@ ratesS param(const double * const rxntfR) {
 	// Based on initial assembly steps
 	r.k12rev = k1rev * r.k11rev / k2rev; // loop for IL2_IL2Ra_IL2Rb
 	// Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
-    r.k9rev = r.k10rev * r.k11rev / r.kfwd;
-    r.k8rev = r.k10rev * r.k12rev / r.kfwd;
-    r.k4rev = r.kfwd * r.k10rev / r.k9rev;
-           
+	r.k9rev = r.k10rev * r.k11rev / r.kfwd;
+	r.k8rev = r.k10rev * r.k12rev / r.kfwd;
+	r.k4rev = r.kfwd * r.k10rev / r.k9rev;
 
 	// IL15
 	// To satisfy detailed balance these relationships should hold
@@ -80,9 +78,8 @@ ratesS param(const double * const rxntfR) {
 
 	// _Based on formation of full complex
 	r.k21rev = r.k22rev * r.k23rev / r.kfwd;
-    r.k20rev = r.k22rev * r.k24rev / r.kfwd;
-    r.k16rev = r.k17rev * r.k20rev / r.k21rev;
-    
+	r.k20rev = r.k22rev * r.k24rev / r.kfwd;
+	r.k16rev = r.k17rev * r.k20rev / r.k21rev;
 
 	// Set the rates
 	r.endo = rxntfR[12];
@@ -179,7 +176,7 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
  * @param      dydt  The rate of change vector solved for the receptor species.
  */
 void findLigConsume(double *dydt) {
-	double const * const dydti = dydt + 22;
+	double const * const dydti = dydt + halfL;
 
 	// Calculate the ligand consumption.
 	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
@@ -220,11 +217,11 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 
 void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Implement full model.
-	fill(dydt, dydt + 48, 0.0);
+	fill(dydt, dydt + Nspecies, 0.0);
 
 	// Calculate cell surface and endosomal reactions
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
-	dy_dt(y + 22, r, dydt + 22, y[44],   y[45],  y[46],  y[47]);
+	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
 
 	// Handle trafficking
 	trafficking(y, r, dydt);
@@ -251,8 +248,8 @@ extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out,
 }
 
 
-array<double, 48> solveAutocrine(const ratesS * const r) {
-	array<double, 48> y0;
+array<double, Nspecies> solveAutocrine(const ratesS * const r) {
+	array<double, Nspecies> y0;
 	fill(y0.begin(), y0.end(), 0.0);
 
 	// Expand out trafficking terms
@@ -766,7 +763,7 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-    // TODO: change the indexing after the '+' signs
+	// TODO: change the indexing after the '+' signs
 	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
 	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
 	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
@@ -817,4 +814,4 @@ extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_i
 
 	fullJacobian(y_in, &r, out);
 }
-    
+	
