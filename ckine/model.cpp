@@ -150,7 +150,7 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[15] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
-	dydt[2] = dydt[2] - kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
+	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
 	
 	// IL7
 	dydt[2] = dydt[2] - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
@@ -564,7 +564,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc    
-	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9; // gc with respect to gc
+	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - r->kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9; // gc with respect to gc
 	out(2, 3) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
 	out(2, 4) = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
 	out(2, 5) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
