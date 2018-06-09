@@ -53,13 +53,15 @@ ratesS param(const double * const rxntfR) {
 	r.IL7 = rxntfR[2];
 	r.IL9 = rxntfR[3];
 	r.kfwd = rxntfR[4];
-	r.k5rev = rxntfR[5];
-	r.k17rev = rxntfR[6];
-	r.k22rev = rxntfR[7];
-	r.k23rev = rxntfR[8]; 
-	r.k27rev = rxntfR[9];
-	r.k29rev = rxntfR[10];
-	r.k31rev = rxntfR[11];
+	r.k4rev = rxntfR[5];
+	r.k5rev = rxntfR[6];
+	r.k16rev = rxntfR[7];
+	r.k17rev = rxntfR[8];
+	r.k22rev = rxntfR[9];
+	r.k23rev = rxntfR[10]; 
+	r.k27rev = rxntfR[11];
+	r.k29rev = rxntfR[12];
+	r.k31rev = rxntfR[13];
 
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -68,9 +70,8 @@ ratesS param(const double * const rxntfR) {
 	// Based on initial assembly steps
 	r.k12rev = k1rev * r.k11rev / k2rev; // loop for IL2_IL2Ra_IL2Rb
 	// Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
-	r.k9rev = r.k10rev * r.k11rev / r.kfwd;
-	r.k8rev = r.k10rev * r.k12rev / r.kfwd;
-	r.k4rev = r.kfwd * r.k10rev / r.k9rev;
+	r.k9rev = r.k10rev * r.k11rev / r.k4rev;
+	r.k8rev = r.k10rev * r.k12rev / r.k5rev;
 
 	// IL15
 	// To satisfy detailed balance these relationships should hold
@@ -78,22 +79,21 @@ ratesS param(const double * const rxntfR) {
 	r.k24rev = k13rev * r.k23rev / k14rev; // loop for IL15_IL15Ra_IL2Rb still holds
 
 	// _Based on formation of full complex
-	r.k21rev = r.k22rev * r.k23rev / r.kfwd;
-	r.k20rev = r.k22rev * r.k24rev / r.kfwd;
-	r.k16rev = r.k17rev * r.k20rev / r.k21rev;
+	r.k21rev = r.k22rev * r.k23rev / r.k16rev;
+	r.k20rev = r.k22rev * r.k24rev / r.k17rev;
 
 	// Set the rates
-	r.endo = rxntfR[12];
-	r.activeEndo = rxntfR[13];
-	r.sortF = rxntfR[14];
-	r.kRec = rxntfR[15];
-	r.kDeg = rxntfR[16];
+	r.endo = rxntfR[14];
+	r.activeEndo = rxntfR[15];
+	r.sortF = rxntfR[16];
+	r.kRec = rxntfR[17];
+	r.kDeg = rxntfR[18];
 
 	if (r.sortF > 1.0) {
 		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
 	}
 
-	std::copy_n(rxntfR + 17, 6, r.Rexpr.begin());
+	std::copy_n(rxntfR + 19, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -280,24 +280,24 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[12], is) = -y0[is]/r->endo; // Endo (13)
+		NV_Ith_S(y0s[14], is) = -y0[is]/r->endo; // Endo (13)
 
 		// sortF (15)
-		NV_Ith_S(y0s[14], is + 22) = -y0[is + 22]/r->sortF;
-		NV_Ith_S(y0s[14], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[14], is + 22) - y0[is + 22]);
+		NV_Ith_S(y0s[16], is + 22) = -y0[is + 22]/r->sortF;
+		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 22) - y0[is + 22]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[15], is) = (1-r->sortF)*y0[is + 22]*internalFrac/r->endo; // kRec (16)
+		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 22]*internalFrac/r->endo; // kRec (16)
 
 		// kDeg (17)
-		NV_Ith_S(y0s[16], is + 22) = -y0[is + 22]/r->kDeg;
-		NV_Ith_S(y0s[16], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[16], is + 22)*internalFrac/r->endo;
+		NV_Ith_S(y0s[18], is + 22) = -y0[is + 22]/r->kDeg;
+		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 22)*internalFrac/r->endo;
 	}
 
 	// Rexpr (18-23)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[17 + ii], recIDX[ii] + 22) = y0[recIDX[ii] + 22]/r->Rexpr[ii];
-		NV_Ith_S(y0s[17 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[17 + ii], recIDX[ii] + 22)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 22) = y0[recIDX[ii] + 22]/r->Rexpr[ii];
+		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 22)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
@@ -323,6 +323,44 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	for (size_t ii = 0; ii < Nparams; ii++) {
 		std::cout << sMem->params[ii] << "\t";
 	}
+
+	ratesS ratt = param(sMem->params);
+
+	std::cout << "IL2: " << ratt.IL2 << std::endl;
+	std::cout << "IL15: " << ratt.IL15 << std::endl;
+	std::cout << "IL7: " << ratt.IL7 << std::endl;
+	std::cout << "IL9: " << ratt.IL9 << std::endl;
+	std::cout << "kfwd: " << ratt.kfwd << std::endl;
+	std::cout << "k4rev: " << ratt.k4rev << std::endl;
+	std::cout << "k5rev: " << ratt.k5rev << std::endl;
+	std::cout << "k8rev: " << ratt.k8rev << std::endl;
+	std::cout << "k9rev: " << ratt.k9rev << std::endl;
+	std::cout << "k10rev: " << ratt.k10rev << std::endl;
+	std::cout << "k11rev: " << ratt.k11rev << std::endl;
+	std::cout << "k12rev: " << ratt.k12rev << std::endl;
+	std::cout << "k16rev: " << ratt.k16rev << std::endl;
+	std::cout << "k17rev: " << ratt.k17rev << std::endl;
+	std::cout << "k20rev: " << ratt.k20rev << std::endl;
+	std::cout << "k21rev: " << ratt.k21rev << std::endl;
+	std::cout << "k22rev: " << ratt.k22rev << std::endl;
+	std::cout << "k23rev: " << ratt.k23rev << std::endl;
+	std::cout << "k24rev: " << ratt.k24rev << std::endl;
+	std::cout << "k25rev: " << ratt.k25rev << std::endl;
+	std::cout << "k27rev: " << ratt.k27rev << std::endl;
+	std::cout << "k29rev: " << ratt.k29rev << std::endl;
+	std::cout << "k31rev: " << ratt.k31rev << std::endl;
+	std::cout << "endo: " << ratt.endo << std::endl;
+	std::cout << "activeEndo: " << ratt.activeEndo << std::endl;
+	std::cout << "sortF: " << ratt.sortF << std::endl;
+	std::cout << "kRec: " << ratt.kRec << std::endl;
+	std::cout << "kDeg: " << ratt.kDeg << std::endl;
+
+	std::cout << "Rexpr 1: " << ratt.Rexpr[0] << std::endl;
+	std::cout << "Rexpr 2: " << ratt.Rexpr[1] << std::endl;
+	std::cout << "Rexpr 3: " << ratt.Rexpr[2] << std::endl;
+	std::cout << "Rexpr 4: " << ratt.Rexpr[3] << std::endl;
+	std::cout << "Rexpr 5: " << ratt.Rexpr[4] << std::endl;
+	std::cout << "Rexpr 6: " << ratt.Rexpr[5] << std::endl;
 
 	std::cout << std::endl;
 
