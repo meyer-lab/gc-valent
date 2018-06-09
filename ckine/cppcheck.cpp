@@ -44,7 +44,7 @@ public:
 
 protected:
 	void testrunCkine() {
-		uniform_real_distribution<> dis(0.0, 1.0);
+		uniform_real_distribution<> dis(0.0, 10.0);
 
 		array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, Nspecies*7> output;
