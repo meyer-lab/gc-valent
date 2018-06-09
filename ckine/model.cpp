@@ -9,6 +9,7 @@
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
+#include <cvode/cvode_bandpre.h>       /* access to CVBANDPRE module           */
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
 #include <iostream>
@@ -386,6 +387,8 @@ void solver_setup(solver *sMem, double *params) {
 	}
 
 	CVDlsSetJacFn(sMem->cvode_mem, Jac);
+
+	//CVBandPrecInit(sMem->cvode_mem, Nspecies, 3, 3);
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -415,12 +418,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), abstolIn);
+	fill(abs.begin(), abs.end(), 1.0E-2);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, reltolIn, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-3, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
