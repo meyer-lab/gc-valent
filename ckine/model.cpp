@@ -57,10 +57,9 @@ ratesS param(const double * const rxntfR) {
 	r.k16rev = rxntfR[7];
 	r.k17rev = rxntfR[8];
 	r.k22rev = rxntfR[9];
-	r.k23rev = rxntfR[10]; 
+	r.k23rev = rxntfR[10];
 	r.k27rev = rxntfR[11];
-	r.k29rev = rxntfR[12];
-	r.k31rev = rxntfR[13];
+	r.k31rev = rxntfR[12];
 
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -82,17 +81,17 @@ ratesS param(const double * const rxntfR) {
 	r.k20rev = r.k22rev * r.k24rev / r.k17rev;
 
 	// Set the rates
-	r.endo = rxntfR[14];
-	r.activeEndo = rxntfR[15];
-	r.sortF = rxntfR[16];
-	r.kRec = rxntfR[17];
-	r.kDeg = rxntfR[18];
+	r.endo = rxntfR[13];
+	r.activeEndo = rxntfR[14];
+	r.sortF = rxntfR[15];
+	r.kRec = rxntfR[16];
+	r.kDeg = rxntfR[17];
 
 	if (r.sortF > 1.0) {
 		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
 	}
 
-	std::copy_n(rxntfR + 19, 6, r.Rexpr.begin());
+	std::copy_n(rxntfR + 18, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -157,8 +156,8 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 
 	// IL9
 	dydt[2] = dydt[2] - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[19] = -kfbnd * IL9R * IL9 + r->k29rev * IL9R_IL9;
-	dydt[20] = kfbnd * IL9R * IL9 - r->k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
+	dydt[19] = -kfbnd * IL9R * IL9 + k29rev * IL9R_IL9;
+	dydt[20] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
 	dydt[21] = r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
 }
 
@@ -279,24 +278,24 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[14], is) = -y0[is]/r->endo; // Endo (13)
+		NV_Ith_S(y0s[13], is) = -y0[is]/r->endo; // Endo (13)
 
 		// sortF (15)
-		NV_Ith_S(y0s[16], is + 22) = -y0[is + 22]/r->sortF;
-		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 22) - y0[is + 22]);
+		NV_Ith_S(y0s[15], is + 22) = -y0[is + 22]/r->sortF;
+		NV_Ith_S(y0s[15], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[15], is + 22) - y0[is + 22]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 22]*internalFrac/r->endo; // kRec (16)
+		NV_Ith_S(y0s[16], is) = (1-r->sortF)*y0[is + 22]*internalFrac/r->endo; // kRec (16)
 
 		// kDeg (17)
-		NV_Ith_S(y0s[18], is + 22) = -y0[is + 22]/r->kDeg;
-		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 22)*internalFrac/r->endo;
+		NV_Ith_S(y0s[17], is + 22) = -y0[is + 22]/r->kDeg;
+		NV_Ith_S(y0s[17], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[17], is + 22)*internalFrac/r->endo;
 	}
 
 	// Rexpr (18-23)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 22) = y0[recIDX[ii] + 22]/r->Rexpr[ii];
-		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 22)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[18 + ii], recIDX[ii] + 22) = y0[recIDX[ii] + 22]/r->Rexpr[ii];
+		NV_Ith_S(y0s[18 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[18 + ii], recIDX[ii] + 22)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
@@ -345,9 +344,7 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "k22rev: " << ratt.k22rev << std::endl;
 	std::cout << "k23rev: " << ratt.k23rev << std::endl;
 	std::cout << "k24rev: " << ratt.k24rev << std::endl;
-	std::cout << "k25rev: " << ratt.k25rev << std::endl;
 	std::cout << "k27rev: " << ratt.k27rev << std::endl;
-	std::cout << "k29rev: " << ratt.k29rev << std::endl;
 	std::cout << "k31rev: " << ratt.k31rev << std::endl;
 	std::cout << "endo: " << ratt.endo << std::endl;
 	std::cout << "activeEndo: " << ratt.activeEndo << std::endl;
@@ -731,12 +728,12 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	
 	// IL9R
 	out(19, 19) = -kfbnd * IL9; // IL9R with respect to IL9R
-	out(19, 20) = r->k29rev; // IL9R with respect to IL9R_IL9
+	out(19, 20) = k29rev; // IL9R with respect to IL9R_IL9
 	
 	// IL9R_IL9 
 	out(20, 2) = - r->kfwd * IL9R_IL9; // IL9R_IL9 with respect to gc
 	out(20, 19) = kfbnd * IL9; // IL9R_IL9 with respect to IL9R
-	out(20, 20) = - r->k29rev - r->kfwd * gc; // IL9R_IL9 with respect to IL9R_IL9
+	out(20, 20) = - k29rev - r->kfwd * gc; // IL9R_IL9 with respect to IL9R_IL9
 	out(20, 21) = r->k31rev; // IL9R_IL9 with respect to IL9R_gc_IL9
 	
 	// IL9R_gc_IL9
@@ -794,7 +791,6 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	// TODO: change the indexing after the '+' signs
 	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
 	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
 	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
