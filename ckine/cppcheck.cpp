@@ -46,9 +46,9 @@ protected:
 	void testrunCkine() {
 		uniform_real_distribution<> dis(0.0, 1.0);
 
-		array<double, 5> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0}};
-		array<double, Nspecies*5> output;
-		array<double, Nspecies*5> output2;
+		array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
+		array<double, Nspecies*7> output;
+		array<double, Nspecies*7> output2;
 		array<double, Nparams> rxnRatesIn;
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;

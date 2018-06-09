@@ -313,7 +313,7 @@ struct solver {
 
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
-	//if (error_code == CV_WARNING) return;
+	if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
 
 	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
@@ -814,4 +814,3 @@ extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_i
 
 	fullJacobian(y_in, &r, out);
 }
-	
