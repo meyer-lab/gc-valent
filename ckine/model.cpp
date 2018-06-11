@@ -6,9 +6,10 @@
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
-#include <sundials/sundials_dense.h>
+#include <sunlinsol/sunlinsol_spbcgs.h>  /* access to SPGMR SUNLinearSolver             */
+#include <cvode/cvode_spils.h>          /* access to CVSpils interface                 */
 #include <sunmatrix/sunmatrix_dense.h>
-#include <sunlinsol/sunlinsol_dense.h>
+#include <cvode/cvode_bandpre.h>       /* access to CVBANDPRE module           */
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
 #include <iostream>
@@ -24,7 +25,7 @@ using std::string;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 
-int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
+int JacTimes(N_Vector v, N_Vector Jv, realtype t, N_Vector y, N_Vector fy, void *user_data, N_Vector tmp);
 
 const array<size_t, 6> recIDX = {{0, 1, 2, 9, 16, 19}};
 
@@ -305,7 +306,6 @@ struct solver {
 	SUNLinearSolver LS;
 	N_Vector state;
 	N_Vector *yS;
-	SUNMatrix A;
 	bool sensi;
 	double *params;
 };
@@ -378,7 +378,6 @@ void solverFree(solver *sMem) {
 	N_VDestroy_Serial(sMem->state);
 	CVodeFree(&sMem->cvode_mem);
 	SUNLinSolFree(sMem->LS);
-	SUNMatDestroy(sMem->A);
 }
 
 
@@ -411,16 +410,22 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
 
-	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
-	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
-	
-	// Call CVDense to specify the CVDENSE dense linear solver
-	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
+	// Use Krylov methods with the SPBCGS solver
+	sMem->LS = SUNSPBCGS(sMem->state, PREC_LEFT, 0);
+
+	// Call CVSpilsSetLinearSolver to specify the SPBCGS solver
+	if (CVSpilsSetLinearSolver(sMem->cvode_mem, sMem->LS) < 0) {
 		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
+		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
 
-	CVDlsSetJacFn(sMem->cvode_mem, Jac);
+	CVBandPrecInit(sMem->cvode_mem, Nspecies, 9, 9);
+
+	// Call CVSpilsSetJacTimes to specify the Jv function
+	if (CVSpilsSetJacTimes(sMem->cvode_mem, nullptr, JacTimes) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVSpilsSetJacTimes in solver_setup."));
+	}
 	
 	// Pass along the parameter structure to the differential equations
 	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
@@ -428,6 +433,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
+	// Allow an increased number of steps
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 200000);
 }
 
@@ -750,7 +756,8 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 }
 
 
-void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<JacMat> &out) {
+template <class T>
+void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 	size_t halfL = activeV.size();
 	
 	// unless otherwise specified, assume all partial derivatives are 0
@@ -810,16 +817,15 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 
 constexpr bool debugOutput = false;
 
-
-int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+int JacTimes(N_Vector v, N_Vector Jv, double, N_Vector y, N_Vector, void *user_data, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
 
-	Eigen::Map<JacMat> jac(SM_DATA_D(J));
+	JacMat jac;
+	Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> vv(NV_DATA_S(v));
+	Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> zz(NV_DATA_S(Jv));
 
 	// Actually get the Jacobian
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
-
-	jac.transposeInPlace();
 
 	if (debugOutput) {
 		JacMat A = jac;
@@ -830,6 +836,8 @@ int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vec
 		if (cond > 1E10)
 			std::cout << std::endl << std::endl << jac << std::endl;
 	}
+
+	zz = jac * vv;
 
 	return 0;
 }

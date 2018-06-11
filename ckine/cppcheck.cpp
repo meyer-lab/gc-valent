@@ -67,8 +67,8 @@ protected:
 			double sumDiff = inner_product(output2.begin(), output2.end(), output2.begin(), 0.0);
 
 			if (retVal < 0) {
-				for (auto i = rxnRatesIn.begin(); i != rxnRatesIn.end(); ++i)
-					std::cout << *i << ' ';
+				for (double &i : rxnRatesIn)
+					std::cout << i << ' ';
 
 				cout << std::endl;
 			}
