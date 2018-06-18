@@ -92,8 +92,8 @@ class build_model:
 
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.0001), sd=0.1)
-            k9rev = pm.Lognormal('k9rev', mu=np.log(0.1), sd=0.1, observed=((12.0 * k5rev / 1.5) * (63.0 * k5rev / 1.5) / k4rev)) # rxnrates[0] = k4rev, rxnrates[1] = k5rev
             rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            k9rev = pm.Lognormal('k9rev', mu=np.log(0.1), sd=0.1, observed=((12.0 * rxnrates[1] / 1.5) * (63.0 * rxnrates[1] / 1.5) / rxnrates[0])) # rxnrates[0] = k4rev, rxnrates[1] = k5rev
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
@@ -101,7 +101,7 @@ class build_model:
 
             ligands = T.zeros(4, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), k9rev, rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
             
             unkVec = theano.printing.Print("params: ")(unkVec)
 
