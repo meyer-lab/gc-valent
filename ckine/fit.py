@@ -95,7 +95,7 @@ class build_model:
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.0001), sd=0.1)
             rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
-            k9rev = pm.Lognormal('k9rev', mu=np.log(0.1), sd=0.1, observed=((12.0 * rxnrates[1] / 1.5) * (63.0 * rxnrates[1] / 1.5) / rxnrates[0])) # rxnrates[0] = k4rev, rxnrates[1] = k5rev
+            k9rev = ((12.0 * rxnrates[1] / 1.5) * (63.0 * rxnrates[1] / 1.5) / rxnrates[0]) # rxnrates[0] = k4rev, rxnrates[1] = k5rev
             k20rev = pm.Lognormal('k20rev', mu=np.log(0.1), sd=0.1, observed=((rxnrates[4] * ((0.60 * 0.065) * rxnrates[5] / (0.60 * 438)) / rxnrates[3])))
             k24rev = pm.Lognormal('k24rev', mu=np.log(0.1), sd=0.1, observed=((0.60 * 0.065) * rxnrates[5] / (0.60 * 438)))
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
@@ -107,6 +107,8 @@ class build_model:
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
             k9bound = pm.Potential('k9bound', T.switch(k9rev > 10., -np.inf, 0))
+            # k9bound = pm.Potential('k9bound', T.switch(k9rev > 1., -T.power(T.log(k9rev)*1.0E10, 10)  , 0)) # base is log, exponent is 10
+            
             
             unkVec = T.printing.Print("params: ")(unkVec)
 
