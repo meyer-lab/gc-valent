@@ -103,7 +103,7 @@ class build_model:
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
             
-            unkVec = theano.printing.Print("params: ")(unkVec)
+            unkVec = T.printing.Print("params: ")(unkVec)
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
