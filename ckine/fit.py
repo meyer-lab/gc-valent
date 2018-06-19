@@ -113,13 +113,13 @@ class build_model:
             unkVec = T.printing.Print("params: ")(unkVec)
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
-            Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
+            # Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
-            pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
+            # pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
             pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            # pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
