@@ -16,14 +16,21 @@ class IL2Rb_trafficking:
         numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).as_matrix()
         # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
         numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).as_matrix()
+        
+        # this data consists of IL2 stimulation only (will add IL15 stimulation later?)
 
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
         # Condense to just IL2Rb
         self.condense = np.zeros(48)
-        self.condense[1] = 1;
-
+        self.condense[1] = 1
+        # species in IL2 family that contain IL2Rb
+        self.condense[4] = 1
+        self.condense[5] = 1
+        self.condense[7] = 1
+        self.condense[8] = 1
+        
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5]))/10.
 
@@ -36,7 +43,8 @@ class IL2Rb_trafficking:
         b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
         c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
         d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
-
+        
+        # assuming all IL2Rb starts on the cell surface
         return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0])) - self.data
     
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
@@ -107,19 +115,19 @@ class build_model:
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
             # k9bound = pm.Potential('k9bound', T.switch(k9rev > 10., -np.inf, 0))
-            k9bound = pm.Potential('k9bound', T.switch(k9rev > 1., -T.power(T.log(k9rev)*1.0E10, 10)  , 0)) # base is log, exponent is 10
+            # k9bound = pm.Potential('k9bound', T.switch(k9rev > 1., -T.power(T.log(k9rev)*1.0E10, 10)  , 0)) # base is log, exponent is 10
             
             
             unkVec = T.printing.Print("params: ")(unkVec)
 
-            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
-            # Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
+            # Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
-            pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
-            # pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
+            # pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
+            pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
-            # pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            # pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
+            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
