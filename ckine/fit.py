@@ -24,17 +24,7 @@ class IL2Rb_trafficking:
 
         # Condense to just IL2Rb
         self.condense = np.zeros(48)
-        self.condense[1] = 1
-        # species in IL2 family that contain IL2Rb
-        self.condense[4] = 1
-        self.condense[5] = 1
-        self.condense[7] = 1
-        self.condense[8] = 1
-        # species in IL15 family that contain IL2Rb
-        self.condense[11] = 1
-        self.condense[12] = 1
-        self.condense[14] = 1
-        self.condense[15] = 1
+        self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
         
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
