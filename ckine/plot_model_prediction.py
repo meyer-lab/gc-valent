@@ -2,7 +2,7 @@ import theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import getActiveSpecies
+from .model import getActiveSpecies, runCkineU
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 class surf_IL2Rb: 
@@ -20,14 +20,27 @@ class surf_IL2Rb:
         # posteriors taken from line 170 of fitting_IL2Rb_only.csv
         unkVec = np.array([0., 0., 0., 0., 8.33E-05, 0.115818087, 0.128608864, 0.089890767, 0.098851823, 0.106913961, 0.107722847, 0.117471386, 0.114016182, 0.095431878, 0.101391307, 0.340647077, 0.090746998, 0.097587796, 1.013323342, 0.925694209, 0.918209005, 0.958374837, 0., 0.])
 
-        KineticOp = runCkineKineticOp(self.ts, self.condense)
-
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
+        # set IL2 concentrations
+        unkVec_1 = unkVec.copy()
+        unkVec_1[0] = 1.
         
-        a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
-        b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
-        c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
-        d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
+        unkVec_500 = unkVec.copy()
+        unkVec_500[0] = 500.
+        
+        # set IL2Ra- values
+        unkVecIL2RaMinus_1 = unkVec_1.copy()
+        unkVecIL2RaMinus_1[18] = 0.0
+        
+        unkVecIL2RaMinus_500 = unkVec_500.copy()
+        unkVecIL2RaMinus_500[18] = 0.0
+        
+        # calculate 
+        a_yOut, a_retVal = runCkineU(self.ts, unkVec_1)
+        b_yOut, b_retVal = runCkineU(self.ts, unkVec_500)
+        c_yOut, c_retVal = runCkineU(self.ts, unkVecIL2RaMinus_1)
+        d_yOut, d_retVal = runCkineU(self.ts, unkVecIL2RaMinus_500)
+        
+        print(a_yOut.shape)
 
         return (a / a[0], b / b[0], c / c[0], d / d[0])
 
@@ -37,14 +50,27 @@ class surf_IL2Rb:
         # posteriors taken from line 270 of full-fitting-no-IL15-hard-bound.csv
         unkVec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643, 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
         
-        ineticOp = runCkineKineticOp(self.ts, self.condense)
-
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
-
-        a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
-        b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
-        c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
-        d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
+        # set IL2 concentrations
+        unkVec_1 = unkVec.copy()
+        unkVec_1[0] = 1.
+        
+        unkVec_500 = unkVec.copy()
+        unkVec_500[0] = 500.
+        
+        # set IL2Ra- values
+        unkVecIL2RaMinus_1 = unkVec_1.copy()
+        unkVecIL2RaMinus_1[18] = 0.0
+        
+        unkVecIL2RaMinus_500 = unkVec_500.copy()
+        unkVecIL2RaMinus_500[18] = 0.0
+        
+        # calculate 
+        a_yOut, a_retVal = runCkineU(self.ts, unkVec_1)
+        b_yOut, b_retVal = runCkineU(self.ts, unkVec_500)
+        c_yOut, c_retVal = runCkineU(self.ts, unkVecIL2RaMinus_1)
+        d_yOut, d_retVal = runCkineU(self.ts, unkVecIL2RaMinus_500)
+        
+        print(a_yOut.shape)
 
         return (a / a[0], b / b[0], c / c[0], d / d[0])
     
