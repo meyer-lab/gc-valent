@@ -107,7 +107,7 @@ class build_model:
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
             # k9bound = pm.Potential('k9bound', T.switch(k9rev > 10., -np.inf, 0))
-            # k9bound = pm.Potential('k9bound', T.switch(k9rev > 1., -T.power(T.log(k9rev)*1.0E10, 10)  , 0)) # base is log, exponent is 10
+            k9bound = pm.Potential('k9bound', T.switch(k9rev > 1., -T.power(T.log(k9rev)*1.0E10, 10)  , 0)) # base is log, exponent is 10
             
             
             unkVec = T.printing.Print("params: ")(unkVec)
