@@ -23,7 +23,7 @@ class surf_IL2Rb:
         KineticOp = runCkineKineticOp(self.ts, self.condense)
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
-
+        
         a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
         b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
         c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
@@ -35,7 +35,7 @@ class surf_IL2Rb:
         "This function uses an unkVec from fitting surface IL2Rb and IL2 pSTAT data. This fitting process had high error so the return values mightly highly differ from the experimental figures "
         
         # posteriors taken from line 270 of full-fitting-no-IL15-hard-bound.csv
-        unkVec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
+        unkVec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643, 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
         
         ineticOp = runCkineKineticOp(self.ts, self.condense)
 
@@ -58,7 +58,7 @@ class pstat:
     def calc_1(self):
         # posteriors taken from line 270 of full-fitting-no-IL15-hard-bound.csv
         # order of elements reagganged to match unkVec in fit.py
-        unkVec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
+        unkVec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643, 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
         
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
         Op = runCkineOp(ts=np.array(500.))
