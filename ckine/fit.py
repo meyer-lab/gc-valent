@@ -23,7 +23,7 @@ class IL2Rb_trafficking:
         # Condense to just IL2Rb
         self.condense = np.zeros(48)
         self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
-        
+
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
