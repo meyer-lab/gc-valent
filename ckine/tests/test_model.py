@@ -9,11 +9,12 @@ from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
+from ..tensor_generation import findy
 
 settings.register_profile("ci", max_examples=1000)
 #settings.load_profile("ci")
 
-class TestModel(unittest.TestCase):
+class TestTensor(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
         """Assert that all species came to equilibrium."""
         # All the species abundances should be above zero
@@ -162,7 +163,7 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(np.all(closeness))
 
-    def test_tensor(self):
+    def test_R2X(self):
         tensor = np.random.rand(35,100,20)
         arr = []
         for i in range(1,8):
