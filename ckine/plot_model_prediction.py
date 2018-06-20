@@ -176,17 +176,28 @@ class pstat:
         # loop over concentrations of IL2
         # TODO: add additional vectors for IL2Ra-
         unkVec_IL2 = np.zeros((24, 8))
+        unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
         IL2_yOut = np.ones((8,48))
-        IL2_retval = IL2_yOut.copy()
+        IL2_yOut_IL2Raminus = IL2_yOut.copy()
         act_IL2 = np.ones((8))
+        act_IL2_IL2Raminus = act_IL2.copy()
         for ii in range(0,8):
             unkVec_IL2[:, ii] = vec.copy()
             unkVec_IL2[0, ii] = self.cytokC[ii]
-            IL2_yOut[ii,:] = Op(unkVec_IL2)
-            # TODO: make sure that the max is passed into act_IL2
+            
+            unkVec_IL2_IL2Raminus[:,ii] = unkVec_IL2[:,ii].copy()
+            unkVec_IL2_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
+            
+            # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
+            IL2_yOut[ii,:] = Op(unkVec_IL2[:,ii])
+            IL2_yOut_IL2Raminus[ii,:] = Op(unkVec_IL2_Il2Raminus[:,ii])
+            
+            # dot yOut vectors by activity mask to generate total amount of active species
             act_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
+            act_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
             
         print(act_IL2)
+        print(act_IL2_IL2Raminus)
             
         # loop over concentrations of IL15
         unkVec_IL15 = np.zeros((24, 8))
