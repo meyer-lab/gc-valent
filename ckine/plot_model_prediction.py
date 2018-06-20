@@ -1,5 +1,6 @@
 import numpy as np, pandas as pds
 from .model import getActiveSpecies, runCkineU
+import matplotlib.pyplot as plt
 
 
 class surf_IL2Rb: 
@@ -80,8 +81,53 @@ class surf_IL2Rb:
         g = np.dot(g_yOut, condense)
         h = np.dot(h_yOut, condense)
 
-        return (a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])
+        return (np.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])))
 
+    def plot(self, unkVec):
+        output = self.calc(unkVec) * 10
+        IL2_1_plus = output[0:7]
+        IL2_500_plus = output[7:14]
+        IL2_1_minus = output[14:21]
+        IL2_500_minus = output[21:28]
+        IL15_1_plus = output[28:35]
+        IL15_500_plus = output[35:42]
+        IL15_1_minus = output[42:49]
+        IL15_500_minus = output[49:56]
+        
+        plt.title("1 nM and IL2Ra+")
+        plt.scatter(self.ts, IL2_1_plus, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15_1_plus, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,12)
+        plt.ylabel("Surface IL2Rb (% x 10)")
+        plt.xlabel("Time (min)")
+        plt.show()
+        
+        plt.title("500 nM and IL2Ra+")
+        plt.scatter(self.ts, IL2_500_plus, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15_500_plus, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,12)
+        plt.ylabel("Surface IL2Rb (% x 10)")
+        plt.xlabel("Time (min)")
+        plt.show()
+        
+        plt.title("1 nM and IL2Ra-")
+        plt.scatter(self.ts, IL2_1_minus, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15_1_minus, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,12)
+        plt.ylabel("Surface IL2Rb (% x 10)")
+        plt.xlabel("Time (min)")
+        plt.show()
+        
+        plt.title("500 nM and IL2Ra-")
+        plt.scatter(self.ts, IL2_500_minus, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15_500_minus, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,12)
+        plt.ylabel("Surface IL2Rb (% x 10)")
+        plt.xlabel("Time (min)")
+        plt.show()
+        
+        
+            
     
 class pstat:
     "Generate values to match the pSTAT5 measurements used in fitting"
@@ -173,4 +219,3 @@ class pstat:
         
         return actVec
     
-def plot(unkVec)
