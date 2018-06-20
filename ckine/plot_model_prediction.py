@@ -195,10 +195,11 @@ class pstat:
             
             # need to find maximum with respect to second dimension (time)
             actVec_IL2[ii] = max(act_IL2[ii,:])
-            actVec_IL2_IL2Raminus = max(act_IL2_IL2Raminus[ii,:])
+            actVec_IL2_IL2Raminus[ii] = max(act_IL2_IL2Raminus[ii,:])
             
+        print('IL2 stimulation')
         print(actVec_IL2)
-        print(actVec_IL2_IL2Raminus)
+        print(actVec_IL2_IL2Raminus) # TODO: figure out why this gets condensed to size of 1
             
         # loop over concentrations of IL15
         unkVec_IL15 = np.zeros((24, 8))
@@ -227,13 +228,13 @@ class pstat:
             
             # need to find maximum with respect to second dimension (time)
             actVec_IL15[ii] = max(act_IL15[ii,:])
-            actVec_IL15_IL2Raminus = max(act_IL15_IL2Raminus[ii,:])
+            actVec_IL15_IL2Raminus[ii] = max(act_IL15_IL2Raminus[ii,:])
             
+        print('IL15 stimulation')
         print(actVec_IL15)
-        print(actVec_IL15_IL2Raminus)
+        print(actVec_IL15_IL2Raminus) # TODO: figure out why this gets condensed to size of 1
 
         # Normalize to the maximal activity, put together into one vector
-        # actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
         actVec = np.concatenate((actVec_IL2 / max(actVec_IL2), actVec_IL2_IL2Raminus / max(actVec_IL2_IL2Raminus), actVec_IL15 / max(actVec_IL15), actVec_IL15_IL2Raminus / max(actVec_IL15_IL2Raminus)))
-        # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
+        
         return actVec
