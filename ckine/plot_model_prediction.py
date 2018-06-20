@@ -161,7 +161,7 @@ class pstat:
     
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
-        self.ts = np.linspace(0.0, 500.0, 500)
+        self.ts = np.array([500.])
         
     def calc_1(self):
         # posteriors taken from line 270 of full-fitting-no-IL15-hard-bound.csv
@@ -171,10 +171,8 @@ class pstat:
         # loop over concentrations of IL2
         unkVec_IL2 = np.zeros((24, 8))
         unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
-        IL2_yOut = np.ones((8,500,48))
+        IL2_yOut = np.ones((8,48))
         IL2_yOut_IL2Raminus = IL2_yOut.copy()
-        act_IL2 = np.ones((8,500))
-        act_IL2_IL2Raminus = act_IL2.copy()
         actVec_IL2 = np.zeros((8))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
         for ii in range(0,8):
@@ -185,17 +183,13 @@ class pstat:
             unkVec_IL2_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
             
             # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
-            IL2_yOut[ii,:,:], retval_1 = runCkineU(self.ts, unkVec_IL2[:,ii])
-            IL2_yOut_IL2Raminus[ii,:,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus[:,ii])
+            IL2_yOut[ii,:], retval_1 = runCkineU(self.ts, unkVec_IL2[:,ii])
+            IL2_yOut_IL2Raminus[ii,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus[:,ii])
             
-            # dot yOut vectors by activity mask to generate total amount of active species for all time points
-            for jj in range(0,500):
-                act_IL2[ii, jj] = np.dot(IL2_yOut[ii, jj, :], self.activity)
-                act_IL2_IL2Raminus[ii, jj] = np.dot(IL2_yOut_IL2Raminus[ii, jj,:], self.activity)
+            # dot yOut vectors by activity mask to generate total amount of active species 
             
-            # need to find maximum with respect to second dimension (time)
-            actVec_IL2[ii] = max(act_IL2[ii,:])
-            actVec_IL2_IL2Raminus[ii] = max(act_IL2_IL2Raminus[ii,:])
+            actVec_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
+            actVec_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
             
         print('IL2 stimulation')
         print(actVec_IL2)
@@ -204,10 +198,8 @@ class pstat:
         # loop over concentrations of IL15
         unkVec_IL15 = np.zeros((24, 8))
         unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
-        IL15_yOut = np.ones((8,500,48))
+        IL15_yOut = np.ones((8,48))
         IL15_yOut_IL2Raminus = IL15_yOut.copy()
-        act_IL15 = np.ones((8,500))
-        act_IL15_IL2Raminus = act_IL15.copy()
         actVec_IL15 = np.zeros((8))
         actVec_IL15_IL2Raminus = actVec_IL15.copy()
         for ii in range(0,8):
@@ -218,17 +210,12 @@ class pstat:
             unkVec_IL15_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
             
             # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
-            IL15_yOut[ii,:,:], retval_3 = runCkineU(self.ts, unkVec_IL15[:,ii])
-            IL15_yOut_IL2Raminus[ii,:,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus[:,ii])
+            IL15_yOut[ii,:], retval_3 = runCkineU(self.ts, unkVec_IL15[:,ii])
+            IL15_yOut_IL2Raminus[ii,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus[:,ii])
             
-            # dot yOut vectors by activity mask to generate total amount of active species for all time points
-            for jj in range(0,500):
-                act_IL15[ii, jj] = np.dot(IL15_yOut[ii, jj, :], self.activity)
-                act_IL15_IL2Raminus[ii, jj] = np.dot(IL15_yOut_IL2Raminus[ii, jj,:], self.activity)
-            
-            # need to find maximum with respect to second dimension (time)
-            actVec_IL15[ii] = max(act_IL15[ii,:])
-            actVec_IL15_IL2Raminus[ii] = max(act_IL15_IL2Raminus[ii,:])
+            # dot yOut vectors by activity mask to generate total amount of active species
+            actVec_IL15[ii] = np.dot(IL15_yOut[ii,:], self.activity)
+            actVec_IL15_IL2Raminus[ii] = np.dot(IL15_yOut_IL2Raminus[ii,:], self.activity)
             
         print('IL15 stimulation')
         print(actVec_IL15)
