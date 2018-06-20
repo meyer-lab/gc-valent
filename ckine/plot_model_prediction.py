@@ -173,4 +173,4 @@ class pstat:
         
         return actVec
     
-# def plot(unkVec)
+def plot(unkVec)
