@@ -84,9 +84,6 @@ class surf_IL2Rb:
         f = np.dot(f_yOut, condense)
         g = np.dot(g_yOut, condense)
         h = np.dot(h_yOut, condense)
-        
-        print(a.shape)
-        print(a_yOut.shape)
 
         return (a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])
 
@@ -158,9 +155,6 @@ class surf_IL2Rb:
         f = np.dot(f_yOut, condense)
         g = np.dot(g_yOut, condense)
         h = np.dot(h_yOut, condense)
-        
-        print(a.shape)
-        print(a_yOut.shape)
 
         return (a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])
     
@@ -169,7 +163,7 @@ class pstat:
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
     
         npactivity = getActiveSpecies().astype(np.float64)
-        self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(4)))) # 0.5 is because its the endosome
+        self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
         self.ts = np.array(500.)
         
     def calc_1(self):
@@ -177,19 +171,19 @@ class pstat:
         # order of elements reagganged to match unkVec in fit.py
         vec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643, 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
         
+        Op = runCkineOp(ts=np.array(500.))
+        
         # loop over concentrations of IL2
+        # TODO: add additional vectors for IL2Ra-
         unkVec_IL2 = np.zeros((24, 8))
-        IL2_yOut = np.zeros((8,48))
+        IL2_yOut = np.ones((8,48))
         IL2_retval = IL2_yOut.copy()
-        act_IL2 = np.zeros((8))
+        act_IL2 = np.ones((8))
         for ii in range(0,8):
             unkVec_IL2[:, ii] = vec.copy()
             unkVec_IL2[0, ii] = self.cytokC[ii]
-            print('unkVec')
-            print(unkVec_IL2[:, ii])
-            IL2_yOut[ii,:], IL2_retval[ii,:] = runCkineU(self.ts, unkVec_IL2[:,ii])
-            print('yOut')
-            print(IL2_yOut[ii,:])
+            IL2_yOut[ii,:] = Op(unkVec_IL2)
+            # TODO: make sure that the max is passed into act_IL2
             act_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
             
         print(act_IL2)
