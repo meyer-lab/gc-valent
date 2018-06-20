@@ -206,30 +206,37 @@ class pstat:
         # loop over concentrations of IL15
         unkVec_IL15 = np.zeros((24, 8))
         unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
-        IL15_yOut = np.ones((8,48))
+        IL15_yOut = np.ones((8,500,48))
         IL15_yOut_IL2Raminus = IL15_yOut.copy()
-        act_IL15 = np.ones((8))
+        act_IL15 = np.ones((8,500))
         act_IL15_IL2Raminus = act_IL15.copy()
+        actVec_IL15 = np.zeros((8))
+        actVec_IL15_IL2Raminus = actVec_IL15.copy()
         for ii in range(0,8):
             unkVec_IL15[:, ii] = vec.copy()
-            unkVec_IL15[1, ii] = self.cytokC[ii]
+            unkVec_IL15[0, ii] = self.cytokC[ii]
             
             unkVec_IL15_IL2Raminus[:,ii] = unkVec_IL15[:,ii].copy()
             unkVec_IL15_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
             
             # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
-            IL15_yOut[ii,:] = Op(unkVec_IL15[:,ii])
-            IL15_yOut_IL2Raminus[ii,:] = Op(unkVec_IL15_Il2Raminus[:,ii])
+            IL15_yOut[ii,:,:], retval_3 = runCkineU(self.ts, unkVec_IL15[:,ii])
+            IL15_yOut_IL2Raminus[ii,:,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus[:,ii])
             
-            # dot yOut vectors by activity mask to generate total amount of active species
-            act_IL15[ii] = np.dot(IL15_yOut[ii,:], self.activity)
-            act_IL15_IL2Raminus[ii] = np.dot(IL15_yOut_IL2Raminus[ii,:], self.activity)
+            # dot yOut vectors by activity mask to generate total amount of active species for all time points
+            for jj in range(0,500):
+                act_IL15[ii, jj] = np.dot(IL15_yOut[ii, jj, :], self.activity)
+                act_IL15_IL2Raminus[ii, jj] = np.dot(IL15_yOut_IL2Raminus[ii, jj,:], self.activity)
             
-        print(act_IL15)
-        print(act_IL15_IL2Raminus)
+            # need to find maximum with respect to second dimension (time)
+            actVec_IL15[ii] = max(act_IL15[ii,:])
+            actVec_IL15_IL2Raminus = max(act_IL15_IL2Raminus[ii,:])
+            
+        print(actVec_IL15)
+        print(actVec_IL15_IL2Raminus)
 
         # Normalize to the maximal activity, put together into one vector
         # actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
-        actVec = np.concatenate((act_IL2 / max(act_IL2), act_IL2_IL2Raminus / max(act_IL2_IL2Raminus), act_IL15 / max(act_IL15), act_IL15_IL2Raminus / max(act_IL15_IL2Raminus)))
+        actVec = np.concatenate((actVec_IL2 / max(actVec_IL2), actVec_IL2_IL2Raminus / max(actVec_IL2_IL2Raminus), actVec_IL15 / max(actVec_IL15), actVec_IL15_IL2Raminus / max(actVec_IL15_IL2Raminus)))
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return actVec
