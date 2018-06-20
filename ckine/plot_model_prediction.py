@@ -1,9 +1,6 @@
-import theano.tensor as T, os
-from os.path import join
-from theano import shared
 import numpy as np, pandas as pds
 from .model import getActiveSpecies, runCkineU
-from .differencing_op import runCkineOp, runCkineKineticOp
+
 
 class surf_IL2Rb: 
     "the only difference between calc_1 and calc_2 is the values in the unkVec that are passed in"
