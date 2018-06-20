@@ -105,15 +105,24 @@ class pstat:
         actVec_IL2 = np.zeros((8))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
         for ii in range(0,8):
-            unkVec_IL2[:, ii] = unkVec.copy()
-            unkVec_IL2[0, ii] = self.cytokC[ii]
+            # print(unkVec_IL2.dtype)
+            unkVec_IL2 = unkVec.copy()
+            unkVec_IL2[0] = self.cytokC[ii]
             
-            unkVec_IL2_IL2Raminus[:,ii] = unkVec_IL2[:,ii].copy()
-            unkVec_IL2_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
+            unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
+            unkVec_IL2_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
             
             # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
-            IL2_yOut[ii,:], retval_1 = runCkineU(self.ts, unkVec_IL2[:,ii])
-            IL2_yOut_IL2Raminus[ii,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus[:,ii])
+            IL2_yOut[ii,:], retval_1 = runCkineU(self.ts, unkVec_IL2)
+            IL2_yOut_IL2Raminus[ii,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus)
+            
+            if (retval_1 < 0):
+                print("runCkineU failed for IL2 stimulation in IL2Ra+ cells")
+                print("failure occured during iteration " + str(ii))
+                
+            if (retval_2 < 0):
+                print("runCkineU failed for IL2 stimulation in IL2Ra- cells")
+                print("failure occured during iteration " + str(ii))
             
             # dot yOut vectors by activity mask to generate total amount of active species 
             actVec_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
@@ -132,15 +141,23 @@ class pstat:
         actVec_IL15 = np.zeros((8))
         actVec_IL15_IL2Raminus = actVec_IL15.copy()
         for ii in range(0,8):
-            unkVec_IL15[:, ii] = unkVec.copy()
-            unkVec_IL15[0, ii] = self.cytokC[ii]
+            unkVec_IL15 = unkVec.copy()
+            unkVec_IL15[0] = self.cytokC[ii]
             
-            unkVec_IL15_IL2Raminus[:,ii] = unkVec_IL15[:,ii].copy()
-            unkVec_IL15_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
+            unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
+            unkVec_IL15_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
             
             # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
-            IL15_yOut[ii,:], retval_3 = runCkineU(self.ts, unkVec_IL15[:,ii])
-            IL15_yOut_IL2Raminus[ii,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus[:,ii])
+            IL15_yOut[ii,:], retval_3 = runCkineU(self.ts, unkVec_IL15)
+            IL15_yOut_IL2Raminus[ii,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus)
+            
+            if (retval_3 < 0):
+                print("runCkineU failed for IL15 stimulation in IL2Ra+ cells")
+                print("failure occured during iteration " + str(ii))
+                
+            if (retval_4 < 0):
+                print("runCkineU failed for IL15 stimulation in IL2Ra- cells")
+                print("failure occured during iteration " + str(ii))
             
             # dot yOut vectors by activity mask to generate total amount of active species
             actVec_IL15[ii] = np.dot(IL15_yOut[ii,:], self.activity)
