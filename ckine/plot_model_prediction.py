@@ -164,22 +164,22 @@ class pstat:
     
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
-        self.ts = np.array(500.)
+        self.ts = np.linspace(0.0, 500.0, 500)
         
     def calc_1(self):
         # posteriors taken from line 270 of full-fitting-no-IL15-hard-bound.csv
         # order of elements reagganged to match unkVec in fit.py
         vec = np.array([0., 0., 0., 0., 0.00012865, 0.158037088, 0.285547466, 0.102937877, 0.399706229, 0.111318564, 0.061811833, 0.042950052, 0.283564271, 0.088275756, 0.08486402, 0.399519643, 0.05414861, 0.253249545, 0.509200117, 0.537992752, 0.667527049, 3.852037782, 0., 0.])
         
-        Op = runCkineOp(ts=np.array(500.))
-        
         # loop over concentrations of IL2
         unkVec_IL2 = np.zeros((24, 8))
         unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
-        IL2_yOut = np.ones((8,48))
+        IL2_yOut = np.ones((8,500,48))
         IL2_yOut_IL2Raminus = IL2_yOut.copy()
-        act_IL2 = np.ones((8))
+        act_IL2 = np.ones((8,500))
         act_IL2_IL2Raminus = act_IL2.copy()
+        actVec_IL2 = np.zeros((8))
+        actVec_IL2_IL2Raminus = actVec_IL2.copy()
         for ii in range(0,8):
             unkVec_IL2[:, ii] = vec.copy()
             unkVec_IL2[0, ii] = self.cytokC[ii]
@@ -188,15 +188,20 @@ class pstat:
             unkVec_IL2_IL2Raminus[18,ii] = 0.0 # set IL2Ra expression rate to 0
             
             # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
-            IL2_yOut[ii,:] = Op(unkVec_IL2[:,ii])
-            IL2_yOut_IL2Raminus[ii,:] = Op(unkVec_IL2_Il2Raminus[:,ii])
+            IL2_yOut[ii,:,:], retval_1 = runCkineU(self.ts, unkVec_IL2[:,ii])
+            IL2_yOut_IL2Raminus[ii,:,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus[:,ii])
             
-            # dot yOut vectors by activity mask to generate total amount of active species
-            act_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
-            act_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
+            # dot yOut vectors by activity mask to generate total amount of active species for all time points
+            for jj in range(0,500):
+                act_IL2[ii, jj] = np.dot(IL2_yOut[ii, jj, :], self.activity)
+                act_IL2_IL2Raminus[ii, jj] = np.dot(IL2_yOut_IL2Raminus[ii, jj,:], self.activity)
             
-        print(act_IL2)
-        print(act_IL2_IL2Raminus)
+            # need to find maximum with respect to second dimension (time)
+            actVec_IL2[ii] = max(act_IL2[ii,:])
+            actVec_IL2_IL2Raminus = max(act_IL2_IL2Raminus[ii,:])
+            
+        print(actVec_IL2)
+        print(actVec_IL2_IL2Raminus)
             
         # loop over concentrations of IL15
         unkVec_IL15 = np.zeros((24, 8))
