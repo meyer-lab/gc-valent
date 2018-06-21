@@ -43,12 +43,12 @@ def findy(lig, timelength = 1000):
     #Set some given parameters already determined from fitting
     rxntfR = np.zeros(24)
     rxntfR[4:13] = np.ones(9) * (5*10**-1)  #From fitting: kfwd - k31rev
-    rxntfR[14:19] = np.ones(5) * (50* 10**-3) #From fitting: endo - kdeg
+    rxntfR[13:18] = np.ones(5) * (50* 10**-3) #From fitting: endo - kdeg
 
     #Iterate through every combination of values and store solver values in a y matrix
     for ii in tqdm(range(len(new_mat))):
         #Create a new y0 everytime odeint is run per combination of values.
-        rxntfR[19:25] =  new_mat[ii,4:10]
+        rxntfR[18:24] =  new_mat[ii,4:10]
         rxntfR[0:4] = new_mat[ii,0:4] #Cytokine stimulation concentrations
 
         temp, retVal = runCkineU(ts, rxntfR)
