@@ -38,7 +38,7 @@ def findy(lig, timelength = 1000):
     new_mat = np.concatenate((mats,receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     #Preset a y_of_combos
-    y_of_combos = np.zeros((len(new_mat), len(ts),56))
+    y_of_combos = np.zeros((len(new_mat), len(ts),48))
 
     #Set some given parameters already determined from fitting
     rxntfR = np.zeros(24)
