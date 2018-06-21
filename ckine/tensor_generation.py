@@ -41,8 +41,8 @@ def findy(lig, timelength = 1000):
     y_of_combos = np.zeros((len(new_mat), len(ts),56))
 
     #Set some given parameters already determined from fitting
-    rxntfR = np.zeros(25)
-    rxntfR[4:14] = np.ones(10) * (5*10**-1)  #From fitting: kfwd - k31rev
+    rxntfR = np.zeros(24)
+    rxntfR[4:13] = np.ones(9) * (5*10**-1)  #From fitting: kfwd - k31rev
     rxntfR[14:19] = np.ones(5) * (50* 10**-3) #From fitting: endo - kdeg
 
     #Iterate through every combination of values and store solver values in a y matrix
