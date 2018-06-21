@@ -121,6 +121,9 @@ class pstat:
         self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
         self.ts = np.array([500.])
         
+        # percentage value that is used in scaling output
+        self.y_max = 100
+        
     def calc(self, unkVec):
         "This function uses an unkVec that has the same elements as the unkVec in fit.py"
         
@@ -193,8 +196,7 @@ class pstat:
         return actVec
     
     def plot(self, unkVec):
-        output = self.calc(unkVec) * 100
-        print(output)
+        output = self.calc(unkVec) * self.y_max
         IL2_plus = output[0:8]
         IL2_minus = output[8:16]
         IL15_plus = output[16:24]
@@ -203,8 +205,8 @@ class pstat:
         plt.title("IL2Ra- YT-1 cells")
         plt.scatter(np.log10(self.cytokC), IL2_minus, color='r', alpha=0.5, label="IL2")
         plt.scatter(np.log10(self.cytokC), IL15_minus, color='g', alpha=0.5, label='IL15')
-        plt.ylim(0,125)
-        plt.ylabel('Maximal p-STAT5 (%)')
+        plt.ylim(0,(self.y_max + (0.25*self.y_max)))
+        plt.ylabel('Maximal p-STAT5 (% x ' + str(self.y_max) + ')')
         plt.xlabel('log10 of cytokine concentration (nM)')
         plt.legend()
         plt.show()
@@ -212,8 +214,8 @@ class pstat:
         plt.title("IL2Ra+ YT-1 cells")
         plt.scatter(np.log10(self.cytokC), IL2_plus, color='r', alpha=0.5, label="IL2")
         plt.scatter(np.log10(self.cytokC), IL15_plus, color='g', alpha=0.5, label='IL15')
-        plt.ylim(0,125)
-        plt.ylabel('Maximal p-STAT5 (%)')
+        plt.ylim(0,(self.y_max + (0.25*self.y_max)))
+        plt.ylabel('Maximal p-STAT5 (% x ' + str(self.y_max) + ')')
         plt.xlabel('log10 of cytokine concentration (nM)')
         plt.legend()
         plt.show()
