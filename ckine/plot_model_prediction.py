@@ -9,9 +9,9 @@ class surf_IL2Rb:
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
-        # Condense to just IL2Rb
-        self.condense = np.zeros(48)
-        self.condense[1] = 1
+        # Condense to just IL2Rb on surface that is either free, bound to IL2, or bound to IL15       
+        self.IL2Rb_species_IDX = np.zeros(48)
+        self.IL2Rb_species_IDX[np.array([1, 4, 5 ,7, 8, 11, 12, 14, 15])] = 1
 
     def calc(self, unkVec):
         "This function uses an unkVec that has the same elements as the unkVec in fit.py"
@@ -58,28 +58,14 @@ class surf_IL2Rb:
         g_yOut, g_retVal = runCkineU(self.ts, unkVecIL2RaMinus_IL15_1)
         h_yOut, h_retVal = runCkineU(self.ts, unkVecIL2RaMinus_IL15_500) 
         
-        # Condense to just IL2Rb
-        condense = np.zeros(48)
-        condense[1] = 1
-        # species in IL2 family that contain IL2Rb
-        condense[4] = 1
-        condense[5] = 1
-        condense[7] = 1
-        condense[8] = 1
-        # species in IL15 family that contain IL2Rb
-        condense[11] = 1
-        condense[12] = 1
-        condense[14] = 1
-        condense[15] = 1
-        
-        a = np.dot(a_yOut, condense)
-        b = np.dot(b_yOut, condense)
-        c = np.dot(c_yOut, condense)
-        d = np.dot(d_yOut, condense)
-        e = np.dot(e_yOut, condense)
-        f = np.dot(f_yOut, condense)
-        g = np.dot(g_yOut, condense)
-        h = np.dot(h_yOut, condense)
+        a = np.dot(a_yOut, self.IL2Rb_species_IDX)
+        b = np.dot(b_yOut, self.IL2Rb_species_IDX)
+        c = np.dot(c_yOut, self.IL2Rb_species_IDX)
+        d = np.dot(d_yOut, self.IL2Rb_species_IDX)
+        e = np.dot(e_yOut, self.IL2Rb_species_IDX)
+        f = np.dot(f_yOut, self.IL2Rb_species_IDX)
+        g = np.dot(g_yOut, self.IL2Rb_species_IDX)
+        h = np.dot(h_yOut, self.IL2Rb_species_IDX)
 
         return (np.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])))
 
