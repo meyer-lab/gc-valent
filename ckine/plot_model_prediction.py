@@ -12,6 +12,9 @@ class surf_IL2Rb:
         # Condense to just IL2Rb on surface that is either free, bound to IL2, or bound to IL15       
         self.IL2Rb_species_IDX = np.zeros(48)
         self.IL2Rb_species_IDX[np.array([1, 4, 5 ,7, 8, 11, 12, 14, 15])] = 1
+        
+        # percentage value that is used in scaling output
+        self.y_max = 10
 
     def calc(self, unkVec):
         "This function uses an unkVec that has the same elements as the unkVec in fit.py"
@@ -20,32 +23,24 @@ class surf_IL2Rb:
         
         # set IL2 concentrations
         unkVec_IL2_1 = unkVec.copy()
-        unkVec_IL2_1[0] = 1.
-        
         unkVec_IL2_500 = unkVec.copy()
-        unkVec_IL2_500[0] = 500.
+        unkVec_IL2_1[0], unkVec_IL2_500[0] = 1., 500.
         
         # set IL2Ra- values
         unkVecIL2RaMinus_IL2_1 = unkVec_IL2_1.copy()
-        unkVecIL2RaMinus_IL2_1[18] = 0.0
-        
         unkVecIL2RaMinus_IL2_500 = unkVec_IL2_500.copy()
-        unkVecIL2RaMinus_IL2_500[18] = 0.0
+        unkVecIL2RaMinus_IL2_1[18], unkVecIL2RaMinus_IL2_500[18] = 0.0, 0.0
         
         # set IL15 concentrations
         unkVec_IL15_1 = unkVec.copy()
-        unkVec_IL15_1[1] = 1.
-        
         unkVec_IL15_500 = unkVec.copy()
-        unkVec_IL15_500[1] = 500.
+        unkVec_IL15_1[1], unkVec_IL15_500[1]  = 1., 500.        
         
         # set IL2Ra- values
         unkVecIL2RaMinus_IL15_1 = unkVec_IL15_1.copy()
-        unkVecIL2RaMinus_IL15_1[18] = 0.0
-        
         unkVecIL2RaMinus_IL15_500 = unkVec_IL15_500.copy()
-        unkVecIL2RaMinus_IL15_500[18] = 0.0
-        
+        unkVecIL2RaMinus_IL15_1[18], unkVecIL2RaMinus_IL15_500[18] = 0.0, 0.0
+                
         # calculate IL2 stimulation
         a_yOut, a_retVal = runCkineU(self.ts, unkVec_IL2_1)
         b_yOut, b_retVal = runCkineU(self.ts, unkVec_IL2_500)
@@ -70,7 +65,7 @@ class surf_IL2Rb:
         return (np.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])))
 
     def plot(self, unkVec):
-        output = self.calc(unkVec) * 10
+        output = self.calc(unkVec) * self.y_max
         IL2_1_plus = output[0:7]
         IL2_500_plus = output[7:14]
         IL2_1_minus = output[14:21]
@@ -83,8 +78,8 @@ class surf_IL2Rb:
         plt.title("1 nM and IL2Ra-")
         plt.scatter(self.ts, IL2_1_minus, color='r', label='IL2', alpha=0.7)
         plt.scatter(self.ts, IL15_1_minus, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,12)
-        plt.ylabel("Surface IL2Rb (% x 10)")
+        # plt.ylim(0,(y_max + (0.2 * y_max)))
+        plt.ylabel("Surface IL2Rb (% x " + str(self.y_max) + ')')
         plt.xlabel("Time (min)")
         plt.legend()
         plt.show()
@@ -92,8 +87,8 @@ class surf_IL2Rb:
         plt.title("500 nM and IL2Ra-")
         plt.scatter(self.ts, IL2_500_minus, color='r', label='IL2', alpha=0.7)
         plt.scatter(self.ts, IL15_500_minus, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,12)
-        plt.ylabel("Surface IL2Rb (% x 10)")
+        # plt.ylim(0,(y_max + (0.2 * y_max)))
+        plt.ylabel("Surface IL2Rb (% x " + str(self.y_max) + ')')
         plt.xlabel("Time (min)")
         plt.legend()
         plt.show()
@@ -101,8 +96,8 @@ class surf_IL2Rb:
         plt.title("1 nM and IL2Ra+")
         plt.scatter(self.ts, IL2_1_plus, color='r', label='IL2', alpha=0.7)
         plt.scatter(self.ts, IL15_1_plus, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,12)
-        plt.ylabel("Surface IL2Rb (% x 10)")
+        # plt.ylim(0,(y_max + (0.2 * y_max)))
+        plt.ylabel("Surface IL2Rb (% x " + str(self.y_max) + ')')
         plt.xlabel("Time (min)")
         plt.legend()
         plt.show()
@@ -110,8 +105,8 @@ class surf_IL2Rb:
         plt.title("500 nM and IL2Ra+")
         plt.scatter(self.ts, IL2_500_plus, color='r', label='IL2', alpha=0.7)
         plt.scatter(self.ts, IL15_500_plus, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,12)
-        plt.ylabel("Surface IL2Rb (% x 10)")
+        # plt.ylim(0,(y_max + (0.2 * y_max)))
+        plt.ylabel("Surface IL2Rb (% x " + str(self.y_max) + ')')
         plt.xlabel("Time (min)")
         plt.legend()
         plt.show()     
