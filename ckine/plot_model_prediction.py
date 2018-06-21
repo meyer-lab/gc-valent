@@ -94,28 +94,13 @@ class surf_IL2Rb:
         IL15_1_minus = output[42:49]
         IL15_500_minus = output[49:56]
         
-        plt.title("1 nM and IL2Ra+")
-        plt.scatter(self.ts, IL2_1_plus, color='r', label='IL2', alpha=0.7)
-        plt.scatter(self.ts, IL15_1_plus, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,12)
-        plt.ylabel("Surface IL2Rb (% x 10)")
-        plt.xlabel("Time (min)")
-        plt.show()
-        
-        plt.title("500 nM and IL2Ra+")
-        plt.scatter(self.ts, IL2_500_plus, color='r', label='IL2', alpha=0.7)
-        plt.scatter(self.ts, IL15_500_plus, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,12)
-        plt.ylabel("Surface IL2Rb (% x 10)")
-        plt.xlabel("Time (min)")
-        plt.show()
-        
         plt.title("1 nM and IL2Ra-")
         plt.scatter(self.ts, IL2_1_minus, color='r', label='IL2', alpha=0.7)
         plt.scatter(self.ts, IL15_1_minus, color='g', label='IL15', alpha=0.7)
         # plt.ylim(0,12)
         plt.ylabel("Surface IL2Rb (% x 10)")
         plt.xlabel("Time (min)")
+        plt.legend()
         plt.show()
         
         plt.title("500 nM and IL2Ra-")
@@ -124,10 +109,27 @@ class surf_IL2Rb:
         # plt.ylim(0,12)
         plt.ylabel("Surface IL2Rb (% x 10)")
         plt.xlabel("Time (min)")
+        plt.legend()
         plt.show()
         
+        plt.title("1 nM and IL2Ra+")
+        plt.scatter(self.ts, IL2_1_plus, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15_1_plus, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,12)
+        plt.ylabel("Surface IL2Rb (% x 10)")
+        plt.xlabel("Time (min)")
+        plt.legend()
+        plt.show()
         
-            
+        plt.title("500 nM and IL2Ra+")
+        plt.scatter(self.ts, IL2_500_plus, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15_500_plus, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,12)
+        plt.ylabel("Surface IL2Rb (% x 10)")
+        plt.xlabel("Time (min)")
+        plt.legend()
+        plt.show()     
+          
     
 class pstat:
     "Generate values to match the pSTAT5 measurements used in fitting"
@@ -174,11 +176,6 @@ class pstat:
             actVec_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
             actVec_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
             
-        print('IL2 stimulation: IL2Ra+')
-        print(actVec_IL2)
-        print('IL2 stimulation: IL2Ra-')
-        print(actVec_IL2_IL2Raminus)
-            
         # loop over concentrations of IL15
         unkVec_IL15 = np.zeros((24, 8))
         unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
@@ -208,14 +205,36 @@ class pstat:
             # dot yOut vectors by activity mask to generate total amount of active species
             actVec_IL15[ii] = np.dot(IL15_yOut[ii,:], self.activity)
             actVec_IL15_IL2Raminus[ii] = np.dot(IL15_yOut_IL2Raminus[ii,:], self.activity)
-            
-        print('IL15 stimulation: IL2Ra+')
-        print(actVec_IL15)
-        print('IL15 stimulation: IL2Ra-')
-        print(actVec_IL15_IL2Raminus)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2 / max(actVec_IL2), actVec_IL2_IL2Raminus / max(actVec_IL2_IL2Raminus), actVec_IL15 / max(actVec_IL15), actVec_IL15_IL2Raminus / max(actVec_IL15_IL2Raminus)))
         
         return actVec
     
+    def plot(self, unkVec):
+        output = self.calc(unkVec) * 100
+        print(output)
+        IL2_plus = output[0:8]
+        IL2_minus = output[8:16]
+        IL15_plus = output[16:24]
+        IL15_minus = output[24:32]
+        
+        plt.title("IL2Ra- YT-1 cells")
+        plt.scatter(np.log10(self.cytokC), IL2_minus, color='r', alpha=0.5, label="IL2")
+        plt.scatter(np.log10(self.cytokC), IL15_minus, color='g', alpha=0.5, label='IL15')
+        plt.ylim(0,125)
+        plt.ylabel('Maximal p-STAT5 (%)')
+        plt.xlabel('log10 of cytokine concentration (nM)')
+        plt.legend()
+        plt.show()
+        
+        plt.title("IL2Ra+ YT-1 cells")
+        plt.scatter(np.log10(self.cytokC), IL2_plus, color='r', alpha=0.5, label="IL2")
+        plt.scatter(np.log10(self.cytokC), IL15_plus, color='g', alpha=0.5, label='IL15')
+        plt.ylim(0,125)
+        plt.ylabel('Maximal p-STAT5 (%)')
+        plt.xlabel('log10 of cytokine concentration (nM)')
+        plt.legend()
+        plt.show()
+        
+        
