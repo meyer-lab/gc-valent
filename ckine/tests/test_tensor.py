@@ -28,7 +28,7 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(np.min(arr),0)
         self.assertLessEqual(np.max(arr),1)
     
-    def test_tensor_parameters(self, r = 2, timelength = 1000):
+    def test_tensor_parameters(self, r = 1, timelength = 1000):
         '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
         y_combos, new_mat, mat, mats, cell_names = findy(r, timelength)
-        self.assertEqual(y_combos.shape, np.array([len(new_mat),timelength, 56]))
+        self.assertEqual(np.array(y_combos.shape).all(), np.array([len(new_mat),timelength, 48]).all())
