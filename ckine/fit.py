@@ -24,17 +24,7 @@ class IL2Rb_trafficking:
 
         # Condense to just IL2Rb
         self.condense = np.zeros(48)
-        self.condense[1] = 1
-        # species in IL2 family that contain IL2Rb
-        self.condense[4] = 1
-        self.condense[5] = 1
-        self.condense[7] = 1
-        self.condense[8] = 1
-        # species in IL15 family that contain IL2Rb
-        self.condense[11] = 1
-        self.condense[12] = 1
-        self.condense[14] = 1
-        self.condense[15] = 1
+        self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
         
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
@@ -69,9 +59,9 @@ class IL2_15_activity:
         data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
-        # self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) #the IL15_IL2Ra- data is within the 4th column (index 3)
-        # the IL2_IL2Ra- data is within the 3rd column (index 2)
-        self.fit_data = np.concatenate((dataIL2[:, 6], dataIL2[:, 2]))
+
+        self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
+
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(4)))) # 0.5 is because its the endosome
 
@@ -94,8 +84,9 @@ class IL2_15_activity:
         actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
 
         # Normalize to the maximal activity, put together into one vector
-        # actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
-        actVec = T.concatenate((actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
+
+        actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
+
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     
