@@ -1,5 +1,5 @@
 import numpy as np, pandas as pds
-from .model import getActiveSpecies, runCkineU
+from .model import getActiveSpecies, runCkineU, getSurfaceIL2RbSpecies
 import matplotlib.pyplot as plt
 
 
@@ -10,8 +10,7 @@ class surf_IL2Rb:
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
         # Condense to just IL2Rb on surface that is either free, bound to IL2, or bound to IL15       
-        self.IL2Rb_species_IDX = np.zeros(48)
-        self.IL2Rb_species_IDX[np.array([1, 4, 5 ,7, 8, 11, 12, 14, 15])] = 1
+        self.IL2Rb_species_IDX = getSurfaceIL2RbSpecies()
         
         # percentage value that is used in scaling output
         self.y_max = 10

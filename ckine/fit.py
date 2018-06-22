@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import getActiveSpecies
+from .model import getActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 
@@ -21,8 +21,7 @@ class IL2Rb_trafficking:
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
         # Condense to just IL2Rb
-        self.condense = np.zeros(48)
-        self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
+        self.condense = getSurfaceIL2RbSpecies()
         
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
