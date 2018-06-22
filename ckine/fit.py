@@ -16,8 +16,6 @@ class IL2Rb_trafficking:
         numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).as_matrix()
         # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
         numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).as_matrix()
-        
-        # this data consists of IL2 stimulation only (will add IL15 stimulation later?)
 
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -105,9 +103,6 @@ class build_model:
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
             rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
-            # k9rev = ((12.0 * rxnrates[1] / 1.5) * (63.0 * rxnrates[1] / 1.5) / rxnrates[0]) # rxnrates[0] = k4rev, rxnrates[1] = k5rev
-            # k20rev = pm.Lognormal('k20rev', mu=np.log(0.1), sd=0.1, observed=((rxnrates[4] * ((0.60 * 0.065) * rxnrates[5] / (0.60 * 438)) / rxnrates[3])))
-            # k24rev = pm.Lognormal('k24rev', mu=np.log(0.1), sd=0.1, observed=((0.60 * 0.065) * rxnrates[5] / (0.60 * 438)))
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
@@ -115,10 +110,7 @@ class build_model:
 
             ligands = T.zeros(4, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
-            # k9bound = pm.Potential('k9bound', T.switch(k9rev > 10., -np.inf, 0))
-            # k9bound = pm.Potential('k9bound', T.switch(k9rev > 1., -T.power(T.log(k9rev)*1.0E10, 10)  , 0)) # base is log, exponent is 10
-            
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))            
             
             # unkVec = T.printing.Print("params: ")(unkVec)
 
