@@ -21,23 +21,30 @@ class IL2Rb_trafficking:
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
         # Condense to just IL2Rb
-        self.condense = np.zeros(56)
-        self.condense[1] = 1;
+        self.condense = np.zeros(48)
+        self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
 
         # Concatted data
-        self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5]))/10.
+        self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
     def calc(self, unkVec):
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[19], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
         KineticOp = runCkineKineticOp(self.ts, self.condense)
-
+        
+        # IL2 stimulation
         a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
         b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
         c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
         d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
-
-        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0])) - self.data
+        # IL15 stimulation
+        e = KineticOp(T.set_subtensor(unkVec[1], 1.)) 
+        f = KineticOp(T.set_subtensor(unkVec[1], 500.)) 
+        g = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 1.)) 
+        h = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 500.)) 
+        
+        # assuming all IL2Rb starts on the cell surface
+        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])) - self.data
     
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
@@ -50,7 +57,7 @@ class IL2_15_activity:
         data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
-        self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) #the IL15_IL2Ra- data is within the 4th column (index 3)
+        self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
         # the IL2_IL2Ra- data is within the 3rd column (index 2)
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(4)))) # 0.5 is because its the endosome
@@ -68,14 +75,14 @@ class IL2_15_activity:
         # Loop over concentrations of IL2
         actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[19], 0.0) # Set IL2Ra to zero
-        # TODO: Check that idx 19 is IL2ra
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
         # Loop over concentrations of IL2, IL2Ra-/-
         actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
 
         # Normalize to the maximal activity, put together into one vector
         actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
+
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     
@@ -93,23 +100,23 @@ class build_model:
 
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=1., shape=9) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
-            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)*0.9
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
+            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333)*0.95
 
             ligands = T.zeros(4, dtype=np.float64)
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
 
-            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            # Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
-            pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
+            # pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
+            # pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
             pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             # Save likelihood
