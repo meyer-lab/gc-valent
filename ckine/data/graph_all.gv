@@ -67,12 +67,12 @@ subgraph cluster_IL2 {
     "gc" -> "k5" [dir=none,weight=1];
     "k5" -> "IL2-IL2Rb-gc" [dir=none, weight=2];
 
-    "k8" [shape=diamond,style=filled,height=.1,width=.1];
+    "k8" [shape=octagon,style=filled,height=.1,width=.1];
     "IL2-IL2Rb-gc" -> "k8" [dir=none,weight=1];
     "IL2Ra" -> "k8" [dir=none,weight=1];
     "k8" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
 
-    "k9" [shape=diamond,style=filled,height=.1,width=.1];
+    "k9" [shape=octagon,style=filled,height=.1,width=.1];
     "IL2-IL2Ra-gc" -> "k9" [dir=none,weight=1];
     "IL2Rb" -> "k9" [dir=none,weight=1];
     "k9" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
@@ -87,7 +87,7 @@ subgraph cluster_IL2 {
     "IL2Rb" -> "k11" [dir=none,weight=1];
     "k11" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
 
-    "k12" [shape=diamond,style=filled,height=.1,width=.1];
+    "k12" [shape=octagon,style=filled,height=.1,width=.1];
     "IL2-IL2Rb" -> "k12" [dir=none,weight=1];
     "IL2Ra" -> "k12" [dir=none,weight=1];
     "k12" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
@@ -119,12 +119,12 @@ subgraph cluster_IL15 {
     "gc" -> "k17" [dir=none,weight=1];
     "k17" -> "IL15-IL2Rb-gc" [dir=none, weight=2];
 
-    "k20" [shape=diamond,style=filled,height=.1,width=.1];
+    "k20" [shape=octagon,style=filled,height=.1,width=.1];
     "IL15-IL2Rb-gc" -> "k20" [dir=none,weight=1];
     "IL15Ra" -> "k20" [dir=none,weight=1];
     "k20" -> "IL15-IL15Ra-IL2Rb-gc" [dir=none, weight=2];
 
-    "k21" [shape=diamond,style=filled,height=.1,width=.1];
+    "k21" [shape=octagon,style=filled,height=.1,width=.1];
     "IL15-IL15Ra-gc" -> "k21" [dir=none,weight=1];
     "IL2Rb" -> "k21" [dir=none,weight=1];
     "k21" -> "IL15-IL15Ra-IL2Rb-gc" [dir=none, weight=2];
@@ -139,7 +139,7 @@ subgraph cluster_IL15 {
     "IL2Rb" -> "k23" [dir=none,weight=1];
     "k23" -> "IL15-IL15Ra-IL2Rb" [dir=none, weight=2];
 
-    "k24" [shape=diamond,style=filled,height=.1,width=.1];
+    "k24" [shape=octagon,style=filled,height=.1,width=.1];
     "IL15-IL2Rb" -> "k24" [dir=none,weight=1];
     "IL15Ra" -> "k24" [dir=none,weight=1];
     "k24" -> "IL15-IL15Ra-IL2Rb" [dir=none, weight=2];
