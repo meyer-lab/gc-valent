@@ -173,6 +173,14 @@ class TestModel(unittest.TestCase):
         # set expression of gc to 0.0
         tfr[7] = 0.0
         yOut = solveAutocrine(tfr)
-        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
+        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5) # IL2
+        self.assertAlmostEqual(getTotalActiveCytokine(1, yOut), 0.0, places=5) # IL15
+        self.assertAlmostEqual(getTotalActiveCytokine(2, yOut), 0.0, places=5) # IL7
+        self.assertAlmostEqual(getTotalActiveCytokine(3, yOut), 0.0, places=5) # IL9
+        
+    #def test_endosomalCTK(self):
+        # test that appreciable cytokine winds up in the endosome
+     #   yOut = solveAutocrine(self.tfargs)
+        
         
         
