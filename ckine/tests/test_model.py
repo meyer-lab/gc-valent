@@ -166,3 +166,13 @@ class TestModel(unittest.TestCase):
         temp, retVal = runCkine(self.ts, self.args, self.tfargs)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
         self.assertGreaterEqual(retVal, 0)
+        
+    def test_gc(self):
+        # test to check that no active species is present when gamma chain is not expressed
+        tfr = self.tfargs.copy()
+        # set expression of gc to 0.0
+        tfr[7] = 0.0
+        yOut = solveAutocrine(tfr)
+        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
+        
+        
