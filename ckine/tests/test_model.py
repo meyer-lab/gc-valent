@@ -178,9 +178,43 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(getTotalActiveCytokine(2, yOut), 0.0, places=5) # IL7
         self.assertAlmostEqual(getTotalActiveCytokine(3, yOut), 0.0, places=5) # IL9
         
-    #def test_endosomalCTK(self):
+    def test_endosomalCTK(self):
         # test that appreciable cytokine winds up in the endosome
-     #   yOut = solveAutocrine(self.tfargs)
+        yOut = solveAutocrine(self.tfargs)
+        rxntfR = np.concatenate((self.args, self.tfargs))
+        # set high concentration of IL2
+        rxntfR_1 = rxntfR.copy()
+        rxntfR_1[0] = 500.
+        # set high concentration of IL15
+        rxntfR_2 = rxntfR.copy()
+        rxntfR_2[1] = 500.
+        # set high concentration of IL7
+        rxntfR_3 = rxntfR.copy()
+        rxntfR_3[2] = 500.
+        # set high concentration of IL9
+        rxntfR_4 = rxntfR.copy()
+        rxntfR_4[3] = 500.
         
+        # first element is t=0 and second element is t=10**5
+        yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
+        yOut_2, retVal = runCkineU(self.ts, rxntfR_2)
+        yOut_3, retVal = runCkineU(self.ts, rxntfR_3)
+        yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
+        
+        # set indexes according to ligand bound to complex in endosome
+        endosomal_IL2_IDX = np.zeros(48)
+        endosomal_IL15_IDX = endosomal_IL2_IDX.copy()
+        endosomal_IL7_IDX = endosomal_IL2_IDX.copy()
+        endosomal_IL9_IDX = endosomal_IL2_IDX.copy()
+        endosomal_IL2_IDX[np.array([25,26,27,28,29,30])] = 1
+        endosomal_IL15_IDX[np.array([32,33,34,35,36,37])] = 1
+        endosomal_IL7_IDX[np.array([39,40])] = 1
+        endosomal_IL9_IDX[np.array([42,43])] = 1
+        
+        # make sure total amount at equilibrium is positive
+        self.assertGreater(np.dot(yOut_1[1], endosomal_IL2_IDX), 0)
+        self.assertGreater(np.dot(yOut_2[1], endosomal_IL15_IDX), 0)
+        self.assertGreater(np.dot(yOut_3[1], endosomal_IL7_IDX), 0)
+        self.assertGreater(np.dot(yOut_4[1], endosomal_IL9_IDX), 0)
         
         
