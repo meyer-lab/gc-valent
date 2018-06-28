@@ -178,10 +178,11 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(getTotalActiveCytokine(2, yOut), 0.0, places=5) # IL7
         self.assertAlmostEqual(getTotalActiveCytokine(3, yOut), 0.0, places=5) # IL9
         
-    def test_endosomalCTK(self):
+    def test_endosomalCTK_bound(self):
         # test that appreciable cytokine winds up in the endosome
         yOut = solveAutocrine(self.tfargs)
         rxntfR = np.concatenate((self.args, self.tfargs))
+        rxntfR[0:4] = 0.0
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
         rxntfR_1[0] = 500.
@@ -201,6 +202,18 @@ class TestModel(unittest.TestCase):
         yOut_3, retVal = runCkineU(self.ts, rxntfR_3)
         yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
         
+        # make sure endosomal free ligand is positive at equilibrium
+        self.assertGreater(yOut_1[1, 44], 0) # make sure IL2 is degraded
+        self.assertEqual(yOut_1[1, 45:48].all(), 0) # make sure no other ligand is present
+        self.assertGreater(yOut_2[1, 45], 0) # make sure IL15 is degraded
+        self.assertEqual(yOut_2[1, 44], 0) # make sure no other ligand is present
+        self.assertEqual(yOut_2[1, 46:48], 0)
+        self.assertGreater(yOut_3[1,46], 0) # make sure IL7 is degraded
+        self.assertEqual(yOut_3[1,44:46], 0) # make sure no other ligand is degraded
+        self.assertEqual(yOut_3[1,47], 0) 
+        self.assertGreater(yOut_4[1,47], 0) # make sure IL9 is degraded
+        self.assertEqual(yOut_4[1,44:47], 0) # make sure no other ligand is degraded
+        
         # set indexes according to ligand bound to complex in endosome
         endosomal_IL2_IDX = np.zeros(48)
         endosomal_IL15_IDX = endosomal_IL2_IDX.copy()
@@ -211,10 +224,10 @@ class TestModel(unittest.TestCase):
         endosomal_IL7_IDX[np.array([39,40])] = 1
         endosomal_IL9_IDX[np.array([42,43])] = 1
         
-        # make sure total amount at equilibrium is positive
+        # make sure total amount of ligand bound to receptors is positive at equilibrium
         self.assertGreater(np.dot(yOut_1[1], endosomal_IL2_IDX), 0)
         self.assertGreater(np.dot(yOut_2[1], endosomal_IL15_IDX), 0)
         self.assertGreater(np.dot(yOut_3[1], endosomal_IL7_IDX), 0)
         self.assertGreater(np.dot(yOut_4[1], endosomal_IL9_IDX), 0)
         
-        
+
