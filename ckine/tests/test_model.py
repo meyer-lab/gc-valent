@@ -204,6 +204,7 @@ class TestModel(unittest.TestCase):
         yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
         
         # make sure endosomal free ligand is positive at equilibrium
+        # TODO: Reenable endosomal ligand as it's not currently passing
         # IL2
         # self.assertGreater(yOut_1[1, 44], 0)
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
