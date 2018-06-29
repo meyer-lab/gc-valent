@@ -46,6 +46,8 @@ class TestModel(unittest.TestCase):
 
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = np.tanh(self.tfargs[2])*0.9
+        
+        self.rxntfR = np.concatenate((self.args, self.tfargs))
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -169,19 +171,18 @@ class TestModel(unittest.TestCase):
         
     def test_gc(self):
         ''' Test to check that no active species is present when gamma chain is not expressed. '''
-        tfr = self.tfargs.copy()
-        # set expression of gc to 0.0
-        tfr[7] = 0.0
-        yOut = solveAutocrine(tfr)
-        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5) # IL2
-        self.assertAlmostEqual(getTotalActiveCytokine(1, yOut), 0.0, places=5) # IL15
-        self.assertAlmostEqual(getTotalActiveCytokine(2, yOut), 0.0, places=5) # IL7
-        self.assertAlmostEqual(getTotalActiveCytokine(3, yOut), 0.0, places=5) # IL9
+        rxntfR = self.rxntfR.copy()
+        rxntfR[20] = 0.0     # set expression of gc to 0.0
+        yOut, retVal = runCkineU(self.ts, rxntfR)
+        
+        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut[1]), 0.0, places=5) # IL2
+        self.assertAlmostEqual(getTotalActiveCytokine(1, yOut[1]), 0.0, places=5) # IL15
+        self.assertAlmostEqual(getTotalActiveCytokine(2, yOut[1]), 0.0, places=5) # IL7
+        self.assertAlmostEqual(getTotalActiveCytokine(3, yOut[1]), 0.0, places=5) # IL9
         
     def test_endosomalCTK_bound(self):
         ''' Test that appreciable cytokine winds up in the endosome. '''
-        yOut = solveAutocrine(self.tfargs)
-        rxntfR = np.concatenate((self.args, self.tfargs))
+        rxntfR = self.rxntfR.copy()
         rxntfR[0:4] = 0.0
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
