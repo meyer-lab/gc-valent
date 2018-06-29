@@ -168,7 +168,7 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(retVal, 0)
         
     def test_gc(self):
-        # test to check that no active species is present when gamma chain is not expressed
+        ''' Test to check that no active species is present when gamma chain is not expressed. '''
         tfr = self.tfargs.copy()
         # set expression of gc to 0.0
         tfr[7] = 0.0
@@ -179,7 +179,7 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(getTotalActiveCytokine(3, yOut), 0.0, places=5) # IL9
         
     def test_endosomalCTK_bound(self):
-        # test that appreciable cytokine winds up in the endosome
+        ''' Test that appreciable cytokine winds up in the endosome. '''
         yOut = solveAutocrine(self.tfargs)
         rxntfR = np.concatenate((self.args, self.tfargs))
         rxntfR[0:4] = 0.0
@@ -205,18 +205,18 @@ class TestModel(unittest.TestCase):
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
         # self.assertGreater(yOut_1[1, 44], 0)
-        self.assertEqual(yOut_1[1, 45:48].all(), 0)
+        self.assertTrue((yOut_1[1, 45:48] == 0).all())
         # IL15
         # self.assertGreater(yOut_2[1, 45], 0) 
-        self.assertEqual(yOut_2[1, 44], 0)
-        self.assertEqual(yOut_2[1, 46:48].all(), 0)
+        self.assertTrue(yOut_2[1, 44] == 0)
+        self.assertTrue((yOut_2[1, 46:48] == 0).all())
         # IL7
         # self.assertGreater(yOut_3[1,46], 0) 
-        self.assertEqual(yOut_3[1,44:46].all(), 0) 
-        self.assertEqual(yOut_3[1,47], 0) 
+        self.assertTrue((yOut_3[1,44:46] == 0).all()) 
+        self.assertTrue(yOut_3[1,47] == 0) 
         # IL9
         # self.assertGreater(yOut_4[1,47], 0) 
-        self.assertEqual(yOut_4[1,44:47].all(), 0) 
+        self.assertTrue((yOut_4[1,44:47] == 0).all())
         
         # set indexes according to ligand bound to complex in endosome
         endosomal_IL2_IDX = np.zeros(48)
