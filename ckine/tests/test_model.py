@@ -172,7 +172,7 @@ class TestModel(unittest.TestCase):
     def test_gc(self):
         ''' Test to check that no active species is present when gamma chain is not expressed. '''
         rxntfR = self.rxntfR.copy()
-        rxntfR[20] = 0.0     # set expression of gc to 0.0
+        rxntfR[20] = 0.0 # set expression of gc to 0.0
         yOut, retVal = runCkineU(self.ts, rxntfR)
         
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut[1]), 0.0, places=5) # IL2
@@ -206,33 +206,21 @@ class TestModel(unittest.TestCase):
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
         # self.assertGreater(yOut_1[1, 44], 0)
-        self.assertTrue((yOut_1[1, 45:48] == 0).all())
+        self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
         # self.assertGreater(yOut_2[1, 45], 0) 
-        self.assertTrue(yOut_2[1, 44] == 0)
-        self.assertTrue((yOut_2[1, 46:48] == 0).all())
+        self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
+        self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
         # IL7
         # self.assertGreater(yOut_3[1,46], 0) 
-        self.assertTrue((yOut_3[1,44:46] == 0).all()) 
-        self.assertTrue(yOut_3[1,47] == 0) 
+        self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
+        self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
         # IL9
         # self.assertGreater(yOut_4[1,47], 0) 
-        self.assertTrue((yOut_4[1,44:47] == 0).all())
-        
-        # set indexes according to ligand bound to complex in endosome
-        endosomal_IL2_IDX = np.zeros(48)
-        endosomal_IL15_IDX = endosomal_IL2_IDX.copy()
-        endosomal_IL7_IDX = endosomal_IL2_IDX.copy()
-        endosomal_IL9_IDX = endosomal_IL2_IDX.copy()
-        endosomal_IL2_IDX[np.array([25,26,27,28,29,30])] = 1
-        endosomal_IL15_IDX[np.array([32,33,34,35,36,37])] = 1
-        endosomal_IL7_IDX[np.array([39,40])] = 1
-        endosomal_IL9_IDX[np.array([42,43])] = 1
+        self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
         
         # make sure total amount of ligand bound to receptors is positive at equilibrium
-        self.assertGreater(np.dot(yOut_1[1], endosomal_IL2_IDX), 0)
-        self.assertGreater(np.dot(yOut_2[1], endosomal_IL15_IDX), 0)
-        self.assertGreater(np.dot(yOut_3[1], endosomal_IL7_IDX), 0)
-        self.assertGreater(np.dot(yOut_4[1], endosomal_IL9_IDX), 0)
-        
-
+        self.assertTrue(np.greater(yOut_1[25:31], 0.0).all())
+        self.assertTrue(np.greater(yOut_2[32:38], 0.0).all())
+        self.assertTrue(np.greater(yOut_3[39:41], 0.0).all())
+        self.assertTrue(np.greater(yOut_4[42:44], 0.0).all())
