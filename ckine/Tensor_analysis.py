@@ -1,11 +1,8 @@
 """
 Analyze tensor from tensor_generation and plotting.
 """
-import os
-import pickle
 import numpy as np
 import pandas as pd
-from scipy import stats
 import tensorly
 from tensorly.decomposition import parafac
 import matplotlib.pyplot as plt
@@ -16,10 +13,10 @@ def z_score_values(A):
     '''Function that takes in the values tensor and z-scores it.'''
     B = np.zeros_like(A)
     for i in range(A.shape[2]):
-        slice = A[:,:,i]
-        mu = np.mean(slice)
-        sigma = np.std(slice)
-        z_scored_slice = (slice - mu) / sigma
+        slice_face = A[:,:,i]
+        mu = np.mean(slice_face)
+        sigma = np.std(slice_face)
+        z_scored_slice = (slice_face - mu) / sigma
         B[:,:,i] = z_scored_slice
     return B
 
@@ -157,7 +154,6 @@ def plot_timepoint_decomp(factors, component_x, component_y):
 def calculate_correlation(tensor,mat,r):
     "Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables."
     factors = perform_decomposition(tensor, r)
-    cols = mat.shape[1]
     coeffs = np.zeros((factors[0].shape[1], mat.shape[1]))
     for i in range(mat.shape[1]):
         arr = []

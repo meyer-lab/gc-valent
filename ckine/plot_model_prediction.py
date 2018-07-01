@@ -1,4 +1,4 @@
-import numpy as np, pandas as pds
+import numpy as np
 import matplotlib.pyplot as plt
 from .model import getActiveSpecies, runCkineU, getSurfaceIL2RbSpecies
 
@@ -61,7 +61,7 @@ class surf_IL2Rb:
         g = np.dot(g_yOut, self.IL2Rb_species_IDX)
         h = np.dot(h_yOut, self.IL2Rb_species_IDX)
 
-        return (np.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])))
+        return np.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0]))
 
     def plot_structure(self, IL2vec, IL15vec, title):
         plt.title(title)

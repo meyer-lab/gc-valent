@@ -80,7 +80,7 @@ def jacobian(y, t, rxn):
     yOut = np.zeros((22, 22)) # size of the Jacobian matrix
 
     libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
-    
+
     return yOut
 
 
@@ -92,7 +92,7 @@ def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument on
     yOut = np.zeros((48, 48)) # size of the full Jacobian matrix
 
     libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
-    return yOut 
+    return yOut
 
 def fullModel(y, t, rxn, tfr):
     global libb

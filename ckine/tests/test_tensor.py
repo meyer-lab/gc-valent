@@ -3,9 +3,6 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from hypothesis import given, settings
-from hypothesis.strategies import floats
-from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
