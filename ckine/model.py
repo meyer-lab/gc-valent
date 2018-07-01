@@ -2,22 +2,17 @@
 A file that includes the model and important helper functions.
 """
 import os
-import numpy as np
 import ctypes as ct
+import numpy as np
 from scipy.integrate import odeint
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
-libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
-                        ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
-                        ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
-                             ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
-                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                          ct.c_bool, ct.POINTER(ct.c_double))
+libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 
 
 def runCkine (tps, rxn, tfr):
