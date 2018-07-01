@@ -4,7 +4,7 @@ from .model import getActiveSpecies, runCkineU, getSurfaceIL2RbSpecies
 
 
 class surf_IL2Rb:
-    "Generate values to match the surface IL2Rb measurements used in fitting"
+    '''Generate values to match the surface IL2Rb measurements used in fitting'''
     def __init__(self):
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -16,7 +16,7 @@ class surf_IL2Rb:
         self.y_max = 10
 
     def calc(self, unkVec):
-        "This function uses an unkVec that has the same elements as the unkVec in fit.py"
+        '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
         assert unkVec.size == 24
 
@@ -91,7 +91,7 @@ class surf_IL2Rb:
 
 
 class pstat:
-    "Generate values to match the pSTAT5 measurements used in fitting"
+    '''Generate values to match the pSTAT5 measurements used in fitting'''
     def __init__(self):
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
 
@@ -103,7 +103,7 @@ class pstat:
         self.y_max = 100
 
     def calc(self, unkVec):
-        "This function uses an unkVec that has the same elements as the unkVec in fit.py"
+        '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
         assert unkVec.size == 24
 

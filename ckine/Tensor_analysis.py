@@ -37,7 +37,7 @@ def find_R2X(values, n_comp):
     return R2X
 
 def plot_R2X(values, n_comps):
-    "Function to plot the R2X values for various components."
+    '''Function to plot the R2X values for various components.'''
     arr = []
     for n in range(1,n_comps):
         R2X = find_R2X(values, n)
@@ -139,7 +139,7 @@ def plot_values_decomposition(factors, component_x, component_y):
     return fig
 
 def plot_timepoint_decomp(factors, component_x, component_y):
-    "Function that returns the timepoint decomposition plot for the decomposed tensor."
+    '''Function that returns the timepoint decomposition plot for the decomposed tensor.'''
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for i in range(len(factors[1])):
@@ -152,7 +152,7 @@ def plot_timepoint_decomp(factors, component_x, component_y):
     return fig
 
 def calculate_correlation(tensor,mat,r):
-    "Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables."
+    '''Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables.'''
     factors = perform_decomposition(tensor, r)
     coeffs = np.zeros((factors[0].shape[1], mat.shape[1]))
     for i in range(mat.shape[1]):
