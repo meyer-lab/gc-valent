@@ -70,7 +70,6 @@ def dy_dt(y, t, rxn):
 
 
 def jacobian(y, t, rxn):
-
     assert rxn.size == 13
 
     yOut = np.zeros((22, 22)) # size of the Jacobian matrix
@@ -81,7 +80,6 @@ def jacobian(y, t, rxn):
 
 
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
-
     assert rxn.size == 24
 
     yOut = np.zeros((48, 48)) # size of the full Jacobian matrix
