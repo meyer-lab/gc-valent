@@ -38,6 +38,7 @@ std::array<bool, halfL> __active_species_IDX() {
 	__active_species_IDX[15] = true;
 	__active_species_IDX[18] = true;
 	__active_species_IDX[21] = true;
+    // TODO: add active species indices for 4/21
 
 	return __active_species_IDX;
 }
@@ -60,6 +61,7 @@ ratesS param(const double * const rxntfR) {
 	r.k23rev = rxntfR[10];
 	r.k27rev = rxntfR[11];
 	r.k31rev = rxntfR[12];
+    // TODO: add any unknown off rates for 4/21 (if any are unknown)
 
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -124,6 +126,8 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	const double IL9R = y[19];
 	const double IL9R_IL9 = y[20];
 	const double IL9R_gc_IL9 = y[21];
+    
+    // TODO: add species for 4/21
 	
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
@@ -159,11 +163,14 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[19] = -kfbnd * IL9R * IL9 + k29rev * IL9R_IL9;
 	dydt[20] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
 	dydt[21] = r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
+    
+    // TODO: add ODE's for 4/21
 }
 
 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	ratesS r = param(rxn_in);
+    // TODO: add values for 4/21
 
 	dy_dt(y_in, &r, dydt_out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
@@ -182,6 +189,7 @@ void findLigConsume(double *dydt) {
 	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
 	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
 	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+    // TODO: change indexing and add ligand consumption for 4/21
 }
 
 
@@ -206,11 +214,13 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 	dydt[9] += r->Rexpr[3];
 	dydt[16] += r->Rexpr[4];
 	dydt[19] += r->Rexpr[5];
+    // TODO: add expression rates for 4/21
 
 	// Degradation does lead to some clearance of ligand in the endosome
 	for (size_t ii = 0; ii < 4; ii++) {
 		dydt[44 + ii] -= y[44 + ii] * r->kDeg;
 	}
+    // TODO: change indexing of degredation
 }
 
 
@@ -218,6 +228,7 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Implement full model.
 	fill(dydt, dydt + Nspecies, 0.0);
 
+    // TODO: change indexing
 	// Calculate cell surface and endosomal reactions
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
 	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
@@ -260,7 +271,7 @@ array<double, Nspecies> solveAutocrine(const ratesS * const r) {
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
 		y0[recIDX[ii] + 22] = r->Rexpr[ii] / kDeg / internalFrac;
 		y0[recIDX[ii]] = (r->Rexpr[ii] + kRec*y0[recIDX[ii] + 22]*internalFrac)/r->endo;
-	}
+	} // TODO: change indexing
 
 	return y0;
 }
@@ -272,10 +283,11 @@ array<double, Nspecies> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &y0) {
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &y0) { // TODO: change array size
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
+    // TODO: change indexing
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
 		NV_Ith_S(y0s[13], is) = -y0[is]/r->endo; // Endo (13)
@@ -322,9 +334,10 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	for (size_t ii = 0; ii < Nparams; ii++) {
 		std::cout << sMem->params[ii] << "\t";
 	}
-
+    
 	ratesS ratt = param(sMem->params);
-
+    
+    // TODO: print any ligand concentrations and unknown rate params
 	std::cout << "IL2: " << ratt.IL2 << std::endl;
 	std::cout << "IL15: " << ratt.IL15 << std::endl;
 	std::cout << "IL7: " << ratt.IL7 << std::endl;
@@ -432,7 +445,7 @@ void solver_setup(solver *sMem, double *params) {
 }
 
 
-void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 48> &y0) {
+void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 48> &y0) { // TODO: change array size
 	// Now we are doing a sensitivity analysis
 	sMem->sensi = true;
 
@@ -539,7 +552,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 }
 
 
-void jacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
+void jacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) { // TODO: add more arguments
 	// IL2 in nM
 	const double IL2Ra = y[0];
 	const double IL2Rb = y[1];
@@ -561,6 +574,8 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	// IL7, IL9 in nM
 	const double IL7Ra_IL7 = y[17];
 	const double IL9R_IL9 = y[20];
+    
+    // TODO: define IL4/21 species
 
 	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
@@ -588,7 +603,8 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(1, 13) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra_gc
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
-	// gc    
+	// gc
+    // TODO: add partial derivatives for new terms
 	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - r->kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9; // gc with respect to gc
 	out(2, 3) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
 	out(2, 4) = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
@@ -633,6 +649,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(5, 8) = r->k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_gc
+    // TODO: add more partial derivs
 	out(6, 1) = -r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_gc with respect to IL2Rb
 	out(6, 2) = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_gc with respect to gc
 	out(6, 3) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
@@ -640,6 +657,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(6, 8) = r->k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Rb_gc
+    // TODO: add more partial derivs
 	out(7, 0) = -r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Rb_gc with respect to IL2Ra
 	out(7, 2) = r->kfwd * IL2_IL2Rb; // IL2_IL2Rb_gc with respect to gc
 	out(7, 4) = r->kfwd * gc; // IL2_IL2Rb_gc with respect to IL2_IL2Rb
@@ -647,6 +665,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(7, 8) = r->k8rev; // IL2_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb_gc
+    // TODO: add more partial derivs
 	out(8, 0) = r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Ra
 	out(8, 1) = r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Rb
 	out(8, 2) = r->kfwd * IL2_IL2Ra_IL2Rb; // IL2_IL2Ra_IL2Rb_gc with respect to gc
@@ -689,6 +708,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(12, 15) = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_gc
+    // TODO: add more partial derivs
 	out(13, 1) = -r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_gc with respect to IL2Rb
 	out(13, 2) = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_gc with respect to gc
 	out(13, 10) = r->kfwd * gc; // IL15_IL15Ra_gc with respect to IL15_IL15Ra
@@ -696,6 +716,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(13, 15) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL2Rb_gc
+    // TODO: add more partial derivs
 	out(14, 2) = r->kfwd * IL15_IL2Rb; // IL15_IL2Rb_gc with respect to gc
 	out(14, 9) = -r->kfwd * IL15_IL2Rb_gc; // IL15_IL2Rb_gc with respect to IL15Ra
 	out(14, 11) = r->kfwd * gc; // IL15_IL2Rb_gc with respect to IL15_IL2Rb
@@ -703,6 +724,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(14, 15) = r->k20rev; // IL15_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_IL2Rb_gc
+    // TODO: add more partial derivs
 	out(15, 1) = r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL2Rb
 	out(15, 2) = r->kfwd * IL15_IL15Ra_IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to gc
 	out(15, 9) = r->kfwd * IL15_IL2Rb_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL15Ra
@@ -722,6 +744,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(17, 18) = r->k27rev; // IL7Ra_IL7 with respect to IL7Ra_gc_IL7
 	
 	// IL7Ra_gc_IL7
+    // TODO: add more partial derivs
 	out(18, 2) = r->kfwd * IL7Ra_IL7; // IL7Ra_gc_IL7 with respect to gc
 	out(18, 17) = r->kfwd * gc; // IL7Ra_gc_IL7 with respect to IL7Ra_IL7
 	out(18, 18) = - r->k27rev; // IL7Ra_gc_IL7 with respect to IL7Ra_gc_IL7
@@ -737,16 +760,19 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(20, 21) = r->k31rev; // IL9R_IL9 with respect to IL9R_gc_IL9
 	
 	// IL9R_gc_IL9
+    // TODO: add more partial derivs
 	out(21, 2) = r->kfwd * IL9R_IL9; // IL9R_gc_IL9 with respect to gc
 	out(21, 20) = r->kfwd * gc; // IL9R_gc_IL9 with respect to IL9R_IL9
 	out(21, 21) = - r->k31rev; // IL9R_gc_IL9 with respect to IL9R_gc_IL9
+    
+    // TODO: add partial derivs for IL4/21
 }
 
 
 extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	ratesS r = param(rxn_in);
 
-	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9);
+	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9); // TODO: add IL4/21
 }
 
 
@@ -756,6 +782,7 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	// unless otherwise specified, assume all partial derivatives are 0
 	out.setConstant(0.0);
 
+    // TODO: change array size and indexing
 	array <double, 22*22> sub_y;
 	jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
 	for (size_t ii = 0; ii < halfL; ii++)
@@ -787,10 +814,11 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	}
 
 	// Ligand degradation
-	for (size_t ii = 44; ii < 48; ii++)
+	for (size_t ii = 44; ii < 48; ii++) // TODO: change indexing
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
+    // TODO: change indexing
 	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
 	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
 	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra

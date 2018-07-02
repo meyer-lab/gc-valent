@@ -1,6 +1,7 @@
 #include <array>
 
 struct ratesS {
+    // TODO: add more terms
 	double IL2;
 	double IL15;
 	double IL7;
@@ -46,11 +47,14 @@ constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 5
 // Literature value for IL-9
 constexpr double k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
 
+// TODO: add measured values for IL4/21
+
 constexpr double abstolIn = 1E-4;
 constexpr double reltolIn = 1E-9;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
+// TODO: change values for global constants
 constexpr size_t Nparams = 24; // length of rxntfR vector
 constexpr size_t Nspecies = 48; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 22; // number of complexes on surface alone
