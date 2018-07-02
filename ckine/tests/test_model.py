@@ -206,17 +206,29 @@ class TestModel(unittest.TestCase):
         # make sure endosomal free ligand is positive at equilibrium
         # TODO: Reenable endosomal ligand as it's not currently passing
         # IL2
+        print('Endosomal IL2 at 500 nM of IL2:')
+        print(yOut_1[1, 44])
+        
         # self.assertGreater(yOut_1[1, 44], 0)
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
+        print('Endosomal IL15 at 500 nM of IL15:')
+        print(yOut_2[1, 45])
+        
         # self.assertGreater(yOut_2[1, 45], 0)
         self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
         self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
         # IL7
+        print('Endosomal IL7 at 500 nM of IL7:')
+        print(yOut_3[1, 46])
+        
         # self.assertGreater(yOut_3[1,46], 0)
         self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
         self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
         # IL9
+        print('Endosomal IL9 at 500 nM of IL9:')
+        print(yOut_4[1, 47])
+        
         # self.assertGreater(yOut_4[1,47], 0)
         self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
 
