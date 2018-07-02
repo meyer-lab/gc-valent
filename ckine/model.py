@@ -21,7 +21,6 @@ def runCkine (tps, rxn, tfr):
 
 
 def runCkineU (tps, rxntfr):
-    global libb
 
     assert rxntfr.size == 24
     assert rxntfr[15] < 1.0 # Check that sortF won't throw
@@ -39,7 +38,6 @@ def runCkineU (tps, rxntfr):
 
 
 def runCkineSensi (tps, rxntfr):
-    global libb
 
     assert rxntfr.size == 24
 
@@ -58,7 +56,6 @@ def runCkineSensi (tps, rxntfr):
 
 
 def dy_dt(y, t, rxn):
-    global libb
 
     assert rxn.size == 13
 
@@ -73,7 +70,6 @@ def dy_dt(y, t, rxn):
 
 
 def jacobian(y, t, rxn):
-    global libb
 
     assert rxn.size == 13
 
@@ -85,7 +81,6 @@ def jacobian(y, t, rxn):
 
 
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
-    global libb
 
     assert rxn.size == 24
 
@@ -95,7 +90,6 @@ def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument on
     return yOut
 
 def fullModel(y, t, rxn, tfr):
-    global libb
 
     rxntfr = np.concatenate((rxn, tfr))
 
