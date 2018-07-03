@@ -1,11 +1,12 @@
 #include <array>
 
 struct ratesS {
-    // TODO: add more terms
 	double IL2;
 	double IL15;
 	double IL7;
 	double IL9;
+    double IL4;
+    double IL21;
 	double kfwd;
 	double k4rev;
 	double k5rev;
@@ -23,12 +24,14 @@ struct ratesS {
 	double k24rev;
 	double k27rev;
 	double k31rev;
+    double k33rev;
+    double k35rev;
 	double endo;
 	double activeEndo;
 	double sortF;
 	double kRec;
 	double kDeg;
-	std::array<double, 6> Rexpr;
+	std::array<double, 8> Rexpr;
 };
 
 // These are probably measured in the literature
@@ -47,7 +50,12 @@ constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 5
 // Literature value for IL-9
 constexpr double k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
 
-// TODO: add measured values for IL4/21
+// Literature value for IL-4
+constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
+
+// Literature value for IL-21
+constexpr double k34rev = kfbnd * 0.07 // DOI: 10.1126/scisignal.aal1253 (human)
+    
 
 constexpr double abstolIn = 1E-4;
 constexpr double reltolIn = 1E-9;
@@ -55,8 +63,8 @@ constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
 // TODO: change values for global constants
-constexpr size_t Nparams = 24; // length of rxntfR vector
-constexpr size_t Nspecies = 48; // number of complexes in surface + endosome + free ligand
-constexpr size_t halfL = 22; // number of complexes on surface alone
+constexpr size_t Nparams = 28; // length of rxntfR vector
+constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
+constexpr size_t halfL = 28; // number of complexes on surface alone
 
 extern "C" int runCkine (double *, size_t, double *, double *, bool, double *);

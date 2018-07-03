@@ -189,9 +189,8 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	ratesS r = param(rxn_in);
-    // TODO: add values for 4/21
 
-	dy_dt(y_in, &r, dydt_out, r.IL2, r.IL15, r.IL7, r.IL9);
+	dy_dt(y_in, &r, dydt_out, r.IL2, r.IL15, r.IL7, r.IL9, r.IL4, r.IL21);
 }
 
 
@@ -204,11 +203,13 @@ void findLigConsume(double *dydt) {
 	double const * const dydti = dydt + halfL;
 
 	// Calculate the ligand consumption.
-	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
-	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
-	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
-	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+	dydt[56] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
+	dydt[57] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
+	dydt[58] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
+	dydt[59] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
     // TODO: change indexing and add ligand consumption for 4/21
+    dydt[60] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+    dydt[61] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
 }
 
 
