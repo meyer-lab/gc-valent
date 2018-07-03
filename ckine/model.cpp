@@ -61,6 +61,8 @@ ratesS param(const double * const rxntfR) {
 	r.k23rev = rxntfR[10];
 	r.k27rev = rxntfR[11];
 	r.k31rev = rxntfR[12];
+    r.k33rev = rxntfR[13];
+    r.k35rev = rxntfR[14];
     // TODO: add any unknown off rates for 4/21 (if any are unknown)
 
 	// These are probably measured in the literature
@@ -83,17 +85,17 @@ ratesS param(const double * const rxntfR) {
 	r.k20rev = r.k22rev * r.k24rev / r.k17rev;
 
 	// Set the rates
-	r.endo = rxntfR[13];
-	r.activeEndo = rxntfR[14];
-	r.sortF = rxntfR[15];
-	r.kRec = rxntfR[16];
-	r.kDeg = rxntfR[17];
+	r.endo = rxntfR[15];
+	r.activeEndo = rxntfR[16];
+	r.sortF = rxntfR[17];
+	r.kRec = rxntfR[18];
+	r.kDeg = rxntfR[19];
 
 	if (r.sortF > 1.0) {
 		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
 	}
 
-	std::copy_n(rxntfR + 18, 6, r.Rexpr.begin());
+	std::copy_n(rxntfR + 20, 8, r.Rexpr.begin());
 
 	return r;
 }
@@ -127,8 +129,14 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	const double IL9R_IL9 = y[20];
 	const double IL9R_gc_IL9 = y[21];
     
-    // TODO: add species for 4/21
-	
+    // IL4, IL21 in nM
+    const double IL4Ra = y[22];
+    const double IL4_IL4Ra = y[23];
+    const double IL4_IL4Ra_gc = y[24];
+    const double IL21Ra = y[25];
+    const double IL21_IL21Ra = y[26];
+    const double IL21_IL21Ra_gc = y[27];
+        
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
 	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_IL2Ra_gc + r->k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
@@ -164,7 +172,18 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[20] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
 	dydt[21] = r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
     
-    // TODO: add ODE's for 4/21
+    // IL4
+    dydt[2] = dydt[2] - r->kfwd * gc * IL4_IL4Ra + r->k33rev * IL4_IL4Ra_gc;
+    dydt[22] = -kfbnd * IL4 * IL4Ra + k32rev * IL4_IL4Ra;
+    dydt[23] = kfbnd * IL4 * IL4Ra + r->k33rev * IL4_IL4Ra_gc - k32rev * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra;
+    dydt[24] = r->kfwd * gc * IL4_IL4Ra - r->k33rev * IL4_IL4Ra_gc;
+    
+    // IL21
+    dydt[2] = dydt[2] - r->kfwd * gc * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc;
+    dydt[25] = -kfbnd * IL21 * IL21Ra + k34rev * IL21_IL21Ra;
+    dydt[26] = kfbnd * IL21 * IL21Ra - k34rev * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc - r->kfwd * IL21_IL21Ra * gc;
+    dydt[27] = -r->k35rev * IL21_IL21Ra_gc + r->kfwd * IL21_IL21Ra * gc;
+        
 }
 
 
