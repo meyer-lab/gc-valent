@@ -574,7 +574,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 }
 
 
-void jacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) { // TODO: add more arguments
+void jacobian(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9, double IL4, double IL21) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
 	const double IL2Rb = y[1];
@@ -598,12 +598,8 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL9R_IL9 = y[20];
     
     // TODO: remove unused IL4/21 species
-    const double IL4Ra = y[22];
     const double IL4_IL4Ra = y[23];
-    const double IL4_IL4Ra_gc = y[24];
-    const double IL21Ra = y[25];
     const double IL21_IL21Ra = y[26];
-    const double IL21_IL21Ra_gc = y[27];
 
 	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
@@ -632,7 +628,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc
-	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - r->kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9 - r->kfwd * gc * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra; // gc with respect to gc
+	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - r->kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9 - r->kfwd * gc * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra - r->kfwd * IL21_IL21Ra; // gc with respect to gc
 	out(2, 3) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
 	out(2, 4) = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
 	out(2, 5) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
@@ -833,13 +829,12 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	// unless otherwise specified, assume all partial derivatives are 0
 	out.setConstant(0.0);
 
-    // TODO: change array size and indexing
-	array <double, 22*22> sub_y;
-	jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9); // jacobian function assigns values to sub_y
+	array <double, (halfL*halfL)> sub_y;
+	jacobian(y, r, sub_y.data(), r->IL2, r->IL15, r->IL7, r->IL9, r->IL4, r->IL21); // jacobian function assigns values to sub_y
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
 
-	jacobian(y + halfL, r, sub_y.data(), y[44], y[45], y[46], y[47]); // different IL concs for internal case 
+	jacobian(y + halfL, r, sub_y.data(), y[(halfL*2)], y[(halfL*2)+1], y[(halfL*2)+2], y[(halfL*2)+3], y[(halfL*2)+4], y[(halfL*2)+5]); // different IL concs for internal case 
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
 
@@ -865,26 +860,33 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	}
 
 	// Ligand degradation
-	for (size_t ii = 44; ii < 48; ii++) // TODO: change indexing
+	for (size_t ii = (halfL*2); ii < ((halfL*2)+6); ii++)
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-    // TODO: change indexing
-	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
-	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
-	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
-	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(halfL + 0, (halfL*2)) = -kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
+	out(halfL + 1, (halfL*2)) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
+	out(halfL + 3, (halfL*2)) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
+	out(halfL + 4, (halfL*2)) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
 
-	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
-	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
-	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
-	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(halfL +  1, ((halfL*2)+1)) = -kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
+	out(halfL + 9, (halfL*2)+1)) = -kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
+	out(halfL + 10, (halfL*2)+1)) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
+	out(halfL + 11, (halfL*2)+1)) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
 
-	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
-	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(halfL + 16, (halfL*2)+2)) = -kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
+	out(halfL + 17, (halfL*2)+2)) =  kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
 
-	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
-	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(halfL + 19, (halfL*2)+3)) = -kfbnd * y[halfL + 19]; // IL9 binding to IL9R
+	out(halfL + 20, (halfL*2)+3)) =  kfbnd * y[halfL + 19]; // IL9 binding to IL9R
+    
+    out(halfL + 22, (halfL*2)+4)) = -kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
+	out(halfL + 23, (halfL*2)+4)) =  kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
+    
+    out(halfL + 25, (halfL*2)+5)) = -kfbnd * y[halfL + 25]; // IL21 binding to IL21a
+	out(halfL + 26, (halfL*2)+5)) =  kfbnd * y[halfL + 26]; // IL21 binding to IL21Ra
+    
+    
 }
 
 constexpr bool debugOutput = false;
