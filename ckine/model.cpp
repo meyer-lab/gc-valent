@@ -234,13 +234,13 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 	dydt[9] += r->Rexpr[3];
 	dydt[16] += r->Rexpr[4];
 	dydt[19] += r->Rexpr[5];
-    // TODO: add expression rates for 4/21
+    dydt[22] += r->Rexpr[6];
+    dydt[25] += r->Rexpr[7];
 
 	// Degradation does lead to some clearance of ligand in the endosome
-	for (size_t ii = 0; ii < 4; ii++) {
-		dydt[44 + ii] -= y[44 + ii] * r->kDeg;
+	for (size_t ii = 0; ii < 6; ii++) {
+		dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
 	}
-    // TODO: change indexing of degredation
 }
 
 
@@ -248,10 +248,9 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Implement full model.
 	fill(dydt, dydt + Nspecies, 0.0);
 
-    // TODO: change indexing
 	// Calculate cell surface and endosomal reactions
-	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
-	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
+	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9, r->IL4, r->IL21);
+	dy_dt(y + halfL, r, dydt + halfL, y[(halfL*2)],   y[(halfL*2)+1],  y[(halfL*2)+2],  y[(halfL*2)+3], y[(halfL*2)+4], y[(halfL*2)+5]);
 
 	// Handle trafficking
 	trafficking(y, r, dydt);
@@ -289,9 +288,9 @@ array<double, Nspecies> solveAutocrine(const ratesS * const r) {
 	// Assuming no autocrine ligand, so can solve steady state
 	// Add the species
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		y0[recIDX[ii] + 22] = r->Rexpr[ii] / kDeg / internalFrac;
-		y0[recIDX[ii]] = (r->Rexpr[ii] + kRec*y0[recIDX[ii] + 22]*internalFrac)/r->endo;
-	} // TODO: change indexing
+		y0[recIDX[ii] + halfL] = r->Rexpr[ii] / kDeg / internalFrac;
+		y0[recIDX[ii]] = (r->Rexpr[ii] + kRec*y0[recIDX[ii] + halfL]*internalFrac)/r->endo;
+	}
 
 	return y0;
 }
@@ -303,7 +302,7 @@ array<double, Nspecies> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 48> &y0) { // TODO: change array size
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, Nspecies> &y0) {
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
@@ -362,6 +361,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "IL15: " << ratt.IL15 << std::endl;
 	std::cout << "IL7: " << ratt.IL7 << std::endl;
 	std::cout << "IL9: " << ratt.IL9 << std::endl;
+    std::cout << "IL4: " << ratt.IL4 << std::endl;
+    std::cout << "IL21: " << ratt.IL21 << std::endl;
 	std::cout << "kfwd: " << ratt.kfwd << std::endl;
 	std::cout << "k4rev: " << ratt.k4rev << std::endl;
 	std::cout << "k5rev: " << ratt.k5rev << std::endl;
@@ -379,6 +380,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "k24rev: " << ratt.k24rev << std::endl;
 	std::cout << "k27rev: " << ratt.k27rev << std::endl;
 	std::cout << "k31rev: " << ratt.k31rev << std::endl;
+    std::cout << "k33rev: " << ratt.k33rev << std::endl;
+    std::cout << "k35rev: " << ratt.k35rev << std::endl;
 	std::cout << "endo: " << ratt.endo << std::endl;
 	std::cout << "activeEndo: " << ratt.activeEndo << std::endl;
 	std::cout << "sortF: " << ratt.sortF << std::endl;
@@ -391,6 +394,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "Rexpr 4: " << ratt.Rexpr[3] << std::endl;
 	std::cout << "Rexpr 5: " << ratt.Rexpr[4] << std::endl;
 	std::cout << "Rexpr 6: " << ratt.Rexpr[5] << std::endl;
+    std::cout << "Rexpr 7: " << ratt.Rexpr[5] << std::endl;
+    std::cout << "Rexpr 8: " << ratt.Rexpr[5] << std::endl;
 
 	std::cout << std::endl;
 
@@ -465,7 +470,7 @@ void solver_setup(solver *sMem, double *params) {
 }
 
 
-void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 48> &y0) { // TODO: change array size
+void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, Nspecies> &y0) { 
 	// Now we are doing a sensitivity analysis
 	sMem->sensi = true;
 
