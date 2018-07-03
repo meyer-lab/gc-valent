@@ -64,7 +64,6 @@ ratesS param(const double * const rxntfR) {
 	r.k31rev = rxntfR[12];
     r.k33rev = rxntfR[13];
     r.k35rev = rxntfR[14];
-    // TODO: add any unknown off rates for 4/21 (if any are unknown)
 
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -208,9 +207,8 @@ void findLigConsume(double *dydt) {
 	dydt[57] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
 	dydt[58] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
 	dydt[59] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
-    // TODO: change indexing and add ligand consumption for 4/21
-    dydt[60] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
-    dydt[61] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+    dydt[60] -= std::accumulate(dydti+23, dydti+25, 0) / internalV;
+    dydt[61] -= std::accumulate(dydti+26, dydti+28, 0) / internalV;
 }
 
 
@@ -307,27 +305,26 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, Nspec
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
-    // TODO: change indexing
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[13], is) = -y0[is]/r->endo; // Endo (13)
+		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo; // Endo (15)
 
-		// sortF (15)
-		NV_Ith_S(y0s[15], is + 22) = -y0[is + 22]/r->sortF;
-		NV_Ith_S(y0s[15], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[15], is + 22) - y0[is + 22]);
+		// sortF (17)
+		NV_Ith_S(y0s[17], is + halfL) = -y0[is + halfL]/r->sortF;
+		NV_Ith_S(y0s[17], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[17], is + halfL) - y0[is + halfL]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[16], is) = (1-r->sortF)*y0[is + 22]*internalFrac/r->endo; // kRec (16)
+		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + halfL]*internalFrac/r->endo; // kRec (18)
 
-		// kDeg (17)
-		NV_Ith_S(y0s[17], is + 22) = -y0[is + 22]/r->kDeg;
-		NV_Ith_S(y0s[17], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[17], is + 22)*internalFrac/r->endo;
+		// kDeg (19)
+		NV_Ith_S(y0s[19], is + halfL) = -y0[is + halfL]/r->kDeg;
+		NV_Ith_S(y0s[19], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[19], is + halfL)*internalFrac/r->endo;
 	}
 
-	// Rexpr (18-23)
+	// Rexpr (20-28)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[18 + ii], recIDX[ii] + 22) = y0[recIDX[ii] + 22]/r->Rexpr[ii];
-		NV_Ith_S(y0s[18 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[18 + ii], recIDX[ii] + 22)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[20 + ii], recIDX[ii] + halfL) = y0[recIDX[ii] + halfL]/r->Rexpr[ii];
+		NV_Ith_S(y0s[20 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[20 + ii], recIDX[ii] + halfL)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
@@ -357,7 +354,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
     
 	ratesS ratt = param(sMem->params);
     
-    // TODO: print any ligand concentrations and unknown rate params
 	std::cout << "IL2: " << ratt.IL2 << std::endl;
 	std::cout << "IL15: " << ratt.IL15 << std::endl;
 	std::cout << "IL7: " << ratt.IL7 << std::endl;
@@ -601,7 +597,13 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL7Ra_IL7 = y[17];
 	const double IL9R_IL9 = y[20];
     
-    // TODO: define IL4/21 species
+    // TODO: remove unused IL4/21 species
+    const double IL4Ra = y[22];
+    const double IL4_IL4Ra = y[23];
+    const double IL4_IL4Ra_gc = y[24];
+    const double IL21Ra = y[25];
+    const double IL21_IL21Ra = y[26];
+    const double IL21_IL21Ra_gc = y[27];
 
 	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
@@ -630,8 +632,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc
-    // TODO: add partial derivatives for new terms
-	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - r->kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9; // gc with respect to gc
+	out(2, 2) = - r->kfwd * IL2_IL2Rb - r->kfwd * IL2_IL2Ra - r->kfwd * IL2_IL2Ra_IL2Rb - r->kfwd * IL15_IL2Rb - r->kfwd * IL15_IL15Ra - r->kfwd * IL15_IL15Ra_IL2Rb - r->kfwd * IL7Ra_IL7 - r->kfwd * IL9R_IL9 - r->kfwd * gc * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra; // gc with respect to gc
 	out(2, 3) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
 	out(2, 4) = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
 	out(2, 5) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
@@ -648,6 +649,10 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(2, 18) = r->k27rev; // gc with respect to IL7Ra_gc_IL7
 	out(2, 20) = - r->kfwd * gc; // gc with respect to IL9R_IL9
 	out(2, 21) = r->k31rev; // gc with respect to IL9R_gc_IL9
+    out(2, 23) = - r->kfwd * gc; // gc with respect with respect to IL4_IL4Ra
+    out(2, 24) = r->k33rev; // gc with respect to IL4_IL4Ra_gc
+    out(2, 26) = - r->kfwd * gc; // gc with respect to IL21_IL21Ra
+    out(2, 27) = r->k35rev; // gc with respect to IL21_IL21Ra_gc
 	
 	// IL2_IL2Ra
 	out(3, 0) = kfbnd * IL2; // IL2_IL2Ra with respect to IL2Ra
@@ -675,7 +680,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(5, 8) = r->k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_gc
-    // TODO: add more partial derivs
 	out(6, 1) = -r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_gc with respect to IL2Rb
 	out(6, 2) = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_gc with respect to gc
 	out(6, 3) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
@@ -683,7 +687,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(6, 8) = r->k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Rb_gc
-    // TODO: add more partial derivs
 	out(7, 0) = -r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Rb_gc with respect to IL2Ra
 	out(7, 2) = r->kfwd * IL2_IL2Rb; // IL2_IL2Rb_gc with respect to gc
 	out(7, 4) = r->kfwd * gc; // IL2_IL2Rb_gc with respect to IL2_IL2Rb
@@ -691,7 +694,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(7, 8) = r->k8rev; // IL2_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb_gc
-    // TODO: add more partial derivs
 	out(8, 0) = r->kfwd * IL2_IL2Rb_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Ra
 	out(8, 1) = r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_IL2Rb_gc with respect to IL2Rb
 	out(8, 2) = r->kfwd * IL2_IL2Ra_IL2Rb; // IL2_IL2Ra_IL2Rb_gc with respect to gc
@@ -734,7 +736,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(12, 15) = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_gc
-    // TODO: add more partial derivs
 	out(13, 1) = -r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_gc with respect to IL2Rb
 	out(13, 2) = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_gc with respect to gc
 	out(13, 10) = r->kfwd * gc; // IL15_IL15Ra_gc with respect to IL15_IL15Ra
@@ -742,7 +743,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(13, 15) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL2Rb_gc
-    // TODO: add more partial derivs
 	out(14, 2) = r->kfwd * IL15_IL2Rb; // IL15_IL2Rb_gc with respect to gc
 	out(14, 9) = -r->kfwd * IL15_IL2Rb_gc; // IL15_IL2Rb_gc with respect to IL15Ra
 	out(14, 11) = r->kfwd * gc; // IL15_IL2Rb_gc with respect to IL15_IL2Rb
@@ -750,7 +750,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(14, 15) = r->k20rev; // IL15_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_IL2Rb_gc
-    // TODO: add more partial derivs
 	out(15, 1) = r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL2Rb
 	out(15, 2) = r->kfwd * IL15_IL15Ra_IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to gc
 	out(15, 9) = r->kfwd * IL15_IL2Rb_gc; // IL15_IL15Ra_IL2Rb_gc with respect to IL15Ra
@@ -770,7 +769,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(17, 18) = r->k27rev; // IL7Ra_IL7 with respect to IL7Ra_gc_IL7
 	
 	// IL7Ra_gc_IL7
-    // TODO: add more partial derivs
 	out(18, 2) = r->kfwd * IL7Ra_IL7; // IL7Ra_gc_IL7 with respect to gc
 	out(18, 17) = r->kfwd * gc; // IL7Ra_gc_IL7 with respect to IL7Ra_IL7
 	out(18, 18) = - r->k27rev; // IL7Ra_gc_IL7 with respect to IL7Ra_gc_IL7
@@ -786,19 +784,46 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(20, 21) = r->k31rev; // IL9R_IL9 with respect to IL9R_gc_IL9
 	
 	// IL9R_gc_IL9
-    // TODO: add more partial derivs
 	out(21, 2) = r->kfwd * IL9R_IL9; // IL9R_gc_IL9 with respect to gc
 	out(21, 20) = r->kfwd * gc; // IL9R_gc_IL9 with respect to IL9R_IL9
 	out(21, 21) = - r->k31rev; // IL9R_gc_IL9 with respect to IL9R_gc_IL9
     
-    // TODO: add partial derivs for IL4/21
+    // IL4Ra
+    out(22, 22) = -kfbnd * IL4; // IL4Ra with respect to IL4Ra
+    out(22, 23) = k32rev; // IL4Ra with respect to IL4_IL4Ra
+    
+    // IL4_IL4Ra
+    out(23, 2) = - r->kfwd * IL4_IL4Ra; // IL4_IL4Ra with respect to gc
+    out(23, 22) = kfbnd * IL4; // IL4_IL4Ra with respect to IL4Ra
+    out(23, 23) = - k32rev - r->kfwd * gc; // IL4_IL4Ra with respect to IL4_IL4Ra
+    out(23, 24) = r->k33rev; // IL4_IL4Ra with respect to IL4_IL4Ra_gc
+    
+    // IL4_IL4Ra_gc
+    out(24, 2) = r->kfwd * IL4_IL4Ra; // IL4_IL4Ra_gc with respect to gc
+    out(24, 23) = r->kfwd * gc; // IL4_IL4Ra_gc with respect to IL4_IL4Ra
+    out(24, 24) = - r->k33rev; // IL4_IL4Ra_gc with respect to IL4_IL4Ra_gc
+    
+    // IL21Ra
+    out(25, 25) = -kfbnd * IL21; // IL21Ra with respect to IL21Ra
+    out(25, 26) = k34rev; // IL21_IL21Ra
+    
+    // IL21_IL21Ra
+    out(26, 2) = - r->kfwd * IL21_IL21Ra; // IL21_IL21Ra with respect to gc
+    out(26, 25) = kfbnd * IL21; // IL21_IL21Ra with respect to IL21Ra
+    out(26, 26) = - k34rev - r->kfwd * gc; // IL21_IL21Ra with respect to IL21_IL21Ra
+    out(26, 27) = r->k35rev; // IL21_IL21Ra with respect to IL21_IL21Ra_gc
+    
+    // IL21_IL21Ra_gc
+    out(27, 2) = r->kfwd * IL21_IL21Ra; // IL21_IL21Ra_gc with respect to gc
+    out(27, 26) = r->kfwd * gc; // IL21_IL21Ra_gc with respect to IL21_IL21Ra
+    out(27, 27) = -r->k35rev; // IL21_IL21Ra_gc with respect to IL21_IL21Ra_gc
 }
 
 
 extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	ratesS r = param(rxn_in);
 
-	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9); // TODO: add IL4/21
+	jacobian(y_in, &r, out, r.IL2, r.IL15, r.IL7, r.IL9, r.IL4, r.IL21);
 }
 
 
