@@ -184,7 +184,7 @@ class TestModel(unittest.TestCase):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
         rxntfR[14] = 10.0 # Turn up active endocytosis
-        rxntfR[17] = 0.01 # Turn down degradation
+        rxntfR[17] = 0.02 # Turn down degradation
 
         rxntfR[0:4] = 0.0
         # set high concentration of IL2
