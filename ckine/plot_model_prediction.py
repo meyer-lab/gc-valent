@@ -14,7 +14,6 @@ class surf_IL2Rb:
 
         # percentage value that is used in scaling output
         self.y_max = 10
-        
 
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
