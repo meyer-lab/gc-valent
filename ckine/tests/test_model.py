@@ -40,8 +40,8 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
-        self.args = np.random.lognormal(0., 1., 13)
-        self.tfargs = np.random.lognormal(0., 1., 11)
+        self.args = np.random.lognormal(0., 0.1, 13)
+        self.tfargs = np.random.lognormal(0., 0.1, 11)
         self.fully = np.random.lognormal(0., 1., 48)
 
         # Force sorting fraction to be less than 1.0
@@ -183,19 +183,22 @@ class TestModel(unittest.TestCase):
     def test_endosomalCTK_bound(self):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
+        rxntfR[14] = 10.0 # Turn up active endocytosis
+        rxntfR[17] = 0.01 # Turn down degradation
+
         rxntfR[0:4] = 0.0
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
-        rxntfR_1[0] = 500.
+        rxntfR_1[0] = 1000.
         # set high concentration of IL15
         rxntfR_2 = rxntfR.copy()
-        rxntfR_2[1] = 500.
+        rxntfR_2[1] = 1000.
         # set high concentration of IL7
         rxntfR_3 = rxntfR.copy()
-        rxntfR_3[2] = 500.
+        rxntfR_3[2] = 1000.
         # set high concentration of IL9
         rxntfR_4 = rxntfR.copy()
-        rxntfR_4[3] = 500.
+        rxntfR_4[3] = 1000.
 
         # first element is t=0 and second element is t=10**5
         yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
@@ -204,32 +207,19 @@ class TestModel(unittest.TestCase):
         yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
 
         # make sure endosomal free ligand is positive at equilibrium
-        # TODO: Reenable endosomal ligand as it's not currently passing
         # IL2
-        print('Endosomal IL2 at 500 nM of IL2:')
-        print(yOut_1[1, 44])
-        
-        # self.assertGreater(yOut_1[1, 44], 0)
+        self.assertGreater(yOut_1[1, 44], 0)
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
-        print('Endosomal IL15 at 500 nM of IL15:')
-        print(yOut_2[1, 45])
-        
-        # self.assertGreater(yOut_2[1, 45], 0)
+        self.assertGreater(yOut_2[1, 45], 0)
         self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
         self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
         # IL7
-        print('Endosomal IL7 at 500 nM of IL7:')
-        print(yOut_3[1, 46])
-        
-        # self.assertGreater(yOut_3[1,46], 0)
+        self.assertGreater(yOut_3[1, 46], 0)
         self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
         self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
         # IL9
-        print('Endosomal IL9 at 500 nM of IL9:')
-        print(yOut_4[1, 47])
-        
-        # self.assertGreater(yOut_4[1,47], 0)
+        self.assertGreater(yOut_4[1, 47], 0)
         self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium

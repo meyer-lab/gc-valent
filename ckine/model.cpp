@@ -429,7 +429,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
-	CVodeSetMaxNumSteps(sMem->cvode_mem, 200000);
+	CVodeSetMaxNumSteps(sMem->cvode_mem, 300000);
 }
 
 
