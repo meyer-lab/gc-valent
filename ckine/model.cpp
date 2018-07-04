@@ -222,11 +222,12 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
 	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
 
+	// Handle endosomal ligand balance.
+	// Must come before trafficking as we only calculate this based on reactions balance
+	findLigConsume(dydt);
+
 	// Handle trafficking
 	trafficking(y, r, dydt);
-
-	// Handle endosomal ligand balance.
-	findLigConsume(dydt);
 }
 
 
