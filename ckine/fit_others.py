@@ -55,7 +55,7 @@ class build_model:
 
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=3) # k27rev, k33rev, k35rev
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=10) # size of all unknown off rates in model
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             GCexpr = pm.Lognormal('GCexpr', sd=0.1, shape=1) # expression of gc
