@@ -53,17 +53,19 @@ ratesS param(const double * const rxntfR) {
 	r.IL15 = rxntfR[1];
 	r.IL7 = rxntfR[2];
 	r.IL9 = rxntfR[3];
-	r.kfwd = rxntfR[4];
-	r.k4rev = rxntfR[5];
-	r.k5rev = rxntfR[6];
-	r.k16rev = rxntfR[7];
-	r.k17rev = rxntfR[8];
-	r.k22rev = rxntfR[9];
-	r.k23rev = rxntfR[10];
-	r.k27rev = rxntfR[11];
-	r.k31rev = rxntfR[12];
-    r.k33rev = rxntfR[13];
-    r.k35rev = rxntfR[14];
+    r.IL4 = rxntfR[4];
+    r.IL21 = rxntfR[5];
+	r.kfwd = rxntfR[6];
+	r.k4rev = rxntfR[7];
+	r.k5rev = rxntfR[8];
+	r.k16rev = rxntfR[9];
+	r.k17rev = rxntfR[10];
+	r.k22rev = rxntfR[11];
+	r.k23rev = rxntfR[12];
+	r.k27rev = rxntfR[13];
+	r.k31rev = rxntfR[14];
+    r.k33rev = rxntfR[15];
+    r.k35rev = rxntfR[16];
 
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
@@ -85,17 +87,17 @@ ratesS param(const double * const rxntfR) {
 	r.k20rev = r.k22rev * r.k24rev / r.k17rev;
 
 	// Set the rates
-	r.endo = rxntfR[15];
-	r.activeEndo = rxntfR[16];
-	r.sortF = rxntfR[17];
-	r.kRec = rxntfR[18];
-	r.kDeg = rxntfR[19];
+	r.endo = rxntfR[17];
+	r.activeEndo = rxntfR[18];
+	r.sortF = rxntfR[19];
+	r.kRec = rxntfR[20];
+	r.kDeg = rxntfR[21];
 
 	if (r.sortF > 1.0) {
 		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
 	}
 
-	std::copy_n(rxntfR + 20, 8, r.Rexpr.begin());
+	std::copy_n(rxntfR + 22, 8, r.Rexpr.begin());
 
 	return r;
 }
@@ -226,7 +228,7 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 		}
 	}
 
-	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R
+	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 	dydt[0] += r->Rexpr[0];
 	dydt[1] += r->Rexpr[1];
 	dydt[2] += r->Rexpr[2];
@@ -307,24 +309,24 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, Nspec
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo; // Endo (15)
+		NV_Ith_S(y0s[17], is) = -y0[is]/r->endo; // Endo (17)
 
-		// sortF (17)
-		NV_Ith_S(y0s[17], is + halfL) = -y0[is + halfL]/r->sortF;
-		NV_Ith_S(y0s[17], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[17], is + halfL) - y0[is + halfL]);
+		// sortF (19)
+		NV_Ith_S(y0s[19], is + halfL) = -y0[is + halfL]/r->sortF;
+		NV_Ith_S(y0s[19], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[19], is + halfL) - y0[is + halfL]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + halfL]*internalFrac/r->endo; // kRec (18)
+		NV_Ith_S(y0s[20], is) = (1-r->sortF)*y0[is + halfL]*internalFrac/r->endo; // kRec (20)
 
-		// kDeg (19)
-		NV_Ith_S(y0s[19], is + halfL) = -y0[is + halfL]/r->kDeg;
-		NV_Ith_S(y0s[19], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[19], is + halfL)*internalFrac/r->endo;
+		// kDeg (21)
+		NV_Ith_S(y0s[21], is + halfL) = -y0[is + halfL]/r->kDeg;
+		NV_Ith_S(y0s[21], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[21], is + halfL)*internalFrac/r->endo;
 	}
 
-	// Rexpr (20-28)
+	// Rexpr (22-30)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[20 + ii], recIDX[ii] + halfL) = y0[recIDX[ii] + halfL]/r->Rexpr[ii];
-		NV_Ith_S(y0s[20 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[20 + ii], recIDX[ii] + halfL)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[22 + ii], recIDX[ii] + halfL) = y0[recIDX[ii] + halfL]/r->Rexpr[ii];
+		NV_Ith_S(y0s[22 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[22 + ii], recIDX[ii] + halfL)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 

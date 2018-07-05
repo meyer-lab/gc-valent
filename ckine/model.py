@@ -23,8 +23,8 @@ def runCkine (tps, rxn, tfr):
 def runCkineU (tps, rxntfr):
     global libb
 
-    assert rxntfr.size == 28
-    assert rxntfr[17] < 1.0 # Check that sortF won't throw
+    assert rxntfr.size == 30
+    assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, 62), dtype=np.float64)
 
@@ -41,7 +41,7 @@ def runCkineU (tps, rxntfr):
 def runCkineSensi (tps, rxntfr):
     global libb
 
-    assert rxntfr.size == 28
+    assert rxntfr.size == 30
 
     yOut = np.zeros((tps.size, 62), dtype=np.float64)
 
@@ -60,9 +60,9 @@ def runCkineSensi (tps, rxntfr):
 def dy_dt(y, t, rxn):
     global libb
 
-    assert rxn.size == 15
+    assert rxn.size == 17
 
-    rxntfr = np.concatenate((rxn, np.ones(18, dtype=np.float64)*0.9))
+    rxntfr = np.concatenate((rxn, np.ones(13, dtype=np.float64)*0.9))
 
     yOut = np.zeros_like(y)
 
@@ -75,7 +75,7 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
     global libb
 
-    assert rxn.size == 15
+    assert rxn.size == 17
 
     yOut = np.zeros((28, 28)) # size of the Jacobian matrix
 
@@ -84,14 +84,14 @@ def jacobian(y, t, rxn):
     return yOut
 
 
-def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
+def fullJacobian(y, t, rxntfR):
     global libb
 
-    assert rxn.size == 28
+    assert rxntfR.size == 30
 
     yOut = np.zeros((62, 62)) # size of the full Jacobian matrix
 
-    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
     return yOut
 
 def fullModel(y, t, rxn, tfr):
@@ -99,7 +99,7 @@ def fullModel(y, t, rxn, tfr):
 
     rxntfr = np.concatenate((rxn, tfr))
 
-    assert rxntfr.size == 28
+    assert rxntfr.size == 30
 
     yOut = np.zeros_like(y)
 
@@ -147,7 +147,7 @@ def solveAutocrineComplete(rxnRates, trafRates):
     y0 = np.zeros(62, np.float64)
 
     # For now assume 0 autocrine ligand
-    rxnRates[0:4] = 0.0
+    rxnRates[0:6] = 0.0
 
     full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
 

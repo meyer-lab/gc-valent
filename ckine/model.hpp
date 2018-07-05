@@ -63,7 +63,7 @@ constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
 // TODO: change values for global constants
-constexpr size_t Nparams = 28; // length of rxntfR vector
+constexpr size_t Nparams = 30; // length of rxntfR vector
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 28; // number of complexes on surface alone
 
