@@ -30,26 +30,26 @@ def findy(lig, timelength = 1000):
 
     t = 60. * 4 # let's let the system run for 4 hours
     ts = np.linspace(0.0, t, timelength) #generate 1000 evenly spaced timepoints
-    IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=lig) #cytokine stimulation concentrations
+    IL2 = IL15 = IL7 = IL9 = IL4 = IL21 = np.logspace(-3, 3, num=lig) #cytokine stimulation concentrations
     #Goal is to make one cell expresison levels by len(mat) for every cell
-    mat = np.array(np.meshgrid(IL2,IL15,IL7,IL9)).T.reshape(-1,4)
+    mat = np.array(np.meshgrid(IL2,IL15,IL7,IL9,IL4,IL21)).T.reshape(-1,6)
     mats = np.tile(mat,(len(cell_names),1)) # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (34)
     receptor_repeats = np.repeat(data_numbers.T,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
     new_mat = np.concatenate((mats,receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     #Preset a y_of_combos
-    y_of_combos = np.zeros((len(new_mat), len(ts),48))
+    y_of_combos = np.zeros((len(new_mat), ts.size,62))
 
     #Set some given parameters already determined from fitting
-    rxntfR = np.zeros(24)
-    rxntfR[4:13] = np.ones(9) * (5*10**-1)  #From fitting: kfwd - k31rev
-    rxntfR[13:18] = np.ones(5) * (50* 10**-3) #From fitting: endo - kdeg
+    rxntfR = np.zeros(30)
+    rxntfR[6:17] = 0.01  #From fitting: kfwd - k31rev
+    rxntfR[17:22] = 5.0E-2 #From fitting: endo - kdeg
 
     #Iterate through every combination of values and store solver values in a y matrix
     for ii in tqdm(range(len(new_mat))):
         #Create a new y0 everytime odeint is run per combination of values.
-        rxntfR[18:24] = new_mat[ii,4:10]
-        rxntfR[0:4] = new_mat[ii,0:4] #Cytokine stimulation concentrations
+        rxntfR[22:30] = new_mat[ii,6:10] #TODO: search immgen for IL4Ra and IL21Ra lines 37 and 51
+        rxntfR[0:6] = new_mat[ii,0:6] #Cytokine stimulation concentrations
 
         temp, retVal = runCkineU(ts, rxntfR)
         assert retVal >= 0

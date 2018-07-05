@@ -24,7 +24,7 @@ class IL4_7_21_activity:
 
     def calc(self, unkVec):
         """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
-        
+
         Op = runCkineOp(ts=np.array(500.))
 
         # Loop over concentrations of IL4
@@ -32,7 +32,7 @@ class IL4_7_21_activity:
 
         # Loop over concentrations of IL7
         actVecIL7 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[2], x))), self.cytokC)))
-        
+
         # Loop over concentrations of IL21
         actVecIL21 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[5], x))), self.cytokC)))
 
@@ -42,7 +42,7 @@ class IL4_7_21_activity:
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
         return self.fit_data - actVec
 
-    
+
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
@@ -66,7 +66,7 @@ class build_model:
             ligands = T.zeros(6, dtype=np.float64)
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(Rexpr))) # receptor expression indexing same as in model.cpp
-            
+
             Y_int = self.act.calc(unkVec) # fitting the data based on act.calc for the given parameters
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
@@ -90,4 +90,3 @@ class build_model:
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
-        
