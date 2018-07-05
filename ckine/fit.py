@@ -1,5 +1,5 @@
 """
-This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
+This file includes the classes and functions necessary to fit the IL2 and IL15 model to the experimental data.
 """
 import pymc3 as pm, theano.tensor as T, os
 from os.path import join
