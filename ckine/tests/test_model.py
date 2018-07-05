@@ -182,6 +182,7 @@ class TestModel(unittest.TestCase):
     def test_endosomalCTK_bound(self):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
+        rxntfR[4] = 0.001 # Damp down kfwd
         rxntfR[14] = 10.0 # Turn up active endocytosis
         rxntfR[17] = 0.02 # Turn down degradation
         rxntfR[18:24] = 10.0 # Control expression
