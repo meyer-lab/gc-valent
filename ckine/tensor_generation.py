@@ -44,7 +44,6 @@ def findy(lig, timelength = 1000):
     rxntfR = np.zeros(24)
     rxntfR[4:13] = np.ones(9) * 5.0E-1  #From fitting: kfwd - k31rev
     rxntfR[13:18] = np.ones(5) * 5.0E-2 #From fitting: endo - kdeg
-    rxntfR[4] = 1.0E-8 # kfwd should be very small
 
     #Iterate through every combination of values and store solver values in a y matrix
     for ii in tqdm(range(len(new_mat))):
