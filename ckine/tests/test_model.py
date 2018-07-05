@@ -39,8 +39,8 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
-        self.args = np.random.lognormal(0., 0.1, 13)
-        self.tfargs = np.random.lognormal(0., 0.1, 11)
+        self.args = np.random.lognormal(0., 1., 13)
+        self.tfargs = np.random.lognormal(0., 1., 11)
         self.fully = np.random.lognormal(0., 1., 48)
 
         # Force sorting fraction to be less than 1.0
@@ -182,6 +182,7 @@ class TestModel(unittest.TestCase):
     def test_endosomalCTK_bound(self):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
+        rxntfR[4:24] = 0.1 # Fill all in to avoid parameter variation
         rxntfR[4] = 0.001 # Damp down kfwd
         rxntfR[14] = 10.0 # Turn up active endocytosis
         rxntfR[17] = 0.02 # Turn down degradation
