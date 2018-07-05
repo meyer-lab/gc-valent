@@ -97,6 +97,7 @@ ratesS param(const double * const rxntfR) {
 		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
 	}
 
+    // Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 	std::copy_n(rxntfR + 22, 8, r.Rexpr.begin());
 
 	return r;
