@@ -57,16 +57,16 @@ def findy(lig, timelength = 1000):
     return y_of_combos, new_mat, mat, mats, cell_names
 
 def activity_surface_total(yVec):
-    """This function returns a vector of 16 elements where the activity of the 4 cytokines and amounts of surface and total receptors are included."""
-    x = np.zeros(16)
-    x[0],x[1],x[2],x[3] = getTotalActiveCytokine(0,yVec), getTotalActiveCytokine(1,yVec), getTotalActiveCytokine(2,yVec), getTotalActiveCytokine(3,yVec)
-    x[4:10] = surfaceReceptors(yVec)
-    x[10:16] = totalReceptors(yVec)
+    """This function returns a vector of 16 elements where the activity of the 6 cytokines and amounts of (8) surface and total receptors are included."""
+    x = np.zeros(22)
+    x[0],x[1],x[2],x[3],x[4],x[5] = getTotalActiveCytokine(0,yVec), getTotalActiveCytokine(1,yVec), getTotalActiveCytokine(2,yVec), getTotalActiveCytokine(3,yVec), getTotalActiveCytokine(4,yVec), getTotalActiveCytokine(5,yVec)
+    x[6:14] = surfaceReceptors(yVec)
+    x[14:22] = totalReceptors(yVec)
     return x
 
 def activity_surf_tot(y_of_combos):
     """This function returns the activity and amounts of receptors both on the surface and total for every timepoint per combination of values"""
-    values = np.zeros((len(y_of_combos), y_of_combos.shape[1],16))
+    values = np.zeros((len(y_of_combos), y_of_combos.shape[1],22))
 
     for i, _ in enumerate(y_of_combos):
         for j in range(y_of_combos.shape[1]):
