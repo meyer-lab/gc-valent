@@ -186,7 +186,7 @@ class TestModel(unittest.TestCase):
         rxntfR[4] = 0.0001 # Damp down kfwd
         rxntfR[14] = 10.0 # Turn up active endocytosis
         rxntfR[17] = 0.02 # Turn down degradation
-        rxntfR[18:24] = 10.0 # Control expression
+        rxntfR[18:24] = 1.0 # Control expression
 
         rxntfR[0:4] = 0.0
         # set high concentration of IL2
