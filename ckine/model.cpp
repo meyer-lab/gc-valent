@@ -178,10 +178,10 @@ void findLigConsume(double *dydt) {
 	double const * const dydti = dydt + halfL;
 
 	// Calculate the ligand consumption.
-	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
-	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
-	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
-	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+	dydt[44] -= std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
+	dydt[45] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
+	dydt[46] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
+	dydt[47] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
 }
 
 
