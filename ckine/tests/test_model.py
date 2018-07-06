@@ -73,6 +73,27 @@ class TestModel(unittest.TestCase):
         # Check for conservation of each endosomal receptor
         for idxs in conservation_IDX:
             self.assertConservation(dy, 0.0, idxs + 22)
+            
+    def test_equlibrium(self):
+        '''System should still come to equilibrium after being stimulated with ligand'''
+        t = np.array([0.0, 100000.0])
+        rxn = self.rxntfR.copy()
+        rxn[0:4] = 0. # set ligands to 0
+        rxnIL2, rxnIL15, rxnIL7, rxnIL9 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
+        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3] = 100., 100., 100., 100.
+        
+        # runCkine to get yOut
+        yOut_2, retVal = runCkineU(t, rxnIL2)
+        yOut_15, retVal = runCkineU(t, rxnIL15)
+        yOut_7, retVal = runCkineU(t, rxnIL7)
+        yOut_9, retVal = runCkineU(t, rxnIL7)
+        
+        # check that dydt is ~0
+        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, t, rxnIL2[0:13], rxnIL2[13:24]))
+        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, t, rxnIL15[0:13], rxnIL15[13:24]))
+        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, t, rxnIL7[0:13], rxnIL7[13:24]))
+        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, t, rxnIL9[0:13], rxnIL9[13:24])) 
+        
 
     def test_fullModel(self):
         """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
