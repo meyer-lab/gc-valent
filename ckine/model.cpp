@@ -178,10 +178,10 @@ void findLigConsume(double *dydt) {
 	double const * const dydti = dydt + halfL;
 
 	// Calculate the ligand consumption.
-	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
-	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
-	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
-	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0);
+	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0);
+	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0);
+	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0);
 }
 
 
@@ -220,7 +220,7 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 
 	// Calculate cell surface and endosomal reactions
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
-	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
+	dy_dt(y + halfL, r, dydt + halfL, y[44] / internalV,   y[45] / internalV,  y[46] / internalV,  y[47] / internalV);
 
 	// Handle endosomal ligand balance.
 	// Must come before trafficking as we only calculate this based on reactions balance
@@ -365,7 +365,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	if (sMem->sensi)
 		std::cout << "Sensitivity enabled." << std::endl;
 
-	//N_VPrint_Serial(sMem->state);
 	std::cout << std::endl << std::endl;
 }
 
@@ -429,7 +428,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
-	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
+	CVodeSetMaxNumSteps(sMem->cvode_mem, 200000);
 }
 
 
@@ -762,7 +761,7 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
 
-	jacobian(y + halfL, r, sub_y.data(), y[44], y[45], y[46], y[47]); // different IL concs for internal case 
+	jacobian(y + halfL, r, sub_y.data(), y[44]/internalV, y[45]/internalV, y[46]/internalV, y[47]/internalV); // different IL concs for internal case 
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
 
@@ -792,21 +791,21 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
-	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
-	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
-	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(22 + 0, 44) = -kfbnd * y[22 + 0] / internalV; // IL2 binding to IL2Ra
+	out(22 + 1, 44) = -kfbnd * y[22 + 1] / internalV; // IL2 binding to IL2Rb
+	out(22 + 3, 44) = kfbnd * y[22 + 0] / internalV; // IL2 binding to IL2Ra
+	out(22 + 4, 44) = kfbnd * y[22 + 1] / internalV; // IL2 binding to IL2Rb
 
-	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
-	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
-	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
-	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(22 +  1, 45) = -kfbnd * y[22 +  1] / internalV; // IL15 binding to IL2Rb
+	out(22 + 9, 45) = -kfbnd * y[22 + 9] / internalV; // IL15 binding to IL15Ra
+	out(22 + 10, 45) =  kfbnd * y[22 + 9] / internalV; // IL15 binding to IL15Ra
+	out(22 + 11, 45) =  kfbnd * y[22 +  1] / internalV; // IL15 binding to IL2Rb
 
-	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
-	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(22 + 16, 46) = -kfbnd * y[22 + 16] / internalV; // IL7 binding to IL7Ra
+	out(22 + 17, 46) =  kfbnd * y[22 + 16] / internalV; // IL7 binding to IL7Ra
 
-	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
-	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(22 + 19, 47) = -kfbnd * y[22 + 19] / internalV; // IL9 binding to IL9R
+	out(22 + 20, 47) =  kfbnd * y[22 + 19] / internalV; // IL9 binding to IL9R
 }
 
 constexpr bool debugOutput = false;
