@@ -214,18 +214,18 @@ class TestModel(unittest.TestCase):
 
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
-        self.assertGreater(yOut_1[1, 44], 0)
+        self.assertGreater(yOut_1[1, 44], 1.)
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
-        self.assertGreater(yOut_2[1, 45], 0)
+        self.assertGreater(yOut_2[1, 45], 1.)
         self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
         self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
         # IL7
-        self.assertGreater(yOut_3[1, 46], 0)
+        self.assertGreater(yOut_3[1, 46], 1.)
         self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
         self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
         # IL9
-        self.assertGreater(yOut_4[1, 47], 0)
+        self.assertGreater(yOut_4[1, 47], 1.)
         self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium
