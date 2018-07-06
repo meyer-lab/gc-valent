@@ -11,7 +11,7 @@ from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
-#settings.load_profile("ci")
+settings.load_profile("ci")
 
 conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
                     np.array([0, 3, 5, 6, 8]), # IL2Ra
