@@ -211,7 +211,7 @@ class TestModel(unittest.TestCase):
         rxntfR[4] = 0.0001 # Damp down kfwd
         rxntfR[14] = 10.0 # Turn up active endocytosis
         rxntfR[17] = 0.02 # Turn down degradation
-        rxntfR[18:24] = 1.0 # Control expression
+        rxntfR[18:24] = 10.0 # Control expression
 
         rxntfR[0:4] = 0.0
         # set high concentration of IL2
@@ -243,12 +243,10 @@ class TestModel(unittest.TestCase):
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
         self.assertGreater(yOut_2[1, 45], 1.)
-        self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
-        self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
+        self.assertLess(np.sum(yOut_2[1, np.array([44, 46, 47])), 1.0E-5) # no other ligand
         # IL7
         self.assertGreater(yOut_3[1, 46], 1.)
-        self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
-        self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
+        self.assertLess(np.sum(yOut_3[1, np.array([44, 45, 47])), 1.0E-5) # no other ligand
         # IL9
         self.assertGreater(yOut_4[1, 47], 1.)
         self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
