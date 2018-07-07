@@ -208,7 +208,7 @@ class TestModel(unittest.TestCase):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
         rxntfR[4:24] = 0.1 # Fill all in to avoid parameter variation
-        rxntfR[4] = 0.0001 # Damp down kfwd
+        rxntfR[4] = 1.0E-6 # Damp down kfwd
         rxntfR[14] = 10.0 # Turn up active endocytosis
         rxntfR[17] = 0.02 # Turn down degradation
         rxntfR[18:24] = 10.0 # Control expression
@@ -240,16 +240,16 @@ class TestModel(unittest.TestCase):
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
         self.assertGreater(yOut_1[1, 44], 1.)
-        self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
+        self.assertLess(np.sum(yOut_1[1, np.array([45, 46, 47])]), 1.0E-9) # no other ligand
         # IL15
         self.assertGreater(yOut_2[1, 45], 1.)
-        self.assertLess(np.sum(yOut_2[1, np.array([44, 46, 47])), 1.0E-5) # no other ligand
+        self.assertLess(np.sum(yOut_2[1, np.array([44, 46, 47])]), 1.0E-9) # no other ligand
         # IL7
         self.assertGreater(yOut_3[1, 46], 1.)
-        self.assertLess(np.sum(yOut_3[1, np.array([44, 45, 47])), 1.0E-5) # no other ligand
+        self.assertLess(np.sum(yOut_3[1, np.array([44, 45, 47])]), 1.0E-9) # no other ligand
         # IL9
         self.assertGreater(yOut_4[1, 47], 1.)
-        self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
+        self.assertLess(np.sum(yOut_4[1, np.array([44, 45, 46])]), 1.0E-9) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium
         self.assertTrue(np.greater(yOut_1[25:31], 0.0).all())
