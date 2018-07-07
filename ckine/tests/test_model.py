@@ -37,7 +37,7 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, msg=str(IDX))
 
     def setUp(self):
-        self.ts = np.array([0.0, 1000.0])
+        self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
         self.args = np.random.lognormal(0., 1., 13)
         self.tfargs = np.random.lognormal(0., 1., 11)
@@ -239,18 +239,18 @@ class TestModel(unittest.TestCase):
 
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
-        self.assertGreater(yOut_1[1, 44], 0.1)
+        self.assertGreater(yOut_1[1, 44], 1.)
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
-        self.assertGreater(yOut_2[1, 45], 0.1)
+        self.assertGreater(yOut_2[1, 45], 1.)
         self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
         self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
         # IL7
-        self.assertGreater(yOut_3[1, 46], 0.1)
+        self.assertGreater(yOut_3[1, 46], 1.)
         self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
         self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
         # IL9
-        self.assertGreater(yOut_4[1, 47], 0.1)
+        self.assertGreater(yOut_4[1, 47], 1.)
         self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium
