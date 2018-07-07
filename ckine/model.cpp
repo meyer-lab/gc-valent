@@ -220,7 +220,7 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 
 	// Calculate cell surface and endosomal reactions
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
-	dy_dt(y + halfL, r, dydt + halfL, y[44] / internalV,   y[45] / internalV,  y[46] / internalV,  y[47] / internalV);
+	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
 
 	// Handle endosomal ligand balance.
 	// Must come before trafficking as we only calculate this based on reactions balance
@@ -761,7 +761,7 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
 
-	jacobian(y + halfL, r, sub_y.data(), y[44]/internalV, y[45]/internalV, y[46]/internalV, y[47]/internalV); // different IL concs for internal case 
+	jacobian(y + halfL, r, sub_y.data(), y[44], y[45], y[46], y[47]); // different IL concs for internal case 
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
 
