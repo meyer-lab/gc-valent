@@ -792,21 +792,21 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
-	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
-	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
-	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // partial derivative of endosomal IL2Ra wrt endosomal IL2
+	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // partial derivative of endosomal IL2Rb wrt endosomal IL2
+	out(22 + 3, 44) = kfbnd * y[22 + 0]; // partial derivative of endosomal IL2_IL2Ra wrt endosomal IL2
+	out(22 + 4, 44) = kfbnd * y[22 + 1]; // partial derivative of endosomal IL2_IL2Rb wrt endosomal IL2
 
-	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
-	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
-	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
-	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // partial derivative of endosomal IL2Rb wrt endosomal IL15
+	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // partial derivative of endosomal IL15Ra wrt endosomal IL15
+	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // partial derivative of endosomal IL15_15Ra wrt endosomal IL15
+	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // partial derivative of endosomal IL15_IL2Rb wrt endosomal IL15
 
-	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
-	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // partial derivative of endosomal IL7Ra wrt endosomal IL7
+	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // partial derivative of endosomal IL7_IL7Ra wrt endosomal IL7
 
-	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
-	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // partial derivative of endosomal IL9R wrt endosomal IL9
+	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // partial derivative of endosomal IL9_IL9R wrt endosomal IL9
 }
 
 constexpr bool debugOutput = false;
