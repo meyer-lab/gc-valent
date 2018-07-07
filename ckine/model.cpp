@@ -407,7 +407,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 	
 	// Call CVodeSVtolerances to specify the scalar relative and absolute tolerances
-	if (CVodeSStolerances(sMem->cvode_mem, reltolIn, abstolIn) < 0) {
+	if (CVodeSStolerances(sMem->cvode_mem, tolIn, tolIn) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
@@ -451,12 +451,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-3);
+	fill(abs.begin(), abs.end(), tolIn);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-3, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, tolIn, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
