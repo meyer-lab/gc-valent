@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(self.y0, self.ts[0], self.args)
         approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error
 
-        closeness = np.isclose(analytical, approx, rtol=0.0001, atol=0.0001)
+        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
@@ -139,7 +139,7 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(analytical.shape == approx.shape)
 
-        closeness = np.isclose(analytical, approx, rtol=0.0001, atol=0.0001)
+        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))

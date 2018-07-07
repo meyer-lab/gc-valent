@@ -792,21 +792,42 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // partial derivative of endosomal IL2Ra wrt endosomal IL2
-	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // partial derivative of endosomal IL2Rb wrt endosomal IL2
-	out(22 + 3, 44) = kfbnd * y[22 + 0]; // partial derivative of endosomal IL2_IL2Ra wrt endosomal IL2
-	out(22 + 4, 44) = kfbnd * y[22 + 1]; // partial derivative of endosomal IL2_IL2Rb wrt endosomal IL2
+	// Derivative is w.r.t. second number
+	const double eIL2 = y[44] / internalV;
+	out(44, 44) -= kfbnd * (y[22] + y[23]) / internalV;
+	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
+	out(44, 22) = -kfbnd * eIL2; // IL2 binding to IL2Ra
+	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(44, 23) = -kfbnd * eIL2; // IL2 binding to IL2Rb
+	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
+	out(44, 25) =  k1rev / internalV;
+	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(44, 26) = k2rev / internalV;
 
-	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // partial derivative of endosomal IL2Rb wrt endosomal IL15
-	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // partial derivative of endosomal IL15Ra wrt endosomal IL15
-	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // partial derivative of endosomal IL15_15Ra wrt endosomal IL15
-	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // partial derivative of endosomal IL15_IL2Rb wrt endosomal IL15
+	const double eIL15 = y[45] / internalV;
+	out(45, 45) -= kfbnd * (y[23] + y[22 + 9]) / internalV;
+	out(22 + 1, 45) = -kfbnd * y[22 + 1]; // IL15 binding to IL2Rb
+	out(45, 23) = -kfbnd * eIL15; // IL15 binding to IL2Rb
+	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(45, 31) = -kfbnd * eIL15; // IL15 binding to IL15Ra
+	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(45, 32) = k13rev / internalV;
+	out(45, 33) = k14rev / internalV;
 
-	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // partial derivative of endosomal IL7Ra wrt endosomal IL7
-	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // partial derivative of endosomal IL7_IL7Ra wrt endosomal IL7
+	const double eIL7 = y[46] / internalV;
+	out(46, 46) -= kfbnd * y[22 + 16] / internalV;
+	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(46, 22 + 16) = -kfbnd * eIL7; // IL7 binding to IL7Ra
+	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(46, 39) = k25rev / internalV;
 
-	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // partial derivative of endosomal IL9R wrt endosomal IL9
-	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // partial derivative of endosomal IL9_IL9R wrt endosomal IL9
+	const double eIL9 = y[47] / internalV;
+	out(47, 47) -= kfbnd * y[22 + 19] / internalV;
+	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(47, 22 + 19) = -kfbnd * eIL9; // IL9 binding to IL9R
+	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(47, 42) = k29rev / internalV; 
 }
 
 constexpr bool debugOutput = false;
