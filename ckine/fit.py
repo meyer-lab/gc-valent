@@ -116,8 +116,8 @@ class build_model:
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            pm.Normal('fitD_15', sd=0.1, observed=Y_15) # TODO: Replace with experimental-derived stderr
+            pm.Normal('fitD_int', sd=0.1, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
