@@ -93,7 +93,8 @@ class surf_IL2Rb:
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
     def __init__(self):
-        self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
+        self.PTS = 25
+        self.cytokC = np.logspace(-3.3, 2.7, self.PTS) # 8 log-spaced values between our two endpoints
 
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
@@ -108,13 +109,13 @@ class pstat:
         assert unkVec.size == 24
 
         # loop over concentrations of IL2
-        unkVec_IL2 = np.zeros((24, 8))
+        unkVec_IL2 = np.zeros((24,self.PTS))
         unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
-        IL2_yOut = np.ones((8,48))
+        IL2_yOut = np.ones((self.PTS,48))
         IL2_yOut_IL2Raminus = IL2_yOut.copy()
-        actVec_IL2 = np.zeros((8))
+        actVec_IL2 = np.zeros((self.PTS))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
-        for ii in range(0,8):
+        for ii in range(0,self.PTS):
             # print(unkVec_IL2.dtype)
             unkVec_IL2 = unkVec.copy()
             unkVec_IL2[0] = self.cytokC[ii]
@@ -139,13 +140,13 @@ class pstat:
             actVec_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
 
         # loop over concentrations of IL15
-        unkVec_IL15 = np.zeros((24, 8))
+        unkVec_IL15 = np.zeros((24, self.PTS))
         unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
-        IL15_yOut = np.ones((8,48))
+        IL15_yOut = np.ones((self.PTS,48))
         IL15_yOut_IL2Raminus = IL15_yOut.copy()
-        actVec_IL15 = np.zeros((8))
+        actVec_IL15 = np.zeros((self.PTS))
         actVec_IL15_IL2Raminus = actVec_IL15.copy()
-        for ii in range(0,8):
+        for ii in range(0,self.PTS):
             unkVec_IL15 = unkVec.copy()
             unkVec_IL15[0] = self.cytokC[ii]
 
@@ -185,10 +186,10 @@ class pstat:
 
     def plot(self, unkVec):
         output = self.calc(unkVec) * self.y_max
-        IL2_plus = output[0:8]
-        IL2_minus = output[8:16]
-        IL15_plus = output[16:24]
-        IL15_minus = output[24:32]
+        IL2_plus = output[0:self.PTS]
+        IL2_minus = output[self.PTS:(self.PTS*2)]
+        IL15_plus = output[(self.PTS*2):(self.PTS*3)]
+        IL15_minus = output[(self.PTS*3):(self.PTS*4)]
 
         self.plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells")
         self.plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells")
