@@ -25,7 +25,7 @@ def findy(lig, timelength = 1000):
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
 
     #np.delete removes the first column of the data which only includes the name of the receptors (6x35 to 6x34)
-    #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra' 'Il7r' 'Il9r'] in that order
+    #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra' 'Il7r' 'Il9r','IL4Ra,'IL21Ra'] in that order
     data_numbers = np.delete(numpy_data,0,1)
 
     t = 60. * 4 # let's let the system run for 4 hours
@@ -42,13 +42,14 @@ def findy(lig, timelength = 1000):
 
     #Set some given parameters already determined from fitting
     rxntfR = np.zeros(30)
-    rxntfR[6:17] = 0.01  #From fitting: kfwd - k31rev
+    rxntfR[6] = 10.0E-6
+    rxntfR[7:17] = 0.0001  #From fitting: kfwd - k31rev
     rxntfR[17:22] = 5.0E-2 #From fitting: endo - kdeg
 
     #Iterate through every combination of values and store solver values in a y matrix
     for ii in tqdm(range(len(new_mat))):
         #Create a new y0 everytime odeint is run per combination of values.
-        rxntfR[22:30] = new_mat[ii,6:10] #TODO: search immgen for IL4Ra and IL21Ra lines 37 and 51
+        rxntfR[22:30] = new_mat[ii,6:14]
         rxntfR[0:6] = new_mat[ii,0:6] #Cytokine stimulation concentrations
 
         temp, retVal = runCkineU(ts, rxntfR)
