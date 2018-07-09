@@ -109,21 +109,17 @@ class pstat:
         assert unkVec.size == 24
 
         # loop over concentrations of IL2
-        unkVec_IL2 = np.zeros((24,self.PTS))
-        unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
         IL2_yOut = np.ones((self.PTS,48))
         IL2_yOut_IL2Raminus = IL2_yOut.copy()
         actVec_IL2 = np.zeros((self.PTS))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
         for ii in range(0,self.PTS):
-            # print(unkVec_IL2.dtype)
             unkVec_IL2 = unkVec.copy()
             unkVec_IL2[0] = self.cytokC[ii]
 
             unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
             unkVec_IL2_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
 
-            # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
             IL2_yOut[ii,:], retval_1 = runCkineU(self.ts, unkVec_IL2)
             IL2_yOut_IL2Raminus[ii,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus)
 
@@ -140,20 +136,17 @@ class pstat:
             actVec_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
 
         # loop over concentrations of IL15
-        unkVec_IL15 = np.zeros((24, self.PTS))
-        unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
         IL15_yOut = np.ones((self.PTS,48))
         IL15_yOut_IL2Raminus = IL15_yOut.copy()
         actVec_IL15 = np.zeros((self.PTS))
         actVec_IL15_IL2Raminus = actVec_IL15.copy()
         for ii in range(0,self.PTS):
             unkVec_IL15 = unkVec.copy()
-            unkVec_IL15[0] = self.cytokC[ii]
+            unkVec_IL15[1] = self.cytokC[ii]
 
             unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
             unkVec_IL15_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
 
-            # using Op in hopes of finding time at which activity is maximal and using said time to generate yOut
             IL15_yOut[ii,:], retval_3 = runCkineU(self.ts, unkVec_IL15)
             IL15_yOut_IL2Raminus[ii,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus)
 
