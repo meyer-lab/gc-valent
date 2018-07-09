@@ -103,7 +103,7 @@ ratesS param(const double * const rxntfR) {
 	return r;
 }
 
-void dy_dt(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9) {
+void dy_dt(const double * const y, const ratesS * const r, double * const dydt, double IL2, double IL15, double IL7, double IL9, double IL4, double IL21) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
 	const double IL2Rb = y[1];
@@ -827,7 +827,6 @@ extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 
 
 void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<JacMat> &out) {
-	size_t halfL = activeV.size();
 	
 	// unless otherwise specified, assume all partial derivatives are 0
 	out.setConstant(0.0);
@@ -867,27 +866,27 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	out(halfL + 0, (halfL*2)) = -kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(halfL + 1, (halfL*2)) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(halfL + 3, (halfL*2)) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(halfL + 4, (halfL*2)) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
+	out(halfL + 0, halfL*2) = -kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
+	out(halfL + 1, halfL*2) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
+	out(halfL + 3, halfL*2) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
+	out(halfL + 4, halfL*2) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
 
-	out(halfL +  1, ((halfL*2)+1)) = -kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
-	out(halfL + 9, (halfL*2)+1)) = -kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(halfL + 10, (halfL*2)+1)) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(halfL + 11, (halfL*2)+1)) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
+	out(halfL +  1, halfL*2+1) = -kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
+	out(halfL + 9, halfL*2+1) = -kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
+	out(halfL + 10, halfL*2+1) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
+	out(halfL + 11, halfL*2+1) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
 
-	out(halfL + 16, (halfL*2)+2)) = -kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
-	out(halfL + 17, (halfL*2)+2)) =  kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
+	out(halfL + 16, halfL*2+2) = -kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
+	out(halfL + 17, halfL*2+2) =  kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
 
-	out(halfL + 19, (halfL*2)+3)) = -kfbnd * y[halfL + 19]; // IL9 binding to IL9R
-	out(halfL + 20, (halfL*2)+3)) =  kfbnd * y[halfL + 19]; // IL9 binding to IL9R
+	out(halfL + 19, halfL*2+3) = -kfbnd * y[halfL + 19]; // IL9 binding to IL9R
+	out(halfL + 20, halfL*2+3) =  kfbnd * y[halfL + 19]; // IL9 binding to IL9R
     
-    out(halfL + 22, (halfL*2)+4)) = -kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
-	out(halfL + 23, (halfL*2)+4)) =  kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
+    out(halfL + 22, halfL*2+4) = -kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
+	out(halfL + 23, halfL*2+4) =  kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
     
-    out(halfL + 25, (halfL*2)+5)) = -kfbnd * y[halfL + 25]; // IL21 binding to IL21a
-	out(halfL + 26, (halfL*2)+5)) =  kfbnd * y[halfL + 26]; // IL21 binding to IL21Ra
+    out(halfL + 25, halfL*2+5) = -kfbnd * y[halfL + 25]; // IL21 binding to IL21a
+	out(halfL + 26, halfL*2+5) =  kfbnd * y[halfL + 26]; // IL21 binding to IL21Ra
     
     
 }

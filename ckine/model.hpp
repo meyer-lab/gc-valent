@@ -54,7 +54,7 @@ constexpr double k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
 constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
 
 // Literature value for IL-21
-constexpr double k34rev = kfbnd * 0.07 // DOI: 10.1126/scisignal.aal1253 (human)
+constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
     
 
 constexpr double abstolIn = 1E-4;
