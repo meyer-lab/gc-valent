@@ -5,8 +5,8 @@ struct ratesS {
 	double IL15;
 	double IL7;
 	double IL9;
-    double IL4;
-    double IL21;
+	double IL4;
+	double IL21;
 	double kfwd;
 	double k4rev;
 	double k5rev;
@@ -24,8 +24,8 @@ struct ratesS {
 	double k24rev;
 	double k27rev;
 	double k31rev;
-    double k33rev;
-    double k35rev;
+	double k33rev;
+	double k35rev;
 	double endo;
 	double activeEndo;
 	double sortF;
