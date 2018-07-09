@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .model import getActiveSpecies, runCkineU, getSurfaceIL2RbSpecies
+from .model import getActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nSpecies, nParams
 
 
 class surf_IL2Rb:
@@ -9,8 +9,9 @@ class surf_IL2Rb:
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
-        # Condense to just IL2Rb on surface that is either free, bound to IL2, or bound to IL15
+        # import function returns from model.py
         self.IL2Rb_species_IDX = getSurfaceIL2RbSpecies()
+        self.nParams = nParams()
 
         # percentage value that is used in scaling output
         self.y_max = 10
@@ -18,7 +19,7 @@ class surf_IL2Rb:
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
-        assert unkVec.size == 24
+        assert unkVec.size == self.nParams
 
         # set IL2 concentrations
         unkVec_IL2_1 = unkVec.copy()
@@ -98,6 +99,10 @@ class pstat:
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
         self.ts = np.array([500.])
+        
+        # import function returns from model.py
+        self.nParams = nParams()
+        self.nSpecies = nSpecies()
 
         # percentage value that is used in scaling output
         self.y_max = 100
@@ -105,12 +110,12 @@ class pstat:
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
-        assert unkVec.size == 24
+        assert unkVec.size == self.nParams
 
         # loop over concentrations of IL2
-        unkVec_IL2 = np.zeros((24, 8))
+        unkVec_IL2 = np.zeros((self.nParams, 8))
         unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
-        IL2_yOut = np.ones((8,48))
+        IL2_yOut = np.ones((8,self.nSpecies))
         IL2_yOut_IL2Raminus = IL2_yOut.copy()
         actVec_IL2 = np.zeros((8))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
@@ -139,15 +144,15 @@ class pstat:
             actVec_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
 
         # loop over concentrations of IL15
-        unkVec_IL15 = np.zeros((24, 8))
+        unkVec_IL15 = np.zeros((self.nParams, 8))
         unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
-        IL15_yOut = np.ones((8,48))
+        IL15_yOut = np.ones((8,self.nSpecies))
         IL15_yOut_IL2Raminus = IL15_yOut.copy()
         actVec_IL15 = np.zeros((8))
         actVec_IL15_IL2Raminus = actVec_IL15.copy()
         for ii in range(0,8):
             unkVec_IL15 = unkVec.copy()
-            unkVec_IL15[0] = self.cytokC[ii]
+            unkVec_IL15[1] = self.cytokC[ii]
 
             unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
             unkVec_IL15_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
