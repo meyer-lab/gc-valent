@@ -98,7 +98,7 @@ class pstat:
 
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
-        self.ts = np.array([500.])
+        self.ts = np.array([10000.])
 
         # percentage value that is used in scaling output
         self.y_max = 100
