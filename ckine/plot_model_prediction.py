@@ -163,7 +163,7 @@ class pstat:
             actVec_IL15_IL2Raminus[ii] = np.dot(IL15_yOut_IL2Raminus[ii,:], self.activity)
 
         # Normalize to the maximal activity, put together into one vector
-        actVec = np.concatenate((actVec_IL2 / max(actVec_IL2), actVec_IL2_IL2Raminus / max(actVec_IL2_IL2Raminus), actVec_IL15 / max(actVec_IL15), actVec_IL15_IL2Raminus / max(actVec_IL15_IL2Raminus)))
+        actVec = np.concatenate((actVec_IL2 / np.max(actVec_IL2), actVec_IL2_IL2Raminus / np.max(actVec_IL2_IL2Raminus), actVec_IL15 / np.max(actVec_IL15), actVec_IL15_IL2Raminus / np.max(actVec_IL15_IL2Raminus)))
 
         return actVec
 
