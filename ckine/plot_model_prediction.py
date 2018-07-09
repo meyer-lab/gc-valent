@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .model import getActiveSpecies, runCkineU, getSurfaceIL2RbSpecies
+from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies
 
 
 class surf_IL2Rb:
@@ -96,8 +96,7 @@ class pstat:
         self.PTS = 25
         self.cytokC = np.logspace(-3.3, 2.7, self.PTS) # 8 log-spaced values between our two endpoints
 
-        npactivity = getActiveSpecies().astype(np.float64)
-        self.activity = np.concatenate((npactivity, 0.5*npactivity, np.zeros(4))) # 0.5 is because its the endosome
+        self.activity = getTotalActiveSpecies().astype(np.float64)
         self.ts = np.array([500.]) # was 500. in literature
 
         # percentage value that is used in scaling output

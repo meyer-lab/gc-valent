@@ -152,6 +152,12 @@ def getActiveSpecies():
     """ Return a vector that indicates which species are active. """
     return __active_species_IDX
 
+internalStrength = 0.5 # strength of endosomal activity relative to surface
+
+def getTotalActiveSpecies():
+    """ Return a vector of all the species (surface + endosome) which are active. """
+    activity = getActiveSpecies()
+    return np.concatenate((activity, internalStrength * activity, np.zeros(4)))
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
@@ -172,7 +178,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:22]) + getActiveCytokine(cytokineIDX, yVec[22:22*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:22]) + internalStrength * getActiveCytokine(cytokineIDX, yVec[22:22*2])
 
 def surfaceReceptors(y):
     """This function takes in a vector y and returns the amounts of the 6 surface receptors"""
@@ -186,4 +192,4 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 6 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + surfaceReceptors(yVec[22:44])
+    return surfaceReceptors(yVec) + internalStrength * surfaceReceptors(yVec[22:44])
