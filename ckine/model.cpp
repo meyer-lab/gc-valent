@@ -206,12 +206,12 @@ void findLigConsume(double *dydt) {
 	double const * const dydti = dydt + halfL;
 
 	// Calculate the ligand consumption.
-	dydt[56] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
-	dydt[57] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
-	dydt[58] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
-	dydt[59] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
-    dydt[60] -= std::accumulate(dydti+23, dydti+25, 0) / internalV;
-    dydt[61] -= std::accumulate(dydti+26, dydti+28, 0) / internalV;
+	dydt[56] -= std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
+	dydt[57] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
+	dydt[58] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
+	dydt[59] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
+  dydt[60] -= std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
+  dydt[61] -= std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
 }
 
 
@@ -254,11 +254,12 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9, r->IL4, r->IL21);
 	dy_dt(y + halfL, r, dydt + halfL, y[(halfL*2)],   y[(halfL*2)+1],  y[(halfL*2)+2],  y[(halfL*2)+3], y[(halfL*2)+4], y[(halfL*2)+5]);
 
+	// Handle endosomal ligand balance.
+	// Must come before trafficking as we only calculate this based on reactions balance
+	findLigConsume(dydt);
+
 	// Handle trafficking
 	trafficking(y, r, dydt);
-
-	// Handle endosomal ligand balance.
-	findLigConsume(dydt);
 }
 
 
@@ -361,8 +362,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "IL15: " << ratt.IL15 << std::endl;
 	std::cout << "IL7: " << ratt.IL7 << std::endl;
 	std::cout << "IL9: " << ratt.IL9 << std::endl;
-    std::cout << "IL4: " << ratt.IL4 << std::endl;
-    std::cout << "IL21: " << ratt.IL21 << std::endl;
+  std::cout << "IL4: " << ratt.IL4 << std::endl;
+  std::cout << "IL21: " << ratt.IL21 << std::endl;
 	std::cout << "kfwd: " << ratt.kfwd << std::endl;
 	std::cout << "k4rev: " << ratt.k4rev << std::endl;
 	std::cout << "k5rev: " << ratt.k5rev << std::endl;
@@ -380,8 +381,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "k24rev: " << ratt.k24rev << std::endl;
 	std::cout << "k27rev: " << ratt.k27rev << std::endl;
 	std::cout << "k31rev: " << ratt.k31rev << std::endl;
-    std::cout << "k33rev: " << ratt.k33rev << std::endl;
-    std::cout << "k35rev: " << ratt.k35rev << std::endl;
+  std::cout << "k33rev: " << ratt.k33rev << std::endl;
+  std::cout << "k35rev: " << ratt.k35rev << std::endl;
 	std::cout << "endo: " << ratt.endo << std::endl;
 	std::cout << "activeEndo: " << ratt.activeEndo << std::endl;
 	std::cout << "sortF: " << ratt.sortF << std::endl;
@@ -402,7 +403,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	if (sMem->sensi)
 		std::cout << "Sensitivity enabled." << std::endl;
 
-	//N_VPrint_Serial(sMem->state);
 	std::cout << std::endl << std::endl;
 }
 
@@ -444,7 +444,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 	
 	// Call CVodeSVtolerances to specify the scalar relative and absolute tolerances
-	if (CVodeSStolerances(sMem->cvode_mem, reltolIn, abstolIn) < 0) {
+	if (CVodeSStolerances(sMem->cvode_mem, tolIn, tolIn) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
@@ -466,7 +466,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
-	CVodeSetMaxNumSteps(sMem->cvode_mem, 200000);
+	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
 }
 
 
@@ -488,12 +488,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-2);
+	fill(abs.begin(), abs.end(), tolIn);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-3, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, tolIn, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -866,29 +866,42 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
-	out(halfL + 0, halfL*2) = -kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(halfL + 1, halfL*2) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(halfL + 3, halfL*2) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(halfL + 4, halfL*2) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
+	// Derivative is w.r.t. second number
+	const double eIL2 = y[44] / internalV;
+	out(44, 44) -= kfbnd * (y[22] + y[23]) / internalV;
+	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
+	out(44, 22) = -kfbnd * eIL2; // IL2 binding to IL2Ra
+	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(44, 23) = -kfbnd * eIL2; // IL2 binding to IL2Rb
+	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
+	out(44, 25) =  k1rev / internalV;
+	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(44, 26) = k2rev / internalV;
 
-	out(halfL +  1, halfL*2+1) = -kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
-	out(halfL + 9, halfL*2+1) = -kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(halfL + 10, halfL*2+1) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(halfL + 11, halfL*2+1) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
+	const double eIL15 = y[45] / internalV;
+	out(45, 45) -= kfbnd * (y[23] + y[22 + 9]) / internalV;
+	out(22 + 1, 45) = -kfbnd * y[22 + 1]; // IL15 binding to IL2Rb
+	out(45, 23) = -kfbnd * eIL15; // IL15 binding to IL2Rb
+	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(45, 31) = -kfbnd * eIL15; // IL15 binding to IL15Ra
+	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(45, 32) = k13rev / internalV;
+	out(45, 33) = k14rev / internalV;
 
-	out(halfL + 16, halfL*2+2) = -kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
-	out(halfL + 17, halfL*2+2) =  kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
+	const double eIL7 = y[46] / internalV;
+	out(46, 46) -= kfbnd * y[22 + 16] / internalV;
+	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(46, 22 + 16) = -kfbnd * eIL7; // IL7 binding to IL7Ra
+	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(46, 39) = k25rev / internalV;
 
-	out(halfL + 19, halfL*2+3) = -kfbnd * y[halfL + 19]; // IL9 binding to IL9R
-	out(halfL + 20, halfL*2+3) =  kfbnd * y[halfL + 19]; // IL9 binding to IL9R
-    
-    out(halfL + 22, halfL*2+4) = -kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
-	out(halfL + 23, halfL*2+4) =  kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
-    
-    out(halfL + 25, halfL*2+5) = -kfbnd * y[halfL + 25]; // IL21 binding to IL21a
-	out(halfL + 26, halfL*2+5) =  kfbnd * y[halfL + 26]; // IL21 binding to IL21Ra
-    
-    
+	const double eIL9 = y[47] / internalV;
+	out(47, 47) -= kfbnd * y[22 + 19] / internalV;
+	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(47, 22 + 19) = -kfbnd * eIL9; // IL9 binding to IL9R
+	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(47, 42) = k29rev / internalV; 
 }
 
 constexpr bool debugOutput = false;

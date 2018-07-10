@@ -13,9 +13,9 @@ class IL2Rb_trafficking:
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
-        numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).as_matrix()
+        numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).values
         # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-        numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).as_matrix()
+        numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).values
 
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -53,8 +53,8 @@ class IL2_15_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL15 concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
-        dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
+        data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
+        dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
 
         self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
@@ -110,14 +110,14 @@ class build_model:
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
 
-            # Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
-            # pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
+            pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            # pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            pm.Normal('fitD_15', sd=0.1, observed=Y_15) # TODO: Replace with experimental-derived stderr
+            pm.Normal('fitD_int', sd=0.1, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -126,12 +126,7 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='advi', model=self.M)
-
-    def fit_ADVI(self):
-        with self.M:
-            approx = pm.fit(40000, method='fullrank_advi')
-            self.trace = approx.sample()
+        self.trace = pm.sample(init='ADVI', model=self.M)
 
     def profile(self):
         """ Profile the gradient calculation. """

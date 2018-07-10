@@ -9,10 +9,9 @@ from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
-from ..tensor_generation import findy
 
 settings.register_profile("ci", max_examples=1000)
-#settings.load_profile("ci")
+settings.load_profile("ci")
 
 conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
                     np.array([0, 3, 5, 6, 8]), # IL2Ra
@@ -76,6 +75,30 @@ class TestModel(unittest.TestCase):
         # Check for conservation of each endosomal receptor
         for idxs in conservation_IDX:
             self.assertConservation(dy, 0.0, idxs + 28)
+            
+    def test_equlibrium(self):
+        '''System should still come to equilibrium after being stimulated with ligand'''
+        t = np.array([0.0, 100000.0])
+        rxn = self.rxntfR.copy()
+        rxn[0:4] = 0. # set ligands to 0
+        rxnIL2, rxnIL15, rxnIL7, rxnIL9 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
+        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3] = 100., 100., 100., 100.
+
+        # runCkine to get yOut
+        yOut_2, retVal = runCkineU(t, rxnIL2)
+        self.assertGreaterEqual(retVal, 0)
+        yOut_15, retVal = runCkineU(t, rxnIL15)
+        self.assertGreaterEqual(retVal, 0)
+        yOut_7, retVal = runCkineU(t, rxnIL7)
+        self.assertGreaterEqual(retVal, 0)
+        yOut_9, retVal = runCkineU(t, rxnIL9)
+        self.assertGreaterEqual(retVal, 0)
+
+        # check that dydt is ~0
+        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2[0:13], rxnIL2[13:24]))
+        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15[0:13], rxnIL15[13:24]))
+        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7[0:13], rxnIL7[13:24]))
+        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9[0:13], rxnIL9[13:24])) 
 
     def test_fullModel(self):
         """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
@@ -115,7 +138,7 @@ class TestModel(unittest.TestCase):
         # Force sorting fraction to be less than 1.0
         vec[19] = np.tanh(vec[19])*0.9
 
-        ys, retVal = runCkineU(self.ts, vec)
+        retVal = runCkineU(self.ts, vec)[1]
 
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
@@ -126,7 +149,7 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(self.y0, self.ts[0], self.args)
         approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error
 
-        closeness = np.isclose(analytical, approx, rtol=0.001, atol=0.001)
+        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
@@ -142,7 +165,7 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(analytical.shape == approx.shape)
 
-        closeness = np.isclose(analytical, approx, rtol=0.001, atol=0.001)
+        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
@@ -176,7 +199,7 @@ class TestModel(unittest.TestCase):
         rxntfR = self.rxntfR.copy()
         rxntfR[24] = 0.0 # set expression of gc to 0.0
         yOut, retVal = runCkineU(self.ts, rxntfR)
-
+        self.assertGreaterEqual(retVal, 0)
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut[1]), 0.0, places=5) # IL2
         self.assertAlmostEqual(getTotalActiveCytokine(1, yOut[1]), 0.0, places=5) # IL15
         self.assertAlmostEqual(getTotalActiveCytokine(2, yOut[1]), 0.0, places=5) # IL7
@@ -188,58 +211,66 @@ class TestModel(unittest.TestCase):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
         rxntfR[0:6] = 0.0
+        rxntfR[6] = 1.0E-6 # Damp down kfwd
+        rxntfR[7:26] = 0.1 # Fill all in to avoid parameter variation
+        
+        # TODO: FIX THESE
+        rxntfR[14] = 10.0 # Turn up active endocytosis
+        rxntfR[17] = 0.02 # Turn down degradation
+        rxntfR[18:24] = 10.0 # Control expression
+
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
-        rxntfR_1[0] = 500.
+        rxntfR_1[0] = 1000.
         # set high concentration of IL15
         rxntfR_2 = rxntfR.copy()
-        rxntfR_2[1] = 500.
+        rxntfR_2[1] = 1000.
         # set high concentration of IL7
         rxntfR_3 = rxntfR.copy()
-        rxntfR_3[2] = 500.
+        rxntfR_3[2] = 1000.
         # set high concentration of IL9
         rxntfR_4 = rxntfR.copy()
-        rxntfR_4[3] = 500.
+        rxntfR_4[3] = 1000.
         # set high concentration of IL4
         rxntfR_5 = rxntfR.copy()
-        rxntfR_5[4] = 500.
+        rxntfR_5[4] = 1000.
         # set high concentration of IL21
         rxntfR_6 = rxntfR.copy()
-        rxntfR_6[5] = 500.
+        rxntfR_6[5] = 1000.
 
         # first element is t=0 and second element is t=10**5
         yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
+        self.assertGreaterEqual(retVal, 0)
         yOut_2, retVal = runCkineU(self.ts, rxntfR_2)
+        self.assertGreaterEqual(retVal, 0)
         yOut_3, retVal = runCkineU(self.ts, rxntfR_3)
+        self.assertGreaterEqual(retVal, 0)
         yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
+        self.assertGreaterEqual(retVal, 0)
         yOut_5, retVal = runCkineU(self.ts, rxntfR_5)
+        self.assertGreaterEqual(retVal, 0)
         yOut_6, retVal = runCkineU(self.ts, rxntfR_6)
+        self.assertGreaterEqual(retVal, 0)
 
         # make sure endosomal free ligand is positive at equilibrium
-        # TODO: Reenable endosomal ligand as it's not currently passing
         # IL2
-        # self.assertGreater(yOut_1[1, 56], 0)
-        self.assertTrue((yOut_1[1, 57:62] == 0).all()) # no other ligand
+        self.assertGreater(yOut_1[1, 56], 1.)
+        self.assertLess(np.sum(yOut_1[1, np.array([57, 58, 59, 60, 61])]), 1.0E-9) # no other ligand
         # IL15
-        # self.assertGreater(yOut_2[1, 57], 0)
-        self.assertTrue(yOut_2[1, 56] == 0) # no other ligand
-        self.assertTrue((yOut_2[1, 58:62] == 0).all()) # no other ligand
+        self.assertGreater(yOut_2[1, 57], 1.)
+        self.assertLess(np.sum(yOut_2[1, np.array([56, 58, 59, 60, 61])]), 1.0E-9) # no other ligand
         # IL7
-        # self.assertGreater(yOut_3[1,58], 0)
-        self.assertTrue((yOut_3[1, 56:58] == 0).all()) # no other ligand
-        self.assertTrue((yOut_3[1, 59:62] == 0).all()) # no other ligand
+        self.assertGreater(yOut_3[1, 58], 1.)
+        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 59, 60, 61])]), 1.0E-9) # no other ligand
         # IL9
-        # self.assertGreater(yOut_4[1,59], 0)
-        self.assertTrue((yOut_4[1, 56:59] == 0).all()) # no other ligand
-        self.assertTrue((yOut_4[1, 60:62] == 0).all()) # no other ligand
+        self.assertGreater(yOut_3[1, 59], 1.)
+        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 58, 60, 61])]), 1.0E-9) # no other ligand
         # IL4
-        # self.assertGreater(yOut_5[1,60], 0)
-        self.assertTrue((yOut_5[1, 56:60] == 0).all()) # no other ligand
-        self.assertTrue(yOut_5[1, 61] == 0) # no other ligand
+        self.assertGreater(yOut_3[1, 60], 1.)
+        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 58, 59, 61])]), 1.0E-9) # no other ligand
         # IL21
-        # self.assertGreater(yOut_6[1,61], 0)
-        self.assertTrue((yOut_6[1, 56:61] == 0).all()) # no other ligand
-        
+        self.assertGreater(yOut_3[1, 61], 1.)
+        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 58, 59, 60])]), 1.0E-9) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium
         self.assertTrue(np.greater(yOut_1[31:37], 0.0).all())

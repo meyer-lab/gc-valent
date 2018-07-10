@@ -55,10 +55,9 @@ constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
 
 // Literature value for IL-21
 constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
-    
 
-constexpr double abstolIn = 1E-4;
-constexpr double reltolIn = 1E-9;
+constexpr double tolIn = 1E-4;
+
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
