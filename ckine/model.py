@@ -14,6 +14,21 @@ libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 
+__nSpecies = 62
+def nSpecies():
+    """ Returns the total number of species in the model. """
+    return __nSpecies
+
+__halfL = 28
+def halfL():
+    """ Returns the number of species on the surface alone. """
+    return __halfL
+
+__nParams = 30
+def nParams():
+    """ Returns the length of the rxntfR vector. """
+    return __nParams
+
 
 def runCkine (tps, rxn, tfr):
     """ Wrapper if rxn and tfr are separate. """
@@ -21,11 +36,10 @@ def runCkine (tps, rxn, tfr):
 
 
 def runCkineU (tps, rxntfr):
-
-    assert rxntfr.size == 30
+    assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
-    yOut = np.zeros((tps.size, 62), dtype=np.float64)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -39,11 +53,11 @@ def runCkineU (tps, rxntfr):
 
 def runCkineSensi (tps, rxntfr):
 
-    assert rxntfr.size == 30
+    assert rxntfr.size == __nParams
 
-    yOut = np.zeros((tps.size, 62), dtype=np.float64)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
-    sensV = np.zeros((62, 28, tps.size), dtype=np.float64, order='F')
+    sensV = np.zeros((__nSpecies, rxntfr.size, tps.size), dtype=np.float64, order='F')
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -72,17 +86,16 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
     assert rxn.size == 17
 
-    yOut = np.zeros((28, 28)) # size of the Jacobian matrix
+    yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
 
     libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
+def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
+    assert rxn.size == __nParams
 
-def fullJacobian(y, t, rxntfR):
-    assert rxntfR.size == 30
-
-    yOut = np.zeros((62, 62)) # size of the full Jacobian matrix
+    yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
 
     libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
     return yOut
@@ -90,8 +103,7 @@ def fullJacobian(y, t, rxntfR):
 def fullModel(y, t, rxn, tfr):
 
     rxntfr = np.concatenate((rxn, tfr))
-
-    assert rxntfr.size == 30
+    assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
 
@@ -101,13 +113,12 @@ def fullModel(y, t, rxn, tfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(28, dtype=np.bool)
+__active_species_IDX = np.zeros(__halfL, dtype=np.bool)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
-
 
 def solveAutocrine(trafRates):
     """Faster approach to solve for steady state by directly calculating the starting point without needing odeint."""
-    y0 = np.zeros(62 , np.float64)
+    y0 = np.zeros(__nSpecies , np.float64)
 
     recIDX = np.array([0, 1, 2, 9, 16, 19, 22, 25], np.int)
 
@@ -125,8 +136,8 @@ def solveAutocrine(trafRates):
 
     # Assuming no autocrine ligand, so can solve steady state
     # Add the species
-    y0[recIDX + 28] = expr / kDeg / internalFrac
-    y0[recIDX] = (expr + kRec*y0[recIDX + 28]*internalFrac)/endo
+    y0[recIDX + __halfL] = expr / kDeg / internalFrac
+    y0[recIDX] = (expr + kRec*y0[recIDX + __halfL]*internalFrac)/endo
 
     return y0
 
@@ -136,7 +147,7 @@ def solveAutocrineComplete(rxnRates, trafRates):
     rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
 
-    y0 = np.zeros(62, np.float64)
+    y0 = np.zeros(__nSpecies, np.float64)
 
     # For now assume 0 autocrine ligand
     rxnRates[0:6] = 0.0
@@ -152,6 +163,12 @@ def getActiveSpecies():
     """ Return a vector that indicates which species are active. """
     return __active_species_IDX
 
+__internalStrength = 0.5 # strength of endosomal activity relative to surface
+
+def getTotalActiveSpecies():
+    """ Return a vector of all the species (surface + endosome) which are active. """
+    activity = getActiveSpecies()
+    return np.concatenate((activity, __internalStrength * activity, np.zeros(4)))
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
@@ -159,20 +176,20 @@ def getCytokineSpecies():
 
 def getSurfaceIL2RbSpecies():
     """ Returns a list of vectors for which surface species contain the IL2Rb receptor. """
-    condense = np.zeros(62)
+    condense = np.zeros(__nSpecies)
     condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
     return condense
 
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
-    assert len(yVec) == 28
+    assert len(yVec) == __halfL
     return np.sum((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]])
 
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:28]) + getActiveCytokine(cytokineIDX, yVec[28:28*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 def surfaceReceptors(y):
     """This function takes in a vector y and returns the amounts of the 8 surface receptors"""
@@ -188,4 +205,4 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + surfaceReceptors(yVec[28:28*2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
