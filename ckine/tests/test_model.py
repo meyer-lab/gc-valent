@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian, nSpecies
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
@@ -61,7 +61,7 @@ class TestModel(unittest.TestCase):
         for idxs in conservation_IDX:
             self.assertConservation(dy, 0.0, idxs)
 
-    @given(y0=harrays(np.float, 2*28 + 6, elements=floats(1, 10)))
+    @given(y0=harrays(np.float, nSpecies(), elements=floats(1, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
         kw = np.zeros(self.tfargs.shape, dtype=np.float64)
@@ -124,7 +124,7 @@ class TestModel(unittest.TestCase):
 
         self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs))
 
-    @given(y0=harrays(np.float, 2*28 + 4, elements=floats(0, 10)))
+    @given(y0=harrays(np.float, nSpecies(), elements=floats(0, 10)))
     def test_reproducible(self, y0):
 
         dy1 = fullModel(y0, 0.0, self.args, self.tfargs)
