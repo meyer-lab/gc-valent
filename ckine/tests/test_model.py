@@ -266,16 +266,16 @@ class TestModel(unittest.TestCase):
         self.assertLess(np.sum(yOut_2[1, np.array([56, 58, 59, 60, 61])]), 1.0E-9) # no other ligand
         # IL7
         self.assertGreater(yOut_3[1, 58], 1.)
-        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 59, 60, 61])]), 1.0E-9) # no other ligand
+        self.assertLess(np.sum(yOut_3[1, np.array([56, 57, 59, 60, 61])]), 1.0E-9) # no other ligand
         # IL9
-        self.assertGreater(yOut_3[1, 59], 1.)
-        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 58, 60, 61])]), 1.0E-9) # no other ligand
+        self.assertGreater(yOut_4[1, 59], 1.)
+        self.assertLess(np.sum(yOut_4[1, np.array([56, 57, 58, 60, 61])]), 1.0E-9) # no other ligand
         # IL4
-        self.assertGreater(yOut_3[1, 60], 1.)
-        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 58, 59, 61])]), 1.0E-9) # no other ligand
+        self.assertGreater(yOut_5[1, 60], 1.)
+        self.assertLess(np.sum(yOut_5[1, np.array([56, 57, 58, 59, 61])]), 1.0E-9) # no other ligand
         # IL21
-        self.assertGreater(yOut_3[1, 61], 1.)
-        self.assertLess(np.sum(yOut_2[1, np.array([56, 57, 58, 59, 60])]), 1.0E-9) # no other ligand
+        self.assertGreater(yOut_6[1, 61], 1.)
+        self.assertLess(np.sum(yOut_6[1, np.array([56, 57, 58, 59, 60])]), 1.0E-9) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium
         self.assertTrue(np.greater(yOut_1[31:37], 0.0).all())
@@ -283,4 +283,4 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.greater(yOut_3[45:47], 0.0).all())
         self.assertTrue(np.greater(yOut_4[48:50], 0.0).all())
         self.assertTrue(np.greater(yOut_5[51:53], 0.0).all())
-        self.assertTrue(np.greater(yOut_5[54:56], 0.0).all())
+        self.assertTrue(np.greater(yOut_6[54:56], 0.0).all())
