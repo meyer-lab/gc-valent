@@ -53,8 +53,8 @@ ratesS param(const double * const rxntfR) {
 	r.IL15 = rxntfR[1];
 	r.IL7 = rxntfR[2];
 	r.IL9 = rxntfR[3];
-		r.IL4 = rxntfR[4];
-		r.IL21 = rxntfR[5];
+	r.IL4 = rxntfR[4];
+	r.IL21 = rxntfR[5];
 	r.kfwd = rxntfR[6];
 	r.k4rev = rxntfR[7];
 	r.k5rev = rxntfR[8];
@@ -64,8 +64,8 @@ ratesS param(const double * const rxntfR) {
 	r.k23rev = rxntfR[12];
 	r.k27rev = rxntfR[13];
 	r.k31rev = rxntfR[14];
-		r.k33rev = rxntfR[15];
-		r.k35rev = rxntfR[16];
+	r.k33rev = rxntfR[15];
+	r.k35rev = rxntfR[16];
 
 	// These are probably measured in the literature
 	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
