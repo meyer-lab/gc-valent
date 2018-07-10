@@ -80,9 +80,9 @@ class TestModel(unittest.TestCase):
         '''System should still come to equilibrium after being stimulated with ligand'''
         t = np.array([0.0, 100000.0])
         rxn = self.rxntfR.copy()
-        rxn[0:4] = 0. # set ligands to 0
-        rxnIL2, rxnIL15, rxnIL7, rxnIL9 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
-        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3] = 100., 100., 100., 100.
+        rxn[0:6] = 0. # set ligands to 0
+        rxnIL2, rxnIL15, rxnIL7, rxnIL9, rxnIL4, rxnIL21 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
+        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3], rxnIL4[5], rxnIL21[6] = 100., 100., 100., 100., 100., 100.
 
         # runCkine to get yOut
         yOut_2, retVal = runCkineU(t, rxnIL2)
@@ -93,12 +93,18 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(retVal, 0)
         yOut_9, retVal = runCkineU(t, rxnIL9)
         self.assertGreaterEqual(retVal, 0)
+        yOut_4, retVal = runCkineU(t, rxnIL4)
+        self.assertGreaterEqual(retVal, 0)
+        yOut_21, retVal = runCkineU(t, rxnIL21)
+        self.assertGreaterEqual(retVal, 0)
 
         # check that dydt is ~0
-        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2[0:13], rxnIL2[13:24]))
-        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15[0:13], rxnIL15[13:24]))
-        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7[0:13], rxnIL7[13:24]))
-        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9[0:13], rxnIL9[13:24])) 
+        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2[0:17], rxnIL2[17:30]))
+        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15[0:17], rxnIL15[17:30]))
+        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7[0:17], rxnIL7[17:30]))
+        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9[0:17], rxnIL9[17:30]))
+        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4[0:17], rxnIL4[17:30]))
+        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21[0:17], rxnIL21[17:30]))
 
     def test_fullModel(self):
         """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""

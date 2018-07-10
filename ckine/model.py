@@ -92,8 +92,8 @@ def jacobian(y, t, rxn):
 
     return yOut
 
-def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
-    assert rxn.size == __nParams
+def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument once we add more to fullJacobian
+    assert rxntfR.size == __nParams
 
     yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
 
