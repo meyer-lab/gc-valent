@@ -189,7 +189,8 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL)] + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2]))
+
 
 def surfaceReceptors(y):
     """This function takes in a vector y and returns the amounts of the 8 surface receptors"""
