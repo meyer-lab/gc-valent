@@ -53,7 +53,7 @@ class TestModel(unittest.TestCase):
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
 
-    @given(y0=harrays(np.float, 28, elements=floats(1, 10))) # TODO: do we need to change the range of floats(1,10)
+    @given(y0=harrays(np.float, 28, elements=floats(1, 10)))
     def test_conservation(self, y0):
         """Check for the conservation of each of the initial receptors."""
         dy = dy_dt(y0, 0.0, self.args)
