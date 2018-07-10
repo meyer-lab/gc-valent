@@ -210,8 +210,8 @@ void findLigConsume(double *dydt) {
 	dydt[57] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
 	dydt[58] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
 	dydt[59] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-  dydt[60] -= std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
-  dydt[61] -= std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
+    dydt[60] -= std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
+    dydt[61] -= std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
 }
 
 
@@ -362,8 +362,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "IL15: " << ratt.IL15 << std::endl;
 	std::cout << "IL7: " << ratt.IL7 << std::endl;
 	std::cout << "IL9: " << ratt.IL9 << std::endl;
-  std::cout << "IL4: " << ratt.IL4 << std::endl;
-  std::cout << "IL21: " << ratt.IL21 << std::endl;
+    std::cout << "IL4: " << ratt.IL4 << std::endl;
+    std::cout << "IL21: " << ratt.IL21 << std::endl;
 	std::cout << "kfwd: " << ratt.kfwd << std::endl;
 	std::cout << "k4rev: " << ratt.k4rev << std::endl;
 	std::cout << "k5rev: " << ratt.k5rev << std::endl;
@@ -381,8 +381,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "k24rev: " << ratt.k24rev << std::endl;
 	std::cout << "k27rev: " << ratt.k27rev << std::endl;
 	std::cout << "k31rev: " << ratt.k31rev << std::endl;
-  std::cout << "k33rev: " << ratt.k33rev << std::endl;
-  std::cout << "k35rev: " << ratt.k35rev << std::endl;
+    std::cout << "k33rev: " << ratt.k33rev << std::endl;
+    std::cout << "k35rev: " << ratt.k35rev << std::endl;
 	std::cout << "endo: " << ratt.endo << std::endl;
 	std::cout << "activeEndo: " << ratt.activeEndo << std::endl;
 	std::cout << "sortF: " << ratt.sortF << std::endl;
@@ -600,7 +600,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL7Ra_IL7 = y[17];
 	const double IL9R_IL9 = y[20];
     
-    // TODO: remove unused IL4/21 species
+    // IL4, IL21 in nM
     const double IL4_IL4Ra = y[23];
     const double IL21_IL21Ra = y[26];
 
