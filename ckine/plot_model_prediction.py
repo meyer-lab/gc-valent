@@ -16,53 +16,41 @@ class surf_IL2Rb:
         # percentage value that is used in scaling output
         self.y_max = 10
 
+    def singleCalc(self, unkVec, cytokine, conc):
+        """ Calculates the surface IL2Rb over time for one condition. """
+        unkVec = unkVec.copy()
+        unkVec[cytokine] = conc
+
+        returnn, retVal = runCkineU(self.ts, unkVec)
+
+        assert retVal >= 0
+
+        a = np.dot(returnn, self.IL2Rb_species_IDX)
+
+        return a / a[0]
+
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
         assert unkVec.size == self.nParams
 
         # set IL2 concentrations
-        unkVec_IL2_1 = unkVec.copy()
-        unkVec_IL2_500 = unkVec.copy()
-        unkVec_IL2_1[0], unkVec_IL2_500[0] = 1., 500.
-
-        # set IL2Ra- values
-        unkVecIL2RaMinus_IL2_1 = unkVec_IL2_1.copy()
-        unkVecIL2RaMinus_IL2_500 = unkVec_IL2_500.copy()
-        unkVecIL2RaMinus_IL2_1[18], unkVecIL2RaMinus_IL2_500[18] = 0.0, 0.0
-
-        # set IL15 concentrations
-        unkVec_IL15_1 = unkVec.copy()
-        unkVec_IL15_500 = unkVec.copy()
-        unkVec_IL15_1[1], unkVec_IL15_500[1]  = 1., 500.
-
-        # set IL2Ra- values
-        unkVecIL2RaMinus_IL15_1 = unkVec_IL15_1.copy()
-        unkVecIL2RaMinus_IL15_500 = unkVec_IL15_500.copy()
-        unkVecIL2RaMinus_IL15_1[18], unkVecIL2RaMinus_IL15_500[18] = 0.0, 0.0
+        unkVecIL2RaMinus = unkVec.copy()
+        unkVecIL2RaMinus[18] = 0.
 
         # calculate IL2 stimulation
-        a_yOut = runCkineU(self.ts, unkVec_IL2_1)[0]
-        b_yOut = runCkineU(self.ts, unkVec_IL2_500)[0]
-        c_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL2_1)[0]
-        d_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL2_500)[0]
+        a = self.singleCalc(unkVec, 0, 1.)
+        b = self.singleCalc(unkVec, 0, 500.)
+        c = self.singleCalc(unkVecIL2RaMinus, 0, 1.)
+        d = self.singleCalc(unkVecIL2RaMinus, 0, 500.)
 
         # calculate IL15 stimulation
-        e_yOut = runCkineU(self.ts, unkVec_IL15_1)[0]
-        f_yOut = runCkineU(self.ts, unkVec_IL15_500)[0]
-        g_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL15_1)[0]
-        h_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL15_500)[0]
+        e = self.singleCalc(unkVec, 1, 1.)
+        f = self.singleCalc(unkVec, 1, 500.)
+        g = self.singleCalc(unkVecIL2RaMinus, 1, 1.)
+        h = self.singleCalc(unkVecIL2RaMinus, 1, 500.)
 
-        a = np.dot(a_yOut, self.IL2Rb_species_IDX)
-        b = np.dot(b_yOut, self.IL2Rb_species_IDX)
-        c = np.dot(c_yOut, self.IL2Rb_species_IDX)
-        d = np.dot(d_yOut, self.IL2Rb_species_IDX)
-        e = np.dot(e_yOut, self.IL2Rb_species_IDX)
-        f = np.dot(f_yOut, self.IL2Rb_species_IDX)
-        g = np.dot(g_yOut, self.IL2Rb_species_IDX)
-        h = np.dot(h_yOut, self.IL2Rb_species_IDX)
-
-        return np.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0]))
+        return np.concatenate((a, b, c, d, e, f, g, h))
 
     def plot_structure(self, IL2vec, IL15vec, title):
         plt.title(title)
