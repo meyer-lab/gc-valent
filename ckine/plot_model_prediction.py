@@ -11,7 +11,6 @@ class surf_IL2Rb:
 
         # import function returns from model.py
         self.IL2Rb_species_IDX = getSurfaceIL2RbSpecies()
-        self.nParams = nParams()
 
         # percentage value that is used in scaling output
         self.y_max = 10
@@ -32,7 +31,7 @@ class surf_IL2Rb:
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
-        assert unkVec.size == self.nParams
+        assert unkVec.size == nParams()
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
@@ -86,8 +85,6 @@ class pstat:
         self.cytokC = np.logspace(-3.3, 2.7, self.PTS) # 8 log-spaced values between our two endpoints
         
         # import function returns from model.py
-        self.nParams = nParams()
-        self.nSpecies = nSpecies()
         self.activity = getTotalActiveSpecies().astype(np.float64)
         
         self.ts = np.array([500.]) # was 500. in literature
@@ -95,64 +92,30 @@ class pstat:
         # percentage value that is used in scaling output
         self.y_max = 100
 
+    def singleCalc(self, unkVec, cytokine, conc):
+        """ Calculates the surface IL2Rb over time for one condition. """
+        unkVec = unkVec.copy()
+        unkVec[cytokine] = conc
+
+        returnn, retVal = runCkineU(self.ts, unkVec)
+
+        assert retVal >= 0
+
+        return np.dot(returnn, self.activity)
+
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
-        assert unkVec.size == self.nParams
+        assert unkVec.size == nParams()
 
-        # loop over concentrations of IL2
-        IL2_yOut = np.ones((self.PTS, self.nSpecies))
-        IL2_yOut_IL2Raminus = IL2_yOut.copy()
-        actVec_IL2 = np.zeros((self.PTS))
-        actVec_IL2_IL2Raminus = actVec_IL2.copy()
-        for ii in range(0,self.PTS):
-            unkVec_IL2 = unkVec.copy()
-            unkVec_IL2[0] = self.cytokC[ii]
+        unkVec_IL2Raminus = unkVec.copy()
+        unkVec_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
 
-            unkVec_IL2_IL2Raminus = unkVec_IL2.copy()
-            unkVec_IL2_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
-
-            IL2_yOut[ii,:], retval_1 = runCkineU(self.ts, unkVec_IL2)
-            IL2_yOut_IL2Raminus[ii,:], retval_2 = runCkineU(self.ts, unkVec_IL2_IL2Raminus)
-
-            if retval_1 < 0:
-                print("runCkineU failed for IL2 stimulation in IL2Ra+ cells")
-                print("failure occured during iteration " + str(ii))
-
-            if retval_2 < 0:
-                print("runCkineU failed for IL2 stimulation in IL2Ra- cells")
-                print("failure occured during iteration " + str(ii))
-
-            # dot yOut vectors by activity mask to generate total amount of active species
-            actVec_IL2[ii] = np.dot(IL2_yOut[ii,:], self.activity)
-            actVec_IL2_IL2Raminus[ii] = np.dot(IL2_yOut_IL2Raminus[ii,:], self.activity)
-
-        # loop over concentrations of IL15
-        IL15_yOut = np.ones((self.PTS, self.nSpecies))
-        IL15_yOut_IL2Raminus = IL15_yOut.copy()
-        actVec_IL15 = np.zeros((self.PTS))
-        actVec_IL15_IL2Raminus = actVec_IL15.copy()
-        for ii in range(0,self.PTS):
-            unkVec_IL15 = unkVec.copy()
-            unkVec_IL15[1] = self.cytokC[ii]
-
-            unkVec_IL15_IL2Raminus = unkVec_IL15.copy()
-            unkVec_IL15_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
-
-            IL15_yOut[ii,:], retval_3 = runCkineU(self.ts, unkVec_IL15)
-            IL15_yOut_IL2Raminus[ii,:], retval_4 = runCkineU(self.ts, unkVec_IL15_IL2Raminus)
-
-            if retval_3 < 0:
-                print("runCkineU failed for IL15 stimulation in IL2Ra+ cells")
-                print("failure occured during iteration " + str(ii))
-
-            if retval_4 < 0:
-                print("runCkineU failed for IL15 stimulation in IL2Ra- cells")
-                print("failure occured during iteration " + str(ii))
-
-            # dot yOut vectors by activity mask to generate total amount of active species
-            actVec_IL15[ii] = np.dot(IL15_yOut[ii,:], self.activity)
-            actVec_IL15_IL2Raminus[ii] = np.dot(IL15_yOut_IL2Raminus[ii,:], self.activity)
+        # Calculate activities
+        actVec_IL2 = np.concatenate(map(lambda x: self.singleCalc(unkVec, 0, x), self.cytokC))
+        actVec_IL2_IL2Raminus = np.concatenate(map(lambda x: self.singleCalc(unkVec_IL2Raminus, 0, x), self.cytokC))
+        actVec_IL15 = np.concatenate(map(lambda x: self.singleCalc(unkVec, 1, x), self.cytokC))
+        actVec_IL15_IL2Raminus = np.concatenate(map(lambda x: self.singleCalc(unkVec_IL2Raminus, 1, x), self.cytokC))
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2 / np.max(actVec_IL2), actVec_IL2_IL2Raminus / np.max(actVec_IL2_IL2Raminus), actVec_IL15 / np.max(actVec_IL15), actVec_IL15_IL2Raminus / np.max(actVec_IL15_IL2Raminus)))
