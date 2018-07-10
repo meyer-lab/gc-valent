@@ -124,21 +124,21 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	const double IL15_IL2Rb_gc = y[14];
 	const double IL15_IL15Ra_IL2Rb_gc = y[15];
 	
-		// IL7, IL9 in nM
-		const double IL7Ra = y[16];
-		const double IL7Ra_IL7 = y[17];
-		const double IL7Ra_gc_IL7 = y[18];
-		const double IL9R = y[19];
-		const double IL9R_IL9 = y[20];
-		const double IL9R_gc_IL9 = y[21];
+	// IL7, IL9 in nM
+	const double IL7Ra = y[16];
+	const double IL7Ra_IL7 = y[17];
+	const double IL7Ra_gc_IL7 = y[18];
+	const double IL9R = y[19];
+	const double IL9R_IL9 = y[20];
+	const double IL9R_gc_IL9 = y[21];
 
-		// IL4, IL21 in nM
-		const double IL4Ra = y[22];
-		const double IL4_IL4Ra = y[23];
-		const double IL4_IL4Ra_gc = y[24];
-		const double IL21Ra = y[25];
-		const double IL21_IL21Ra = y[26];
-		const double IL21_IL21Ra_gc = y[27];
+	// IL4, IL21 in nM
+	const double IL4Ra = y[22];
+	const double IL4_IL4Ra = y[23];
+	const double IL4_IL4Ra_gc = y[24];
+	const double IL21Ra = y[25];
+	const double IL21_IL21Ra = y[26];
+	const double IL21_IL21Ra_gc = y[27];
 		
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
@@ -175,17 +175,17 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[20] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
 	dydt[21] = r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
 	
-		// IL4
-		dydt[2] = dydt[2] - r->kfwd * gc * IL4_IL4Ra + r->k33rev * IL4_IL4Ra_gc;
-		dydt[22] = -kfbnd * IL4 * IL4Ra + k32rev * IL4_IL4Ra;
-		dydt[23] = kfbnd * IL4 * IL4Ra + r->k33rev * IL4_IL4Ra_gc - k32rev * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra;
-		dydt[24] = r->kfwd * gc * IL4_IL4Ra - r->k33rev * IL4_IL4Ra_gc;
+	// IL4
+	dydt[2] = dydt[2] - r->kfwd * gc * IL4_IL4Ra + r->k33rev * IL4_IL4Ra_gc;
+	dydt[22] = -kfbnd * IL4 * IL4Ra + k32rev * IL4_IL4Ra;
+	dydt[23] = kfbnd * IL4 * IL4Ra + r->k33rev * IL4_IL4Ra_gc - k32rev * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra;
+	dydt[24] = r->kfwd * gc * IL4_IL4Ra - r->k33rev * IL4_IL4Ra_gc;
 
-		// IL21
-		dydt[2] = dydt[2] - r->kfwd * gc * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc;
-		dydt[25] = -kfbnd * IL21 * IL21Ra + k34rev * IL21_IL21Ra;
-		dydt[26] = kfbnd * IL21 * IL21Ra - k34rev * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc - r->kfwd * IL21_IL21Ra * gc;
-		dydt[27] = -r->k35rev * IL21_IL21Ra_gc + r->kfwd * IL21_IL21Ra * gc;
+	// IL21
+	dydt[2] = dydt[2] - r->kfwd * gc * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc;
+	dydt[25] = -kfbnd * IL21 * IL21Ra + k34rev * IL21_IL21Ra;
+	dydt[26] = kfbnd * IL21 * IL21Ra - k34rev * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc - r->kfwd * IL21_IL21Ra * gc;
+	dydt[27] = -r->k35rev * IL21_IL21Ra_gc + r->kfwd * IL21_IL21Ra * gc;
 		
 }
 
@@ -210,8 +210,8 @@ void findLigConsume(double *dydt) {
 	dydt[57] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
 	dydt[58] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
 	dydt[59] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-		dydt[60] -= std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
-		dydt[61] -= std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
+	dydt[60] -= std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
+	dydt[61] -= std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
 }
 
 
@@ -236,8 +236,8 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 	dydt[9] += r->Rexpr[3];
 	dydt[16] += r->Rexpr[4];
 	dydt[19] += r->Rexpr[5];
-		dydt[22] += r->Rexpr[6];
-		dydt[25] += r->Rexpr[7];
+	dydt[22] += r->Rexpr[6];
+	dydt[25] += r->Rexpr[7];
 
 	// Degradation does lead to some clearance of ligand in the endosome
 	for (size_t ii = 0; ii < 6; ii++) {
@@ -922,7 +922,7 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 constexpr bool debugOutput = false;
 
 
-int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
 
 	Eigen::Map<JacMat> jac(SM_DATA_D(J));
