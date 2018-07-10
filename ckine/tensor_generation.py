@@ -23,13 +23,13 @@ def ySolver(matIn):
     matIn = np.squeeze(matIn)
 
     # Set some given parameters already determined from fitting
-    rxntfR = np.zeros(24)
-    rxntfR[4] = 0.0001
-    rxntfR[4:13] = 0.01  # From fitting: kfwd - k31rev
-    rxntfR[13:18] = 0.1 # From fitting: endo - kdeg
+    rxntfR = np.zeros(30)
+    rxntfR[6] = 0.00001 #kfwd
+    rxntfR[7:17] = 0.001  # From fitting: k4rev - k35rev
+    rxntfR[17:22] = 0.1 # From fitting: endo - kdeg
 
-    rxntfR[18:24] = matIn[4:10] # Receptor expression
-    rxntfR[0:4] = matIn[0:4] # Cytokine stimulation concentrations
+    rxntfR[22:30] = matIn[6:14] # Receptor expression
+    rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations
 
     temp, retVal = runCkineU(ts, rxntfR)
     assert retVal >= 0
@@ -54,7 +54,7 @@ def findy(lig):
     ILs = np.logspace(-3, 2, num=lig) # Cytokine stimulation concentrations
     # Goal is to make one cell expression levels by len(mat) for every cell
     # Make mesh grid of all combinations of ligand
-    mat = np.array(np.meshgrid(ILs, ILs, ILs, ILs)).T.reshape(-1, 6)
+    mat = np.array(np.meshgrid(ILs, ILs, ILs, ILs,ILs,ILs)).T.reshape(-1, 6)
 
     mats = np.tile(mat, (len(cell_names), 1)) # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (34)
     receptor_repeats = np.repeat(data_numbers.T,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
@@ -78,7 +78,7 @@ def findy(lig):
 
 
 def activity_surface_total(yVec):
-    """This function returns a vector of 16 elements where the activity of the 4 cytokines and amounts of surface and total receptors are included."""
+    """This function returns a vector of 16 elements where the activity of the 6 cytokines and amounts of surface and total receptors are included."""
     x = np.zeros(22)
 
     for ii in range(6):
