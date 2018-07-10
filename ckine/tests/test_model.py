@@ -212,12 +212,11 @@ class TestModel(unittest.TestCase):
         rxntfR = self.rxntfR.copy()
         rxntfR[0:6] = 0.0
         rxntfR[6] = 1.0E-6 # Damp down kfwd
-        rxntfR[7:26] = 0.1 # Fill all in to avoid parameter variation
+        rxntfR[7:22] = 0.1 # Fill all in to avoid parameter variation
         
-        # TODO: FIX THESE
-        rxntfR[14] = 10.0 # Turn up active endocytosis
-        rxntfR[17] = 0.02 # Turn down degradation
-        rxntfR[18:24] = 10.0 # Control expression
+        rxntfR[18] = 10.0 # Turn up active endocytosis
+        rxntfR[21] = 0.02 # Turn down degradation
+        rxntfR[22:30] = 10.0 # Control expression
 
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
