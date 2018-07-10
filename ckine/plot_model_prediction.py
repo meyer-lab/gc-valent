@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nSpecies, nParams
+from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nSpecies, nParams, getSurfaceGCSpecies
 
 
 class surf_IL2Rb:
@@ -140,3 +140,77 @@ class pstat:
 
         self.plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells")
         self.plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells")
+
+class surf_gc:
+    def __init__(self):
+        # times from experiment are hard-coded into this function
+        self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
+        self.pts = self.ts.shape[0]
+
+        # import function returns from model.py
+        self.gc_species_IDX = getSurfaceGCSpecies()
+
+        # percentage value that is used in scaling output
+        self.y_max = 10
+        
+    def singleCalc(self, unkVec, cytokine, conc):
+        """ Calculates the surface gc over time for one condition. """
+        unkVec = unkVec.copy()
+        unkVec[cytokine] = conc
+
+        returnn, retVal = runCkineU(self.ts, unkVec)
+
+        assert retVal >= 0
+
+        a = np.dot(returnn, self.gc_species_IDX)
+
+        return a / a[0]
+    
+    def calc(self, unkVec):
+        '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
+
+        assert unkVec.size == nParams()
+
+        # set IL2 concentrations
+        unkVecIL2RaMinus = unkVec.copy()
+        unkVecIL2RaMinus[18] = 0.
+
+        # calculate IL2 stimulation
+        a = self.singleCalc(unkVec, 0, 1.)
+        b = self.singleCalc(unkVec, 0, 500.)
+        c = self.singleCalc(unkVecIL2RaMinus, 0, 1.)
+        d = self.singleCalc(unkVecIL2RaMinus, 0, 500.)
+
+        # calculate IL15 stimulation
+        e = self.singleCalc(unkVec, 1, 1.)
+        f = self.singleCalc(unkVec, 1, 500.)
+        g = self.singleCalc(unkVecIL2RaMinus, 1, 1.)
+        h = self.singleCalc(unkVecIL2RaMinus, 1, 500.)
+
+        return np.concatenate((a, b, c, d, e, f, g, h))
+    
+    def plot_structure(self, IL2vec, IL15vec, title):
+        plt.title(title)
+        plt.scatter(self.ts, IL2vec, color='r', label='IL2', alpha=0.7)
+        plt.scatter(self.ts, IL15vec, color='g', label='IL15', alpha=0.7)
+        # plt.ylim(0,(self.y_max + (0.2 * self.y_max)))
+        plt.ylabel("Surface gc (% x " + str(self.y_max) + ')')
+        plt.xlabel("Time (min)")
+        plt.legend()
+        plt.show()
+
+    def plot(self, unkVec):
+        output = self.calc(unkVec) * self.y_max
+        IL2_1_plus = output[0:self.pts]
+        IL2_500_plus = output[(self.pts):(self.pts*2)]
+        IL2_1_minus = output[(self.pts*2):(self.pts*3)]
+        IL2_500_minus = output[(self.pts*3):(self.pts*4)]
+        IL15_1_plus = output[(self.pts*4):(self.pts*5)]
+        IL15_500_plus = output[(self.pts*5):(self.pts*6)]
+        IL15_1_minus = output[(self.pts*6):(self.pts*7)]
+        IL15_500_minus = output[(self.pts*7):(self.pts*8)]
+
+        self.plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-')
+        self.plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-")
+        self.plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+")
+        self.plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+")
