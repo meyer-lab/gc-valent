@@ -1,5 +1,5 @@
 ---
-title: Receptor Competition Shapes the Response Among Common Gamma Chain Receptors
+title: Tensor Factorization Maps Computation Performed by the Common Gamma Chain Receptors
 author:
 - name: Adam Weiner
   affilnum: a
@@ -7,7 +7,7 @@ author:
   affilnum: a
 - name: Aaron S. Meyer
   affilnum: a,b
-keywords: [IL2, IL15]
+keywords: [IL2, IL15, IL21, IL4, IL7, IL9, common gamma chain, cytokines, receptors, immunology, T cells, NK cells]
 affiliation:
 - name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles
   key: a
