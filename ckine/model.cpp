@@ -169,22 +169,6 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 }
 
 
-/**
- * @brief      Solve for the ligand consumption rate in the endosome.
- *
- * @param      dydt  The rate of change vector solved for the receptor species.
- */
-void findLigConsume(double *dydt) {
-	double const * const dydti = dydt + halfL;
-
-	// Calculate the ligand consumption.
-	dydt[44] -= std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
-	dydt[45] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
-	dydt[46] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
-	dydt[47] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-}
-
-
 void trafficking(const double * const y, const ratesS * const r, double * const dydt) {
 	// Implement trafficking.
 
@@ -224,7 +208,11 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 
 	// Handle endosomal ligand balance.
 	// Must come before trafficking as we only calculate this based on reactions balance
-	findLigConsume(dydt);
+	double const * const dydti = dydt + halfL;
+	dydt[44] = -std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
+	dydt[45] = -std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
+	dydt[46] = -std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
+	dydt[47] = -std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
 
 	// Handle trafficking
 	trafficking(y, r, dydt);
