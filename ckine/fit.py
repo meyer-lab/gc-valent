@@ -44,7 +44,7 @@ class IL2Rb_trafficking:
         h = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 500.))
 
         # assuming all IL2Rb starts on the cell surface
-        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])) - self.data
+        return T.concatenate((a, b, c, d, e, f, g, h)) / a[0] - self.data
 
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
