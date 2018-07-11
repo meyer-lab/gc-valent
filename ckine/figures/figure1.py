@@ -64,10 +64,10 @@ def pstat_act(ax):
     
     def plot_structure(IL2vec, IL15vec, title, ax):
         ax.set_title(title)
-        ax.scatter(np.log10(self.cytokC), IL2vec, color='r', alpha=0.5, label="IL2")
-        ax.scatter(np.log10(self.cytokC), IL15vec, color='g', alpha=0.5, label='IL15')
+        ax.scatter(np.log10(cytokC), IL2vec, color='r', alpha=0.5, label="IL2")
+        ax.scatter(np.log10(cytokC), IL15vec, color='g', alpha=0.5, label='IL15')
         ax.set_ylim(0,(y_max + (0.25*y_max)))
-        ax.set_ylabel('Maximal p-STAT5 (% x ' + str(self.y_max) + ')')
+        ax.set_ylabel('Maximal p-STAT5 (% x ' + str(y_max) + ')')
         ax.set_xlabel('log10 of cytokine concentration (nM)')
         ax.legend()
 
