@@ -6,7 +6,7 @@ from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..model import nParams
 import numpy as np
 import matplotlib.pyplot as plt
-import pymc3 as pm
+import pymc3 as pm, os
 from os.path import join
 
 
@@ -94,7 +94,6 @@ def pstat_act(ax):
     
 def import_samples():
     path = os.path.dirname(os.path.abspath(__file__))
-    
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'))
     kfwd = trace.get_values('kfwd', chains=[0])
     k4rev = trace.get_values('rxn__0', chains=[0])
