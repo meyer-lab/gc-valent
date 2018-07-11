@@ -14,7 +14,7 @@ affiliation:
 - name: Contact info
   key: b
 bibliography: ./Manuscript/References.bib
-abstract: Abstract
+abstract: Many receptor families are comprised of pleitropic interactions among multiple ligands, receptors, and cells. The multivariate nature of these systems confounds intuition and therapeutic manipulation. 
 link-citations: true
 csl: ./Manuscript/Templates/nature.csl
 ---
