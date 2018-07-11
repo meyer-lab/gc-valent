@@ -56,7 +56,7 @@ def IL2Rb_surf_perc(ax):
 
     
 def pstat_act(ax):
-    pstat = pstat()
+    pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
@@ -71,11 +71,11 @@ def pstat_act(ax):
         ax.set_xlabel('log10 of cytokine concentration (nM)')
         ax.legend()
 
-    output = pstat.calc(unkVec) * y_max
+    output = pstat5.calc(unkVec) * y_max
     IL2_plus = output[0:PTS]
     IL2_minus = output[PTS:(PTS*2)]
     IL15_plus = output[(PTS*2):(PTS*3)]
     IL15_minus = output[(PTS*3):(PTS*4)]
 
-    self.plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0])
-    self.plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
+    plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0])
+    plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
