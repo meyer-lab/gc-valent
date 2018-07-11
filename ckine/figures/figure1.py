@@ -4,6 +4,7 @@ This creates Figure 1.
 from .figureCommon import subplotLabel, getSetup
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def makeFigure():
