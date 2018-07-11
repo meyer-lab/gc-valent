@@ -15,6 +15,7 @@ def makeFigure():
     subplotLabel(ax[0], 'A')
     
     IL2Rb_surf_perc(ax[0:4])
+    pstat_act(ax[4:6])
 
     f.tight_layout()
 
@@ -32,7 +33,7 @@ def IL2Rb_surf_perc(ax):
         ax.set_title(title)
         ax.scatter(ts, IL2vec, color='r', label='IL2', alpha=0.7)
         ax.scatter(ts, IL15vec, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,(y_max + (0.2 * y_max)))
+        ax.set_ylim(0,(y_max + (0.2 * y_max)))
         ax.set_ylabel("Surface IL2Rb (% x " + str(y_max) + ')')
         ax.set_xlabel("Time (min)")
         ax.legend()
@@ -52,3 +53,29 @@ def IL2Rb_surf_perc(ax):
     plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1])
     plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2])
     plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3])
+
+    
+def pstat_act(ax):
+    pstat = pstat()
+    PTS = 30
+    cytokC = np.logspace(-3.3, 2.7, PTS)
+    y_max = 100.
+    unkVec = np.array([0., 0., 0., 0., 2.02E-05, 0.38406199, 0.047815524, 0.118719663, 0.088470489, 0.092582828, 0.107673095, 0.101291622, 0.089522673, 0.023247533, 1.954609999, 0.042469514, 0.300662763, 0.004387724, 2.166630382, 0.673719144, 2.077778334, 0.288524177, 0., 0.])
+    
+    def plot_structure(IL2vec, IL15vec, title, ax):
+        ax.set_title(title)
+        ax.scatter(np.log10(self.cytokC), IL2vec, color='r', alpha=0.5, label="IL2")
+        ax.scatter(np.log10(self.cytokC), IL15vec, color='g', alpha=0.5, label='IL15')
+        ax.set_ylim(0,(y_max + (0.25*y_max)))
+        ax.set_ylabel('Maximal p-STAT5 (% x ' + str(self.y_max) + ')')
+        ax.set_xlabel('log10 of cytokine concentration (nM)')
+        ax.legend()
+
+    output = pstat.calc(unkVec) * y_max
+    IL2_plus = output[0:PTS]
+    IL2_minus = output[PTS:(PTS*2)]
+    IL15_plus = output[(PTS*2):(PTS*3)]
+    IL15_minus = output[(PTS*3):(PTS*4)]
+
+    self.plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0])
+    self.plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
