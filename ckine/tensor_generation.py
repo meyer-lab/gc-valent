@@ -10,7 +10,7 @@ from os.path import join
 import numpy as np, pandas as pds
 from tqdm import tqdm
 from multiprocessing import Pool
-from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors
+from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
@@ -23,7 +23,7 @@ def ySolver(matIn):
     matIn = np.squeeze(matIn)
 
     # Set some given parameters already determined from fitting
-    rxntfR = np.zeros(30)
+    rxntfR = np.zeros(nParams())
     rxntfR[6] = 0.00001 #kfwd
     rxntfR[7:17] = 0.001  # From fitting: k4rev - k35rev
     rxntfR[17:22] = 0.1 # From fitting: endo - kdeg
@@ -61,7 +61,7 @@ def findy(lig):
     new_mat = np.concatenate((mats, receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     # Allocate a y_of_combos
-    y_of_combos = np.zeros((len(new_mat), ts.size, 62))
+    y_of_combos = np.zeros((len(new_mat), ts.size, nSpecies()))
 
     pool = Pool()
 

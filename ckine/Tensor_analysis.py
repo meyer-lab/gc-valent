@@ -91,7 +91,7 @@ def plot_low_high(factors, mat, component_x, component_y):
 def plot_values_decomposition(factors, component_x, component_y):
     """This function performs the values decomposition and plots it with colors separating low from high."""
     #Generate a plot for component x vs component y of the factors[2] above representing our values
-    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra']
+    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra']
     fig = plt.figure()
     ax = fig.add_subplot(111)
     #Set Active to color red. Set Surface to color blue. Set Total to color black
@@ -105,16 +105,16 @@ def plot_values_decomposition(factors, component_x, component_y):
             else:
                 plt.scatter(data[0], data[1], color = c)
             ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
-        elif i in range(6, 10):
+        elif i in range(6, 14):
             c = 'b'
-            if i == 4:
+            if i == 6:
                 plt.scatter(data[0], data[1], color = c, label = 'Surface Receptor')
             else:
                 plt.scatter(data[0], data[1], color = c)
             ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
         else:
             c = 'k'
-            if i==10:
+            if i==14:
                 plt.scatter(data[0], data[1], color = c, label = 'Total Receptor')
             else:
                 plt.scatter(data[0], data[1], color = c)
