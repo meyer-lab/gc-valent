@@ -14,16 +14,22 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     
-    IL2Rb_surf_perc(ax[0:4])
+    surf_perc(ax[0:4], 'IL2Rb')
     pstat_act(ax[4:6])
-    gc_surf_perc(ax[8:12])
+    surf_perc(ax[8:12], 'gc')
 
     f.tight_layout()
 
     return f
 
-def IL2Rb_surf_perc(ax):
-    surf2Rb = surf_IL2Rb()
+def surf_perc(ax, species):
+    if (species == 'IL2Rb'):
+        surf = surf_IL2Rb()
+    elif (species == 'gc'):
+        surf = surf_gc()
+    else:
+        print('not a valid species')
+        return -1
 
     y_max = 10.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -35,12 +41,12 @@ def IL2Rb_surf_perc(ax):
         ax.scatter(ts, IL2vec, color='r', label='IL2', alpha=0.7)
         ax.scatter(ts, IL15vec, color='g', label='IL15', alpha=0.7)
         ax.set_ylim(0,(y_max + (0.2 * y_max)))
-        ax.set_ylabel("Surface IL2Rb (% x " + str(y_max) + ')')
+        ax.set_ylabel("Surface " + str(species) + " (% x " + str(y_max) + ')')
         ax.set_xlabel("Time (min)")
         ax.legend()
 
 
-    output = surf2Rb.calc(unkVec) * y_max
+    output = surf.calc(unkVec) * y_max
     IL2_1_plus = output[0:(size)]
     IL2_500_plus = output[(size):(size*2)]
     IL2_1_minus = output[(size*2):(size*3)]
