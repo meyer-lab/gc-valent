@@ -70,15 +70,15 @@ class IL2_15_activity:
         Op = runCkineOp(ts=np.array(500.))
 
         # Loop over concentrations of IL15
-        actVec = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[1], x))), self.cytokC))) # Change condensation here for activity
+        actVec, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[1], x))), sequences=[self.cytokC], name="IL15 loop")
 
         # Loop over concentrations of IL2
-        actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
+        actVecIL2 = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), sequences=[self.cytokC])
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
         # Loop over concentrations of IL2, IL2Ra-/-
-        actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
+        actVecIL2RaMinus = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), sequences=[self.cytokC])
 
         # Normalize to the maximal activity, put together into one vector
         actCat = T.concatenate((actVec, actVec, actVecIL2, actVecIL2RaMinus))
