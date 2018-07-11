@@ -208,12 +208,12 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Handle endosomal ligand balance.
 	// Must come before trafficking as we only calculate this based on reactions balance
 	double const * const dydti = dydt + halfL;
-	dydt[56] = std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
-	dydt[57] = std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
-	dydt[58] = std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
-	dydt[59] = std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-	dydt[60] = std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
-	dydt[61] = std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
+	dydt[56] = -std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
+	dydt[57] = -std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
+	dydt[58] = -std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
+	dydt[59] = -std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
+	dydt[60] = -std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
+	dydt[61] = -std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
