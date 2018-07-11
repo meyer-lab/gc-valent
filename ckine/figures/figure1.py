@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pymc3 as pm, os
 from os.path import join
+from ..fit import build_model
 
 
 def makeFigure():
@@ -93,8 +94,10 @@ def pstat_act(ax):
     plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
     
 def import_samples():
+    bmodel = build_model()
+
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), M)
+    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     kfwd = trace.get_values('kfwd', chains=[0])
     k4rev = trace.get_values('rxn__0', chains=[0])
     k5rev = trace.get_values('rxn__1', chains=[0])
