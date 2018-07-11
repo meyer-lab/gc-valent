@@ -829,8 +829,6 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	out(47, 42) = k29rev / internalV; 
 }
 
-constexpr bool debugOutput = false;
-
 
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
@@ -841,16 +839,6 @@ int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vec
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
 
 	jac.transposeInPlace();
-
-	if (debugOutput) {
-		JacMat A = jac;
-
-		Eigen::JacobiSVD<JacMat> svd(A);
-		double cond = svd.singularValues()(0) / svd.singularValues()(svd.singularValues().size()-1);
-
-		if (cond > 1E10)
-			std::cout << std::endl << std::endl << jac << std::endl;
-	}
 
 	return 0;
 }
