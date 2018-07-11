@@ -169,8 +169,21 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 }
 
 
-void trafficking(const double * const y, const ratesS * const r, double * const dydt) {
-	// Implement trafficking.
+void fullModel(const double * const y, const ratesS * const r, double *dydt) {
+	// Implement full model.
+	fill(dydt, dydt + Nspecies, 0.0);
+
+	// Calculate cell surface and endosomal reactions
+	dy_dt(y,         r,        dydt, r->IL2, r->IL15, r->IL7, r->IL9);
+	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
+
+	// Handle endosomal ligand balance.
+	// Must come before trafficking as we only calculate this based on reactions balance
+	double const * const dydti = dydt + halfL;
+	dydt[44] = -std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
+	dydt[45] = -std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
+	dydt[46] = -std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
+	dydt[47] = -std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
@@ -192,30 +205,8 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 	dydt[19] += r->Rexpr[5];
 
 	// Degradation does lead to some clearance of ligand in the endosome
-	for (size_t ii = 0; ii < 4; ii++) {
+	for (size_t ii = 0; ii < 4; ii++)
 		dydt[44 + ii] -= y[44 + ii] * r->kDeg;
-	}
-}
-
-
-void fullModel(const double * const y, const ratesS * const r, double *dydt) {
-	// Implement full model.
-	fill(dydt, dydt + Nspecies, 0.0);
-
-	// Calculate cell surface and endosomal reactions
-	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
-	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
-
-	// Handle endosomal ligand balance.
-	// Must come before trafficking as we only calculate this based on reactions balance
-	double const * const dydti = dydt + halfL;
-	dydt[44] = -std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
-	dydt[45] = -std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
-	dydt[46] = -std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
-	dydt[47] = -std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-
-	// Handle trafficking
-	trafficking(y, r, dydt);
 }
 
 
