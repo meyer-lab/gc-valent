@@ -92,7 +92,7 @@ def pstat_act(ax):
     plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
     
 def import_samples():
-    trace = pm.backends.text.load(".../IL2_model_results", M)
+    trace = pm.backends.text.load(".../IL2_model_results")
     kfwd = trace.get_values('kfwd', chains=[0])
     k4rev = trace.get_values('rxn__0', chains=[0])
     k5rev = trace.get_values('rxn__1', chains=[0])
