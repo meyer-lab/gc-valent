@@ -114,7 +114,7 @@ def import_samples():
     
     # probably can't use numpy for this
     unkVec = np.zeros((nParams()), len(kfwd))
-    for (ii in range kfwd):
+    for ii in range (0, len(kfwd)):
         unkVec = np.array([0., 0., 0., 0., kfwd[ii], k4rev[ii], k5rev[ii], k16rev[ii], k17rev[ii], k22rev[ii], k23rev[ii], k27rev[ii], k31rev[ii], endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], IL2Ra_expr[ii], IL2Rb_expr[ii], gc_expr[ii], IL15Ra_expr[ii], 0., 0.])
     
     return unkVec
