@@ -197,26 +197,23 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 }
 
 
-/**
- * @brief      Solve for the ligand consumption rate in the endosome.
- *
- * @param      dydt  The rate of change vector solved for the receptor species.
- */
-void findLigConsume(double *dydt) {
-	double const * const dydti = dydt + halfL;
+void fullModel(const double * const y, const ratesS * const r, double *dydt) {
+	// Implement full model.
+	fill(dydt, dydt + Nspecies, 0.0);
 
-	// Calculate the ligand consumption.
+	// Calculate cell surface and endosomal reactions
+	dy_dt(y,         r,         dydt,       r->IL2, r->IL15, r->IL7, r->IL9, r->IL4, r->IL21);
+	dy_dt(y + halfL, r, dydt + halfL, y[(halfL*2)],   y[(halfL*2)+1],  y[(halfL*2)+2],  y[(halfL*2)+3], y[(halfL*2)+4], y[(halfL*2)+5]);
+
+	// Handle endosomal ligand balance.
+	// Must come before trafficking as we only calculate this based on reactions balance
+	double const * const dydti = dydt + halfL;
 	dydt[56] -= std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
 	dydt[57] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
 	dydt[58] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
 	dydt[59] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
 	dydt[60] -= std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
 	dydt[61] -= std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
-}
-
-
-void trafficking(const double * const y, const ratesS * const r, double * const dydt) {
-	// Implement trafficking.
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
@@ -240,26 +237,8 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 	dydt[25] += r->Rexpr[7];
 
 	// Degradation does lead to some clearance of ligand in the endosome
-	for (size_t ii = 0; ii < 6; ii++) {
+	for (size_t ii = 0; ii < 6; ii++)
 		dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
-	}
-}
-
-
-void fullModel(const double * const y, const ratesS * const r, double *dydt) {
-	// Implement full model.
-	fill(dydt, dydt + Nspecies, 0.0);
-
-	// Calculate cell surface and endosomal reactions
-	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9, r->IL4, r->IL21);
-	dy_dt(y + halfL, r, dydt + halfL, y[(halfL*2)],   y[(halfL*2)+1],  y[(halfL*2)+2],  y[(halfL*2)+3], y[(halfL*2)+4], y[(halfL*2)+5]);
-
-	// Handle endosomal ligand balance.
-	// Must come before trafficking as we only calculate this based on reactions balance
-	findLigConsume(dydt);
-
-	// Handle trafficking
-	trafficking(y, r, dydt);
 }
 
 
@@ -919,8 +898,6 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 
 }
 
-constexpr bool debugOutput = false;
-
 
 int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
@@ -931,16 +908,6 @@ int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, 
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
 
 	jac.transposeInPlace();
-
-	if (debugOutput) {
-		JacMat A = jac;
-
-		Eigen::JacobiSVD<JacMat> svd(A);
-		double cond = svd.singularValues()(0) / svd.singularValues()(svd.singularValues().size()-1);
-
-		if (cond > 1E10)
-			std::cout << std::endl << std::endl << jac << std::endl;
-	}
 
 	return 0;
 }
