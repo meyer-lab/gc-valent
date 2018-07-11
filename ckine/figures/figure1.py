@@ -32,7 +32,7 @@ def IL2Rb_surf_perc(ax):
         ax.scatter(ts, IL2vec, color='r', label='IL2', alpha=0.7)
         ax.scatter(ts, IL15vec, color='g', label='IL15', alpha=0.7)
         # plt.ylim(0,(y_max + (0.2 * y_max)))
-        ax.set_ylabel("Surface IL2Rb (% x " + str(self.y_max) + ')')
+        ax.set_ylabel("Surface IL2Rb (% x " + str(y_max) + ')')
         ax.set_xlabel("Time (min)")
         ax.legend()
         ax.show()
