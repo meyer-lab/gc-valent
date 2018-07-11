@@ -94,7 +94,7 @@ def pstat_act(ax):
     
 def import_samples():
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'))
+    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), M)
     kfwd = trace.get_values('kfwd', chains=[0])
     k4rev = trace.get_values('rxn__0', chains=[0])
     k5rev = trace.get_values('rxn__1', chains=[0])
