@@ -1,8 +1,10 @@
 """
 This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
 """
-import pymc3 as pm, theano.tensor as T, os
-from os.path import join
+from os.path import join, dirname, abspath
+import pymc3 as pm
+import theano
+import theano.tensor as T
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
@@ -10,7 +12,7 @@ from .differencing_op import runCkineOp, runCkineKineticOp
 
 class IL2Rb_trafficking:
     def __init__(self):
-        path = os.path.dirname(os.path.abspath(__file__))
+        path = dirname(abspath(__file__))
         # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
         numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).values
         # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
@@ -51,7 +53,7 @@ class IL2Rb_trafficking:
 class IL2_15_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL15 concentrations that we are going to take care of."""
-        path = os.path.dirname(os.path.abspath(__file__))
+        path = dirname(abspath(__file__))
         data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
 
