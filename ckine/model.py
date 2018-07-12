@@ -168,7 +168,7 @@ __internalStrength = 0.5 # strength of endosomal activity relative to surface
 def getTotalActiveSpecies():
     """ Return a vector of all the species (surface + endosome) which are active. """
     activity = getActiveSpecies()
-    return np.concatenate((activity, __internalStrength * activity, np.zeros(4)))
+    return np.concatenate((activity, __internalStrength * activity, np.zeros(6)))
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
