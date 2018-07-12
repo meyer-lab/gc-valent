@@ -50,20 +50,21 @@ def surf_perc(ax, species):
         ax.legend()
 
 
-    output = surf.calc(unkVec[:, 0]) * y_max
-    IL2_1_plus = output[0:(size)]
-    IL2_500_plus = output[(size):(size*2)]
-    IL2_1_minus = output[(size*2):(size*3)]
-    IL2_500_minus = output[(size*3):(size*4)]
-    IL15_1_plus = output[(size*4):(size*5)]
-    IL15_500_plus = output[(size*5):(size*6)]
-    IL15_1_minus = output[(size*6):(size*7)]
-    IL15_500_minus = output[(size*7):(size*8)]
+    for ii in range(0,5):
+        output = surf.calc(unkVec[:, ii]) * y_max
+        IL2_1_plus = output[0:(size)]
+        IL2_500_plus = output[(size):(size*2)]
+        IL2_1_minus = output[(size*2):(size*3)]
+        IL2_500_minus = output[(size*3):(size*4)]
+        IL15_1_plus = output[(size*4):(size*5)]
+        IL15_500_plus = output[(size*5):(size*6)]
+        IL15_1_minus = output[(size*6):(size*7)]
+        IL15_500_minus = output[(size*7):(size*8)]
 
-    plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-', ax[0])
-    plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1])
-    plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2])
-    plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3])
+        plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-', ax[0])
+        plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1])
+        plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2])
+        plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3])
 
     
 def pstat_act(ax):
@@ -82,14 +83,15 @@ def pstat_act(ax):
         ax.set_xlabel('log10 of cytokine concentration (nM)')
         ax.legend()
 
-    output = pstat5.calc(unkVec[:, 0]) * y_max
-    IL2_plus = output[0:PTS]
-    IL2_minus = output[PTS:(PTS*2)]
-    IL15_plus = output[(PTS*2):(PTS*3)]
-    IL15_minus = output[(PTS*3):(PTS*4)]
+    for ii in range(0,5):
+        output = pstat5.calc(unkVec[:, ii]) * y_max
+        IL2_plus = output[0:PTS]
+        IL2_minus = output[PTS:(PTS*2)]
+        IL15_plus = output[(PTS*2):(PTS*3)]
+        IL15_minus = output[(PTS*3):(PTS*4)]
 
-    plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0])
-    plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
+        plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0])
+        plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1])
     
 def import_samples():
     bmodel = build_model()
