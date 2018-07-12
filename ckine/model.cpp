@@ -868,34 +868,19 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	out(57, halfL+10) = k13rev / internalV;
 	out(57, halfL+11) = k14rev / internalV;
 
-	const double eIL7 = y[58] / internalV;
-	out(58, 58) -= kfbnd * y[halfL + 16] / internalV;
-	out(halfL + 16, 58) = -kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
-	out(58, halfL + 16) = -kfbnd * eIL7; // IL7 binding to IL7Ra
-	out(halfL + 17, 58) =  kfbnd * y[halfL + 16]; // IL7 binding to IL7Ra
-	out(58, halfL+17) = k25rev / internalV;
+	auto simpleCkine = [&](const size_t ij, const size_t ix, const double revRate) {
+		const double eIL = y[ix] / internalV;
+		out(ix, ix) -= kfbnd * y[halfL + ij] / internalV;
+		out(halfL + ij, ix) = -kfbnd * y[halfL + ij];
+		out(ix, halfL + ij) = -kfbnd * eIL;
+		out(halfL + ij + 1, ix) =  kfbnd * y[halfL + ij];
+		out(ix, halfL + ij + 1) = revRate / internalV;
+	};
 
-	const double eIL9 = y[59] / internalV;
-	out(59, 59) -= kfbnd * y[halfL + 19] / internalV;
-	out(halfL + 19, 59) = -kfbnd * y[halfL + 19]; // IL9 binding to IL9R
-	out(59, halfL + 19) = -kfbnd * eIL9; // IL9 binding to IL9R
-	out(halfL + 20, 59) =  kfbnd * y[halfL + 19]; // IL9 binding to IL9R
-	out(59, halfL+20) = k29rev / internalV; 
-	
-	const double eIL4 = y[60] / internalV;
-	out(60, 60) -= kfbnd * y[halfL + 22] / internalV;
-	out(halfL + 22, 60) = -kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
-	out(60, halfL + 22) = -kfbnd * eIL4; // IL4 binding to IL4Ra
-	out(halfL + 23, 60) =  kfbnd * y[halfL + 22]; // IL4 binding to IL4Ra
-	out(60, halfL+23) = k32rev / internalV;
-
-	const double eIL21 = y[61] / internalV;
-	out(61, 61) -= kfbnd * y[halfL + 25] / internalV;
-	out(halfL + 25, 61) = -kfbnd * y[halfL + 25]; // IL21 binding to IL21Ra
-	out(61, halfL + 25) = -kfbnd * eIL21; // IL21 binding to IL21Ra
-	out(halfL + 26, 61) =  kfbnd * y[halfL + 25]; // IL21 binding to IL21Ra
-	out(61, halfL+26) = k34rev / internalV; 
-
+	simpleCkine(16, 58, k25rev); // IL7
+	simpleCkine(19, 59, k29rev); // IL9
+	simpleCkine(22, 60, k32rev); // IL4
+	simpleCkine(25, 61, k34rev); // IL21
 }
 
 
