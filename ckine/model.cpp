@@ -123,22 +123,6 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	const double IL15_IL15Ra_gc = y[13];
 	const double IL15_IL2Rb_gc = y[14];
 	const double IL15_IL15Ra_IL2Rb_gc = y[15];
-	
-	// IL7, IL9 in nM
-	const double IL7Ra = y[16];
-	const double IL7Ra_IL7 = y[17];
-	const double IL7Ra_gc_IL7 = y[18];
-	const double IL9R = y[19];
-	const double IL9R_IL9 = y[20];
-	const double IL9R_gc_IL9 = y[21];
-
-	// IL4, IL21 in nM
-	const double IL4Ra = y[22];
-	const double IL4_IL4Ra = y[23];
-	const double IL4_IL4Ra_gc = y[24];
-	const double IL21Ra = y[25];
-	const double IL21_IL21Ra = y[26];
-	const double IL21_IL21Ra_gc = y[27];
 		
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
@@ -163,30 +147,17 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
 	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
 	
-	// IL7
-	dydt[2] = dydt[2] - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[16] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7;
-	dydt[17] = kfbnd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[18] = r->kfwd * gc * IL7Ra_IL7 - r->k27rev * IL7Ra_gc_IL7;
+	auto simpleCkine = [&](const size_t ij, const double revOne, const double revTwo, const double IL) {
+		dydt[2] += - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
+		dydt[ij] = -kfbnd * y[ij] * IL + revOne * y[ij+1];
+		dydt[ij+1] = kfbnd * y[ij] * IL - revOne * y[ij+1] - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
+		dydt[ij+2] = r->kfwd * gc * y[ij+1] - revTwo * y[ij+2];
+	};
 
-	// IL9
-	dydt[2] = dydt[2] - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[19] = -kfbnd * IL9R * IL9 + k29rev * IL9R_IL9;
-	dydt[20] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[21] = r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
-	
-	// IL4
-	dydt[2] = dydt[2] - r->kfwd * gc * IL4_IL4Ra + r->k33rev * IL4_IL4Ra_gc;
-	dydt[22] = -kfbnd * IL4 * IL4Ra + k32rev * IL4_IL4Ra;
-	dydt[23] = kfbnd * IL4 * IL4Ra + r->k33rev * IL4_IL4Ra_gc - k32rev * IL4_IL4Ra - r->kfwd * gc * IL4_IL4Ra;
-	dydt[24] = r->kfwd * gc * IL4_IL4Ra - r->k33rev * IL4_IL4Ra_gc;
-
-	// IL21
-	dydt[2] = dydt[2] - r->kfwd * gc * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc;
-	dydt[25] = -kfbnd * IL21 * IL21Ra + k34rev * IL21_IL21Ra;
-	dydt[26] = kfbnd * IL21 * IL21Ra - k34rev * IL21_IL21Ra + r->k35rev * IL21_IL21Ra_gc - r->kfwd * IL21_IL21Ra * gc;
-	dydt[27] = -r->k35rev * IL21_IL21Ra_gc + r->kfwd * IL21_IL21Ra * gc;
-		
+	simpleCkine(16, k25rev, r->k27rev, IL7);
+	simpleCkine(19, k29rev, r->k31rev, IL9);
+	simpleCkine(22, k32rev, r->k33rev, IL4);
+	simpleCkine(25, k34rev, r->k35rev, IL21);
 }
 
 
