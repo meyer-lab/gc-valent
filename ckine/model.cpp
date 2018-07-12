@@ -574,14 +574,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL15_IL15Ra_IL2Rb = y[12];
 	const double IL15_IL15Ra_gc = y[13];
 	const double IL15_IL2Rb_gc = y[14];
-	
-	// IL7, IL9 in nM
-	const double IL7Ra_IL7 = y[17];
-	const double IL9R_IL9 = y[20];
-	
-	// IL4, IL21 in nM
-	const double IL4_IL4Ra = y[23];
-	const double IL21_IL21Ra = y[26];
 
 	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
@@ -610,7 +602,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc
-	out(2, 2) = - r->kfwd * (IL2_IL2Rb + IL2_IL2Ra + IL2_IL2Ra_IL2Rb + IL15_IL2Rb + IL15_IL15Ra + IL15_IL15Ra_IL2Rb + IL7Ra_IL7 + IL9R_IL9 + IL4_IL4Ra + IL21_IL21Ra); // gc with respect to gc
+	out(2, 2) = - r->kfwd * (IL2_IL2Rb + IL2_IL2Ra + IL2_IL2Ra_IL2Rb + IL15_IL2Rb + IL15_IL15Ra + IL15_IL15Ra_IL2Rb); // gc with respect to gc
 	out(2, 3) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra
 	out(2, 4) = - r->kfwd * gc; // gc with respect to IL2_IL2Rb
 	out(2, 5) = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
@@ -623,14 +615,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(2, 13) = r->k16rev; // gc with respect to IL15_IL15Ra_gc
 	out(2, 14) = r->k17rev; // gc with respect to IL15_IL2Rb_gc
 	out(2, 15) = r->k22rev; // gc with respect to IL15_IL15Ra_IL2Rb_gc
-	out(2, 17) = - r->kfwd * gc; // gc with respect to IL7Ra_IL7
-	out(2, 18) = r->k27rev; // gc with respect to IL7Ra_gc_IL7
-	out(2, 20) = - r->kfwd * gc; // gc with respect to IL9R_IL9
-	out(2, 21) = r->k31rev; // gc with respect to IL9R_gc_IL9
-	out(2, 23) = - r->kfwd * gc; // gc with respect with respect to IL4_IL4Ra
-	out(2, 24) = r->k33rev; // gc with respect to IL4_IL4Ra_gc
-	out(2, 26) = - r->kfwd * gc; // gc with respect to IL21_IL21Ra
-	out(2, 27) = r->k35rev; // gc with respect to IL21_IL21Ra_gc
 	
 	// IL2_IL2Ra
 	out(3, 0) = kfbnd * IL2; // IL2_IL2Ra with respect to IL2Ra
@@ -735,66 +719,30 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(15, 13) = r->kfwd * IL2Rb; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_gc
 	out(15, 14) = r->kfwd * IL15Ra; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL2Rb_gc
 	out(15, 15) = - r->k20rev - r->k21rev - r->k22rev; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
-	
-	// IL7Ra
-	out(16, 16) = -kfbnd * IL7; // IL7Ra with respect to IL7Ra 
-	out(16, 17) = k25rev; // IL7Ra with respect to IL7Ra_IL7
-	
-	// IL7Ra_IL7
-	out(17, 2) = - r->kfwd * IL7Ra_IL7; // IL7Ra_IL7 with respect to gc
-	out(17, 16) = kfbnd * IL7; // IL7Ra_IL7 with respect to IL7Ra
-	out(17, 17) = - k25rev - r->kfwd * gc; // IL7Ra_IL7 with respect to IL7Ra_IL7
-	out(17, 18) = r->k27rev; // IL7Ra_IL7 with respect to IL7Ra_gc_IL7
-	
-	// IL7Ra_gc_IL7
-	out(18, 2) = r->kfwd * IL7Ra_IL7; // IL7Ra_gc_IL7 with respect to gc
-	out(18, 17) = r->kfwd * gc; // IL7Ra_gc_IL7 with respect to IL7Ra_IL7
-	out(18, 18) = - r->k27rev; // IL7Ra_gc_IL7 with respect to IL7Ra_gc_IL7
-	
-	// IL9R
-	out(19, 19) = -kfbnd * IL9; // IL9R with respect to IL9R
-	out(19, 20) = k29rev; // IL9R with respect to IL9R_IL9
-	
-	// IL9R_IL9 
-	out(20, 2) = - r->kfwd * IL9R_IL9; // IL9R_IL9 with respect to gc
-	out(20, 19) = kfbnd * IL9; // IL9R_IL9 with respect to IL9R
-	out(20, 20) = - k29rev - r->kfwd * gc; // IL9R_IL9 with respect to IL9R_IL9
-	out(20, 21) = r->k31rev; // IL9R_IL9 with respect to IL9R_gc_IL9
-	
-	// IL9R_gc_IL9
-	out(21, 2) = r->kfwd * IL9R_IL9; // IL9R_gc_IL9 with respect to gc
-	out(21, 20) = r->kfwd * gc; // IL9R_gc_IL9 with respect to IL9R_IL9
-	out(21, 21) = - r->k31rev; // IL9R_gc_IL9 with respect to IL9R_gc_IL9
-	
-	// IL4Ra
-	out(22, 22) = -kfbnd * IL4; // IL4Ra with respect to IL4Ra
-	out(22, 23) = k32rev; // IL4Ra with respect to IL4_IL4Ra
 
-	// IL4_IL4Ra
-	out(23, 2) = - r->kfwd * IL4_IL4Ra; // IL4_IL4Ra with respect to gc
-	out(23, 22) = kfbnd * IL4; // IL4_IL4Ra with respect to IL4Ra
-	out(23, 23) = - k32rev - r->kfwd * gc; // IL4_IL4Ra with respect to IL4_IL4Ra
-	out(23, 24) = r->k33rev; // IL4_IL4Ra with respect to IL4_IL4Ra_gc
 
-	// IL4_IL4Ra_gc
-	out(24, 2) = r->kfwd * IL4_IL4Ra; // IL4_IL4Ra_gc with respect to gc
-	out(24, 23) = r->kfwd * gc; // IL4_IL4Ra_gc with respect to IL4_IL4Ra
-	out(24, 24) = - r->k33rev; // IL4_IL4Ra_gc with respect to IL4_IL4Ra_gc
+	auto simpleCkine = [&out, &gc, &r, &y](const size_t ij, const double revOne, const double revTwo, const double IL) {
+		out(2, 2) -= r->kfwd * y[ij+1]; // gc with respect to gc
+		out(2, ij+1) = -r->kfwd * gc; // gc with respect to Ra_IL
+		out(2, ij+2) = revTwo; // gc with respect to Ra_gc_IL
 
-	// IL21Ra
-	out(25, 25) = -kfbnd * IL21; // IL21Ra with respect to IL21Ra
-	out(25, 26) = k34rev; // IL21_IL21Ra
+		out(ij, ij  ) = -kfbnd * IL; // Ra with respect to Ra
+		out(ij, ij+1) = revOne; // IL_Ra
 
-	// IL21_IL21Ra
-	out(26, 2) = - r->kfwd * IL21_IL21Ra; // IL21_IL21Ra with respect to gc
-	out(26, 25) = kfbnd * IL21; // IL21_IL21Ra with respect to IL21Ra
-	out(26, 26) = - k34rev - r->kfwd * gc; // IL21_IL21Ra with respect to IL21_IL21Ra
-	out(26, 27) = r->k35rev; // IL21_IL21Ra with respect to IL21_IL21Ra_gc
+		out(ij+1, 2) = - r->kfwd * y[ij+1]; // IL_Ra with respect to gc
+		out(ij+1, ij) = kfbnd * IL; // IL_Ra with respect to Ra
+		out(ij+1, ij+1) = - revOne - r->kfwd * gc; // IL_Ra with respect to IL_Ra
+		out(ij+1, ij+2) = revTwo; // IL_Ra with respect to IL_Ra_gc
 
-	// IL21_IL21Ra_gc
-	out(27, 2) = r->kfwd * IL21_IL21Ra; // IL21_IL21Ra_gc with respect to gc
-	out(27, 26) = r->kfwd * gc; // IL21_IL21Ra_gc with respect to IL21_IL21Ra
-	out(27, 27) = -r->k35rev; // IL21_IL21Ra_gc with respect to IL21_IL21Ra_gc
+		out(ij+2,    2) = r->kfwd * y[ij+1]; // IL_Ra_gc with respect to gc
+		out(ij+2, ij+1) = r->kfwd * gc; // IL_Ra_gc with respect to IL_Ra
+		out(ij+2, ij+2) = -revTwo; // IL_Ra_gc with respect to IL_Ra_gc
+	};
+
+	simpleCkine(16, k25rev, r->k27rev, IL7); // IL7
+	simpleCkine(19, k29rev, r->k31rev, IL9); // IL9
+	simpleCkine(22, k32rev, r->k33rev, IL4); // IL4
+	simpleCkine(25, k34rev, r->k35rev, IL21); // IL21
 }
 
 
