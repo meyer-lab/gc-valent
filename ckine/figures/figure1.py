@@ -35,7 +35,7 @@ def surf_perc(ax, species):
         print('not a valid species')
         return -1
 
-    y_max = 10.
+    y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
     size = len(ts)
     unkVec = import_samples()
