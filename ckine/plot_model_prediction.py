@@ -51,33 +51,6 @@ class surf_IL2Rb:
 
         return np.concatenate((a, b, c, d, e, f, g, h))
 
-    def plot_structure(self, IL2vec, IL15vec, title):
-        plt.title(title)
-        plt.scatter(self.ts, IL2vec, color='r', label='IL2', alpha=0.7)
-        plt.scatter(self.ts, IL15vec, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,(y_max + (0.2 * y_max)))
-        plt.ylabel("Surface IL2Rb (% x " + str(self.y_max) + ')')
-        plt.xlabel("Time (min)")
-        plt.legend()
-        plt.show()
-
-    def plot(self, unkVec):
-        output = self.calc(unkVec) * self.y_max
-        IL2_1_plus = output[0:7]
-        IL2_500_plus = output[7:14]
-        IL2_1_minus = output[14:21]
-        IL2_500_minus = output[21:28]
-        IL15_1_plus = output[28:35]
-        IL15_500_plus = output[35:42]
-        IL15_1_minus = output[42:49]
-        IL15_500_minus = output[49:56]
-
-        self.plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-')
-        self.plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-")
-        self.plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+")
-        self.plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+")
-
-
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
     def __init__(self):
@@ -120,26 +93,6 @@ class pstat:
         actVec = np.concatenate((actVec_IL2 / np.max(actVec_IL2), actVec_IL2_IL2Raminus / np.max(actVec_IL2_IL2Raminus), actVec_IL15 / np.max(actVec_IL15), actVec_IL15_IL2Raminus / np.max(actVec_IL15_IL2Raminus)))
 
         return actVec
-
-    def plot_structure(self, IL2vec, IL15vec, title):
-        plt.title(title)
-        plt.scatter(np.log10(self.cytokC), IL2vec, color='r', alpha=0.5, label="IL2")
-        plt.scatter(np.log10(self.cytokC), IL15vec, color='g', alpha=0.5, label='IL15')
-        plt.ylim(0,(self.y_max + (0.25*self.y_max)))
-        plt.ylabel('Maximal p-STAT5 (% x ' + str(self.y_max) + ')')
-        plt.xlabel('log10 of cytokine concentration (nM)')
-        plt.legend()
-        plt.show()
-
-    def plot(self, unkVec):
-        output = self.calc(unkVec) * self.y_max
-        IL2_plus = output[0:self.PTS]
-        IL2_minus = output[self.PTS:(self.PTS*2)]
-        IL15_plus = output[(self.PTS*2):(self.PTS*3)]
-        IL15_minus = output[(self.PTS*3):(self.PTS*4)]
-
-        self.plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells")
-        self.plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells")
 
 class surf_gc:
     def __init__(self):
@@ -189,28 +142,3 @@ class surf_gc:
 
         return np.concatenate((a, b, c, d, e, f, g, h))
     
-    def plot_structure(self, IL2vec, IL15vec, title):
-        plt.title(title)
-        plt.scatter(self.ts, IL2vec, color='r', label='IL2', alpha=0.7)
-        plt.scatter(self.ts, IL15vec, color='g', label='IL15', alpha=0.7)
-        # plt.ylim(0,(self.y_max + (0.2 * self.y_max)))
-        plt.ylabel("Surface gc (% x " + str(self.y_max) + ')')
-        plt.xlabel("Time (min)")
-        plt.legend()
-        plt.show()
-
-    def plot(self, unkVec):
-        output = self.calc(unkVec) * self.y_max
-        IL2_1_plus = output[0:self.pts]
-        IL2_500_plus = output[(self.pts):(self.pts*2)]
-        IL2_1_minus = output[(self.pts*2):(self.pts*3)]
-        IL2_500_minus = output[(self.pts*3):(self.pts*4)]
-        IL15_1_plus = output[(self.pts*4):(self.pts*5)]
-        IL15_500_plus = output[(self.pts*5):(self.pts*6)]
-        IL15_1_minus = output[(self.pts*6):(self.pts*7)]
-        IL15_500_minus = output[(self.pts*7):(self.pts*8)]
-
-        self.plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-')
-        self.plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-")
-        self.plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+")
-        self.plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+")
