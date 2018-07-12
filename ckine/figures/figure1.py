@@ -51,7 +51,7 @@ def surf_perc(ax, species):
         ax.legend()
 
 
-    output = surf.calc(unkVec[0]) * y_max
+    output = surf.calc(unkVec[:, 0]) * y_max
     IL2_1_plus = output[0:(size)]
     IL2_500_plus = output[(size):(size*2)]
     IL2_1_minus = output[(size*2):(size*3)]
@@ -84,7 +84,7 @@ def pstat_act(ax):
         ax.set_xlabel('log10 of cytokine concentration (nM)')
         ax.legend()
 
-    output = pstat5.calc(unkVec[0]) * y_max
+    output = pstat5.calc(unkVec[:, 0]) * y_max
     IL2_plus = output[0:PTS]
     IL2_minus = output[PTS:(PTS*2)]
     IL15_plus = output[(PTS*2):(PTS*3)]
@@ -95,32 +95,20 @@ def pstat_act(ax):
     
 def import_samples():
     bmodel = build_model()
+    n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     kfwd = trace.get_values('kfwd', chains=[0])
-    k4rev = trace.get_values('rxn__0', chains=[0])
-    k5rev = trace.get_values('rxn__1', chains=[0])
-    k16rev = trace.get_values('rxn__2', chains=[0])
-    k17rev = trace.get_values('rxn__3', chains=[0])
-    k22rev = trace.get_values('rxn__4', chains=[0])
-    k23rev = trace.get_values('rxn__5', chains=[0])
-    k27rev = trace.get_values('rxn__6', chains=[0])
-    k31rev = trace.get_values('rxn__7', chains=[0])
-    endo = trace.get_values('endo__0', chains=[0])
-    activeEndo = trace.get_values('endo__1', chains=[0])
+    rxn = trace.get_values('rxn', chains=[0])
+    endo_activeEndo = trace.get_values('endo', chains=[0])
     sortF = trace.get_values('sortF', chains=[0])
-    kRec = trace.get_values('kRec_kDeg__0', chains=[0])
-    kDeg = trace.get_values('kRec_kDeg__1', chains=[0])
-    IL2Ra_expr = trace.get_values('IL2Raexpr__0', chains=[0])
-    IL2Rb_expr = trace.get_values('IL2Raexpr__1', chains=[0])
-    gc_expr = trace.get_values('IL2Raexpr__2', chains=[0])
-    IL15Ra_expr = trace.get_values('IL2Raexpr__3', chains=[0])
+    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
+    exprRates = trace.get_values('IL2Raexpr', chains=[0])
     
-    # probably can't use numpy for this
-    unkVec = np.zeros((nParams()), len(kfwd))
-    for ii in range (0, len(kfwd)):
-        unkVec = np.array([0., 0., 0., 0., kfwd[ii], k4rev[ii], k5rev[ii], k16rev[ii], k17rev[ii], k22rev[ii], k23rev[ii], k27rev[ii], k31rev[ii], endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], IL2Ra_expr[ii], IL2Rb_expr[ii], gc_expr[ii], IL15Ra_expr[ii], 0., 0.])
+    unkVec = np.zeros((n_params, 500))
+    for ii in range (0, 500):
+        unkVec[:, ii] = np.array([0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], rxn[ii, 6], rxn[ii, 7], endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0.])
     
     return unkVec
         
