@@ -49,7 +49,7 @@ def surf_perc(ax, species):
         ax.set_xlabel("Time (min)")
         # ax.legend()
 
-    for ii in range(0,100):
+    for ii in range(0,500):
         output = surf.calc(unkVec[:, ii]) * y_max
         IL2_1_plus = output[0:(size)]
         IL2_500_plus = output[(size):(size*2)]
@@ -82,7 +82,7 @@ def pstat_act(ax):
         ax.set_xlabel('log10 of cytokine concentration (nM)')
         # ax.legend()
 
-    for ii in range(0,100):
+    for ii in range(0,500):
         output = pstat5.calc(unkVec[:, ii]) * y_max
         IL2_plus = output[0:PTS]
         IL2_minus = output[PTS:(PTS*2)]
