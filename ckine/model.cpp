@@ -142,14 +142,8 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	}
 
 	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-	dydt[0] += r->Rexpr[0];
-	dydt[1] += r->Rexpr[1];
-	dydt[2] += r->Rexpr[2];
-	dydt[9] += r->Rexpr[3];
-	dydt[16] += r->Rexpr[4];
-	dydt[19] += r->Rexpr[5];
-	dydt[22] += r->Rexpr[6];
-	dydt[25] += r->Rexpr[7];
+	for (size_t ii = 0; ii < recIDX.size(); ii++)
+		dydt[recIDX[ii]] += r->Rexpr[ii];
 
 	// Degradation does lead to some clearance of ligand in the endosome
 	for (size_t ii = 0; ii < 6; ii++)
