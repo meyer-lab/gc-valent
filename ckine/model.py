@@ -113,7 +113,7 @@ def fullModel(y, t, rxn, tfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(__halfL, dtype=np.bool)
+__active_species_IDX = np.zeros(__halfL, dtype=np.float64)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 
 def solveAutocrine(trafRates):
