@@ -1,7 +1,7 @@
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
-compile_opts = -std=c++14 -mavx -march=native
+compile_opts = -std=c++14 -mavx -march=native -Wall -Wextra
 
 .PHONY: clean test all testprofile testcover doc testcpp
 
@@ -58,7 +58,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf html ckine/*.dSYM
+	rm -rf html ckine/*.dSYM doxy.log
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 20
