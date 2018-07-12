@@ -550,10 +550,16 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out.setConstant(0.0);
 
 	auto complexCkine = [&out, &gc, &r, &y](const size_t ij, const size_t RaIDX, const double revOne, const double revTwo) {
+		out(RaIDX, ij+1) = -r->kfwd * y[RaIDX]; // Ra with respect to IL_Rb
+		out(RaIDX, ij+4) = -r->kfwd * y[RaIDX]; // Ra with respect to IL_Rb_gc
+
 		out(2, 2) -= r->kfwd * (y[ij] + y[ij+1] + y[ij+2]); // gc with respect to gc
 		out(2, ij) = - r->kfwd * gc; // gc with respect to IL_Ra
 		out(2, ij+1) = - r->kfwd * gc; // gc with respect to IL_Rb
 		out(2, ij+2) = - r->kfwd * gc; // gc with respect to IL_Ra_Rb
+
+		out(1, ij) = - r->kfwd * y[1]; // Rb with respect to IL_Ra
+		out(1, ij+3) = - r->kfwd * y[1]; // Rb with respect to IL_Ra_gc
 
 		out(ij, 1) = -r->kfwd * y[ij]; // IL_Ra with respect to Rb
 		out(ij, 2) = - r->kfwd * y[ij]; // IL_Ra with respect to gc
@@ -580,6 +586,12 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 		out(ij+2, 2) = -r->kfwd * y[ij+2]; // IL_Ra_Rb with respect to gc
 		out(ij+2, ij) = r->kfwd * y[1]; // IL_Ra_Rb with respect to IL_Ra
 		out(ij+2, ij+1) = r->kfwd * y[RaIDX]; // IL_Ra_Rb with respect to IL_Rb
+
+		out(ij+1, RaIDX) = -r->kfwd * y[ij+1]; // IL2_IL2Rb with respect to IL2Ra
+		out(ij+1, 2) = - r->kfwd * y[ij+1]; // IL2_IL2Rb with respect to gc
+		out(ij+3, 1) = -r->kfwd * y[ij+3]; // IL2_IL2Ra_gc with respect to IL2Rb
+		out(ij+3, 2) = r->kfwd * y[ij]; // IL2_IL2Ra_gc with respect to gc
+		out(ij+3, ij) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
 	};
 
 	complexCkine(3, 0, r->k5rev, r->k8rev); // IL2
@@ -588,22 +600,15 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	// IL2Ra
 	out(0, 0) = -kfbnd * IL2 - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
 	out(0, 3) = k1rev; // IL2Ra with respect to IL2_IL2Ra
-	out(0, 4) = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_IL2Rb
 	out(0, 5) = r->k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
-	out(0, 7) = -r->kfwd * IL2Ra; // IL2Ra with respect to IL2_IL2Rb_gc
-	
 	
 	// IL2Rb
 	out(1, 1) = -kfbnd * (IL2 + IL15) - r->kfwd * (IL2_IL2Ra_gc + IL2_IL2Ra + IL15_IL15Ra_gc + IL15_IL15Ra); // partial derivative of IL2Rb with respect to IL2Rb
-	out(1, 3) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_IL2Ra
 	out(1, 4) = k2rev; // IL2Rb with respect to IL2_IL2Rb
 	out(1, 5) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out(1, 6) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL2_IL2Ra_gc
 	out(1, 8) = r->k9rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
-	out(1, 10) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra
 	out(1, 11) = k14rev; // IL2Rb with respect to IL15_IL2Rb
 	out(1, 12) = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out(1, 13) = - r->kfwd * IL2Rb; // IL2Rb with respect to IL15_IL15Ra_gc
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc
@@ -619,9 +624,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(3, 6) = r->k4rev; // IL2_IL2Ra with respect to IL2_IL2Ra_gc
 	
 	// IL2_IL2Rb
-	out(4, 0) = -r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to IL2Ra
 	out(4, 1) = kfbnd * IL2; // IL2_IL2Rb with respect to IL2Rb
-	out(4, 2) = - r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to gc
 	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
 	out(4, 5) = r->k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
 	
@@ -630,9 +633,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(5, 8) = r->k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_gc
-	out(6, 1) = -r->kfwd * IL2_IL2Ra_gc; // IL2_IL2Ra_gc with respect to IL2Rb
-	out(6, 2) = r->kfwd * IL2_IL2Ra; // IL2_IL2Ra_gc with respect to gc
-	out(6, 3) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
 	out(6, 6) = -r->kfwd * IL2Rb - r->k4rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_gc
 	out(6, 8) = r->k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
@@ -642,9 +642,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	// IL15Ra
 	out(9, 9) = -kfbnd * IL15 - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
 	out(9, 10) = k13rev; // IL15Ra with respect to IL15_IL15Ra
-	out(9, 11) = - r->kfwd * IL15Ra; // IL15Ra with respect to IL15_IL2Rb
 	out(9, 12) = r->k24rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb
-	out(9, 14) = - r->kfwd * IL15Ra; // IL15Ra with respect to IL15_IL2Rb_gc
 	
 	// IL15_IL15Ra
 	out(10, 9) = kfbnd * IL15; // IL15_IL15Ra with respect to IL15Ra
@@ -654,8 +652,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	
 	// IL15_IL2Rb
 	out(11, 1) = kfbnd * IL15; // IL15_IL2Rb with respect to IL2Rb
-	out(11, 2) = -r->kfwd * IL15_IL2Rb; // IL15_IL2Rb with respect to gc
-	out(11, 9) = -r->kfwd * IL15_IL2Rb; // IL15_IL2Rb with respect to IL15Ra
 	out(11, 11) = -r->kfwd * IL15Ra - r->kfwd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
 	out(11, 12) = r->k24rev; // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	
@@ -664,9 +660,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(12, 15) = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_gc
-	out(13, 1) = -r->kfwd * IL15_IL15Ra_gc; // IL15_IL15Ra_gc with respect to IL2Rb
-	out(13, 2) = r->kfwd * IL15_IL15Ra; // IL15_IL15Ra_gc with respect to gc
-	out(13, 10) = r->kfwd * gc; // IL15_IL15Ra_gc with respect to IL15_IL15Ra
 	out(13, 13) = -r->kfwd * IL2Rb - r->k16rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_gc
 	out(13, 15) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
