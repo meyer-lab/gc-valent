@@ -8,17 +8,22 @@ import numpy as np, pandas as pds
 from .model import getActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
-class IL4_7_21_activity:
+class IL4_7_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the ligand concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
-        dataIL4 = pds.read_csv(join(path, "./data/Gonnard-Fig1B.csv")).as_matrix() # imports IL4 file into pandas array
-        dataIL21 = pds.read_csv(join(path, "./data/Gonnard-Fig1C.csv")).as_matrix() # imports IL21 file into pandas array
-        dataIL7 = pds.read_csv(join(path, "./data/Gonnard-FigS4B.csv")).as_matrix() # imports IL7 file into pandas array
-        self.cytokC = np.array([5., 50., 500., 5000., 50000.])
+        dataIL4 = pds.read_csv(join(path, "./data/Gonnard_S3B.csv")).as_matrix() # imports IL4 file into pandas array
+        dataIL7 = pds.read_csv(join(path, "./data/Gonnard_S3C.csv")).as_matrix() # imports IL21 file into pandas array
+        
+        # units have been converted to nM
+        self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
+        self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
 
+        # TODO: figure out what the true units are here
+        # TODO: should I include both curves from each data set
         self.fit_data = np.concatenate((dataIL4[:, 1], dataIL7[:, 1], dataIL21[:, 1])) # the measurements are normalized to 1
 
+        # TODO: switch to getTotalActiveSpecies
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(6)))) # 0.5 is because its the endosome
 
