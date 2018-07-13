@@ -2,8 +2,6 @@
 #include <string>
 
 
-
-
 // Measured in the literature
 constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 constexpr double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
@@ -56,7 +54,6 @@ public:
 	double kDeg;
 
 	const double * Rexpr;
-
 	ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
 		kfwd = rxntfR[6];
@@ -139,7 +136,6 @@ constexpr double tolIn = 1E-4;
 
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
-
 
 constexpr size_t Nparams = 30; // length of rxntfR vector
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
