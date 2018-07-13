@@ -13,7 +13,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7, 6), (5, 4))
 
-    factors = decompose_tensor(2)
+    factors, new_mat, mat, mats, cell_names = decompose_tensor(2)
     a = b = c = d = 0
     for ii in range(5*4):
         if ii % 4 == 0:
@@ -26,6 +26,8 @@ def makeFigure():
             
         if ii % 4 == 2:
             c+=1
+            plot_combinations(ax[ii],factors, mat, c, c+1, cell_names)
+            
     # Add subplot labels
     #for ii, item in enumerate(ax):
         #subplotLabel(item, string.ascii_uppercase[ii])
@@ -37,10 +39,10 @@ def makeFigure():
 def decompose_tensor(lig, n_components = 6):
     """Generate the tensor and decompose it using tensor factorization."""
     #lig is how many values of ligand stimulation to use. n_components is how many components to decompose the tensor into. 
-    y_combos = findy(lig)[0]
+    y_of_combinations, new_mat, mat, mats, cell_names = findy(lig)
     values = reduce_values(y_combos)
     factors = perform_decomposition(values, n_components)
-    return factors
+    return factors, new_mat, mat, mats, cell_names
 
 def plot_values(ax,factors,component_x, component_y):
     """Plot the values decomposition factors matrix."""
@@ -86,4 +88,19 @@ def plot_timepoint(ax,factors,component_x, component_y):
     ax.set_ylabel('Component ' + str(component_y))
     #plt.title('Timepoint Decomposition')
 
-    
+
+def plot_combinations(ax,factors, mat, component_x, component_y, cell_names):
+    """This function plots the combination decomposition based on cell type."""
+    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
+    for ii in range(1, len(cell_names) + 1): #iterate over every cell
+        jj = ii * len(mat)
+        new_array = factors[0][jj-len(mat):jj] #repeat just the cytokine stimulation
+        ax.scatter(new_array[:,component_x - 1], new_array[:,component_y - 1], c=colors[ii-1], label = cell_names[ii-1])
+    ax.set_xlabel('Component ' + str(component_x))
+    ax.set_ylabel('Component ' + str(component_y))
+    plt.title('Combination Decomposition Colored by Cell Type')
+    # Shrink current axis by 20%
+    #box = ax.get_position()
+    #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    # Put a legend to the right of the current axis
+    #ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))

@@ -56,7 +56,7 @@ def combo_low_high(mat):
     return lows, highs
 
 def plot_combo_decomp(factors, mat, component_x, component_y, cell_names):
-    """This function plots the combination decomposition based on high vs low receptor expression and ligand concentration."""
+    """This function plots the combination decomposition based on cell type."""
     fig = plt.figure() #prepare figure
     ax = fig.add_subplot(111)
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
