@@ -46,8 +46,6 @@ std::array<bool, halfL> __active_species_IDX() {
 
 const std::array<bool, halfL> activeV = __active_species_IDX();
 
-
-
 void dy_dt(const double * const y, const ratesS * const r, double * const dydt, const double * const ILs) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
@@ -113,7 +111,6 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 
 	dy_dt(y_in, &r, dydt_out, r.ILs.data());
 }
-
 
 void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Implement full model.
@@ -321,7 +318,6 @@ void solver_setup(solver *sMem, double *params) {
 
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
 }
-
 
 void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, Nspecies> &y0) { 
 	// Now we are doing a sensitivity analysis
