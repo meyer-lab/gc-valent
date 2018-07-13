@@ -91,9 +91,3 @@ def reduce_values(y_of_combos):
     for k in range(len(indices)):
         values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength * np.sum(y_of_combos[:,:,halfL():halfL()*2][:,:,indices[k]], axis = 2)
     return values
-
-    for i in range(y_of_combos.shape[0]):
-        for j in range(y_of_combos.shape[1]):
-            values[i][j] = activity_surface_total(y_of_combos[i][j])
-
-    return values
