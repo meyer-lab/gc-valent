@@ -42,7 +42,7 @@ def plot_values(ax,factors,component_x, component_y):
     labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra']
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     for i in range(len(factors[2])):
-        data = factors[2][:, component_x - 1][i], factors[2][:, component_y - 1][i]
+        data = (factors[2][:, component_x - 1][i], factors[2][:, component_y - 1][i])
         if i in range(6):
             c = 'r'
             if i==0:
@@ -68,5 +68,5 @@ def plot_values(ax,factors,component_x, component_y):
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
     ax.set_title('Values decomposition')
-    ax.legend()    
+    #ax.legend()    
     
