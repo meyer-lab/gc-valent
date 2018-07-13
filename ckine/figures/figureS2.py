@@ -16,8 +16,8 @@ def makeFigure():
     factors = decompose_tensor(2)
     counter = 0
     for ii in range(3*4):
-        counter += 1
         if ii % 4 == 0:
+            counter += 1
             plot_values(ax,factors,counter, counter+1)
     
     # Add subplot labels
