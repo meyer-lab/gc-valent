@@ -29,6 +29,10 @@ def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
 
+__internalStrength = 0.5 # strength of endosomal activity relative to surface
+def internalStrength():
+    """Returns the internalStrength of endosomal activity."""
+    return __internalStrength
 
 def runCkine (tps, rxn, tfr):
     """ Wrapper if rxn and tfr are separate. """
@@ -113,7 +117,7 @@ def fullModel(y, t, rxn, tfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(__halfL, dtype=np.bool)
+__active_species_IDX = np.zeros(__halfL, dtype=np.float64)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 
 def solveAutocrine(trafRates):
@@ -163,12 +167,10 @@ def getActiveSpecies():
     """ Return a vector that indicates which species are active. """
     return __active_species_IDX
 
-__internalStrength = 0.5 # strength of endosomal activity relative to surface
-
 def getTotalActiveSpecies():
     """ Return a vector of all the species (surface + endosome) which are active. """
     activity = getActiveSpecies()
-    return np.concatenate((activity, __internalStrength * activity, np.zeros(4)))
+    return np.concatenate((activity, __internalStrength * activity, np.zeros(6)))
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
@@ -189,7 +191,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL)] + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2]))
+    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL)]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 
 def surfaceReceptors(y):
