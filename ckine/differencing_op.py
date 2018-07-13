@@ -19,7 +19,6 @@ class runCkineOp(Op):
 
     def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
-
         return [(self.nSpecies, )]
 
     def perform(self, node, inputs, outputs):
