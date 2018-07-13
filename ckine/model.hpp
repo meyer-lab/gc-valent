@@ -130,8 +130,6 @@ public:
 	}
 };
 
-
-
 constexpr double tolIn = 1E-4;
 
 constexpr double internalV = 623.0; // Same as that used in TAM model
