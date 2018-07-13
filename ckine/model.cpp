@@ -46,6 +46,7 @@ std::array<bool, halfL> __active_species_IDX() {
 
 const std::array<bool, halfL> activeV = __active_species_IDX();
 
+
 void dy_dt(const double * const y, const ratesS * const r, double * const dydt, const double * const ILs) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
@@ -90,7 +91,6 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * ILs[1] + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
 	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
 	
-
 	auto simpleCkine = [&](const size_t ij, const double revOne, const double revTwo, const double IL) {
 		dydt[2] += - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
 		dydt[ij] = -kfbnd * y[ij] * IL + revOne * y[ij+1];
@@ -108,9 +108,9 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	ratesS r(rxn_in);
 
-
 	dy_dt(y_in, &r, dydt_out, r.ILs.data());
 }
+
 
 void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	// Implement full model.
@@ -142,7 +142,6 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	}
 
 	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-
 	for (size_t ii = 0; ii < recIDX.size(); ii++)
 		dydt[recIDX[ii]] += r->Rexpr[ii];
 
@@ -245,7 +244,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 		std::cout << sMem->params[ii] << "\t";
 	}
 	
-
 	ratesS ratt(sMem->params);
 	
 	ratt.print();
@@ -318,6 +316,7 @@ void solver_setup(solver *sMem, double *params) {
 
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
 }
+
 
 void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, Nspecies> &y0) { 
 	// Now we are doing a sensitivity analysis
@@ -426,7 +425,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 }
 
 
-
 void jacobian(const double * const y, const ratesS * const r, double * const dydt, const double * const ILs) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
@@ -443,7 +441,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	const double IL15_IL2Rb = y[11];
 	const double IL15_IL15Ra_gc = y[13];
 	const double IL15_IL2Rb_gc = y[14];
-
 
 	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
 	
@@ -504,7 +501,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out(0, 5) = r->k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
 	
 	// IL2Rb
-
 	out(1, 1) = -kfbnd * (ILs[0] + ILs[1]) - r->kfwd * (IL2_IL2Ra_gc + IL2_IL2Ra + IL15_IL15Ra_gc + IL15_IL15Ra); // partial derivative of IL2Rb with respect to IL2Rb
 	out(1, 4) = k2rev; // IL2Rb with respect to IL2_IL2Rb
 	out(1, 5) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
@@ -597,7 +593,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
 	ratesS r(rxn_in);
 
-
 	jacobian(y_in, &r, out, r.ILs.data());
 }
 
@@ -608,7 +603,6 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	out.setConstant(0.0);
 
 	array <double, (halfL*halfL)> sub_y;
-
 	jacobian(y, r, sub_y.data(), r->ILs.data()); // jacobian function assigns values to sub_y
 	for (size_t ii = 0; ii < halfL; ii++)
 		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
@@ -666,7 +660,6 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	out(57, halfL+10) = k13rev / internalV;
 	out(57, halfL+11) = k14rev / internalV;
 
-
 	auto simpleCkine = [&](const size_t ij, const size_t ix, const double revRate) {
 		const double eIL = y[ix] / internalV;
 		out(ix, ix) -= kfbnd * y[halfL + ij] / internalV;
@@ -681,7 +674,6 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	simpleCkine(22, 60, k32rev); // IL4
 	simpleCkine(25, 61, k34rev); // IL21
 }
-
 
 
 int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
