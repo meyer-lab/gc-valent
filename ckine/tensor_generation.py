@@ -11,7 +11,7 @@ import numpy as np, pandas as pds
 from tqdm import tqdm
 from multiprocessing import Pool
 
-from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn
+from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
@@ -81,11 +81,10 @@ def findy(lig):
 def reduce_values(y_of_combos):
     """Reduce y_of_combinations into necessary values."""
     active_list = [np.array([7,8]),np.array([14,15]), np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine
-    internalStrength = 0.5
     values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],22))
     indices = [np.array([0, 3, 5, 6, 8]), np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), np.array([9, 10, 12, 13, 15]), np.array([16, 17, 18]), np.array([19, 20, 21]), np.array([22, 23, 24]),np.array([25, 26, 27])]
     for i in range(6): #first 6 total active cytokines
-        values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength * np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
+        values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength() * np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
     for j in range(len(indices)):
         values[:,:,6+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
     for k in range(len(indices)):
