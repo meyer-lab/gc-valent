@@ -52,8 +52,8 @@ public:
 	double sortF;
 	double kRec;
 	double kDeg;
-
 	const double * Rexpr;
+
 	ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
 		kfwd = rxntfR[6];
