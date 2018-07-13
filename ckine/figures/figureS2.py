@@ -15,7 +15,7 @@ def makeFigure():
 
     factors = decompose_tensor(2)
     counter = 0
-    for ii in range(3*4):
+    for ii in range(5*4):
         if ii % 4 == 0:
             counter += 1
             plot_values(ax[ii],factors,counter, counter+1)
