@@ -18,7 +18,7 @@ def makeFigure():
     for ii in range(3*4):
         if ii % 4 == 0:
             counter += 1
-            plot_values(ax,factors,counter, counter+1)
+            plot_values(ax[ii],factors,counter, counter+1)
     
     # Add subplot labels
     #for ii, item in enumerate(ax):
