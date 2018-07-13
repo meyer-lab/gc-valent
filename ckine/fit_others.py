@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import getActiveSpecies, getSurfaceIL2RbSpecies
+from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 class IL4_7_activity:
@@ -19,30 +19,25 @@ class IL4_7_activity:
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
         self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
 
-        # TODO: figure out what the true units are here
-        # TODO: should I include both curves from each data set
-        self.fit_data = np.concatenate((dataIL4[:, 1], dataIL7[:, 1], dataIL21[:, 1])) # the measurements are normalized to 1
+        # TODO: should I normalize to the max just like IL2 and IL15 activity? ... create two new unknown variables that scale the amount of active species to the separate pSTAT measurements 
+        self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # the measurements are not normalized
+        self.activity = getTotalActiveSpecies().astype(np.float64)
 
-        # TODO: switch to getTotalActiveSpecies
-        npactivity = getActiveSpecies().astype(np.float64)
-        self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(6)))) # 0.5 is because its the endosome
 
     def calc(self, unkVec):
         """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
-
-        Op = runCkineOp(ts=np.array(500.))
+        # TODO: find out how long cells were stimulated... assume 10 mins for now
+        Op = runCkineOp(ts=np.array(10.))
 
         # Loop over concentrations of IL4
-        actVecIL4 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[4], x))), self.cytokC)))
+        actVecIL4 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[4], x))), self.cytokC_4)))
 
         # Loop over concentrations of IL7
-        actVecIL7 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[2], x))), self.cytokC)))
+        actVecIL7 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[2], x))), self.cytokC_7)))
 
-        # Loop over concentrations of IL21
-        actVecIL21 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[5], x))), self.cytokC)))
-
-        # Normalize to the maximal activity, put together into one vector
-        actVec = T.concatenate((actVecIL4 / T.max(actVecIL4), actVecIL7 / T.max(actVecIL7), actVecIL21 / T.max(actVecIL21)))
+        # Normalize to the scaling constants, put together into one vector
+        # TODO: make sure indexing in unkVec is correct here
+        actVec = T.concatenate((actVecIL4 * unkVec[-2], actVecIL4 * unkVec[-2], actVecIL7 * unkVec[-1], actVecIL7 * unkVec[-1]))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
         return self.fit_data - actVec
@@ -67,10 +62,14 @@ class build_model:
             IL7Raexpr = pm.Lognormal('IL7Raexpr', sd=0.1, shape=1) # expression of IL7Ra
             Rexpr = pm.Lognormal('Rexpr', sd=0.1, shape=2) # Expression: IL4Ra, IL21Ra
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333)*0.95
+            # TODO: double check the priors for scales seem reasonable
+            scales = pm.Lognormal('scales', mu=np.log(10), sd=np.log(25), shape=2) # create scaling constants for activity measurements
 
             ligands = T.zeros(6, dtype=np.float64)
+            
+            # TODO: take out three unknown receptor expressions according to steady state measurements
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(Rexpr))) # receptor expression indexing same as in model.cpp
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(Rexpr), scales)) # receptor expression indexing same as in model.cpp
 
             Y_int = self.act.calc(unkVec) # fitting the data based on act.calc for the given parameters
 
