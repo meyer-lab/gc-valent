@@ -10,7 +10,6 @@ from os.path import join
 import numpy as np, pandas as pds
 from tqdm import tqdm
 from multiprocessing import Pool
-
 from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength
 
 path = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +25,6 @@ def ySolver(matIn):
     # Set some given parameters already determined from fitting
     rxntfR = np.zeros(nParams())
     rxntfR[6] = 0.00001 #kfwd
-
     rxntfR[7:nRxn()] = 0.001  # From fitting: k4rev - k35rev
     rxntfR[nRxn():22] = 0.1 # From fitting: endo - kdeg
 
