@@ -19,7 +19,8 @@ class runCkineOp(Op):
 
     def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
-        return [(56, )]     # TODO: this number should be different
+
+        return [(self.nSpecies, )]
 
     def perform(self, node, inputs, outputs):
         yOut, retVal = runCkineU(self.ts, inputs[0])
