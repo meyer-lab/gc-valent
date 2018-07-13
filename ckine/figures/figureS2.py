@@ -39,7 +39,7 @@ def makeFigure():
 def decompose_tensor(lig, n_components = 6):
     """Generate the tensor and decompose it using tensor factorization."""
     #lig is how many values of ligand stimulation to use. n_components is how many components to decompose the tensor into. 
-    y_of_combinations, new_mat, mat, mats, cell_names = findy(lig)
+    y_of_combos, new_mat, mat, mats, cell_names = findy(lig)
     values = reduce_values(y_combos)
     factors = perform_decomposition(values, n_components)
     return factors, new_mat, mat, mats, cell_names
