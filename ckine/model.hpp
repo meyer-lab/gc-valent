@@ -134,11 +134,6 @@ public:
 };
 
 
-// Literature value for IL-4
-constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
-
-// Literature value for IL-21
-constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
 
 constexpr double tolIn = 1E-4;
 
