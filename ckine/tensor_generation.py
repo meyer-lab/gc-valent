@@ -86,5 +86,5 @@ def reduce_values(y_of_combos):
     for j in range(len(indices)):
         values[:,:,6+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
     for k in range(len(indices)):
-        values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength * np.sum(y_of_combos[:,:,halfL():halfL()*2][:,:,indices[k]], axis = 2)
+        values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
