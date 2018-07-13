@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4))
+    ax, f = getSetup((7, 6), (5, 4))
 
     factors = decompose_tensor(2)
     counter = 0
