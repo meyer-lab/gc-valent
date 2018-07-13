@@ -33,6 +33,7 @@ __internalStrength = 0.5 # strength of endosomal activity relative to surface
 def internalStrength():
     """Returns the internalStrength of endosomal activity."""
     return __internalStrength
+
 __nRxn = 17
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
