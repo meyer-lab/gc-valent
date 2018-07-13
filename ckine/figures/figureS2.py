@@ -14,12 +14,18 @@ def makeFigure():
     ax, f = getSetup((7, 6), (5, 4))
 
     factors = decompose_tensor(2)
-    counter = 0
+    a = b = c = d = 0
     for ii in range(5*4):
         if ii % 4 == 0:
-            counter += 1
-            plot_values(ax[ii],factors,counter, counter+1)
-    
+            a += 1
+            plot_values(ax[ii],factors,a, a+1)
+            
+        if ii % 4 == 1:
+            b += 1
+            plot_timepoint(ax[ii],factors,b, b+1)
+            
+        if ii % 4 == 2:
+            c+=1
     # Add subplot labels
     #for ii, item in enumerate(ax):
         #subplotLabel(item, string.ascii_uppercase[ii])
@@ -67,6 +73,17 @@ def plot_values(ax,factors,component_x, component_y):
 
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    ax.set_title('Values decomposition')
+    #ax.set_title('Values decomposition')
     #ax.legend()    
+    
+def plot_timepoint(ax,factors,component_x, component_y):
+    """Plot the timepoint decomposition in the second column of figS2."""
+    for i in range(len(factors[1])):
+        ax.scatter(factors[1][:,component_x - 1][i], factors[1][:,component_y - 1][i], color = 'k')
+        if i == 999:
+            ax.annotate(str(i+1), xy=(factors[1][:,component_x - 1][i], factors[1][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
+    ax.set_xlabel('Component ' + str(component_x))
+    ax.set_ylabel('Component ' + str(component_y))
+    #plt.title('Timepoint Decomposition')
+
     
