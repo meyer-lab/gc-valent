@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
+from .model import getTotalActiveSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 class IL4_7_activity:
@@ -15,18 +15,16 @@ class IL4_7_activity:
         dataIL4 = pds.read_csv(join(path, "./data/Gonnard_S3B.csv")).as_matrix() # imports IL4 file into pandas array
         dataIL7 = pds.read_csv(join(path, "./data/Gonnard_S3C.csv")).as_matrix() # imports IL21 file into pandas array
         
-        # units have been converted to nM
+        # units are converted from pg/mL to nM
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
         self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
 
-        # TODO: should I normalize to the max just like IL2 and IL15 activity? ... create two new unknown variables that scale the amount of active species to the separate pSTAT measurements 
         self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # the measurements are not normalized
         self.activity = getTotalActiveSpecies().astype(np.float64)
 
 
     def calc(self, unkVec):
         """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
-        # TODO: find out how long cells were stimulated... assume 10 mins for now
         Op = runCkineOp(ts=np.array(10.))
 
         # Loop over concentrations of IL4
