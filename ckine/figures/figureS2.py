@@ -7,6 +7,7 @@ from ..tensor_generation import findy, reduce_values
 from ..Tensor_analysis import perform_decomposition
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
