@@ -28,7 +28,7 @@ class IL2Rb_trafficking:
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
     def calc(self, unkVec):
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
 
         KineticOp = runCkineKineticOp(self.ts, self.condense)
 
@@ -75,7 +75,7 @@ class IL2_15_activity:
         # Loop over concentrations of IL2
         actVecIL2, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), sequences=[self.cytokC])
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
 
         # Loop over concentrations of IL2, IL2Ra-/-
         actVecIL2RaMinus, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), sequences=[self.cytokC])
