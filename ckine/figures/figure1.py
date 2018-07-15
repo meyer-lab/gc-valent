@@ -99,12 +99,12 @@ def import_samples():
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0:4])
-    rxn = trace.get_values('rxn', chains=[0:4])
-    endo_activeEndo = trace.get_values('endo', chains=[0:4])
-    sortF = trace.get_values('sortF', chains=[0:4])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0:4])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0:4])
+    kfwd = trace.get_values('kfwd')
+    rxn = trace.get_values('rxn')
+    endo_activeEndo = trace.get_values('endo')
+    sortF = trace.get_values('sortF')
+    kRec_kDeg = trace.get_values('kRec_kDeg')
+    exprRates = trace.get_values('IL2Raexpr')
     
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
