@@ -102,7 +102,7 @@ def import_samples():
     kfwd = trace.get_values('kfwd', chains=[0:4])
     rxn = trace.get_values('rxn', chains=[0:4])
     endo_activeEndo = trace.get_values('endo', chains=[0:4])
-    sortF = trace.get_values('sortF', chains=[0])
+    sortF = trace.get_values('sortF', chains=[0:4])
     kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0:4])
     exprRates = trace.get_values('IL2Raexpr', chains=[0:4])
     
