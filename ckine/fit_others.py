@@ -69,7 +69,7 @@ class build_model:
             
             # TODO: make sure three measured values are inputted correctly
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), nullrates, T.stack(k27rev), T.ones(1, dtype=np.float64), T.stack(k33rev), T.ones(1, dtype=np.float64), endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(IL4Raexpr), T.zeros(1, dtype=np.float64), scales)) # indexing same as in model.cpp
+            unkVec = T.concatenate((ligands, T.stack(kfwd), nullRates, T.stack(k27rev), T.ones(1, dtype=np.float64), T.stack(k33rev), T.ones(1, dtype=np.float64), endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(IL4Raexpr), T.zeros(1, dtype=np.float64), scales)) # indexing same as in model.cpp
 
             Y_int = self.act.calc(unkVec) # fitting the data based on act.calc for the given parameters
 
