@@ -123,7 +123,8 @@ def violinPlots(ax):
     rev_rxn = unkVec[7:17]
     rev_rxn_names = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev', 'k27rev', 'k31rev', 'k33rev', 'k35rev']
     for i in range(len(rev_rxn)):
-        sns.violinplot(x=rev_rxn_names[i], y='1/min', data=rev_rxn[i], ax=ax)
+        # sns.violinplot(x='rates', y='1/min', data=rev_rxn[i], ax=ax)
+        sns.violinplot(data=rev_rxn[i], ax=ax)
     
     
     
