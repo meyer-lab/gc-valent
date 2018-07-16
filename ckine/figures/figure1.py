@@ -21,10 +21,10 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     
-    # surf_perc(ax[0:4], 'IL2Rb')
-    # pstat_act(ax[4:6])
-    # surf_perc(ax[8:12], 'gc')
-    violinPlots(ax[12])
+    surf_perc(ax[0:4], 'IL2Rb')
+    pstat_act(ax[4:6])
+    surf_perc(ax[8:12], 'gc')
+    violinPlots(ax[12:15])
 
     f.tight_layout()
 
@@ -120,13 +120,20 @@ def violinPlots(ax):
     """ Create violin plots of model posterior. """
     unkVec = import_samples()
     unkVec = unkVec.transpose()
+    
     rev_rxn = unkVec[:, 7:17]
+    traf = unkVec[:, 17:22]
+    Rexpr = unkVec[:, 22:]
+    
     rev_rxn = pd.DataFrame(rev_rxn)
-    rxn_names = rev_rxn_names()
-    rev_rxn.columns = rxn_names
-    sns.violinplot(data=rev_rxn, ax=ax)  # creates names based on dataframe columns
+    rev_rxn.columns = rev_rxn_names()
+    sns.violinplot(data=rev_rxn, ax=ax[0])  # creates names based on dataframe columns
     
+    traf = pd.DataFrame(traf)
+    traf.columns = traf_names()
+    sns.violinplot(data=traf, ax=ax[1])
     
-    
-    
+    Rexpr = pd.DataFrame(Rexpr)
+    Rexpr.columns = Rexpr_names()
+    sns.violinplot(data=Rexpr, ax=ax[2])
 
