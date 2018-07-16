@@ -21,9 +21,9 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     
-    surf_perc(ax[0:4], 'IL2Rb')
-    pstat_act(ax[4:6])
-    surf_perc(ax[8:12], 'gc')
+    # surf_perc(ax[0:4], 'IL2Rb')
+    # pstat_act(ax[4:6])
+    # surf_perc(ax[8:12], 'gc')
     violinPlots(ax[12])
 
     f.tight_layout()
