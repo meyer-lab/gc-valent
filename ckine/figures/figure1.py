@@ -102,12 +102,12 @@ def import_samples():
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd')
-    rxn = trace.get_values('rxn')
-    endo_activeEndo = trace.get_values('endo')
-    sortF = trace.get_values('sortF')
-    kRec_kDeg = trace.get_values('kRec_kDeg')
-    exprRates = trace.get_values('IL2Raexpr')
+    kfwd = trace.get_values('kfwd', chains=[0])
+    rxn = trace.get_values('rxn', chains=[0])
+    endo_activeEndo = trace.get_values('endo', chains=[0])
+    sortF = trace.get_values('sortF', chains=[0])
+    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
+    exprRates = trace.get_values('IL2Raexpr', chains=[0])
     
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
@@ -121,7 +121,7 @@ def violinPlots(ax):
     rev_rxn = unkVec[7:17]
     rev_rxn_names = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev', 'k27rev', 'k31rev', 'k33rev', 'k35rev']
     for i in range(len(rev_rxn)):
-        sns.violinplot(x=rev_rxn_names[i], y='1/min', data=rev_rxn[i], ax=ax[0])
+        sns.violinplot(x=rev_rxn_names[i], y='1/min', data=rev_rxn[i], ax=ax)
     
     
     
