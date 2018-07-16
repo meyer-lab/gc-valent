@@ -49,7 +49,7 @@ def runCkineU (tps, rxntfr, sensi=False):
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
     if sensi is True:
-        sensV = np.zeros((__nSpecies, rxntfr.size, tps.size), dtype=np.float64, order='F')
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
         sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
     else:
         sensP = ct.POINTER(ct.c_double)()
