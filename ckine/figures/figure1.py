@@ -6,6 +6,7 @@ from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..model import nParams
 import numpy as np
 import seaborn as sns
+import pandas as pd
 import matplotlib.pyplot as plt
 import pymc3 as pm, os
 from os.path import join
@@ -117,7 +118,8 @@ def import_samples():
 
 def violinPlots(ax):
     """ Create violin plots of model posterior. """
-    unkVec = import_samples()     
+    unkVec = import_samples()
+    unkVec = pd.DataFrame(unkVec)
     rev_rxn = unkVec[7:17]
     rev_rxn_names = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev', 'k27rev', 'k31rev', 'k33rev', 'k35rev']
     for i in range(len(rev_rxn)):
