@@ -88,3 +88,12 @@ def reduce_values(y_of_combos):
     for k in range(len(indices)):
         values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
+
+def prepare_tensor(lig):
+    "Function to generate the 4D tensor."
+    y_of_combos, new_mat, mat, mats, cell_names = findy(lig) #mat here is basically the 2^lig cytokine stimulation; mats
+    values = reduce_values(y_of_combos)
+    tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
+    for ii in range(tensor4D.shape[0]):
+        tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
+    return tensor4D, new_mat, mat, mats, cell_names
