@@ -5,22 +5,25 @@ from .figureCommon import subplotLabel, getSetup
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..model import nParams
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 import pymc3 as pm, os
 from os.path import join
 from ..fit import build_model
 
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4))
+    ax, f = getSetup((7, 6), (4, 4))
 
     subplotLabel(ax[0], 'A')
     
     surf_perc(ax[0:4], 'IL2Rb')
     pstat_act(ax[4:6])
     surf_perc(ax[8:12], 'gc')
+    violinPlots(ax[12])
 
     f.tight_layout()
 
@@ -111,8 +114,14 @@ def import_samples():
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], rxn[ii, 6], rxn[ii, 7], rxn[ii, 8], rxn[ii, 9], endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
     
     return unkVec
-        
-        
+
+def violinPlots(ax):
+    """ Create violin plots of model posterior. """
+    unkVec = import_samples()     
+    rev_rxn = unkVec[7:17]
+    rev_rxn_names = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev', 'k27rev', 'k31rev', 'k33rev', 'k35rev']
+    for i in range(len(rev_rxn)):
+        sns.violinplot(x=rev_rxn_names[i], y='1/min', data=rev_rxn[i], ax=ax[0])
     
     
     
