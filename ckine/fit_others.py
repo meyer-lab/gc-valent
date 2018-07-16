@@ -34,7 +34,7 @@ class IL4_7_activity:
         actVecIL7 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[2], x))), self.cytokC_7)))
 
         # Normalize to the scaling constants, put together into one vector
-        # TODO: make sure indexing in unkVec is correct here
+        # TODO: make sure indexing in unkVec is correct for scales
         actVec = T.concatenate((actVecIL4 * unkVec[-2], actVecIL4 * unkVec[-2], actVecIL7 * unkVec[-1], actVecIL7 * unkVec[-1]))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
@@ -56,18 +56,19 @@ class build_model:
             rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=10) # size of all unknown off rates in model
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
-            GCexpr = pm.Lognormal('GCexpr', sd=0.1, shape=1) # expression of gc
-            IL7Raexpr = pm.Lognormal('IL7Raexpr', sd=0.1, shape=1) # expression of IL7Ra
-            Rexpr = pm.Lognormal('Rexpr', sd=0.1, shape=2) # Expression: IL4Ra, IL21Ra
+            GCexpr = (328. * endo_activeEndo[0]) / (1 + (kRec_kDeg[0] / kRec_kDeg[1])) # constant according to measured number per cell
+            IL7Raexpr = (2591. * endo_activeEndo[0]) / (1 + (kRec_kDeg[0] / kRec_kDeg[1])) # constant according to measured number per cell
+            IL4Raexpr = (254. * endo_activeEndo[0]) / (1 + (kRec_kDeg[0] / kRec_kDeg[1])) # constant according to measured number per cell
+            IL21Raexpr = pm.Lognormal('IL21Raexpr', sd=0.1, shape=1)
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333)*0.95
             # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(10), sd=np.log(25), shape=2) # create scaling constants for activity measurements
 
             ligands = T.zeros(6, dtype=np.float64)
             
-            # TODO: take out three unknown receptor expressions according to steady state measurements
+            # TODO: make sure three measured values are inputted correctly
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(Rexpr), scales)) # receptor expression indexing same as in model.cpp
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), GCexpr, T.zeros(1, dtype=np.float64), IL7Raexpr, T.zeros(1, dtype=np.float64), IL4Raexpr, T.stack(IL21Raexpr), scales)) # receptor expression indexing same as in model.cpp
 
             Y_int = self.act.calc(unkVec) # fitting the data based on act.calc for the given parameters
 
