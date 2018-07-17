@@ -115,22 +115,19 @@ class runCkineOpDoseDiff(Op):
         assert conditions.shape[1] == 6 # Check that this is a matrix of ligands
 
     def runCkine(self, inputs, sensi):
+        assert inputs[0].size == nParams() - self.conditions.shape[1]
         rxntfr = np.reshape(np.tile(inputs[0], self.conditions.shape[0]), (self.conditions.shape[0], -1))
-        rxntfr[:, 0:6] = self.conditions
+        rxntfr = np.concatenate((self.conditions, rxntfr), axis=1)
 
         outt = runCkineUP(self.ts, rxntfr, sensi)
         assert outt[0].shape == (self.conditions.shape[0], nSpecies())
         assert outt[1] >= 0
 
         if sensi is True:
-            return np.dot(np.transpose(outt[2]), self.condense)
+            # We override the ligands, so don't pass along their gradient
+            return np.dot(np.transpose(outt[2][:, 6::]), self.condense)
         else:
             return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs):
-        #print('')
-        #np.set_printoptions(threshold=np.inf)
-        #print(np.dot(np.transpose(sensi), self.condense))
-
         outputs[0][0] = self.runCkine(inputs, sensi=True)
-
