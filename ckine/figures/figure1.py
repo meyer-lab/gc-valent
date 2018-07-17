@@ -87,7 +87,7 @@ def pstat_act(ax):
         # ax.legend()
 
     for ii in range(0,500):
-        output = pstat5.calc(unkVec[:, ii]) * y_max
+        output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
         IL2_plus = output[0:PTS]
         IL2_minus = output[PTS:(PTS*2)]
         IL15_plus = output[(PTS*2):(PTS*3)]

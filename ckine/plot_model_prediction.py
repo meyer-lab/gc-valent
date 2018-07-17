@@ -48,16 +48,10 @@ class surf_IL2Rb:
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
     def __init__(self):
-        self.PTS = 30
-        self.cytokC = np.logspace(-3.3, 2.7, self.PTS) # 8 log-spaced values between our two endpoints
-        
         # import function returns from model.py
         self.activity = getTotalActiveSpecies().astype(np.float64)
         
         self.ts = np.array([500.]) # was 500. in literature
-
-        # percentage value that is used in scaling output
-        self.y_max = 100
 
     def singleCalc(self, unkVec, cytokine, conc):
         """ Calculates the surface IL2Rb over time for one condition. """
@@ -70,7 +64,7 @@ class pstat:
 
         return np.dot(returnn, self.activity)
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
         assert unkVec.size == nParams()
 
@@ -78,10 +72,10 @@ class pstat:
         unkVec_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
 
         # Calculate activities
-        actVec_IL2 = np.fromiter((self.singleCalc(unkVec, 0, x) for x in self.cytokC), np.float64)
-        actVec_IL2_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 0, x) for x in self.cytokC), np.float64)
-        actVec_IL15 = np.fromiter((self.singleCalc(unkVec, 1, x) for x in self.cytokC), np.float64)
-        actVec_IL15_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 1, x) for x in self.cytokC), np.float64)
+        actVec_IL2 = np.fromiter((self.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
+        actVec_IL2_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 0, x) for x in cytokC), np.float64)
+        actVec_IL15 = np.fromiter((self.singleCalc(unkVec, 1, x) for x in cytokC), np.float64)
+        actVec_IL15_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 1, x) for x in cytokC), np.float64)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus))
