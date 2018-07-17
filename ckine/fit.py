@@ -111,7 +111,7 @@ class build_model:
             ligands = T.zeros(6, dtype=np.float64)
 
             # unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, nullRates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
-            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64))) 
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters

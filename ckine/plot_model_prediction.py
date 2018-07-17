@@ -29,7 +29,7 @@ class surf_IL2Rb:
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[18] = 0.
+        unkVecIL2RaMinus[22] = 0.
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)
@@ -69,7 +69,7 @@ class pstat:
         assert unkVec.size == nParams()
 
         unkVec_IL2Raminus = unkVec.copy()
-        unkVec_IL2Raminus[18] = 0.0 # set IL2Ra expression rate to 0
+        unkVec_IL2Raminus[22] = 0.0 # set IL2Ra expression rate to 0
 
         # Calculate activities
         actVec_IL2 = np.fromiter((self.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
@@ -107,7 +107,7 @@ class surf_gc:
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[18] = 0.
+        unkVecIL2RaMinus[22] = 0.
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)
