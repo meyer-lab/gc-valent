@@ -87,17 +87,18 @@ def pstat_plot(ax):
     cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
     cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
     unkVec, scales = import_samples()
+    print('scales shape: ' +str(scales.shape))
     
     def plot_structure(IL4vec, IL7vec, title, ax):
         ax.set_title(title)
-        ax.scatter(np.log10(cytokC_4), IL4vec, color='c', alpha=0.5, label="IL4")
-        ax.scatter(np.log10(cytokC_7), IL15vec, color='b', alpha=0.5, label='IL15')
+        ax.scatter(cytokC_4, IL4vec, color='c', alpha=0.5, label="IL4")
+        ax.scatter(cytokC_7, IL7vec, color='b', alpha=0.5, label='IL7')
         ax.set_ylabel('pSTAT activation' )
         ax.set_xlabel('cytokine concentration (nM)')
         # ax.legend()
 
     for ii in range(0,500):
-        output = pstat_calc(unkVec[:,ii], scales[:,ii], cytokC_4, cytokC_7)
+        output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_4, cytokC_7)
         IL4_output = output[0:PTS]
         IL7_output = output[PTS:(PTS*2)]
 
