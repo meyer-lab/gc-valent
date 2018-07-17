@@ -54,7 +54,7 @@ def surf_perc(ax, species):
         # ax.legend()
 
     for ii in range(0,500):
-        output = surf.calc(unkVec[:, ii]) * y_max
+        output = surf.calc(unkVec[:, ii], ts) * y_max
         IL2_1_plus = output[0:(size)]
         IL2_500_plus = output[(size):(size*2)]
         IL2_1_minus = output[(size*2):(size*3)]

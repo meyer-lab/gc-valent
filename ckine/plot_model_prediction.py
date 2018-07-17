@@ -6,21 +6,15 @@ from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nSp
 class surf_IL2Rb:
     '''Generate values to match the surface IL2Rb measurements used in fitting'''
     def __init__(self):
-        # times from experiment are hard-coded into this function
-        self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
-
         # import function returns from model.py
         self.IL2Rb_species_IDX = getSurfaceIL2RbSpecies()
 
-        # percentage value that is used in scaling output
-        self.y_max = 10
-
-    def singleCalc(self, unkVec, cytokine, conc):
+    def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface IL2Rb over time for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
 
-        returnn, retVal = runCkineU(self.ts, unkVec)
+        returnn, retVal = runCkineU(t, unkVec)
 
         assert retVal >= 0
 
@@ -28,7 +22,7 @@ class surf_IL2Rb:
 
         return a
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, t):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
         assert unkVec.size == nParams()
@@ -38,16 +32,16 @@ class surf_IL2Rb:
         unkVecIL2RaMinus[18] = 0.
 
         # calculate IL2 stimulation
-        a = self.singleCalc(unkVec, 0, 1.)
-        b = self.singleCalc(unkVec, 0, 500.)
-        c = self.singleCalc(unkVecIL2RaMinus, 0, 1.)
-        d = self.singleCalc(unkVecIL2RaMinus, 0, 500.)
+        a = self.singleCalc(unkVec, 0, 1., t)
+        b = self.singleCalc(unkVec, 0, 500., t)
+        c = self.singleCalc(unkVecIL2RaMinus, 0, 1., t)
+        d = self.singleCalc(unkVecIL2RaMinus, 0, 500., t)
 
         # calculate IL15 stimulation
-        e = self.singleCalc(unkVec, 1, 1.)
-        f = self.singleCalc(unkVec, 1, 500.)
-        g = self.singleCalc(unkVecIL2RaMinus, 1, 1.)
-        h = self.singleCalc(unkVecIL2RaMinus, 1, 500.)
+        e = self.singleCalc(unkVec, 1, 1., t)
+        f = self.singleCalc(unkVec, 1, 500., t)
+        g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t)
+        h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t)
 
         return (np.concatenate((a, b, c, d, e, f, g, h)) / a[0])
 
@@ -96,22 +90,15 @@ class pstat:
 
 class surf_gc:
     def __init__(self):
-        # times from experiment are hard-coded into this function
-        self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
-        self.pts = self.ts.shape[0]
-
         # import function returns from model.py
         self.gc_species_IDX = getSurfaceGCSpecies()
-
-        # percentage value that is used in scaling output
-        self.y_max = 10
         
-    def singleCalc(self, unkVec, cytokine, conc):
+    def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
 
-        returnn, retVal = runCkineU(self.ts, unkVec)
+        returnn, retVal = runCkineU(t, unkVec)
 
         assert retVal >= 0
 
@@ -119,7 +106,7 @@ class surf_gc:
 
         return a
     
-    def calc(self, unkVec):
+    def calc(self, unkVec, t):
         '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
 
         assert unkVec.size == nParams()
@@ -129,16 +116,16 @@ class surf_gc:
         unkVecIL2RaMinus[18] = 0.
 
         # calculate IL2 stimulation
-        a = self.singleCalc(unkVec, 0, 1.)
-        b = self.singleCalc(unkVec, 0, 500.)
-        c = self.singleCalc(unkVecIL2RaMinus, 0, 1.)
-        d = self.singleCalc(unkVecIL2RaMinus, 0, 500.)
+        a = self.singleCalc(unkVec, 0, 1., t)
+        b = self.singleCalc(unkVec, 0, 500., t)
+        c = self.singleCalc(unkVecIL2RaMinus, 0, 1., t)
+        d = self.singleCalc(unkVecIL2RaMinus, 0, 500., t)
 
         # calculate IL15 stimulation
-        e = self.singleCalc(unkVec, 1, 1.)
-        f = self.singleCalc(unkVec, 1, 500.)
-        g = self.singleCalc(unkVecIL2RaMinus, 1, 1.)
-        h = self.singleCalc(unkVecIL2RaMinus, 1, 500.)
+        e = self.singleCalc(unkVec, 1, 1., t)
+        f = self.singleCalc(unkVec, 1, 500., t)
+        g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t)
+        h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t)
 
         return (np.concatenate((a, b, c, d, e, f, g, h)) / a[0])
     
