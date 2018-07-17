@@ -12,8 +12,8 @@ class IL4_7_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the ligand concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
-        dataIL4 = pds.read_csv(join(path, "./data/Gonnard_S3B.csv")).as_matrix() # imports IL4 file into pandas array
-        dataIL7 = pds.read_csv(join(path, "./data/Gonnard_S3C.csv")).as_matrix() # imports IL21 file into pandas array
+        dataIL4 = pds.read_csv(join(path, "./data/Gonnard_S3B.csv")).values # imports IL4 file into pandas array
+        dataIL7 = pds.read_csv(join(path, "./data/Gonnard_S3C.csv")).values # imports IL21 file into pandas array
         
         # units are converted from pg/mL to nM
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
@@ -63,23 +63,16 @@ class build_model:
             GCexpr = (328. * endo_activeEndo[0]) / (1 + (kRec_kDeg[0] / kRec_kDeg[1])) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1 + (kRec_kDeg[0] / kRec_kDeg[1])) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1 + (kRec_kDeg[0] / kRec_kDeg[1])) # constant according to measured number per cell
-            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333)*0.95
+            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
             # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(10), sd=np.log(25), shape=2) # create scaling constants for activity measurements
 
             ligands = T.zeros(6, dtype=np.float64)
-            print('ligands ndim: ' + str(ligands.ndim))
-            print('kfwd ndim: ' + str(kfwd.ndim))
-            print('nullRates ndim: ' + str(nullRates.ndim))
-            print('k27rev ndim: ' + str(k27rev.ndim))
-            print('Tone ndim: ' + str(Tone.ndim))
-            print('k33rev ndim: ' + str(k33rev.ndim))
             
             # TODO: make sure three measured values are inputted correctly
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), nullRates, T.stack(k27rev), Tone, T.stack(k33rev), Tone))
-            unkVec = T.concatenate((unkVec, endo_activeEndo, T.stack(sortF), kRec_kDeg))
-            unkVec = T.concatenate((unkVec, T.zeros(2, dtype=np.float64), T.stack(GCexpr), Tzero, T.stack(IL7Raexpr), Tzero, T.stack(IL4Raexpr), Tzero)) # indexing same as in model.hpp
+            unkVec = T.concatenate((ligands, kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
+            unkVec = T.concatenate((unkVec, Tzero, Tzero, T.stack(GCexpr), Tzero, T.stack(IL7Raexpr), Tzero, T.stack(IL4Raexpr), Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
 
