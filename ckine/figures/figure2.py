@@ -56,8 +56,8 @@ def import_samples():
     
     return unkVec, scales
 
-def pstat_calc(unkVec, cytokC_4, cytokC_7):
-    ''' This function generates plots that mimic the Gonnard Figures S3B and S3C based on the fitting results. '''
+def pstat_calc(unkVec, scales, cytokC_4, cytokC_7):
+    ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.]) # was 10. in literature
@@ -81,10 +81,11 @@ def pstat_calc(unkVec, cytokC_4, cytokC_7):
     return actVec
     
 def pstat_plot(ax):
+    ''' This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. '''
     PTS = 30
     cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
     cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
-    unkVec = import_samples()
+    unkVec, scales = import_samples()
     
     def plot_structure(IL4vec, IL7vec, title, ax):
         ax.set_title(title)
@@ -95,7 +96,7 @@ def pstat_plot(ax):
         # ax.legend()
 
     for ii in range(0,500):
-        output = pstat_calc(unkVec[:, ii], cytokC_4, cytokC_7)
+        output = pstat_calc(unkVec[:,ii], scales[:,ii], cytokC_4, cytokC_7)
         IL4_output = output[0:PTS]
         IL7_output = output[PTS:(PTS*2)]
 
