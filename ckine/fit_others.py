@@ -23,7 +23,7 @@ class IL4_7_activity:
         self.activity = getTotalActiveSpecies().astype(np.float64)
 
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, scales):
         """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
         Op = runCkineOp(ts=np.array(10.))
 
@@ -35,7 +35,7 @@ class IL4_7_activity:
 
         # Normalize to the scaling constants, put together into one vector
         # TODO: make sure indexing in unkVec is correct for scales
-        actVec = T.concatenate((actVecIL4 * unkVec[-2], actVecIL4 * unkVec[-2], actVecIL7 * unkVec[-1], actVecIL7 * unkVec[-1]))
+        actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
         return self.fit_data - actVec
@@ -69,9 +69,9 @@ class build_model:
             
             # TODO: make sure three measured values are inputted correctly
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), nullRates, T.stack(k27rev), T.ones(1, dtype=np.float64), T.stack(k33rev), T.ones(1, dtype=np.float64), endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(IL4Raexpr), T.zeros(1, dtype=np.float64), scales)) # indexing same as in model.cpp
+            unkVec = T.concatenate((ligands, T.stack(kfwd), nullRates, T.stack(k27rev), T.ones(1, dtype=np.float64), T.stack(k33rev), T.ones(1, dtype=np.float64), endo_activeEndo, T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), T.zeros(1, dtype=np.float64), T.stack(IL7Raexpr), T.zeros(1, dtype=np.float64), T.stack(IL4Raexpr), T.zeros(1, dtype=np.float64))) # indexing same as in model.cpp
 
-            Y_int = self.act.calc(unkVec) # fitting the data based on act.calc for the given parameters
+            Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
