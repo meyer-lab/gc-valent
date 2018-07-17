@@ -13,7 +13,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 5
-    ax, f = getSetup((15, 15), (x, y))
+    ax, f = getSetup((10, 10), (x, y))
 
     factors, new_mat, mat, mats, cell_names = decompose_tensor(2)
     a = b = c = d = 0
