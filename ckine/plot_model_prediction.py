@@ -90,9 +90,9 @@ class pstat:
         actVec_IL15_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 1, x) for x in self.cytokC), np.float64)
 
         # Normalize to the maximal activity, put together into one vector
-        actVec = np.concatenate((actVec_IL2 / np.max(actVec_IL2), actVec_IL2_IL2Raminus / np.max(actVec_IL2_IL2Raminus), actVec_IL15 / np.max(actVec_IL15), actVec_IL15_IL2Raminus / np.max(actVec_IL15_IL2Raminus)))
+        actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus))
 
-        return actVec
+        return (actVec / np.max(actVec))
 
 class surf_gc:
     def __init__(self):
@@ -117,7 +117,7 @@ class surf_gc:
 
         a = np.dot(returnn, self.gc_species_IDX)
 
-        return a / a[0]
+        return a
     
     def calc(self, unkVec):
         '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
@@ -140,5 +140,5 @@ class surf_gc:
         g = self.singleCalc(unkVecIL2RaMinus, 1, 1.)
         h = self.singleCalc(unkVecIL2RaMinus, 1, 500.)
 
-        return np.concatenate((a, b, c, d, e, f, g, h))
+        return (np.concatenate((a, b, c, d, e, f, g, h)) / a[0])
     
