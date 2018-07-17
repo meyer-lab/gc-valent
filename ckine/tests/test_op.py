@@ -32,16 +32,16 @@ class TestOp(unittest.TestCase):
         utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV])
 
     def test_runCkineOp(self):
-        utt.verify_grad(runCkineOp(np.array([1000.])), [self.unkV])
+        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV])
 
     def test_runCkineKineticOp(self):
-        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], eps=1.0E-5)
+        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])
 
     def test_runCkineDoseOp(self):
         """ Verify the derivative passed back by runCkineDoseOp. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
         
-        utt.verify_grad(Op, [self.doseUnkV], eps=1.0E-6)
+        utt.verify_grad(Op, [self.doseUnkV])
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
