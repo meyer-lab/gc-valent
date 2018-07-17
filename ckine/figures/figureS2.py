@@ -12,28 +12,31 @@ import matplotlib.cm as cm
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((15, 15), (5, 5))
+    x, y = 3, 5
+    ax, f = getSetup((15, 15), (x, y))
 
     factors, new_mat, mat, mats, cell_names = decompose_tensor(2)
     a = b = c = d = 0
-    for ii in range(5*5):
-        if ii % 5 == 0:
+    for ii in range(x*y):
+        if ii % y == 0:
             a += 1
             plot_timepoint(ax[ii],factors,a, a+1)
-  
-        if ii % 5 == 1:
+            a += 1  
+            
+        elif ii % y == 1:
             b += 1
             plot_cells(ax[ii],factors, mat, b, b+1, cell_names)
-
+            b += 1
             
-        if ii % 5 == 2:
+        elif ii % y == 2:
             c+=1
             plot_ligands(ax[ii],factors,c, c+1)
+            c += 1
 
-        if ii % 5 == 3:
-            d+=1
+        elif ii % y == 3:
+            d+= 1
             plot_values(ax[ii],factors,d, d+1)
-            
+            d += 1
     # Add subplot labels
     #for ii, item in enumerate(ax):
         #subplotLabel(item, string.ascii_uppercase[ii])
@@ -80,19 +83,20 @@ def plot_values(ax,factors,component_x, component_y):
 
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    #ax.set_title('Values decomposition')
-    #ax.legend()    
-    
+    ax.set_xlim(-np.max(np.absolute(factors[3][:,component_x - 1]))*1.05,np.max(np.absolute(factors[3][:,component_x - 1]))*1.05)
+    ax.set_ylim(-np.max(np.absolute(factors[3][:,component_y - 1]))*1.05,np.max(np.absolute(factors[3][:,component_y - 1]))*1.05)
+
+
 def plot_timepoint(ax,factors,component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     for i in range(len(factors[0])):
         ax.scatter(factors[0][:,component_x - 1][i], factors[0][:,component_y - 1][i], color = 'k')
         if i == 999:
             ax.annotate(str(i+1), xy=(factors[0][:,component_x - 1][i], factors[0][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
+    ax.set_xlim(-np.max(np.absolute(factors[0][:,component_x - 1]))*1.05,np.max(np.absolute(factors[0][:,component_x - 1]))*1.05)
+    ax.set_ylim(-np.max(np.absolute(factors[0][:,component_y - 1]))*1.05,np.max(np.absolute(factors[0][:,component_y - 1]))*1.05)
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    #plt.title('Timepoint Decomposition')
-
 
 def plot_cells(ax,factors, mat, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
@@ -100,21 +104,14 @@ def plot_cells(ax,factors, mat, component_x, component_y, cell_names):
     ax.scatter(factors[1][:,component_x - 1], factors[1][:,component_y - 1], c=colors, label = cell_names)
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    
-    #for ii in range(1, len(cell_names) + 1): #iterate over every cell
-        #jj = ii * len(mat)
-        #new_array = factors[1][jj-len(mat):jj] #repeat just the cytokine stimulation
-        #ax.scatter(new_array[:,component_x - 1], new_array[:,component_y - 1], c=colors[ii-1], label = cell_names[ii-1])
-    #plt.title('Combination Decomposition Colored by Cell Type')
-    # Shrink current axis by 20%
-    #box = ax.get_position()
-    #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    # Put a legend to the right of the current axis
-    #ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.set_xlim(-np.max(np.absolute(factors[1][:,component_x - 1]))*1.05,np.max(np.absolute(factors[1][:,component_x - 1]))*1.05)
+    ax.set_ylim(-np.max(np.absolute(factors[1][:,component_y - 1]))*1.05,np.max(np.absolute(factors[1][:,component_y - 1]))*1.05)
 
 def plot_ligands(ax, factors, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
     ax.scatter(factors[2][:,component_x - 1], factors[2][:,component_y - 1])
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
+    ax.set_xlim(-np.max(np.absolute(factors[2][:,component_x - 1]))*1.05,np.max(np.absolute(factors[2][:,component_x - 1]))*1.05)
+    ax.set_ylim(-np.max(np.absolute(factors[2][:,component_y - 1]))*1.05,np.max(np.absolute(factors[2][:,component_y - 1]))*1.05)
     
