@@ -26,7 +26,7 @@ class surf_IL2Rb:
 
         a = np.dot(returnn, self.IL2Rb_species_IDX)
 
-        return a / a[0]
+        return a
 
     def calc(self, unkVec):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
@@ -49,7 +49,7 @@ class surf_IL2Rb:
         g = self.singleCalc(unkVecIL2RaMinus, 1, 1.)
         h = self.singleCalc(unkVecIL2RaMinus, 1, 500.)
 
-        return np.concatenate((a, b, c, d, e, f, g, h))
+        return (np.concatenate((a, b, c, d, e, f, g, h)) / a[0])
 
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
