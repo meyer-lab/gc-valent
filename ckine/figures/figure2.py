@@ -1,7 +1,7 @@
 """
 This creates Figure 2.
 """
-from .figureCommon import subplotLabel, getSetup, rev_rxn_names, traf_names, Rexpr_names
+from .figureCommon import subplotLabel, getSetup
 from ..plot_model_prediction import pstat
 from ..model import nParams
 import numpy as np
@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pymc3 as pm, os
 from os.path import join
-from ..fit import build_model
+from ..fit_others import build_model
 
 
 def makeFigure():
@@ -81,7 +81,6 @@ def pstat_calc(unkVec, cytokC_4, cytokC_7):
     return actVec
     
 def pstat_plot(ax):
-    actVec = pstat_calc()
     PTS = 30
     cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
     cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
