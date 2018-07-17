@@ -22,6 +22,8 @@ def makeFigure():
     ax[0].axis('off')
 
     subplotLabel(ax[0], 'A')
+    pstat_plot(ax[1])
+    
 
     f.tight_layout()
 
@@ -54,16 +56,11 @@ def import_samples():
     
     return unkVec, scales
 
-def pstat_calc(ax):
+def pstat_calc(unkVec, cytokC_4, cytokC_7):
     ''' This function generates plots that mimic the Gonnard Figures S3B and S3C based on the fitting results. '''
-    PTS = 30
-    cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
-    cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
-
     # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.]) # was 10. in literature
-    unkVec, scales = import_samples()
     
     def singleCalc(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -81,5 +78,26 @@ def pstat_calc(ax):
     actVec_IL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC_4), np.float64)
     
     actVec = np.concatenate((actVec_IL4 * scales[0], actVec_IL7 * scales[1]))
+    return actVec
     
+def pstat_plot(ax):
+    actVec = pstat_calc()
+    PTS = 30
+    cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
+    cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
+    unkVec = import_samples()
+    
+    def plot_structure(IL4vec, IL7vec, title, ax):
+        ax.set_title(title)
+        ax.scatter(np.log10(cytokC_4), IL4vec, color='c', alpha=0.5, label="IL4")
+        ax.scatter(np.log10(cytokC_7), IL15vec, color='b', alpha=0.5, label='IL15')
+        ax.set_ylabel('pSTAT activation' )
+        ax.set_xlabel('cytokine concentration (nM)')
+        # ax.legend()
 
+    for ii in range(0,500):
+        output = pstat_calc(unkVec[:, ii], cytokC_4, cytokC_7)
+        IL4_output = output[0:PTS]
+        IL7_output = output[PTS:(PTS*2)]
+
+        plot_structure(IL4_output, IL7_output, "PBMCs stimulated for 10 min.", ax)
