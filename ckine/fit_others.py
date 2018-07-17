@@ -52,10 +52,10 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1, shape=1)
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
-            Tone = T.stack(T.ones(1, dtype=np.float64))
-            Tzero = T.stack(T.zeros(1, dtype=np.float64))
+            Tone = T.ones(1, dtype=np.float64)
+            Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=0.1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=0.1, shape=1) # associated with IL4
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
@@ -68,12 +68,18 @@ class build_model:
             scales = pm.Lognormal('scales', mu=np.log(10), sd=np.log(25), shape=2) # create scaling constants for activity measurements
 
             ligands = T.zeros(6, dtype=np.float64)
+            print('ligands ndim: ' + str(ligands.ndim))
+            print('kfwd ndim: ' + str(kfwd.ndim))
+            print('nullRates ndim: ' + str(nullRates.ndim))
+            print('k27rev ndim: ' + str(k27rev.ndim))
+            print('Tone ndim: ' + str(Tone.ndim))
+            print('k33rev ndim: ' + str(k33rev.ndim))
             
             # TODO: make sure three measured values are inputted correctly
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), nullRates, T.stack(k27rev), Tone, T.stack(k33rev), Tone, endo_activeEndo,
-                                    T.stack(sortF), kRec_kDeg, T.zeros(2, dtype=np.float64), T.stack(GCexpr), Tone, T.stack(IL7Raexpr),
-                                    Tzero, T.stack(IL4Raexpr), Tzero)) # indexing same as in model.cpp
+            unkVec = T.concatenate((ligands, T.stack(kfwd), nullRates, T.stack(k27rev), Tone, T.stack(k33rev), Tone))
+            unkVec = T.concatenate((unkVec, endo_activeEndo, T.stack(sortF), kRec_kDeg))
+            unkVec = T.concatenate((unkVec, T.zeros(2, dtype=np.float64), T.stack(GCexpr), Tzero, T.stack(IL7Raexpr), Tzero, T.stack(IL4Raexpr), Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
 
