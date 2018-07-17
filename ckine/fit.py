@@ -7,7 +7,7 @@ import theano
 import theano.tensor as T
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
-from .differencing_op import runCkineOp, runCkineKineticOp
+from .differencing_op import runCkineOp, runCkineKineticOp, runCkineDoseOp
 
 
 class IL2Rb_trafficking:
@@ -21,16 +21,14 @@ class IL2Rb_trafficking:
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
-        # Condense to just IL2Rb
-        self.condense = getSurfaceIL2RbSpecies()
-
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
     def calc(self, unkVec):
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
-        KineticOp = runCkineKineticOp(self.ts, self.condense)
+        # Condense to just IL2Rb
+        KineticOp = runCkineKineticOp(self.ts, getSurfaceIL2RbSpecies())
 
         # IL2 stimulation
         a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
@@ -57,31 +55,24 @@ class IL2_15_activity:
         data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
 
-        self.fit_data = np.concatenate((data[:, 7], data[:, 3], data[:, 6], data[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
+        self.cytokM = np.zeros((6, self.cytokC.size*2), dtype=np.float64)
+        self.cytokM[0, 0:self.cytokC.size] = self.cytokC
+        self.cytokM[1, self.cytokC.size::] = self.cytokC
 
-        self.activity = getTotalActiveSpecies().astype(np.float64)
-
+        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
 
     def calc(self, unkVec):
         """Simulate the experiment with IL15. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
-        Op = runCkineOp(ts=np.array(500.))
+        Op = runCkineDoseOp(tt=np.array(500.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
-        # Loop over concentrations of IL15
-        actVec, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[1], x))), sequences=[self.cytokC], name="IL15 loop")
-
-        # Loop over concentrations of IL2
-        actVecIL2, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), sequences=[self.cytokC])
-
+        # Take out expression of IL2Ra
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
-        # Loop over concentrations of IL2, IL2Ra-/-
-        actVecIL2RaMinus, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), sequences=[self.cytokC])
-
         # Normalize to the maximal activity, put together into one vector
-        actCat = T.concatenate((actVec, actVec, actVecIL2, actVecIL2RaMinus))
+        actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - (actCat / T.max(actCat))
@@ -100,7 +91,7 @@ class build_model:
 
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=10) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
