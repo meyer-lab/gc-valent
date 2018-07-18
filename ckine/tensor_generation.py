@@ -10,7 +10,7 @@ from os.path import join
 import numpy as np, pandas as pds
 from tqdm import tqdm
 from multiprocessing import Pool
-from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies
+from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength, halfL
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
@@ -25,8 +25,8 @@ def ySolver(matIn):
     # Set some given parameters already determined from fitting
     rxntfR = np.zeros(nParams())
     rxntfR[6] = 0.00001 #kfwd
-    rxntfR[7:17] = 0.001  # From fitting: k4rev - k35rev
-    rxntfR[17:22] = 0.1 # From fitting: endo - kdeg
+    rxntfR[7:nRxn()] = 0.001  # From fitting: k4rev - k35rev
+    rxntfR[nRxn():22] = 0.1 # From fitting: endo - kdeg
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations
@@ -76,25 +76,24 @@ def findy(lig):
 
     return y_of_combos, new_mat, mat, mats, cell_names
 
-
-def activity_surface_total(yVec):
-    """This function returns a vector of 16 elements where the activity of the 6 cytokines and amounts of surface and total receptors are included."""
-    x = np.zeros(22)
-
-    for ii in range(6):
-        x[ii] = getTotalActiveCytokine(ii, yVec)
-
-    x[6:14] = surfaceReceptors(yVec)
-    x[14:22] = totalReceptors(yVec)
-    return x
-
-
-def activity_surf_tot(y_of_combos):
-    """This function returns the activity and amounts of receptors both on the surface and total for every timepoint per combination of values"""
-    values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 22))
-
-    for i in range(y_of_combos.shape[0]):
-        for j in range(y_of_combos.shape[1]):
-            values[i][j] = activity_surface_total(y_of_combos[i][j])
-
+def reduce_values(y_of_combos):
+    """Reduce y_of_combinations into necessary values."""
+    active_list = [np.array([7,8]),np.array([14,15]), np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine
+    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],22))
+    indices = [np.array([0, 3, 5, 6, 8]), np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), np.array([9, 10, 12, 13, 15]), np.array([16, 17, 18]), np.array([19, 20, 21]), np.array([22, 23, 24]),np.array([25, 26, 27])]
+    for i in range(6): #first 6 total active cytokines
+        values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength() * np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
+    for j in range(len(indices)):
+        values[:,:,6+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
+    for k in range(len(indices)):
+        values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
+
+def prepare_tensor(lig):
+    """Function to generate the 4D tensor."""
+    y_of_combos, new_mat, mat, mats, cell_names = findy(lig) #mat here is basically the 2^lig cytokine stimulation; mats
+    values = reduce_values(y_of_combos)
+    tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
+    for ii in range(tensor4D.shape[0]):
+        tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
+    return tensor4D, new_mat, mat, mats, cell_names
