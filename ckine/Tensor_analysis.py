@@ -25,7 +25,7 @@ def find_R2X(values, n_comp):
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def fast_find_R2X(values, n_comp):
-    "Compute R2X for various components up to n_comp and return as an array."
+    """Compute R2X for various components up to n_comp and return as an array."""
     z_values = zscore(values, axis=3)
     factors = perform_decomposition(z_values, n_comp)[0]
     R2X_list = []
