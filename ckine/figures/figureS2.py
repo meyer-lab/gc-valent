@@ -1,6 +1,7 @@
 """
 This creates Figure S2.
 """
+import string
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup
