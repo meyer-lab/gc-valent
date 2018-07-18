@@ -6,7 +6,7 @@ from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies
-from .differencing_op import runCkineOp, runCkineKineticOp
+from .differencing_op import runCkineOp, runCkineDoseOp
 
 class IL4_7_activity:
     def __init__(self):
@@ -19,19 +19,23 @@ class IL4_7_activity:
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
         self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
 
+        self.cytokM = np.zeros((self.cytokC_4.size*2, 6), dtype=np.float64)
+        self.cytokM[0:self.cytokC_4.size, 4] = self.cytokC_4
+        self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
+
         self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # the measurements are not normalized
         self.activity = getTotalActiveSpecies().astype(np.float64)
 
 
     def calc(self, unkVec, scales):
         """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
-        Op = runCkineOp(ts=np.array(10.))
+        Op = runCkineDoseOp(tt=np.array(10.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
-        # Loop over concentrations of IL4
-        actVecIL4 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[4], x))), self.cytokC_4)))
+        # Run the experiment
+        outt = Op(unkVec)
 
-        # Loop over concentrations of IL7
-        actVecIL7 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[2], x))), self.cytokC_7)))
+        actVecIL4 = outt[0:self.cytokC_4.size]
+        actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
         # Normalize to the scaling constants, put together into one vector
         # TODO: make sure indexing in unkVec is correct for scales
@@ -66,12 +70,10 @@ class build_model:
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
             # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
-
-            ligands = T.zeros(6, dtype=np.float64)
             
             # TODO: make sure three measured values are inputted correctly
 
-            unkVec = T.concatenate((ligands, kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
+            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, T.stack(GCexpr), Tzero, T.stack(IL7Raexpr), Tzero, T.stack(IL4Raexpr), Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
