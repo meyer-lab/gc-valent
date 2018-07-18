@@ -1,11 +1,12 @@
 """
 This creates Figure S2.
 """
+import numpy as np
+import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup
 from ..tensor_generation import prepare_tensor
 from ..Tensor_analysis import perform_decomposition
-import numpy as np
-import matplotlib.cm as cm
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -34,6 +35,10 @@ def makeFigure():
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
 
+    # Add subplot labels
+    for ii, item in enumerate(ax):
+        subplotLabel(item, string.ascii_uppercase[ii])
+
     f.tight_layout()
 
     return f
@@ -55,7 +60,6 @@ def plot_values(ax, factors, component_x, component_y):
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     ax.scatter(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
-
     ax.annotate(str(1000), xy=(factors[999, component_x - 1], factors[999, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
 
 
