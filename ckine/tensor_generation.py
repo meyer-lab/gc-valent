@@ -90,7 +90,7 @@ def reduce_values(y_of_combos):
     return values
 
 def prepare_tensor(lig):
-    "Function to generate the 4D tensor."
+    """Function to generate the 4D tensor."""
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig) #mat here is basically the 2^lig cytokine stimulation; mats
     values = reduce_values(y_of_combos)
     tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))

@@ -16,30 +16,23 @@ def makeFigure():
     ax, f = getSetup((10, 10), (x, y))
 
     factors, new_mat, mat, mats, cell_names = decompose_tensor(2)
-    a = b = c = d = 0
+    a = b = c = d = -1
     for ii in range(x*y):
         if ii % y == 0:
-            a += 1
+            a += 2
             plot_timepoint(ax[ii],factors,a, a+1)
-            a += 1  
             
         elif ii % y == 1:
-            b += 1
+            b += 2
             plot_cells(ax[ii],factors, mat, b, b+1, cell_names)
-            b += 1
             
         elif ii % y == 2:
-            c+=1
+            c+=2
             plot_ligands(ax[ii],factors,c, c+1)
-            c += 1
 
         elif ii % y == 3:
-            d+= 1
+            d+= 2
             plot_values(ax[ii],factors,d, d+1)
-            d += 1
-    # Add subplot labels
-    #for ii, item in enumerate(ax):
-        #subplotLabel(item, string.ascii_uppercase[ii])
 
     f.tight_layout()
 
@@ -81,37 +74,30 @@ def plot_values(ax,factors,component_x, component_y):
                 ax.scatter(data[0], data[1], color = c)
             ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
 
+    set_axis_limits(ax, factors, 3, component_x, component_y)
+
+def set_axis_limits(ax, factors, f_pos, component_x, component_y):
+    """Function to set axes labels and limits of the designated factor matrix."""
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    ax.set_xlim(-np.max(np.absolute(factors[3][:,component_x - 1]))*1.05,np.max(np.absolute(factors[3][:,component_x - 1]))*1.05)
-    ax.set_ylim(-np.max(np.absolute(factors[3][:,component_y - 1]))*1.05,np.max(np.absolute(factors[3][:,component_y - 1]))*1.05)
-
-
+    ax.set_xlim(-np.max(np.absolute(factors[f_pos][:,component_x - 1]))*1.05,np.max(np.absolute(factors[f_pos][:,component_x - 1]))*1.05)
+    ax.set_ylim(-np.max(np.absolute(factors[f_pos][:,component_y - 1]))*1.05,np.max(np.absolute(factors[f_pos][:,component_y - 1]))*1.05)
+    
 def plot_timepoint(ax,factors,component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     for i in range(len(factors[0])):
         ax.scatter(factors[0][:,component_x - 1][i], factors[0][:,component_y - 1][i], color = 'k')
         if i == 999:
             ax.annotate(str(i+1), xy=(factors[0][:,component_x - 1][i], factors[0][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
-    ax.set_xlim(-np.max(np.absolute(factors[0][:,component_x - 1]))*1.05,np.max(np.absolute(factors[0][:,component_x - 1]))*1.05)
-    ax.set_ylim(-np.max(np.absolute(factors[0][:,component_y - 1]))*1.05,np.max(np.absolute(factors[0][:,component_y - 1]))*1.05)
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
+    set_axis_limits(ax, factors, 0, component_x, component_y)
 
 def plot_cells(ax,factors, mat, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     ax.scatter(factors[1][:,component_x - 1], factors[1][:,component_y - 1], c=colors, label = cell_names)
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
-    ax.set_xlim(-np.max(np.absolute(factors[1][:,component_x - 1]))*1.05,np.max(np.absolute(factors[1][:,component_x - 1]))*1.05)
-    ax.set_ylim(-np.max(np.absolute(factors[1][:,component_y - 1]))*1.05,np.max(np.absolute(factors[1][:,component_y - 1]))*1.05)
+    set_axis_limits(ax, factors, 1, component_x, component_y)
 
 def plot_ligands(ax, factors, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
     ax.scatter(factors[2][:,component_x - 1], factors[2][:,component_y - 1])
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
-    ax.set_xlim(-np.max(np.absolute(factors[2][:,component_x - 1]))*1.05,np.max(np.absolute(factors[2][:,component_x - 1]))*1.05)
-    ax.set_ylim(-np.max(np.absolute(factors[2][:,component_y - 1]))*1.05,np.max(np.absolute(factors[2][:,component_y - 1]))*1.05)
-    
+    set_axis_limits(ax, factors, 2, component_x, component_y)
