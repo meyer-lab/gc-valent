@@ -30,18 +30,18 @@ def makeFigure():
 
     return f
 
-def plot_structure(IL2vec, IL15vec, title, ax, x_axis, y_max, data_type, species='NONE'):
+def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'):
     ax.set_title(title)
-    ax.set_ylim(0,(y_max + (0.2 * y_max)))
+    ax.set_ylim(0,120)
     if (data_type=='surf'):
         ax.scatter(x_axis, IL2vec, color='r', label='IL2', alpha=0.7)
         ax.scatter(x_axis, IL15vec, color='g', label='IL15', alpha=0.7)
-        ax.set_ylabel("Surface " + str(species) + " (% x " + str(y_max) + ')')
+        ax.set_ylabel("Surface " + str(species) + " (% x 100)")
         ax.set_xlabel("Time (min)")
     elif (data_type=='act'):
         ax.scatter(np.log10(x_axis), IL2vec, color='r', alpha=0.5, label="IL2")
         ax.scatter(np.log10(x_axis), IL15vec, color='g', alpha=0.5, label='IL15')
-        ax.set_ylabel('Maximal p-STAT5 (% x ' + str(y_max) + ')')
+        ax.set_ylabel('Maximal p-STAT5 (% x 100)')
         ax.set_xlabel('log10 of cytokine concentration (nM)')
     else:
         print('invalid data_type')   
@@ -72,10 +72,10 @@ def surf_perc(ax, species):
         IL15_1_minus = output[(size*6):(size*7)]
         IL15_500_minus = output[(size*7):(size*8)]
 
-        plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-', ax[0], ts, y_max, 'surf', species)
-        plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1], ts, y_max, 'surf', species)
-        plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2], ts, y_max, 'surf', species)
-        plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3], ts, y_max, 'surf', species)
+        plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-', ax[0], ts, 'surf', species)
+        plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1], ts, 'surf', species)
+        plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2], ts, 'surf', species)
+        plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3], ts, 'surf', species)
 
     
 def pstat_act(ax):
@@ -92,8 +92,8 @@ def pstat_act(ax):
         IL15_plus = output[(PTS*2):(PTS*3)]
         IL15_minus = output[(PTS*3):(PTS*4)]
 
-        plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0], cytokC, y_max, 'act')
-        plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1], cytokC, y_max, 'act')
+        plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0], cytokC, 'act')
+        plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1], cytokC, 'act')
 
     
 def import_samples():
