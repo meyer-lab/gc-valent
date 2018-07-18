@@ -120,19 +120,16 @@ def violinPlots(ax):
     unkVec = import_samples()
     unkVec = unkVec.transpose()
     
-    rev_rxn = unkVec[:, 7:17]
-    traf = unkVec[:, 17:22]
-    Rexpr = unkVec[:, 22:]
+    rev_rxn = pd.DataFrame(unkVec[:, 7:17])
+    traf = pd.DataFrame(unkVec[:, 17:22])
+    Rexpr = pd.DataFrame(unkVec[:, 22:])
     
-    rev_rxn = pd.DataFrame(rev_rxn)
     rev_rxn.columns = rev_rxn_names()
     sns.violinplot(data=rev_rxn, ax=ax[0])  # creates names based on dataframe columns
     
-    traf = pd.DataFrame(traf)
     traf.columns = traf_names()
     sns.violinplot(data=traf, ax=ax[1])
     
-    Rexpr = pd.DataFrame(Rexpr)
     Rexpr.columns = Rexpr_names()
     sns.violinplot(data=Rexpr, ax=ax[2])
 
