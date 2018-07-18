@@ -24,6 +24,22 @@ def find_R2X(values, n_comp):
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
+<<<<<<< HEAD
+=======
+def fast_find_R2X(values, n_comp):
+    """Compute R2X for various components up to n_comp and return as an array."""
+    z_values = zscore(values, axis=3)
+    factors = perform_decomposition(z_values, n_comp)[0]
+    R2X_list = []
+    for jj in range(1,n_comp+1):
+        factorsNew = list()
+        for _, f in enumerate(factors):
+            factorsNew.append(f[:, 0:jj])
+        #a, b, c, d = np.delete(factors[0],np.s_[jj::],axis = 1 ), np.delete(factors[1],np.s_[jj::],axis = 1), np.delete(factors[2],np.s_[jj::],axis = 1), np.delete(factors[3],np.s_[jj::],axis = 1)
+        values_reconstructed = tensorly.kruskal_to_tensor(factorsNew)
+        R2X_list.append(1 - np.var(values_reconstructed - z_values) / np.var(z_values))
+    return R2X_list
+>>>>>>> 9144aca08801927ad4c38e4c6f3dc078dcf64768
 
 def plot_R2X(values, n_comps):
     '''Function to plot the R2X values for various components.'''
