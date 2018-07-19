@@ -15,7 +15,7 @@ def makeFigure():
     x, y = 9, 5
     ax, f = getSetup((15, 10), (x, y))
 
-    values, _, _, _, cell_names = prepare_tensor(3)
+    values, _, _, _, cell_names = prepare_tensor(2)
     factors = perform_decomposition(values, 2*x)
 
     for row in range(x):
