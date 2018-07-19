@@ -12,7 +12,7 @@ from ..Tensor_analysis import perform_decomposition
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 5, 5
+    x, y = 7, 5
     ax, f = getSetup((10, 10), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
@@ -61,7 +61,7 @@ def plot_values(ax, factors, component_x, component_y):
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     ax.scatter(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
-    ax.annotate(str(1000), xy=(factors[999, component_x - 1], factors[999, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
+    ax.annotate(str(factors.shape[0]), xy=(factors[factors.shape[0]-1, component_x - 1], factors[factors.shape[0]-1, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
 
 
 def plot_cells(ax, factors, component_x, component_y, cell_names):
