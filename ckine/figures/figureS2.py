@@ -14,7 +14,7 @@ def makeFigure():
     # Get list of axis objects
     x, y = 9, 5
     ssize = 2
-    ax, f = getSetup((ssize*x, ssize*y), (x, y))
+    ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
     factors = perform_decomposition(values, 2*x)
