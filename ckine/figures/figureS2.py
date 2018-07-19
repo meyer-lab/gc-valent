@@ -12,8 +12,8 @@ from ..Tensor_analysis import perform_decomposition
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 6, 5
-    ax, f = getSetup((12, 10), (x, y))
+    x, y = 5, 5
+    ax, f = getSetup((10, 10), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
     factors = perform_decomposition(values, 2*x)
