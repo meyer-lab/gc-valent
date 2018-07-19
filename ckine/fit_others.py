@@ -56,15 +56,15 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=10, shape=1)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=1, shape=1)
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=10, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=10, shape=1) # associated with IL4
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
+            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             GCexpr = (328. * endo_activeEndo[0]) / (1 + ((kRec_kDeg[0]*(1-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1 + ((kRec_kDeg[0]*(1-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1 + ((kRec_kDeg[0]*(1-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
