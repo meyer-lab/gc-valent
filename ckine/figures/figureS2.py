@@ -12,8 +12,8 @@ from ..Tensor_analysis import perform_decomposition
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 5, 5
-    ax, f = getSetup((10, 10), (x, y))
+    x, y = 6, 5
+    ax, f = getSetup((12, 10), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
     factors = perform_decomposition(values, 2*x)
@@ -30,8 +30,8 @@ def makeFigure():
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
 
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))
+            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
+            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
