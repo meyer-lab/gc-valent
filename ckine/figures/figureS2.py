@@ -12,7 +12,7 @@ from ..Tensor_analysis import perform_decomposition
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 11, 5
+    x, y = 10, 5
     ssize = 2
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
