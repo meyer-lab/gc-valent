@@ -65,9 +65,9 @@ class build_model:
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
-            GCexpr = (328. * endo_activeEndo[0]) / (1 + ((kRec_kDeg[0]*(1-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            IL7Raexpr = (2591. * endo_activeEndo[0]) / (1 + ((kRec_kDeg[0]*(1-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            IL4Raexpr = (254. * endo_activeEndo[0]) / (1 + ((kRec_kDeg[0]*(1-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+            GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+            IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+            IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
             
