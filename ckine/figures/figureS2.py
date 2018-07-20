@@ -9,7 +9,6 @@ from .figureCommon import subplotLabel, getSetup
 from ..tensor_generation import prepare_tensor
 from ..Tensor_analysis import perform_decomposition
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -68,14 +67,11 @@ def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
     ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
-    #ax.annotate(str(factors.shape[0]), xy=(factors[factors.shape[0]-1, component_x - 1], factors[factors.shape[0]-1, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
-
 
 def plot_cells(ax, factors, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     ax.scatter(factors[:, component_x - 1], factors[:, component_y - 1], c=colors, label = cell_names)
-
 
 def plot_ligands(ax, factors, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
