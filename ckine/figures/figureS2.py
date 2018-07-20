@@ -13,8 +13,8 @@ from ..Tensor_analysis import perform_decomposition
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 10, 5
-    ssize = 2
+    x, y = 10, 4
+    ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
@@ -48,29 +48,20 @@ def makeFigure():
 def plot_values(ax, factors, component_x, component_y):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
-    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra']
+    # The markers are for the following elements in order: 'IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
     
     markersLigand = itertools.cycle(('^', '*', 'D', 's', 'X', 'o'))
-    markersReceptors = itertools.cycle(('^', 'p', '8', '*', 'D', 's', 'X' ,'o'))
+    markersReceptors = itertools.cycle(('^', '4', 'P', '*', 'D', 's', 'X' ,'o')) 
     
     #Set Active to color red. Set Surface to color blue. Set Total to color black
-    
-    # need to do 3 for loops and each with a specific marker and color
     for q,p in zip(factors[0:6, component_x - 1], factors[0:6, component_y - 1]):
-        ax.plot(q, p, linestyle = '', c = 'r', marker = next(markersLigand))
+        ax.plot(q, p, linestyle = '', c = 'r', marker = next(markersLigand), label = 'Ligand Activity')
 
     for q,p in zip(factors[6:14, component_x - 1], factors[6:14, component_y - 1]):
-        ax.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors))
+        ax.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors), label = 'Surface Receptor')
     
     for q,p in zip(factors[14::, component_x - 1], factors[14::, component_y - 1]):
-        ax.plot(q, p, linestyle = '', c = 'k', marker = next(markersReceptors))
-
-    #ax.scatter(factors[0:6, component_x - 1], factors[0:6, component_y - 1], color = 'r', marker = markersLigand, label = 'Ligand Activity')
-    #ax.scatter(factors[6:14, component_x - 1], factors[6:14, component_y - 1], color = 'b', marker = markersReceptors, label = 'Surface Receptor')
-    #ax.scatter(factors[14::, component_x - 1], factors[14::, component_y - 1], color = 'k', marker = markersReceptors, label = 'Total Receptor')
-
-    #for i, item in enumerate(labels):
-        #ax.annotate(item, xy=(factors[i, component_x - 1], factors[i, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
+        ax.plot(q, p, linestyle = '', c = 'k', marker = next(markersReceptors), label = 'Total Receptor')
 
 
 def plot_timepoint(ax, factors, component_x, component_y):
