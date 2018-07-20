@@ -78,7 +78,7 @@ class build_model:
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            pm.Normal('fitD_int', sd=75, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
