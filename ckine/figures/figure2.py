@@ -44,16 +44,10 @@ def import_samples():
     sortF = trace.get_values('sortF', chains=[0])
     kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
     scales = trace.get_values('scales', chains=[0])
-    print("sortF.shape: " + str(sortF.shape))
-    print("kRec_kDeg.shape: " + str(kRec_kDeg.shape))
-    print("endo_activeEndo.shape: " + str(endo_activeEndo.shape))
     
     GCexpr = (328. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
     IL7Raexpr = (2591. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
     IL4Raexpr = (254. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
-    print("GCexpr.shape: " + str(GCexpr.shape))
-    print("IL7Raexpr.shape: " + str(IL7Raexpr.shape))
-    print("IL4Raexpr.shape: " + str(IL4Raexpr.shape))
 
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
@@ -92,13 +86,13 @@ def pstat_plot(ax):
     PTS = 30
     cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
     cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
+    cytokC_common = np.logspace(-3.3, 1.5, num=PTS)
     unkVec, scales = import_samples()
-    print('scales shape: ' +str(scales.shape))
     
     def plot_structure(IL4vec, IL7vec, title, ax):
         ax.set_title(title)
-        ax.scatter(cytokC_4, IL4vec, color='c', alpha=0.5, label="IL4")
-        ax.scatter(cytokC_7, IL7vec, color='b', alpha=0.5, label='IL7')
+        ax.scatter(np.log10(cytokC_common), IL4vec, color='c', alpha=0.5, label="IL4")
+        ax.scatter(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5, label='IL7')
         ax.set_ylabel('pSTAT activation' )
         ax.set_xlabel('cytokine concentration (nM)')
         # ax.legend()
