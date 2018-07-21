@@ -45,10 +45,9 @@ def import_samples():
     kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
     scales = trace.get_values('scales', chains=[0])
     
-    GCexpr = (328. * endo_activeEndo[:, 0]) / (1 + (kRec_kDeg[:, 0] / kRec_kDeg[:, 1]))
-    IL7Raexpr = (2591. * endo_activeEndo[:, 0]) / (1 + (kRec_kDeg[:, 0] / kRec_kDeg[:, 1]))
-    IL4Raexpr = (254. * endo_activeEndo[:, 0]) / (1 + (kRec_kDeg[:, 0] / kRec_kDeg[:, 1]))
-    
+    GCexpr = (328. * endo_activeEndo[:,0]) / (1. + ((kRec_kDeg[:,0]*(1.-sortF)) / (kRec_kDeg[:,1]*sortF))) # constant according to measured number per cell
+    IL7Raexpr = (2591. * endo_activeEndo[:,0]) / (1. + ((kRec_kDeg[:,0]*(1.-sortF)) / (kRec_kDeg[:,1]*sortF))) # constant according to measured number per cell
+    IL4Raexpr = (254. * endo_activeEndo[:,0]) / (1. + ((kRec_kDeg[:,0]*(1.-sortF)) / (kRec_kDeg[:,1]*sortF))) # constant according to measured number per cell
     
     
     unkVec = np.zeros((n_params, 500))
