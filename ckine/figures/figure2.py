@@ -48,9 +48,9 @@ def import_samples():
     print("kRec_kDeg.shape: " + str(kRec_kDeg.shape))
     print("endo_activeEndo.shape: " + str(endo_activeEndo.shape))
     
-    GCexpr = (328. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF)) / (kRec_kDeg[:, 1]*sortF))) # constant according to measured number per cell
-    IL7Raexpr = (2591. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF)) / (kRec_kDeg[:, 1]*sortF))) # constant according to measured number per cell
-    IL4Raexpr = (254. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF)) / (kRec_kDeg[:, 1]*sortF))) # constant according to measured number per cell
+    GCexpr = (328. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
+    IL7Raexpr = (2591. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
+    IL4Raexpr = (254. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
     print("GCexpr.shape: " + str(GCexpr.shape))
     print("IL7Raexpr.shape: " + str(IL7Raexpr.shape))
     print("IL4Raexpr.shape: " + str(IL4Raexpr.shape))
