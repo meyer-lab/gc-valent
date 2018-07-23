@@ -120,7 +120,8 @@ def violinPlots(ax):
     scales = pd.DataFrame(scales)
     
     rxn.columns = ['kfwd', 'k27rev', 'k33rev']
-    sns.violinplot(data=rxn, ax=ax[0])  # creates names based on dataframe columns
+    a = sns.violinplot(data=rxn, ax=ax[0])  # creates names based on dataframe columns
+    a.set_yscale('log')
     
     traf.columns = traf_names()
     sns.violinplot(data=traf, ax=ax[1])
