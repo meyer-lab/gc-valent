@@ -161,4 +161,9 @@ def violinPlots(ax):
 
 def pretreat(ax):
     ''' This generates a plot that simulates pretreatment of IL4 or IL7 doses before being stimulated by a standard amount of the other cytokine. The y-axis represent % of inhibition. '''
+    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
+    IL7_pretreat = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
+    IL4_pretreat = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation
+    IL4_stim = 100. / 14900. # concentration used for IL4 stimulation
+    IL7_stim = 50. / 17400. # concentration used for IL7 stimulation
     
