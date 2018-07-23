@@ -158,3 +158,7 @@ def violinPlots(ax):
     scales.columns = ['IL4 scale', 'IL7 scale']
     sns.violinplot(data=scales, ax=ax[3])
     
+
+def pretreat(ax):
+    ''' This generates a plot that simulates pretreatment of IL4 or IL7 doses before being stimulated by a standard amount of the other cytokine. The y-axis represent % of inhibition. '''
+    
