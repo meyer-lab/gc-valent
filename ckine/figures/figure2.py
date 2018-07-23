@@ -1,7 +1,7 @@
 """
 This creates Figure 2.
 """
-from .figureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names
 from ..plot_model_prediction import pstat
 from ..model import nParams, getTotalActiveSpecies, runCkineU
 import numpy as np
@@ -24,6 +24,7 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     pstat_plot(ax[1])
+    violinPlots(ax[2:6])
     
 
     f.tight_layout()
@@ -103,3 +104,30 @@ def pstat_plot(ax):
         IL7_output = output[PTS:(PTS*2)]
 
         plot_structure(IL4_output, IL7_output, "PBMCs stimulated for 10 min.", ax)
+        
+def violinPlots(ax):
+    """ Create violin plots of model posterior. """
+    unkVec, scales = import_samples()
+    unkVec = unkVec.transpose()
+    
+    rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]])
+    rxn = rxn.transpose()
+    rxn = pd.DataFrame(rxn)
+    traf = pd.DataFrame(unkVec[:, 17:22])
+    Rexpr = np.array([unkVec[:, 24], unkVec[:, 26], unkVec[:, 28]])
+    Rexpr = Rexpr.transpose()
+    Rexpr = pd.DataFrame(Rexpr)
+    scales = pd.DataFrame(scales)
+    
+    rxn.columns = ['kfwd', 'k27rev', 'k33rev']
+    sns.violinplot(data=rxn, ax=ax[0])  # creates names based on dataframe columns
+    
+    traf.columns = traf_names()
+    sns.violinplot(data=traf, ax=ax[1])
+    
+    Rexpr.columns = ['GCexpr', 'IL7Raexpr', 'IL4Raexpr']
+    sns.violinplot(data=Rexpr, ax=ax[2])
+    
+    scales.columns = ['IL4 scale', 'IL7 scale']
+    sns.violinplot(data=scales, ax=ax[3])
+
