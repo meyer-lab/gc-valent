@@ -58,7 +58,7 @@ def import_samples():
     
     return unkVec, scales
 
-def pstat_calc(unkVec, scales, cytokC_4, cytokC_7):
+def pstat_calc(unkVec, scales, cytokC):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
@@ -76,8 +76,8 @@ def pstat_calc(unkVec, scales, cytokC_4, cytokC_7):
         return np.dot(returnn, activity)
     
     assert unkVec.size == nParams()
-    actVec_IL7 = np.fromiter((singleCalc(unkVec, 2, x) for x in cytokC_7), np.float64)
-    actVec_IL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC_4), np.float64)
+    actVec_IL7 = np.fromiter((singleCalc(unkVec, 2, x) for x in cytokC), np.float64)
+    actVec_IL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC), np.float64)
     
     actVec = np.concatenate((actVec_IL4 * scales[0], actVec_IL7 * scales[1]))
     return actVec
@@ -85,21 +85,28 @@ def pstat_calc(unkVec, scales, cytokC_4, cytokC_7):
 def pstat_plot(ax):
     ''' This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. '''
     PTS = 30
-    cytokC_4 = np.linspace(5./14900., 250000./14900., num=PTS)
-    cytokC_7 = np.linspace(1./17400., 100000./17400., num=PTS)
+    cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
+    cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.3, 1.5, num=PTS)
     unkVec, scales = import_samples()
+    path = os.path.dirname(os.path.abspath(__file__))
+    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
+    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
     
     def plot_structure(IL4vec, IL7vec, title, ax):
         ax.set_title(title)
-        ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5, label="IL4") 
+        ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5, label="IL4")
         ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5, label='IL7') 
+        ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k')
+        ax.scatter(np.log10(cytokC_4), dataIL4[:,2], color='powderblue', marker='^', edgecolors='k')
+        ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k')
+        ax.scatter(np.log10(cytokC_7), dataIL7[:,2], color='b', marker='^', edgecolors='k')
         ax.set_ylabel('pSTAT activation' )
         ax.set_xlabel('cytokine concentration (nM)')
         # ax.legend()
 
     for ii in range(0,500):
-        output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_4, cytokC_7)
+        output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
         IL4_output = output[0:PTS]
         IL7_output = output[PTS:(PTS*2)]
 
