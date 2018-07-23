@@ -92,8 +92,8 @@ def pstat_plot(ax):
     
     def plot_structure(IL4vec, IL7vec, title, ax):
         ax.set_title(title)
-        ax.scatter(np.log10(cytokC_common), IL4vec, color='c', alpha=0.5, label="IL4")
-        ax.scatter(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5, label='IL7')
+        ax.plot(np.log10(cytokC_common), IL4vec, color='c', alpha=0.5, label="IL4")
+        ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5, label='IL7')
         ax.set_ylabel('pSTAT activation' )
         ax.set_xlabel('cytokine concentration (nM)')
         # ax.legend()
