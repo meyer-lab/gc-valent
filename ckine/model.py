@@ -239,13 +239,13 @@ def getSurfaceGCSpecies():
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
-    print('yVec length: '+str(yVec.shape))
     assert len(yVec) == __halfL
     return np.sum((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]])
 
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
+    assert(yVec.ndim == 1)
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 

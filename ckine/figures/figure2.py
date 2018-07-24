@@ -233,13 +233,13 @@ def plot_pretreat(ax):
         output = pretreat_calc(unkVec[:, ii])
         IL4_stim = output[0:5]
         IL7_stim = output[5:10]
-        ax.scatter(IL7_pretreat_conc, IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
-        ax.scatter(IL4_pretreat_conc, IL7_stim, color='b', alpha=0.5, zorder=ii)
+        ax.scatter(np.log10(IL7_pretreat_conc), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
+        ax.scatter(np.log10(IL4_pretreat_conc), IL7_stim, color='b', alpha=0.5, zorder=ii)
     
     ax.set_title('IL-4 and IL-7 crosstalk')
-    # ax.set_ylim(0,120)
+    ax.set_ylim(0,120)
     ax.set_ylabel("Percent inhibition (% x 100)")
-    ax.set_xlabel("Pretreatment concentration (nM)")
+    ax.set_xlabel("log10 of pretreatment concentration (nM)")
     
 
 def surf_gc(ax, cytokC_pg):
@@ -287,5 +287,6 @@ def data_path():
     path = os.path.dirname(os.path.abspath(__file__))
     dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values
-    return (dataIL4, dataIL7)
+    data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
+    return (dataIL4, dataIL7, data_pretreat)
 
