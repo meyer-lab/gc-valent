@@ -169,6 +169,7 @@ def pretreat(ax):
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation
+    print('IL7_pretreat_conc: ' + str(IL7_pretreat_conc))
     IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
     unkVec, scales = import_samples()
@@ -183,7 +184,7 @@ def pretreat(ax):
     for x in range(5):
         unkVec2 = unkVec.copy()
         unkVec2[2, :] = IL7_pretreat_conc[x] # plug in IL7 pretreatment concentration
-        print('unkVec[2, 0]: ' + str(unkVec[2,0]))
+        print('unkVec2[2, 0]: ' + str(unkVec2[2,0]))
         unkVec3 = unkVec.copy()
         unkVec3[4, :] = IL4_stim_conc # plug in IL4 stimulation concentration
         y0 = np.zeros((62, 500))
