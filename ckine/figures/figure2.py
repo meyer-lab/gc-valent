@@ -3,7 +3,7 @@ This creates Figure 2.
 """
 from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names
 from ..plot_model_prediction import pstat
-from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0
+from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -175,34 +175,32 @@ def pretreat_calc(unkVec):
     IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
     
-    def singleCalc_4stim(unkVec, cytokine, conc):
+    def singleCalc_4stim(unkVec, pre_cytokine, conc):
         ''' This function generates the IL4 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. '''
         unkVec2 = unkVec.copy()
-        unkVec2[cytokine] = conc
+        unkVec2[pre_cytokine] = conc
 
-        y0, retVal = runCkineU(ts, unkVec)
+        y0, retVal = runCkineU(ts, unkVec2)
 
         assert retVal >= 0
 
-        unkVec3 = unkVec.copy()
-        unkVec3[4] = IL4_stim_conc
-        returnn, retVal = runCkineY0(y0, ts, unkVec3)
+        unkVec2[4] = IL4_stim_conc # add in IL4 while leaving IL7 in system
+        returnn, retVal = runCkineY0(y0, ts, unkVec2)
         
-        return np.dot(returnn, activity)
+        return getTotalActiveCytokine(4, np.squeeze(returnn)) # only look at active species associated with IL4
     
-    def singleCalc_7stim(unkVec, cytokine, conc):
+    def singleCalc_7stim(unkVec, pre_cytokine, conc):
         unkVec2 = unkVec.copy()
-        unkVec2[cytokine] = conc
+        unkVec2[pre_cytokine] = conc
 
-        y0, retVal = runCkineU(ts, unkVec)
+        y0, retVal = runCkineU(ts, unkVec2)
 
         assert retVal >= 0
 
-        unkVec3 = unkVec.copy()
-        unkVec3[2] = IL7_stim_conc
-        returnn, retVal = runCkineY0(y0, ts, unkVec3)
+        unkVec2[2] = IL7_stim_conc # add in IL7 while leaving IL4 in the system
+        returnn, retVal = runCkineY0(y0, ts, unkVec2)
         
-        return np.dot(returnn, activity)
+        return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
     
     assert unkVec.size == nParams()
     actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in IL7_pretreat_conc), np.float64)
