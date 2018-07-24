@@ -163,15 +163,11 @@ def violinPlots(ax):
     sns.violinplot(data=scales, ax=ax[3])
     
 
-def pretreat_calc(unkVec):
+def pretreat_calc(unkVec, pre_IL4, pre_IL7):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.]) # was 10. in literature
-    path = os.path.dirname(os.path.abspath(__file__))
-    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
-    IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
-    IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation
     IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
     
@@ -203,8 +199,8 @@ def pretreat_calc(unkVec):
         return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
     
     assert unkVec.size == nParams()
-    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in IL7_pretreat_conc), np.float64)
-    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in IL4_pretreat_conc), np.float64)
+    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_IL7), np.float64)
+    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_IL4), np.float64)
     
     actVec = np.concatenate((actVec_IL4stim, actVec_IL7stim))
     
@@ -230,7 +226,7 @@ def plot_pretreat(ax):
     IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation 
     for ii in range(500):
-        output = pretreat_calc(unkVec[:, ii])
+        output = pretreat_calc(unkVec[:, ii], IL4_pretreat_conc, IL7_pretreat_conc)
         IL4_stim = output[0:5]
         IL7_stim = output[5:10]
         ax.scatter(np.log10(IL7_pretreat_conc), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
