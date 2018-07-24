@@ -170,8 +170,8 @@ def pretreat(ax):
     IL7_stim = 50. / 17400. # concentration used for IL7 stimulation
     
 def surf_gc(ax, cytokC_pg):
-    size = 15
-    ts = np.linspace(0., 30., num=size)
+    size = 40
+    ts = np.linspace(0., 100., num=size)
     output = calc_surf_gc(ts, cytokC_pg)
     IL4vec = output[:, 0:size]
     IL7vec = output[:, size:(size*2)]
@@ -208,3 +208,11 @@ def calc_surf_gc(t, cytokC_pg):
         result[ii, :] = np.concatenate((a, b))
         
     return (result / np.max(result)) * 100.
+
+
+def data_path():
+    path = os.path.dirname(os.path.abspath(__file__))
+    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
+    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values
+    return (dataIL4, dataIL7)
+
