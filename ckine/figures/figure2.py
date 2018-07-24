@@ -23,9 +23,10 @@ def makeFigure():
     ax[0].axis('off')
 
     subplotLabel(ax[0], 'A')
-    #pstat_plot(ax[1])
-    #violinPlots(ax[2:6])
-    surf_gc(ax[6])
+    pstat_plot(ax[1])
+    violinPlots(ax[2:6])
+    surf_gc(ax[6], 100.)
+    surf_gc(ax[7], 1000.)
     
 
     f.tight_layout()
@@ -168,12 +169,10 @@ def pretreat(ax):
     IL4_stim = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim = 50. / 17400. # concentration used for IL7 stimulation
     
-def surf_gc(ax):
-    cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
-    cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
+def surf_gc(ax, cytokC_pg):
     size = 15
     ts = np.linspace(0., 30., num=size)
-    output = calc_surf_gc(ts)
+    output = calc_surf_gc(ts, cytokC_pg)
     IL4vec = output[:, 0:size]
     IL7vec = output[:, size:(size*2)]
     
@@ -181,12 +180,12 @@ def surf_gc(ax):
         ax.plot(ts, IL4vec[ii, :], color='powderblue', label='IL4', alpha=0.5, zorder=ii)
         ax.plot(ts, IL7vec[ii, :], color='b', label='IL7', alpha=0.5, zorder=ii)
     
-    ax.set_title('100 pg/mL of stimulation')
+    ax.set_title(str(cytokC_pg) + ' pg/mL of stimulation')
     ax.set_ylim(0,120)
     ax.set_ylabel("Surface gamma chain (% x 100)")
     ax.set_xlabel("Time (min)")
     
-def calc_surf_gc(t):
+def calc_surf_gc(t, cytokC_pg):
     gc_species_IDX = getSurfaceGCSpecies()
     unkVec, scales = import_samples()
     
@@ -203,9 +202,9 @@ def calc_surf_gc(t):
     result = np.zeros((500,size*2))
     for ii in range(500):
         # calculate IL4 stimulation
-        a = singleCalc(unkVec[:, ii], 4, (100. / 14900.), t)
+        a = singleCalc(unkVec[:, ii], 4, (cytokC_pg / 14900.), t)
         # calculate IL7 stimulation
-        b = singleCalc(unkVec[:, ii], 2, (100. / 17400.), t)
+        b = singleCalc(unkVec[:, ii], 2, (cytokC_pg / 17400.), t)
         result[ii, :] = np.concatenate((a, b))
         
     return (result / np.max(result)) * 100.
