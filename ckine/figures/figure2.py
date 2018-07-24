@@ -27,7 +27,7 @@ def makeFigure():
     #violinPlots(ax[2:6])
     #surf_gc(ax[6], 100.)
     #surf_gc(ax[7], 1000.)
-    pretreat(ax[8])
+    plot_pretreat(ax[8])
     
     
 
@@ -163,53 +163,87 @@ def violinPlots(ax):
     sns.violinplot(data=scales, ax=ax[3])
     
 
-def pretreat(ax):
-    ''' This generates a plot that simulates pretreatment of IL4 or IL7 doses before being stimulated by a standard amount of the other cytokine. The y-axis represent % of inhibition. '''
+def pretreat_calc(unkVec):
+    ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
+    # import function returns from model.py
+    activity = getTotalActiveSpecies().astype(np.float64)
+    ts = np.array([10.]) # was 10. in literature
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation
     IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
-    unkVec, scales = import_samples()
-    activity = getTotalActiveSpecies().astype(np.float64)
-    ts = np.array([10.]) # assuming both pretreatment and stimulation were for 10 mins
     
-    IL4_act_7pre = np.zeros((5, 500))
-    IL7_act_4pre = IL4_act_7pre.copy()
-    for x in range(5):
+    def singleCalc_4stim(unkVec, cytokine, conc):
+        ''' This function generates the IL4 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. '''
         unkVec2 = unkVec.copy()
-        unkVec2[2, :] = IL7_pretreat_conc[x] # plug in IL7 pretreatment concentration
+        unkVec2[cytokine] = conc
+
+        y0, retVal = runCkineU(ts, unkVec)
+
+        assert retVal >= 0
+
         unkVec3 = unkVec.copy()
-        unkVec3[4, :] = IL4_stim_conc # plug in IL4 stimulation concentration
-        y0 = np.zeros((62, 500))
-        yOut = y0.copy()
-        for ii in range(500):
-            print('unkVec being passed into runCkineU: ' + str(unkVec2[:, ii]))
-            print('time: '+str(ts))
-            y0[:, ii], retVal = runCkineU(ts, unkVec2[:, ii])
-            assert(retVal >= 0)
-            yOut[:, ii], retVal = runCkineY0(y0[:, ii], ts, unkVec3[:, ii])
-            assert(retVal >= 0)
-            IL4_act_7pre[x, ii] = np.dot(yOut, activity)
-         
-        unkVec4 = unkVec.copy()
-        unkVec4[4, :] = IL4_pretreat_conc[x] # plug in IL7 pretreatment concentration
-        unkVec5 = unkVec.copy()
-        unkVec5[2, :] = IL7_stim_conc # plug in IL4 stimulation concentration
-        y0 = np.zeros((62, 500))
-        yOut = y0.copy()
-        for ii in range(500):
-            y0[:, ii], retVal = runCkineU(ts, unkVec4[:, ii])
-            assert(retVal >= 0)
-            yOut[:, ii], retVal = runCkineY0(y0[:, ii], ts, unkVec5[:, ii])
-            assert(retVal >= 0)
-            IL7_act_4pre[x, ii] = np.dot(yOut, activity)
+        unkVec3[4] = IL4_stim_conc
+        returnn, retVal = runCkineY0(y0, ts, unkVec3)
         
-    print('IL7_act_4pre: ' + str(IL7_act_4pre.shape))
-    print('IL4_act_7pre: ' + str(IL4_act_7pre.shape))
+        return np.dot(returnn, activity)
     
+    def singleCalc_7stim(unkVec, cytokine, conc):
+        unkVec2 = unkVec.copy()
+        unkVec2[cytokine] = conc
+
+        y0, retVal = runCkineU(ts, unkVec)
+
+        assert retVal >= 0
+
+        unkVec3 = unkVec.copy()
+        unkVec3[2] = IL7_stim_conc
+        returnn, retVal = runCkineY0(y0, ts, unkVec3)
+        
+        return np.dot(returnn, activity)
     
+    assert unkVec.size == nParams()
+    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in IL7_pretreat_conc), np.float64)
+    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in IL4_pretreat_conc), np.float64)
+    
+    actVec = np.concatenate((actVec_IL4stim, actVec_IL7stim))
+    
+    def singleCalc_no_pre(unkVec, cytokine, conc):
+        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+        unkVec = unkVec.copy()
+        unkVec[cytokine] = conc
+        returnn, retVal = runCkineU(ts, unkVec)
+        assert retVal >= 0
+        return np.dot(returnn, activity)
+    
+    IL4stim_no_pre = singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
+    IL7stim_no_pre = singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
+    
+    result = np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre))))
+    return result * 100.
+
+
+def plot_pretreat(ax):
+    unkVec, scales = import_samples()
+    path = os.path.dirname(os.path.abspath(__file__))
+    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
+    IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
+    IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation 
+    for ii in range(500):
+        output = pretreat_calc(unkVec[:, ii])
+        IL4_stim = output[0:5]
+        IL7_stim = output[5:10]
+        ax.scatter(IL7_pretreat_conc, IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
+        ax.scatter(IL4_pretreat_conc, IL7_stim, color='b', alpha=0.5, zorder=ii)
+    
+    ax.set_title('IL-4 and IL-7 crosstalk')
+    # ax.set_ylim(0,120)
+    ax.set_ylabel("Percent inhibition (% x 100)")
+    ax.set_xlabel("Pretreatment concentration (nM)")
+    
+
 def surf_gc(ax, cytokC_pg):
     size = 40
     ts = np.linspace(0., 100., num=size)

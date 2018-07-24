@@ -44,6 +44,7 @@ def nRxn():
 
 
 def runCkineU (tps, rxntfr, sensi=False):
+    rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
