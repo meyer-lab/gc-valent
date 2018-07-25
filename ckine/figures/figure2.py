@@ -223,22 +223,34 @@ def plot_pretreat(ax):
     unkVec, scales = import_samples()
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
-    IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
-    IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation 
+    IL7_pretreat_conc = data[:, 0] / 14900. # concentrations used for IL7 pretreatment followed by IL4 stimulation
+    IL4_pretreat_conc = data[:, 5] / 17400. # concentrations used for IL4 pretreatment followed by IL7 stimulation 
     num = 20
-    pre_IL4 = np.logspace(-3.8, 3, num=num)
-    pre_IL7 = np.logspace(-3.8, 3, num=num)
+    pre_IL4 = np.logspace(-3.8, 1.0, num=num)
+    pre_IL7 = np.logspace(-3.8, 1.0, num=num)
     for ii in range(25):
         output = pretreat_calc(unkVec[:, ii], pre_IL4, pre_IL7)
         IL4_stim = output[0:num]
         IL7_stim = output[num:(num*2)]
-        ax.plot(np.log10(pre_IL7), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
-        ax.plot(np.log10(pre_IL4), IL7_stim, color='b', alpha=0.5, zorder=ii)
+        ax.plot(np.log10(pre_IL7), IL4_stim, color='powderblue', zorder=ii)
+        ax.plot(np.log10(pre_IL4), IL7_stim, color='b', zorder=ii)
     
     ax.set_title('IL-4 and IL-7 crosstalk')
     ax.set_ylim(0,120)
     ax.set_ylabel("Percent inhibition (% x 100)")
     ax.set_xlabel("log10 of pretreatment concentration (nM)")
+    
+    # add experimental data to plots
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k', 
+              label='IL-4 stim. (IL-7 pre.)')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color='powderblue', zorder=101, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color='powderblue', zorder=102, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k', 
+              label='IL-7 stimulation (IL-4 pre.)')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
+
+
     
 
 def surf_gc(ax, cytokC_pg):
