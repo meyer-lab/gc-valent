@@ -223,8 +223,8 @@ def plot_pretreat(ax):
     unkVec, scales = import_samples()
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
-    IL7_pretreat_conc = data[:, 0] / 14900. # concentrations used for IL7 pretreatment followed by IL4 stimulation
-    IL4_pretreat_conc = data[:, 5] / 17400. # concentrations used for IL4 pretreatment followed by IL7 stimulation 
+    IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
+    IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation 
     num = 20
     pre_IL4 = np.logspace(-3.8, 1.0, num=num)
     pre_IL7 = np.logspace(-3.8, 1.0, num=num)
