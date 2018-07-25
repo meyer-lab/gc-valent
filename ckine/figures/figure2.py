@@ -228,12 +228,12 @@ def plot_pretreat(ax):
     num = 20
     pre_IL4 = np.logspace(-3.8, 3, num=num)
     pre_IL7 = np.logspace(-3.8, 3, num=num)
-    for ii in range(500):
+    for ii in range(25):
         output = pretreat_calc(unkVec[:, ii], pre_IL4, pre_IL7)
         IL4_stim = output[0:num]
         IL7_stim = output[num:(num*2)]
-        ax.scatter(np.log10(pre_IL7), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
-        ax.scatter(np.log10(pre_IL4), IL7_stim, color='b', alpha=0.5, zorder=ii)
+        ax.plot(np.log10(pre_IL7), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
+        ax.plot(np.log10(pre_IL4), IL7_stim, color='b', alpha=0.5, zorder=ii)
     
     ax.set_title('IL-4 and IL-7 crosstalk')
     ax.set_ylim(0,120)
