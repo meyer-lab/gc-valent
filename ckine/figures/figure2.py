@@ -225,12 +225,15 @@ def plot_pretreat(ax):
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     IL7_pretreat_conc = data[:, 0] # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] # concentrations used for IL4 pretreatment followed by IL7 stimulation 
+    num = 20
+    pre_IL4 = np.logspace(-3.8, 3, num=num)
+    pre_IL7 = np.logspace(-3.8, 3, num=num)
     for ii in range(500):
-        output = pretreat_calc(unkVec[:, ii], IL4_pretreat_conc, IL7_pretreat_conc)
-        IL4_stim = output[0:5]
-        IL7_stim = output[5:10]
-        ax.scatter(np.log10(IL7_pretreat_conc), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
-        ax.scatter(np.log10(IL4_pretreat_conc), IL7_stim, color='b', alpha=0.5, zorder=ii)
+        output = pretreat_calc(unkVec[:, ii], pre_IL4, pre_IL7)
+        IL4_stim = output[0:num]
+        IL7_stim = output[num:(num*2)]
+        ax.scatter(np.log10(pre_IL7), IL4_stim, color='powderblue', alpha=0.5, zorder=ii)
+        ax.scatter(np.log10(pre_IL4), IL7_stim, color='b', alpha=0.5, zorder=ii)
     
     ax.set_title('IL-4 and IL-7 crosstalk')
     ax.set_ylim(0,120)
