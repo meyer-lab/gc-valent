@@ -13,7 +13,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 10, 4
-    ssize = 3
+    ssize = 2
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
