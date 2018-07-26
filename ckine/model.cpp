@@ -23,6 +23,7 @@ using std::fill;
 using std::string;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
+typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::DontAlign> JacMatNA;
 typedef Eigen::Matrix<double, Nspecies, Nspecies> JacMatC;
 typedef Eigen::Matrix<double, Nspecies, 1> JacVec;
 
@@ -44,7 +45,7 @@ int SUNLinSolInitialize_Dense(SUNLinearSolver) { // Don't need this.
 }
 
 int SUNLinSolSetup_Dense(SUNLinearSolver S, SUNMatrix A) {
-	Eigen::PartialPivLU<JacMat> *solver = (Eigen::PartialPivLU<JacMat> *) S->content;
+	Eigen::PartialPivLU<JacMatNA> *solver = (Eigen::PartialPivLU<JacMatNA> *) S->content;
 
 	Eigen::Map<JacMatC> C(SM_DATA_D(A));
 
@@ -54,7 +55,7 @@ int SUNLinSolSetup_Dense(SUNLinearSolver S, SUNMatrix A) {
 }
 
 int SUNLinSolSolve_Dense(SUNLinearSolver S, SUNMatrix, N_Vector x, N_Vector b, realtype) {
-	Eigen::PartialPivLU<JacMat> *solver = (Eigen::PartialPivLU<JacMat> *) S->content;
+	Eigen::PartialPivLU<JacMatNA> *solver = (Eigen::PartialPivLU<JacMatNA> *) S->content;
 	Eigen::Map<JacVec> xVec(NV_DATA_S(x));
 	Eigen::Map<JacVec> bVec(NV_DATA_S(b));
 
@@ -80,7 +81,7 @@ int SUNLinSolFree_Dense(SUNLinearSolver S) {
 
 	// delete items from contents, then delete generic structure */
 	if (S->content) {
-		Eigen::PartialPivLU<JacMat> *solver = (Eigen::PartialPivLU<JacMat> *) S->content;
+		Eigen::PartialPivLU<JacMatNA> *solver = (Eigen::PartialPivLU<JacMatNA> *) S->content;
 		delete solver;
 		S->content = NULL;
 	}
@@ -126,7 +127,7 @@ SUNLinearSolver SUNDenseLinearSolver() {
 	ops->resid             = NULL;
 
 	// Attach content and ops
-	S->content = (void *) new Eigen::PartialPivLU<JacMat>(Nspecies);
+	S->content = (void *) new Eigen::PartialPivLU<JacMatNA>(Nspecies);
 	S->ops     = ops;
 
 	return(S);
