@@ -22,11 +22,11 @@ def makeFigure():
     # Blank out for the cartoon
     ax[0].axis('off')
 
-    #subplotLabel(ax[0], 'A')
-    #pstat_plot(ax[1])
-    #violinPlots(ax[2:6])
-    #surf_gc(ax[6], 100.)
-    #surf_gc(ax[7], 1000.)
+    subplotLabel(ax[0], 'A')
+    pstat_plot(ax[1])
+    violinPlots(ax[2:6])
+    surf_gc(ax[6], 100.)
+    surf_gc(ax[7], 1000.)
     plot_pretreat(ax[8])
     
     
