@@ -23,6 +23,9 @@ using std::fill;
 using std::string;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
+typedef Eigen::Matrix<double, Nspecies, Nspecies> JacMatC;
+typedef Eigen::Matrix<double, Nspecies, 1> JacVec;
+
 
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
 
@@ -32,125 +35,53 @@ const array<size_t, 8> recIDX = {{0, 1, 2, 9, 16, 19, 22, 25}};
 
 
 
-
-
-
-
-struct _SUNLinearSolverContent_Dense {
-	sunindextype N;
-	sunindextype *pivots;
-	long int last_flag;
-};
-
-typedef struct _SUNLinearSolverContent_Dense *SUNLinearSolverContent_Dense;
-
-#include <sundials/sundials_math.h>
-
-/* Private function prototypes */
-sunindextype GlobalVectorLength_DenseLS(N_Vector y);
-
-/*
- * -----------------------------------------------------------------
- * Dense solver structure accessibility macros: 
- * -----------------------------------------------------------------
- */
-
-#define DENSE_CONTENT(S)  ( (SUNLinearSolverContent_Dense)(S->content) )
-#define PIVOTS(S)         ( DENSE_CONTENT(S)->pivots )
-#define LASTFLAG(S)       ( DENSE_CONTENT(S)->last_flag )
-
-
-/*
- * -----------------------------------------------------------------
- * exported functions
- * -----------------------------------------------------------------
- */
-
 SUNLinearSolver_Type SUNLinSolGetType_Dense(SUNLinearSolver) {
 	return(SUNLINEARSOLVER_DIRECT);
 }
 
-int SUNLinSolInitialize_Dense(SUNLinearSolver S) {
-  /* all solver-specific memory has already been allocated */
-	LASTFLAG(S) = SUNLS_SUCCESS;
-	return(LASTFLAG(S));
+int SUNLinSolInitialize_Dense(SUNLinearSolver) { // Don't need this.
+	return(SUNLS_SUCCESS);
 }
 
-int SUNLinSolSetup_Dense(SUNLinearSolver S, SUNMatrix A)
-{
-	realtype **A_cols;
-	sunindextype *pivots;
+int SUNLinSolSetup_Dense(SUNLinearSolver S, SUNMatrix A) {
+	Eigen::PartialPivLU<JacMat> *solver = (Eigen::PartialPivLU<JacMat> *) S->content;
 
-  /* access data pointers (return with failure on NULL) */
-	A_cols = NULL;
-	pivots = NULL;
-	A_cols = SUNDenseMatrix_Cols(A);
-	pivots = PIVOTS(S);
-	if ( (A_cols == NULL) || (pivots == NULL) ) {
-		LASTFLAG(S) = SUNLS_MEM_FAIL;
-		return(LASTFLAG(S));
-	}
+	Eigen::Map<JacMatC> C(SM_DATA_D(A));
 
-  /* perform LU factorization of input matrix */
-	LASTFLAG(S) = denseGETRF(A_cols, SUNDenseMatrix_Rows(A), SUNDenseMatrix_Columns(A), pivots);
-
-  /* store error flag (if nonzero, this row encountered zero-valued pivod) */
-	if (LASTFLAG(S) > 0) return(SUNLS_LUFACT_FAIL);
+	solver->compute(C);
 
 	return(SUNLS_SUCCESS);
 }
 
-int SUNLinSolSolve_Dense(SUNLinearSolver S, SUNMatrix A, N_Vector x, N_Vector b, realtype) {
-	realtype **A_cols, *xdata;
-	sunindextype *pivots;
+int SUNLinSolSolve_Dense(SUNLinearSolver S, SUNMatrix, N_Vector x, N_Vector b, realtype) {
+	Eigen::PartialPivLU<JacMat> *solver = (Eigen::PartialPivLU<JacMat> *) S->content;
+	Eigen::Map<JacVec> xVec(NV_DATA_S(x));
+	Eigen::Map<JacVec> bVec(NV_DATA_S(b));
 
-	if ( (A == NULL) || (S == NULL) || (x == NULL) || (b == NULL) ) 
-		return(SUNLS_MEM_NULL);
+	xVec = solver->solve(bVec); // Solve using LU
 
-  /* copy b into x */
-	N_VScale(1.0, b, x);
-
-  /* access data pointers (return with failure on NULL) */
-	A_cols = NULL;
-	xdata = NULL;
-	pivots = NULL;
-	A_cols = SUNDenseMatrix_Cols(A);
-	xdata = N_VGetArrayPointer(x);
-	pivots = PIVOTS(S);
-	if ( (A_cols == NULL) || (xdata == NULL)  || (pivots == NULL) ) {
-		LASTFLAG(S) = SUNLS_MEM_FAIL;
-		return(LASTFLAG(S));
-	}
-
-  /* solve using LU factors */
-	denseGETRS(A_cols, SUNDenseMatrix_Rows(A), pivots, xdata);
-	LASTFLAG(S) = SUNLS_SUCCESS;
-	return(LASTFLAG(S));
+	return(SUNLS_SUCCESS);
 }
 
-long int SUNLinSolLastFlag_Dense(SUNLinearSolver S) {
-	return(LASTFLAG(S));
+long int SUNLinSolLastFlag_Dense(SUNLinearSolver) {
+	return(SUNLS_SUCCESS);
 }
 
-int SUNLinSolSpace_Dense(SUNLinearSolver S, long int *lenrwLS, long int *leniwLS) {
-	*leniwLS = 2 + DENSE_CONTENT(S)->N;
+int SUNLinSolSpace_Dense(SUNLinearSolver, long int *lenrwLS, long int *leniwLS) {
+	*leniwLS = 2 + Nspecies;
 	*lenrwLS = 0;
 	return(SUNLS_SUCCESS);
 }
 
-int SUNLinSolFree_Dense(SUNLinearSolver S)
-{
-  /* return if S is already free */
+int SUNLinSolFree_Dense(SUNLinearSolver S) {
+	// return if S is already free
 	if (S == NULL)
 		return(SUNLS_SUCCESS);
 
-  /* delete items from contents, then delete generic structure */
+	// delete items from contents, then delete generic structure */
 	if (S->content) {
-		if (PIVOTS(S)) {
-			free(PIVOTS(S));
-			PIVOTS(S) = NULL;
-		}
-		free(S->content);  
+		Eigen::PartialPivLU<JacMat> *solver = (Eigen::PartialPivLU<JacMat> *) S->content;
+		delete solver;
 		S->content = NULL;
 	}
 	if (S->ops) {
@@ -165,13 +96,9 @@ int SUNLinSolFree_Dense(SUNLinearSolver S)
  * Function to create a new dense linear solver
  */
 
-SUNLinearSolver SUNDenseLinearSolver(SUNMatrix A) {
+SUNLinearSolver SUNDenseLinearSolver() {
 	SUNLinearSolver S;
 	SUNLinearSolver_Ops ops;
-	SUNLinearSolverContent_Dense content;
-	sunindextype MatrixRows;
-
-	MatrixRows = SUNDenseMatrix_Rows(A);
 
 	/* Create linear solver */
 	S = NULL;
@@ -198,22 +125,8 @@ SUNLinearSolver SUNDenseLinearSolver(SUNMatrix A) {
 	ops->resnorm           = NULL;
 	ops->resid             = NULL;
 
-  /* Create content */
-	content = NULL;
-	content = (SUNLinearSolverContent_Dense) malloc(sizeof(struct _SUNLinearSolverContent_Dense));
-	if (content == NULL) { free(ops); free(S); return(NULL); }
-
-  /* Fill content */
-	content->N = MatrixRows;
-	content->last_flag = 0;
-	content->pivots = NULL;
-	content->pivots = (sunindextype *) malloc(MatrixRows * sizeof(sunindextype));
-	if (content->pivots == NULL) {
-		free(content); free(ops); free(S); return(NULL);
-	}
-
-  /* Attach content and ops */
-	S->content = content;
+	// Attach content and ops
+	S->content = (void *) new Eigen::PartialPivLU<JacMat>(Nspecies);
 	S->ops     = ops;
 
 	return(S);
@@ -477,7 +390,6 @@ void solverFree(solver *sMem) {
 
 int ewt(N_Vector y, N_Vector w, void *) {
 	for (size_t i = 0; i < Nspecies; i++) {
-		if (NV_Ith_S(y, i) < 0.0) return -1;
 		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
 	}
 
@@ -515,7 +427,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 
 	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
-	sMem->LS = SUNDenseLinearSolver(sMem->A);
+	sMem->LS = SUNDenseLinearSolver();
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {

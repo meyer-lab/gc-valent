@@ -75,7 +75,7 @@ protected:
 
 			CPPUNIT_ASSERT(retVal >= 0);
 			CPPUNIT_ASSERT(retVal2 >= 0);
-			CPPUNIT_ASSERT(sumDiff < std::numeric_limits<double>::epsilon());
+			CPPUNIT_ASSERT(sumDiff < 1.0E-6);
 		}
 	}
 };
