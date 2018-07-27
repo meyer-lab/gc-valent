@@ -34,13 +34,13 @@ def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'
     ax.set_title(title)
     ax.set_ylim(0,120)
     if (data_type=='surf'):
-        ax.plot(x_axis, IL2vec, color='darkorchid', label='IL2', alpha=0.7)
-        ax.plot(x_axis, IL15vec, color='goldenrod', label='IL15', alpha=0.7)
+        ax.plot(x_axis, IL2vec, color='darkorchid', alpha=0.7)
+        ax.plot(x_axis, IL15vec, color='goldenrod', alpha=0.7)
         ax.set_ylabel("Surface " + str(species) + " (% x 100)")
         ax.set_xlabel("Time (min)")
     elif (data_type=='act'):
-        ax.plot(np.log10(x_axis), IL2vec, color='darkorchid', alpha=0.5, label="IL2")
-        ax.plot(np.log10(x_axis), IL15vec, color='goldenrod', alpha=0.5, label='IL15')
+        ax.plot(np.log10(x_axis), IL2vec, color='darkorchid', alpha=0.5)
+        ax.plot(np.log10(x_axis), IL15vec, color='goldenrod', alpha=0.5)
         ax.set_ylabel('Maximal p-STAT5 (% x 100)')
         ax.set_xlabel('log10 of cytokine concentration (nM)')
     else:
@@ -96,10 +96,12 @@ def pstat_act(ax, unkVec):
     
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
-    ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra-
-    ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra-
-    ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra+
-    ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra+
+    ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # IL2 in 2Ra-
+    ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # IL15 in 2Ra-
+    ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # IL2 in 2Ra+
+    ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # IL15 in 2Ra+
+    #ax[0].legend()
+    #ax[1].legend()
 
     
 def import_samples():
