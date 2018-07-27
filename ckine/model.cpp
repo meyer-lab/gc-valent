@@ -308,7 +308,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 
 	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
-	sMem->LS = SUNDenseLinearSolver();
+	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
