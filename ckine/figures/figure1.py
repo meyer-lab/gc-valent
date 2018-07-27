@@ -1,7 +1,7 @@
 """
 This creates Figure 1.
 """
-from .figureCommon import subplotLabel, getSetup, rev_rxn_names, traf_names, Rexpr_names
+from .figureCommon import subplotLabel, getSetup, traf_names
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..model import nParams
 import numpy as np
@@ -21,9 +21,9 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    surf_perc(ax[0:4], 'IL2Rb', unkVec)
-    pstat_act(ax[4:6], unkVec)
-    surf_perc(ax[8:12], 'gc', unkVec)
+    #surf_perc(ax[0:4], 'IL2Rb', unkVec)
+    #pstat_act(ax[4:6], unkVec)
+    #surf_perc(ax[8:12], 'gc', unkVec)
     violinPlots(ax[12:15], unkVec)
 
     f.tight_layout()
@@ -117,16 +117,16 @@ def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
     
-    rev_rxn = pd.DataFrame(unkVec[:, 7:17])
+    rev_rxn = pd.DataFrame(unkVec[:, 7:13])
     traf = pd.DataFrame(unkVec[:, 17:22])
-    Rexpr = pd.DataFrame(unkVec[:, 22:])
+    Rexpr = pd.DataFrame(unkVec[:, 22:26])
     
-    rev_rxn.columns = rev_rxn_names()
+    rev_rxn.columns = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev']
     sns.violinplot(data=rev_rxn, ax=ax[0])  # creates names based on dataframe columns
     
     traf.columns = traf_names()
     sns.violinplot(data=traf, ax=ax[1])
     
-    Rexpr.columns = Rexpr_names()
+    Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
     sns.violinplot(data=Rexpr, ax=ax[2])
 
