@@ -32,10 +32,10 @@ class TestOp(unittest.TestCase):
         utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV])
 
     def test_runCkineOp(self):
-        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV])
+        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV], rtol=0.01, atol=0.01)
 
     def test_runCkineKineticOp(self):
-        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])
+        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], rtol=0.01, atol=0.01)
 
     def test_runCkineDoseOp(self):
         """ Verify the derivative passed back by runCkineDoseOp. """
