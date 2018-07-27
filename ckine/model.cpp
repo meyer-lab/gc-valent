@@ -346,7 +346,17 @@ static int PSolve(double, N_Vector, N_Vector, N_Vector r, N_Vector z, double, do
 	return(0);
 }
 
-
+/**
+ * @brief      The Jacobian times vector function
+ *
+ * @param[in]  v          The vector to be multiplied by the Jacobian.
+ * @param[in]  Jv         The output of J*v.
+ * @param[in]  <unnamed>  { parameter_description }
+ * @param[in]  <unnamed>  { parameter_description }
+ * @param      <unnamed>  { parameter_description }
+ *
+ * @return     Success always.
+ */
 int jtimes(N_Vector v, N_Vector Jv, double, N_Vector, N_Vector, void *, N_Vector) {
 	Eigen::Map<EigV> vVec(NV_DATA_S(v));
 	Eigen::Map<EigV> JvVec(NV_DATA_S(Jv));
@@ -355,8 +365,6 @@ int jtimes(N_Vector v, N_Vector Jv, double, N_Vector, N_Vector, void *, N_Vector
 
 	return 0;
 }
-
-
 
 
 void solver_setup(solver *sMem, double *params) {
@@ -394,7 +402,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeWFtolerances in solver_setup."));
 	}
 
-	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 1);
+	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 0);
 	
 	// Call CVSpilsSetLinearSolver to specify the SUNSPGMR linear solver
 	if (CVSpilsSetLinearSolver(sMem->cvode_mem, sMem->LS) < 0) {
