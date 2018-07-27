@@ -21,8 +21,8 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    #surf_perc(ax[0:4], 'IL2Rb', unkVec)
-    pstat_act(ax[4:6], unkVec)
+    surf_perc(ax[0:4], 'IL2Rb', unkVec)
+    #pstat_act(ax[4:6], unkVec)
     #surf_perc(ax[8:12], 'gc', unkVec)
     #violinPlots(ax[12:15], unkVec)
 
@@ -75,6 +75,23 @@ def surf_perc(ax, species, unkVec):
         plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1], ts, 'surf', species)
         plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2], ts, 'surf', species)
         plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3], ts, 'surf', species)
+        
+    if (species == 'IL2Rb'):
+        path = os.path.dirname(os.path.abspath(__file__))
+        data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
+        data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values # imports file into pandas array
+        ax[0].scatter(data_minus[:,0], data_minus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # 1nM of IL2 in 2Ra-
+        ax[0].scatter(data_minus[:,0], data_minus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # 1nM of IL15 in 2Ra-
+        ax[1].scatter(data_minus[:,0], data_minus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # 500nM of IL2 in 2Ra-
+        ax[1].scatter(data_minus[:,0], data_minus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # 500nM of IL15 in 2Ra-
+        ax[2].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # 1nM of IL2 in 2Ra+
+        ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # 1nM of IL15 in 2Ra+
+        ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # 500nM of IL2 in 2Ra+
+        ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # 500nM of IL15 in 2Ra+
+        ax[0].legend()
+        ax[1].legend()
+        ax[2].legend()
+        ax[3].legend()
 
     
 def pstat_act(ax, unkVec):
