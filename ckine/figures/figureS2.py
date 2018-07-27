@@ -72,27 +72,12 @@ def plot_values(ax, factors, component_x, component_y):
 
     # Put a legend to the right of the current axis
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
-
-    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
-    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
-
-    ax.set_xlim(-x_max, x_max)
-    ax.set_ylim(-y_max, y_max)
 
 
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
     ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
-
-    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
-    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
-
-    ax.set_xlim(-x_max, x_max)
-    ax.set_ylim(-y_max, y_max)
 
 def plot_cells(ax, factors, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
@@ -103,16 +88,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     # Put a legend to the right of the current axis
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-
-    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
-    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
-
-    ax.set_xlim(-x_max, x_max)
-    ax.set_ylim(-y_max, y_max)
 
 def plot_ligands(ax, factors, mat, lig, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
@@ -125,12 +102,6 @@ def plot_ligands(ax, factors, mat, lig, component_x, component_y):
     
     for jj in range(lig):
         ax.scatter(factors[IL15_low_high[jj],component_x - 1], factors[IL15_low_high[jj],component_y - 1], marker = IL15_markers[jj], c = [0,1,2,3,4], cmap = cm, label = labels[jj])
-
-    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
-    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
-
-    ax.set_xlim(-x_max, x_max)
-    ax.set_ylim(-y_max, y_max)
         
         
     leg = ax.legend()
