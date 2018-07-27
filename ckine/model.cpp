@@ -320,7 +320,6 @@ int Precond(double, N_Vector y, N_Vector, int jok, int *jcurPtr, double gamma, v
 
 	jacSparseI = jacSparseI - gamma*jacSparse;
 
-	iLUT.setFillfactor(8);
 	iLUT.compute(jacSparseI); // LU factorize
 
 	*jcurPtr = true;
@@ -399,7 +398,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeWFtolerances in solver_setup."));
 	}
 
-	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 0);
+	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 1);
 	
 	// Call CVSpilsSetLinearSolver to specify the SUNSPGMR linear solver
 	if (CVSpilsSetLinearSolver(sMem->cvode_mem, sMem->LS) < 0) {
