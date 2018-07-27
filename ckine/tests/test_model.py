@@ -158,9 +158,9 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
-        # test that all of the solutions returned are identical
+        # test that all of the solutions returned are almost identical
         for ii in range(rxntfr.shape[0]):
-            self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
+            self.assertTrue(np.sum(np.square(outt[0, :] - outt[ii, :])) < 1.0E-6)
 
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
