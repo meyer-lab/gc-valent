@@ -29,19 +29,19 @@ class TestOp(unittest.TestCase):
         self.ts = np.linspace(0., 1000.)
 
     def test_runCkineOp_T0(self):
-        utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV])
+        utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV], rel_tol=0.1, abs_tol=0.1)
 
     def test_runCkineOp(self):
-        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV], rel_tol=0.01, abs_tol=0.01)
+        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV], rel_tol=0.1, abs_tol=0.1)
 
     def test_runCkineKineticOp(self):
-        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], rel_tol=0.01, abs_tol=0.01)
+        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], rel_tol=0.1, abs_tol=0.1)
 
     def test_runCkineDoseOp(self):
         """ Verify the derivative passed back by runCkineDoseOp. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
         
-        utt.verify_grad(Op, [self.doseUnkV])
+        utt.verify_grad(Op, [self.doseUnkV], rel_tol=0.1, abs_tol=0.1)
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """

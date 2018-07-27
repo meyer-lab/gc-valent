@@ -131,7 +131,7 @@ public:
 };
 
 
-constexpr double tolIn = 1.5E-6;
+constexpr double tolIn = 1.0E-3;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
