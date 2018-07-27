@@ -20,11 +20,11 @@ def makeFigure():
     ax, f = getSetup((7, 6), (4, 4))
 
     subplotLabel(ax[0], 'A')
-    
-    surf_perc(ax[0:4], 'IL2Rb')
-    pstat_act(ax[4:6])
-    surf_perc(ax[8:12], 'gc')
-    violinPlots(ax[12:15])
+    unkVec = import_samples()
+    surf_perc(ax[0:4], 'IL2Rb', unkVec)
+    pstat_act(ax[4:6], unkVec)
+    surf_perc(ax[8:12], 'gc', unkVec)
+    violinPlots(ax[12:15], unkVec)
 
     f.tight_layout()
 
@@ -47,7 +47,7 @@ def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'
         print('invalid data_type')   
     # ax.legend()
 
-def surf_perc(ax, species):
+def surf_perc(ax, species, unkVec):
     if (species == 'IL2Rb'):
         surf = surf_IL2Rb()
     elif (species == 'gc'):
@@ -59,7 +59,6 @@ def surf_perc(ax, species):
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
     size = len(ts)
-    unkVec = import_samples()
 
     for ii in range(0,500):
         output = surf.calc(unkVec[:, ii], ts) * y_max
@@ -78,12 +77,11 @@ def surf_perc(ax, species):
         plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3], ts, 'surf', species)
 
     
-def pstat_act(ax):
+def pstat_act(ax, unkVec):
     pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-    unkVec = import_samples()
 
     for ii in range(0,500):
         output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
@@ -115,9 +113,8 @@ def import_samples():
     
     return unkVec
 
-def violinPlots(ax):
+def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
-    unkVec = import_samples()
     unkVec = unkVec.transpose()
     
     rev_rxn = pd.DataFrame(unkVec[:, 7:17])
