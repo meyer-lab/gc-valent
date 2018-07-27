@@ -122,11 +122,29 @@ def violinPlots(ax, unkVec):
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
     
     rev_rxn.columns = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev']
-    sns.violinplot(data=rev_rxn, ax=ax[0])  # creates names based on dataframe columns
+    a = sns.violinplot(data=np.log10(rev_rxn), ax=ax[0])  # creates names based on dataframe columns
+    a.set_xticklabels(a.get_xticklabels(),
+                       rotation=40,
+                       rotation_mode="anchor",
+                       ha="right",
+                       fontsize=8,
+                       position=(0, 0.075))
     
     traf.columns = traf_names()
-    sns.violinplot(data=traf, ax=ax[1])
+    b = sns.violinplot(data=np.log10(traf), ax=ax[1])
+    b.set_xticklabels(b.get_xticklabels(),
+                       rotation=40,
+                       rotation_mode="anchor",
+                       ha="right",
+                       fontsize=8,
+                       position=(0, 0.075))
     
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
-    sns.violinplot(data=Rexpr, ax=ax[2])
+    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[2])
+    c.set_xticklabels(c.get_xticklabels(),
+                       rotation=40,
+                       rotation_mode="anchor",
+                       ha="right",
+                       fontsize=8,
+                       position=(0, 0.075))
 
