@@ -24,7 +24,6 @@ using std::string;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 
-
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
 
 const array<size_t, 8> recIDX = {{0, 1, 2, 9, 16, 19, 22, 25}};
