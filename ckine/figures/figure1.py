@@ -22,9 +22,9 @@ def makeFigure():
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
     #surf_perc(ax[0:4], 'IL2Rb', unkVec)
-    #pstat_act(ax[4:6], unkVec)
+    pstat_act(ax[4:6], unkVec)
     #surf_perc(ax[8:12], 'gc', unkVec)
-    violinPlots(ax[12:15], unkVec)
+    #violinPlots(ax[12:15], unkVec)
 
     f.tight_layout()
 
@@ -92,6 +92,14 @@ def pstat_act(ax, unkVec):
 
         plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0], cytokC, 'act')
         plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1], cytokC, 'act')
+       
+    
+    path = os.path.dirname(os.path.abspath(__file__))
+    data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
+    ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra-
+    ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra-
+    ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra+
+    ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra+
 
     
 def import_samples():
@@ -148,3 +156,7 @@ def violinPlots(ax, unkVec):
                        fontsize=8,
                        position=(0, 0.075))
 
+
+#def rateComp(ax, unkVec):
+#    """ This function compares the analogous reverse rxn distributions from IL2 and IL15. """
+    
