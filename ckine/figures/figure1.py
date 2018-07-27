@@ -21,10 +21,10 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     
-    #surf_perc(ax[0:4], 'IL2Rb')
-    #pstat_act(ax[4:6])
-    #surf_perc(ax[8:12], 'gc')
-    #violinPlots(ax[12:15])
+    surf_perc(ax[0:4], 'IL2Rb')
+    pstat_act(ax[4:6])
+    surf_perc(ax[8:12], 'gc')
+    violinPlots(ax[12:15])
 
     f.tight_layout()
 
@@ -111,7 +111,7 @@ def import_samples():
     
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], rxn[ii, 6], rxn[ii, 7], rxn[ii, 8], rxn[ii, 9], endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
     
     return unkVec
 
