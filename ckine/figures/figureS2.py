@@ -23,12 +23,9 @@ def makeFigure():
     factors = perform_decomposition(values, 9)
 
     for row in range(4):
-        #subplotLabel(ax[row*y], string.ascii_uppercase[row]) # Add subplot labels
-
         compNum = 2*row + 1
         plot_timepoint(ax[row*y], factors[0], compNum, compNum+1)
         plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names)
-        #ax[row*y + 1].axis('off')
         plot_ligands(ax[row*y + 2], factors[2], mat, lig, compNum, compNum+1)
         plot_values(ax[row*y + 3], factors[3], compNum, compNum+1)
 
@@ -96,7 +93,6 @@ def plot_ligands(ax, factors, mat, lig, component_x, component_y):
     IL2_low_high, IL15_low_high = combo_low_high(mat,lig)
     cm = plt.cm.get_cmap('YlOrRd')
 
-    #colors = cm.rainbow(np.linspace(0, 1, lig))
     IL15_markers = ['*', 'D', 's', 'X' ,'o']
     labels = ['0.001 nm IL15', '0.018 nm IL15', '0.32 nm IL15', '5.6 nm IL15', '100 nm IL15']
     
