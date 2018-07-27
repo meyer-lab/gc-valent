@@ -18,7 +18,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/IterativeLinearSolvers>
-#include<Eigen/SparseLU>
 #include "model.hpp"
 
 using std::array;
@@ -28,6 +27,7 @@ using std::fill;
 using std::string;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
+typedef Eigen::Matrix<double, Nspecies, 1> EigV;
 
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
 
@@ -283,11 +283,9 @@ int ewt(N_Vector y, N_Vector w, void *) {
 }
 
 
-
-
-JacMat jac;
-Eigen::SparseMatrix<double> jacSparse;
-Eigen::IncompleteLUT<double> iLUT;
+thread_local JacMat jac;
+thread_local Eigen::SparseMatrix<double> jacSparse;
+thread_local Eigen::IncompleteLUT<double> iLUT;
 
 /*
  This routine generates the block-diagonal part of the Jacobian
@@ -325,8 +323,6 @@ int Precond(double, N_Vector y, N_Vector, int jok, int *jcurPtr, double gamma, v
 	*jcurPtr = true;
 	return 0;
 }
-
-typedef Eigen::Matrix<double, Nspecies, 1> EigV;
 
 /*
   This routine applies two inverse preconditioner matrices
