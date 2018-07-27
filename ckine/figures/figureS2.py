@@ -70,8 +70,6 @@ def plot_values(ax, factors, component_x, component_y):
     for q,p in zip(factors[6::, component_x - 1], factors[6::, component_y - 1]):
         ax.plot(q, p, linestyle = '', c = 'k', marker = next(markersReceptors), label = next(total_amount))
 
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     # Put a legend to the right of the current axis
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     
@@ -89,8 +87,6 @@ def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
     ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
 
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
@@ -111,10 +107,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     # Put a legend to the right of the current axis
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    matplotlib.rcParams.update({'font.size': 300})
-
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
 
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
@@ -133,9 +125,6 @@ def plot_ligands(ax, factors, mat, lig, component_x, component_y):
     
     for jj in range(lig):
         ax.scatter(factors[IL15_low_high[jj],component_x - 1], factors[IL15_low_high[jj],component_y - 1], marker = IL15_markers[jj], c = [0,1,2,3,4], cmap = cm, label = labels[jj])
-
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
 
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
