@@ -50,7 +50,7 @@ def findy(lig, n_timepoints):
     ILs = np.logspace(-3, 2, num=lig) # Cytokine stimulation concentrations
     # Goal is to make one cell expression levels by len(mat) for every cell
     # Make mesh grid of all combinations of ligand
-    mat = np.array(np.meshgrid(ILs, ILs, ILs, ILs,ILs,ILs)).T.reshape(-1, 6)
+    mat = np.array(np.meshgrid(ILs, ILs, 1e-15, 1e-15, 1e-15, 1e-15)).T.reshape(-1, 6)
 
     mats = np.tile(mat, (len(cell_names), 1)) # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (34)
     receptor_repeats = np.repeat(data_numbers.T,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
@@ -84,8 +84,11 @@ def reduce_values(y_of_combos):
 def prepare_tensor(lig, n_timepoints = 1000):
     """Function to generate the 4D values tensor."""
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints) #mat here is basically the 2^lig cytokine stimulation; mats
-    values = reduce_values(y_of_combos)
-    tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
-    for ii in range(tensor4D.shape[0]):
-        tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
+    values1 = reduce_values(y_of_combos) # 'IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
+
+    tensor4D1 = np.zeros((values1.shape[1],len(cell_names),len(mat),values1.shape[2]))
+    for ii in range(tensor4D1.shape[0]):
+        tensor4D1[ii] = values1[:,ii,:].reshape(tensor4D1.shape[1:4])
+
+    tensor4D = tensor4D1[:,:,:, [0,1,6,7,8,9,14,15,16,17]]
     return tensor4D, new_mat, mat, mats, cell_names

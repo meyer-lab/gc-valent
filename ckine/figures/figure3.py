@@ -18,7 +18,7 @@ def makeFigure():
     ax[0].axis('off')
 
     values, _, _, _, cell_names = prepare_tensor(2,50)
-    n_comps = 17
+    n_comps = 9
 
     plot_R2X(ax[3], values, n_comps)
     
