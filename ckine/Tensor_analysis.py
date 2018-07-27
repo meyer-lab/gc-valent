@@ -14,9 +14,6 @@ def z_score_values(A):
         slice_face = A[:,:,:,i]
         mu = np.mean(slice_face)
         sigma = np.std(slice_face)
-        #if mu == 0 and sigma == 0:
-           # B[:,:,:,i] = A[:,:,:,i]
-        #else:
         z_scored_slice = (slice_face - mu) / sigma
         B[:,:,:,i] = z_scored_slice
     return B
