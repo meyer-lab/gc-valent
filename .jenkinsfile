@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
     stage('Test')  { steps { sh 'make testcover' } }
-    stage('Build') { steps { sh 'make -j 16' } }
+    stage('Build') { steps { sh 'make' } }
     stage('Lint')  { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
     stage('Report') {
       steps {
