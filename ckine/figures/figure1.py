@@ -176,6 +176,37 @@ def violinPlots(ax, unkVec):
                        position=(0, 0.075))
 
 
-#def rateComp(ax, unkVec):
-#    """ This function compares the analogous reverse rxn distributions from IL2 and IL15. """
+def rateComp(ax, unkVec):
+    """ This function compares the analogous reverse rxn distributions from IL2 and IL15. """
     
+    # plug in values from unkVec and measured constants
+    k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[:, 7], unkVec[:, 8], unkVec[:, 9], unkVec[:, 10], unkVec[:, 11], unkVec[:, 12]
+    kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
+    k1rev = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
+    k2rev = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
+    k13rev = kfbnd * 0.065 # based on the multiple papers suggesting 30-100 pM
+    k14rev = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
+    
+    # detailed balance
+    k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    k11rev = 63.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    k12rev = k1rev * k11rev / k2rev # loop for IL2_IL2Ra_IL2Rb
+    k9rev = k10rev * k11rev / k4rev
+    k8rev = k10rev * k12rev / k5rev
+    k24rev = k13rev * k23rev / k14rev
+    k21rev = k22rev * k23rev / k16rev
+    k20rev = k22rev * k24rev / k17rev
+
+    # k1 vs k13
+    # k2 vs k14
+    # k4 vs k16
+    # k5 vs k17
+    # k8 vs k20
+    # k9 vs k21
+    # k10 vs k22
+    # k11 vs k23
+    # k12 vs k24
+    
+    # use pd.melt
+    # id_vars will be IL2 and IL15
+    # value_vars will be all the k* rxn rates
