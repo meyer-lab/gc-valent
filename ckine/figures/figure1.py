@@ -21,10 +21,10 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    #surf_perc(ax[0:4], 'IL2Rb', unkVec)
-    #pstat_act(ax[4:6], unkVec)
-    #surf_perc(ax[8:12], 'gc', unkVec)
-    #violinPlots(ax[12:15], unkVec)
+    surf_perc(ax[0:4], 'IL2Rb', unkVec)
+    pstat_act(ax[4:6], unkVec)
+    surf_perc(ax[8:12], 'gc', unkVec)
+    violinPlots(ax[12:15], unkVec)
     rateComp(ax[15], unkVec)
 
     f.tight_layout()
@@ -32,6 +32,7 @@ def makeFigure():
     return f
 
 def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'):
+    """ This function performs the plotting of pSTAT activity and surface receptor calculations given data for both IL2 and IL15 stimulation. """
     ax.set_title(title)
     ax.set_ylim(0,120)
     if (data_type=='surf'):
@@ -49,6 +50,7 @@ def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'
     # ax.legend()
 
 def surf_perc(ax, species, unkVec):
+    """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
     if (species == 'IL2Rb'):
         surf = surf_IL2Rb()
     elif (species == 'gc'):
@@ -96,6 +98,7 @@ def surf_perc(ax, species, unkVec):
 
     
 def pstat_act(ax, unkVec):
+    """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
@@ -123,6 +126,7 @@ def pstat_act(ax, unkVec):
 
     
 def import_samples():
+    """ This function imports the csv results into a numpy array called unkVec. """
     bmodel = build_model()
     n_params = nParams()
 
@@ -178,7 +182,7 @@ def violinPlots(ax, unkVec):
 
 
 def rateComp(ax, unkVec):
-    """ This function compares the analogous reverse rxn distributions from IL2 and IL15. """
+    """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
     
     # assign values from unkVec
     kfwd, k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[6, :], unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
