@@ -383,7 +383,7 @@ void solver_setup(solver *sMem, const double * const params) {
 		throw std::runtime_error(string("Error calling CVodeWFtolerances in solver_setup."));
 	}
 
-	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 1);
+	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 0);
 	
 	// Call CVSpilsSetLinearSolver to specify the SUNSPGMR linear solver
 	if (CVSpilsSetLinearSolver(sMem->cvode_mem, sMem->LS) < 0) {
