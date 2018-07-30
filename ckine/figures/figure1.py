@@ -200,10 +200,33 @@ def rateComp(ax, unkVec):
     k21rev = k22rev * k23rev / k16rev
     k20rev = k22rev * k24rev / k17rev
     
-    test = pd.DataFrame({'rxn': ['k4/k16', 'k5/k17', 'k8/k20', 'k9/k21', 'k10/k22', 'k11/k23', 'k12/k24'], 'IL2': [k4rev, k5rev, k8rev, k9rev, k10rev, k11rev, k12rev], 'IL15': [k16rev, k17rev, k20rev, k21rev, k22rev, k23rev, k24rev] })
-    print(test)
-    test_melt = pd.melt(test, id_vars='rxn', var_name='cols',  value_name='vals')
-    print(test_melt)
+    k4_k16 = np.append(k4rev, k16rev)
+    k5_k17 = np.append(k5rev, k17rev)
+    k8_k20 = np.append(k8rev, k20rev)
+    k9_k21 = np.append(k9rev, k21rev)
+    k10_k22 = np.append(k10rev, k22rev)
+    k11_k23 = np.append(k11rev, k23rev)
+    k12_k24 = np.append(k12rev, k24rev)
+    
+    
+    
+    
+    df = pd.DataFrame({'k4_k16': k4_k16, 'k5_k17': k5_k17, 'k8_k20': k8_k20, 'k9_k21': k9_k21, 'k10_k22': k10_k22, 'k11_k23': k11_k23, 'k12_k24': k12_k24})
+    df['cytokine'] = 'IL2'
+    df.loc[500:1000, 'cytokine'] = 'IL15'
+    melted = pd.melt(df, id_vars='cytokine', var_name='rxn', value_name='vals')
+    print(melted)
+    melted.loc[:, 'vals'] = np.log10(melted.loc[:, 'vals'])
+    print(melted)
+    
+    # test = pd.DataFrame({'rxn': ['k4/k16', 'k5/k17', 'k8/k20', 'k9/k21', 'k10/k22', 'k11/k23', 'k12/k24'], 'IL2': [k4rev, k5rev, k8rev, k9rev, k10rev, k11rev, k12rev], 'IL15': [k16rev, k17rev, k20rev, k21rev, k22rev, k23rev, k24rev] })
+    # print(test)
+    # test_melt = pd.melt(test, id_vars='rxn', var_name='cols',  value_name='vals')
+    # print(test_melt)
+    
+    # A is cytokine type
+    # B, C, D, are all the rxn rates
+    
     # k1 vs k13
     # k2 vs k14
     # k4 vs k16
@@ -217,6 +240,6 @@ def rateComp(ax, unkVec):
     # use pd.melt
     # id_vars will be IL2 and IL15
     # value_vars will be all the k* rxn rates
-    a = sns.violinplot(x='rxn', y='vals', data=test_melt, hue='cols', ax=ax)
+    a = sns.violinplot(x='rxn', y='vals', data=melted, hue='cytokine', ax=ax)
     
     
