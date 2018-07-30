@@ -200,9 +200,9 @@ def rateComp(ax, unkVec):
     k21rev = k22rev * k23rev / k16rev
     k20rev = k22rev * k24rev / k17rev
     
-    test = pd.DataFrame({'IL2': [k4rev, k5rev, k8rev, k9rev, k10rev, k11rev, k12rev], 'IL15': [k16rev, k17rev, k20rev, k21rev, k22rev, k23rev, k24rev] })
+    test = pd.DataFrame({'rxn': ['k4/k16', 'k5/k17', 'k8/k20', 'k9/k21', 'k10/k22', 'k11/k23', 'k12/k24'], 'IL2': [k4rev, k5rev, k8rev, k9rev, k10rev, k11rev, k12rev], 'IL15': [k16rev, k17rev, k20rev, k21rev, k22rev, k23rev, k24rev] })
     print(test)
-    test_melt = pd.melt(test, var_name='cols',  value_name='vals')
+    test_melt = pd.melt(test, id_vars='rxn', var_name='cols',  value_name='vals')
     print(test_melt)
     # k1 vs k13
     # k2 vs k14
