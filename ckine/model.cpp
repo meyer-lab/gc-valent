@@ -26,6 +26,8 @@ using std::copy;
 using std::vector;
 using std::fill;
 using std::string;
+using std::endl;
+using std::cout;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 typedef Eigen::Matrix<double, Nspecies, 1> EigV;
@@ -290,7 +292,6 @@ int ewt(N_Vector y, N_Vector w, void *) {
 thread_local JacMat jac;
 thread_local Eigen::IncompleteLUT<double> iLUT;
 
-
 int Precond(double, N_Vector y, N_Vector, int jok, int *jcurPtr, double gamma, void *user_data) {
 	if (jok && iLUT.info() == Eigen::Success) {// Jacobian from previous call is still good
 		*jcurPtr = false;
@@ -320,6 +321,14 @@ static int PSolve(double, N_Vector, N_Vector, N_Vector r, N_Vector z, double, do
 
 	Eigen::Map<EigV> rVec(NV_DATA_S(r));
 	Eigen::Map<EigV> zVec(NV_DATA_S(z));
+
+	// nans here happen before z, or v/Jv in jtimes, or y in Precond
+	int nans = std::count_if(NV_DATA_S(r), NV_DATA_S(r) + Nspecies, [](double d) { return std::isnan(d); } );
+
+	if (nans > 0) {
+		// Add breakpoint here.
+		return 100;
+	}
 
 	zVec = iLUT.solve(rVec);
 
