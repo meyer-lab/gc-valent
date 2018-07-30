@@ -121,8 +121,8 @@ def pstat_act(ax, unkVec):
     ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # IL15 in 2Ra-
     ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # IL2 in 2Ra+
     ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # IL15 in 2Ra+
-    #ax[0].legend()
-    #ax[1].legend()
+    ax[0].legend()
+    ax[1].legend()
 
     
 def import_samples():
