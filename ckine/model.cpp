@@ -3,6 +3,7 @@
 #include <numeric>
 #include <array>
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
@@ -35,6 +36,8 @@ template <class T>
 void fullJacobian(const double * const y, const ratesS * const r, T &out);
 
 const array<size_t, 8> recIDX = {{0, 1, 2, 9, 16, 19, 22, 25}};
+
+std::mutex print_mutex; // mutex to prevent threads printing on top of each other
 
 std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
@@ -242,6 +245,9 @@ struct solver {
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
 	if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
+	ratesS ratt(sMem->params);
+
+	std::lock_guard<std::mutex> lock(print_mutex);
 
 	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
 	std::cout << msg << std::endl;
@@ -250,8 +256,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	for (size_t ii = 0; ii < Nparams; ii++) {
 		std::cout << sMem->params[ii] << "\t";
 	}
-	
-	ratesS ratt(sMem->params);
 	
 	ratt.print();
 
