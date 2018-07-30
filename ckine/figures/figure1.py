@@ -17,14 +17,14 @@ from ..fit import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 4))
+    ax, f = getSetup((10, 9), (4, 4))
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    surf_perc(ax[0:4], 'IL2Rb', unkVec)
-    pstat_act(ax[4:6], unkVec)
-    surf_perc(ax[8:12], 'gc', unkVec)
-    violinPlots(ax[12:15], unkVec)
+    #surf_perc(ax[0:4], 'IL2Rb', unkVec)
+    #pstat_act(ax[4:6], unkVec)
+    #surf_perc(ax[8:12], 'gc', unkVec)
+    #violinPlots(ax[12:15], unkVec)
     rateComp(ax[15], unkVec)
 
     f.tight_layout()
@@ -194,6 +194,12 @@ def rateComp(ax, unkVec):
     k13rev = kfbnd * 0.065 # based on the multiple papers suggesting 30-100 pM
     k14rev = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
     
+    # make these scalar values arrays of size 500
+    k1rev = np.full((500), k1rev)
+    k2rev = np.full((500), k2rev)
+    k13rev = np.full((500), k13rev)
+    k14rev = np.full((500), k14rev)
+    
     # detailed balance
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     k11rev = 63.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
@@ -205,6 +211,8 @@ def rateComp(ax, unkVec):
     k20rev = k22rev * k24rev / k17rev
     
     # append analogous rxnrates for IL2/15
+    k1_k13 = np.append(k1rev, k13rev)
+    k2_k14 = np.append(k2rev, k14rev)
     k4_k16 = np.append(k4rev, k16rev)
     k5_k17 = np.append(k5rev, k17rev)
     k8_k20 = np.append(k8rev, k20rev)
@@ -214,7 +222,7 @@ def rateComp(ax, unkVec):
     k12_k24 = np.append(k12rev, k24rev)    
     
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'k4_k16': k4_k16, 'k5_k17': k5_k17, 'k8_k20': k8_k20, 'k9_k21': k9_k21, 'k10_k22': k10_k22, 'k11_k23': k11_k23, 'k12_k24': k12_k24})
+    df = pd.DataFrame({'k1_k13': k1_k13, 'k2_k14': k2_k14, 'k4_k16': k4_k16, 'k5_k17': k5_k17, 'k8_k20': k8_k20, 'k9_k21': k9_k21, 'k10_k22': k10_k22, 'k11_k23': k11_k23, 'k12_k24': k12_k24})
     
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL2'
