@@ -288,12 +288,11 @@ int ewt(N_Vector y, N_Vector w, void *) {
 
 
 thread_local JacMat jac;
-thread_local Eigen::SparseMatrix<double> jacSparse;
 thread_local Eigen::IncompleteLUT<double> iLUT;
 
 
 int Precond(double, N_Vector y, N_Vector, int jok, int *jcurPtr, double gamma, void *user_data) {
-	if (jok) {// Jacobian from previous call is still good
+	if (jok && iLUT.info() == Eigen::Success) {// Jacobian from previous call is still good
 		*jcurPtr = false;
 		return 0;
 	}
@@ -301,19 +300,17 @@ int Precond(double, N_Vector y, N_Vector, int jok, int *jcurPtr, double gamma, v
 	// Just save whatever you need here for the PSolve step.
 	ratesS rattes(static_cast<double *>(user_data));
 
-	Eigen::SparseMatrix<double> jacSparseI(Nspecies, Nspecies);
-	jacSparseI.setIdentity();
-
 	// Actually get the Jacobian
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
-	jacSparse = jac.sparseView();
+	Eigen::SparseMatrix<double> jacSparse = (JacMat::Identity() - gamma*jac).sparseView();
 
-	jacSparseI = jacSparseI - gamma*jacSparse;
-
-	iLUT.compute(jacSparseI); // LU factorize
+	iLUT.compute(jacSparse); // LU factorize
 
 	*jcurPtr = true;
-	return 0;
+
+	if (iLUT.info() == Eigen::Success) return 0;
+
+	return 1;
 }
 
 
@@ -326,7 +323,7 @@ static int PSolve(double, N_Vector, N_Vector, N_Vector r, N_Vector z, double, do
 
 	zVec = iLUT.solve(rVec);
 
-	return(0);
+	return 0;
 }
 
 /**
