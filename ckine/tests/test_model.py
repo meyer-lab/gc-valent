@@ -148,9 +148,6 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
-        for ii in range(rxntfr.shape[0]):
-            print(outt[0, :] - outt[ii, :])
-
         # test that all of the solutions returned are identical
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
