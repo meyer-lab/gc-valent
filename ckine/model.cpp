@@ -329,11 +329,10 @@ void solver_setup(solver *sMem, const double * const params) {
 	// Call CVDense to specify the CVDENSE dense linear solver
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
 		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
+		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 
-	CVSpilsSetPreconditioner(sMem->cvode_mem, Precond, PSolve);
-	CVSpilsSetJacTimes(sMem->cvode_mem, nullptr, jtimes);
+	CVDlsSetJacFn(sMem->cvode_mem, Jac);
 
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
 
@@ -707,6 +706,20 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 	simpleCkine(19, 59, k29rev); // IL9
 	simpleCkine(22, 60, k32rev); // IL4
 	simpleCkine(25, 61, k34rev); // IL21
+}
+
+
+int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	ratesS rattes(static_cast<double *>(user_data));
+
+	Eigen::Map<JacMat> jac(SM_DATA_D(J));
+
+	// Actually get the Jacobian
+	fullJacobian(NV_DATA_S(y), &rattes, jac);
+
+	jac.transposeInPlace();
+
+	return 0;
 }
 
 
