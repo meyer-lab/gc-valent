@@ -180,13 +180,10 @@ def violinPlots(ax, unkVec):
 def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15. """
     
-    # plug in values from unkVec and measured constants
-    #k4rev = np.zeros((500))
-    #k5rev = k16rev = k17rev = k22rev = k23rev = k4rev.copy()
-    #print("k22rev.shape: " + str(k22rev.shape))
-    #print(unkVec.shape)
-    # print("unkVec[:, 7].shape: " + str(unkVec[:,7].shape))
-    k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
+    # assign values from unkVec
+    kfwd, k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[6, :], unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
+    
+    # plug in values from measured constants
     kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
     k1rev = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
     k2rev = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
@@ -202,8 +199,11 @@ def rateComp(ax, unkVec):
     k24rev = k13rev * k23rev / k14rev
     k21rev = k22rev * k23rev / k16rev
     k20rev = k22rev * k24rev / k17rev
-
-    print("k20rev.shape: " + str(k20rev.shape))
+    
+    test = pd.DataFrame({'k4': k4rev}, {'k5': k5rev})
+    print(test)
+    test_melt = pd.melt(test, var_name='cols',  value_name='vals')
+    print(test_melt)
     # k1 vs k13
     # k2 vs k14
     # k4 vs k16
@@ -217,3 +217,6 @@ def rateComp(ax, unkVec):
     # use pd.melt
     # id_vars will be IL2 and IL15
     # value_vars will be all the k* rxn rates
+    a = sns.violinplot(data=test_melt, hue='cols', ax=ax[0])
+    
+    
