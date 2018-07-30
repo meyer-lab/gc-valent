@@ -131,12 +131,10 @@ public:
 };
 
 
-constexpr double tolIn = 1.0E-4;
+constexpr double tolIn = 1.0E-7;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
 constexpr size_t Nparams = 30; // length of rxntfR vector
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 28; // number of complexes on surface alone
-
-extern "C" int runCkine (double *, size_t, double *, double *, bool, double *);
