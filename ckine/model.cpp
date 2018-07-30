@@ -9,16 +9,13 @@
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
 #include <sundials/sundials_dense.h>
-#include <cvode/cvode_spils.h>
-#include <sunlinsol/sunlinsol_spgmr.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
+#include <cvode/cvode_direct.h>
 #include <iostream>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <Eigen/Sparse>
-#include <Eigen/IterativeLinearSolvers>
 #include "model.hpp"
 
 using std::array;
@@ -241,6 +238,7 @@ struct solver {
 	SUNLinearSolver LS;
 	N_Vector state;
 	N_Vector *yS;
+	SUNMatrix A;
 	bool sensi;
 	array<double, Nparams> params;
 };
@@ -279,6 +277,7 @@ void solverFree(solver *sMem) {
 	N_VDestroy_Serial(sMem->state);
 	CVodeFree(&sMem->cvode_mem);
 	SUNLinSolFree(sMem->LS);
+	SUNMatDestroy(sMem->A);
 }
 
 
@@ -286,65 +285,6 @@ int ewt(N_Vector y, N_Vector w, void *) {
 	for (size_t i = 0; i < Nspecies; i++) {
 		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
 	}
-
-	return 0;
-}
-
-
-thread_local JacMat jac;
-thread_local Eigen::IncompleteLUT<double> iLUT;
-
-int Precond(double, N_Vector y, N_Vector, int jok, int *jcurPtr, double gamma, void *user_data) {
-	if (jok && iLUT.info() == Eigen::Success) {// Jacobian from previous call is still good
-		*jcurPtr = false;
-		return 0;
-	}
-
-	// Just save whatever you need here for the PSolve step.
-	ratesS rattes(static_cast<double *>(user_data));
-
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac);
-	Eigen::SparseMatrix<double> jacSparse = (JacMat::Identity() - gamma*jac).sparseView();
-
-	iLUT.compute(jacSparse); // LU factorize
-
-	*jcurPtr = true;
-
-	if (iLUT.info() == Eigen::Success) return 0;
-
-	return 1;
-}
-
-
-static int PSolve(double, N_Vector, N_Vector, N_Vector r, N_Vector z, double, double, int lr, void *) {
-	if (lr == 1)
-		return -1;
-
-	Eigen::Map<EigV> rVec(NV_DATA_S(r));
-	Eigen::Map<EigV> zVec(NV_DATA_S(z));
-
-	zVec = iLUT.solve(rVec);
-
-	return 0;
-}
-
-/**
- * @brief      The Jacobian times vector function
- *
- * @param[in]  v          The vector to be multiplied by the Jacobian.
- * @param[in]  Jv         The output of J*v.
- * @param[in]  <unnamed>  { parameter_description }
- * @param[in]  <unnamed>  { parameter_description }
- * @param      <unnamed>  { parameter_description }
- *
- * @return     Success always.
- */
-int jtimes(N_Vector v, N_Vector Jv, double, N_Vector, N_Vector, void *, N_Vector) {
-	Eigen::Map<EigV> vVec(NV_DATA_S(v));
-	Eigen::Map<EigV> JvVec(NV_DATA_S(Jv));
-
-	JvVec = jac*vVec;
 
 	return 0;
 }
@@ -383,10 +323,11 @@ void solver_setup(solver *sMem, const double * const params) {
 		throw std::runtime_error(string("Error calling CVodeWFtolerances in solver_setup."));
 	}
 
-	sMem->LS = SUNSPGMR(sMem->state, PREC_RIGHT, 0);
+	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
+	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
 	
-	// Call CVSpilsSetLinearSolver to specify the SUNSPGMR linear solver
-	if (CVSpilsSetLinearSolver(sMem->cvode_mem, sMem->LS) < 0) {
+	// Call CVDense to specify the CVDENSE dense linear solver
+	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
