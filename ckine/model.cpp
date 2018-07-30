@@ -27,7 +27,6 @@ using std::endl;
 using std::cout;
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
-typedef Eigen::Matrix<double, Nspecies, 1> EigV;
 
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
 
