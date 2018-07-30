@@ -206,7 +206,9 @@ array<double, Nspecies> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, Nspecies> &y0) {
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s) {
+	array<double, Nspecies> y0 = solveAutocrine(r);
+
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
@@ -240,14 +242,14 @@ struct solver {
 	N_Vector state;
 	N_Vector *yS;
 	bool sensi;
-	double *params;
+	array<double, Nparams> params;
 };
 
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
 	if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
-	ratesS ratt(sMem->params);
+	ratesS ratt(sMem->params.data());
 
 	std::lock_guard<std::mutex> lock(print_mutex);
 
@@ -322,14 +324,6 @@ static int PSolve(double, N_Vector, N_Vector, N_Vector r, N_Vector z, double, do
 	Eigen::Map<EigV> rVec(NV_DATA_S(r));
 	Eigen::Map<EigV> zVec(NV_DATA_S(z));
 
-	// nans here happen before z, or v/Jv in jtimes, or y in Precond
-	int nans = std::count_if(NV_DATA_S(r), NV_DATA_S(r) + Nspecies, [](double d) { return std::isnan(d); } );
-
-	if (nans > 0) {
-		// Add breakpoint here.
-		return 100;
-	}
-
 	zVec = iLUT.solve(rVec);
 
 	return 0;
@@ -356,10 +350,8 @@ int jtimes(N_Vector v, N_Vector Jv, double, N_Vector, N_Vector, void *, N_Vector
 }
 
 
-void solver_setup(solver *sMem, double *params) {
-	// So far we're not doing a sensitivity analysis
-	sMem->sensi = false;
-	sMem->params = params;
+void solver_setup(solver *sMem, const double * const params) {
+	std::copy_n(params, Nparams, sMem->params.begin());
 
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
@@ -372,7 +364,7 @@ void solver_setup(solver *sMem, double *params) {
 	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, static_cast<void *>(sMem));
 
 	// Pass along the parameter structure to the differential equations
-	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
+	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(sMem->params.data())) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
@@ -403,47 +395,42 @@ void solver_setup(solver *sMem, double *params) {
 	CVSpilsSetJacTimes(sMem->cvode_mem, nullptr, jtimes);
 
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
-}
 
-
-void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, Nspecies> &y0) { 
 	// Now we are doing a sensitivity analysis
-	sMem->sensi = true;
+	if (sMem->sensi) {
+		// Set sensitivity initial conditions
+		sMem->yS = N_VCloneVectorArray(Nparams, sMem->state);
+		ratesS rattes(sMem->params.data());
+		solveAutocrineS(&rattes, sMem->yS);
 
-	// Set sensitivity initial conditions
-	sMem->yS = N_VCloneVectorArray(Nparams, sMem->state);
-	solveAutocrineS(rr, sMem->yS, y0);
+		// Call CVodeSensInit1 to activate forward sensitivity computations
+		// and allocate internal memory for CVODES related to sensitivity
+		// calculations. Computes the right-hand sides of the sensitivity
+		// ODE, one at a time
+		if (CVodeSensInit(sMem->cvode_mem, Nparams, CV_SIMULTANEOUS, nullptr, sMem->yS) < 0) {
+			solverFree(sMem);
+			throw std::runtime_error(string("Error calling CVodeSensInit in solver_setup."));
+		}
 
-	// Call CVodeSensInit1 to activate forward sensitivity computations
-	// and allocate internal memory for CVODES related to sensitivity
-	// calculations. Computes the right-hand sides of the sensitivity
-	// ODE, one at a time
-	if (CVodeSensInit(sMem->cvode_mem, Nparams, CV_SIMULTANEOUS, nullptr, sMem->yS) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSensInit in solver_setup."));
-	}
+		// Call CVodeSensEEtolerances to estimate tolerances for sensitivity 
+		// variables based on the rolerances supplied for states variables and 
+		// the scaling factor pbar
+		if (CVodeSensEEtolerances(sMem->cvode_mem) < 0) {
+			solverFree(sMem);
+			throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
+		}
 
-	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), tolIn);
+		array<double, Nparams> paramArr;
+		std::copy_n(params, Nparams, paramArr.begin());
+		for(size_t is = 0; is < Nparams; is++) {
+			if (paramArr[is] < 0.01) paramArr[is] = 0.01;
+		}
 
-	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
-	// variables based on the rolerances supplied for states variables and 
-	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, tolIn, abs.data()) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
-	}
-
-	array<double, Nparams> paramArr;
-	std::copy_n(params, Nparams, paramArr.begin());
-	for(size_t is = 0; is < Nparams; is++) {
-		if (paramArr[is] < 0.01) paramArr[is] = 0.01;
-	}
-
-	// Specify problem parameter information for sensitivity calculations
-	if (CVodeSetSensParams(sMem->cvode_mem, params, paramArr.data(), nullptr) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
+		// Specify problem parameter information for sensitivity calculations
+		if (CVodeSetSensParams(sMem->cvode_mem, sMem->params.data(), paramArr.data(), nullptr) < 0) {
+			solverFree(sMem);
+			throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
+		}
 	}
 }
 
@@ -455,26 +442,23 @@ void copyOutSensi(double *out, solver *sMem) {
 }
 
 
-extern "C" int runCkineY0 (double *y0in, double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi, double *sensiOut) {
+extern "C" int runCkineY0 (const double * const y0in, double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
 	ratesS rattes(rxnRatesIn);
 	size_t itps = 0;
 
-	array<double, Nspecies> y0;
-	std::copy_n(y0in, y0.size(), y0.begin());
-
 	solver sMem;
+	sMem.sensi = sensi;
 
 	// Just the full model
-	sMem.state = N_VMake_Serial(static_cast<long>(Nspecies), y0.data());
+	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
+	std::copy_n(y0in, Nspecies, NV_DATA_S(sMem.state));
 
 	solver_setup(&sMem, rxnRatesIn);
-
-	if (sensi) solver_setup_sensi(&sMem, &rattes, rxnRatesIn, y0);
 
 	double tret = 0;
 
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
-		std::copy_n(y0.begin(), y0.size(), out);
+		std::copy_n(y0in, Nspecies, out);
 
 		if (sensi) copyOutSensi(sensiOut, &sMem);
 
@@ -497,7 +481,7 @@ extern "C" int runCkineY0 (double *y0in, double *tps, size_t ntps, double *out, 
 		}
 
 		// Copy out result
-		std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
+		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out + Nspecies*itps);
 
 		if (sensi) {
 			CVodeGetSens(sMem.cvode_mem, &tps[itps], sMem.yS);
@@ -510,7 +494,7 @@ extern "C" int runCkineY0 (double *y0in, double *tps, size_t ntps, double *out, 
 }
 
 
-extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi, double *sensiOut) {
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
 	ratesS rattes(rxnRatesIn);
 
 	array<double, Nspecies> y0 = solveAutocrine(&rattes);
@@ -519,7 +503,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 }
 
 
-extern "C" int runCkineParallel (double *rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
+extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
 	vector<int> retVals(nDoses, -1);
 	vector<std::thread> ts;
 
@@ -702,13 +686,6 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	simpleCkine(19, k29rev, r->k31rev, ILs[3]); // IL9
 	simpleCkine(22, k32rev, r->k33rev, ILs[4]); // IL4
 	simpleCkine(25, k34rev, r->k35rev, ILs[5]); // IL21
-}
-
-
-extern "C" void jacobian_C(double *y_in, double, double *out, double *rxn_in) {
-	ratesS r(rxn_in);
-
-	jacobian(y_in, &r, out, r.ILs.data());
 }
 
 
