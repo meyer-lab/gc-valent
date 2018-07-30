@@ -217,6 +217,6 @@ def rateComp(ax, unkVec):
     # use pd.melt
     # id_vars will be IL2 and IL15
     # value_vars will be all the k* rxn rates
-    a = sns.violinplot(data=test_melt, hue='cols', ax=ax[0])
+    a = sns.violinplot(x='rxn', y='vals', data=test_melt, hue='cols', ax=ax)
     
     
