@@ -17,17 +17,16 @@ from ..fit_others import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4))
+    ax, f = getSetup((10, 9), (3, 4))
 
     # Blank out for the cartoon
     ax[0].axis('off')
 
     subplotLabel(ax[0], 'A')
     pstat_plot(ax[1])
-    violinPlots(ax[2:6])
-    surf_gc(ax[6], 100.)
-    surf_gc(ax[7], 1000.)
-    plot_pretreat(ax[8])
+    plot_pretreat(ax[2])
+    surf_gc(ax[3], 100.)
+    violinPlots(ax[4:8])
     
     
 
@@ -99,11 +98,10 @@ def pstat_plot(ax):
     
     def plot_structure(IL4vec, IL7vec, title, ax):
         ax.set_title(title)
-        ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5, label="IL4")
-        ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5, label='IL7') 
+        ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5)
+        ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5) 
         ax.set_ylabel('pSTAT activation' )
         ax.set_xlabel('cytokine concentration (nM)')
-        # ax.legend()
 
     for ii in range(0,500):
         output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
@@ -112,10 +110,11 @@ def pstat_plot(ax):
 
         plot_structure(IL4_output, IL7_output, "PBMCs stimulated for 10 min.", ax)
         
-    ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', zorder=100)
+    ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', label='IL4', zorder=100)
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2], color='powderblue', marker='^', edgecolors='k', zorder=200)
-    ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k', zorder=300)
+    ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k', label='IL7', zorder=300)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,2], color='b', marker='^', edgecolors='k', zorder=400)
+    ax.legend()
         
 def violinPlots(ax):
     """ Create violin plots of model posterior. """
@@ -249,9 +248,8 @@ def plot_pretreat(ax):
               label='IL-7 stim. (IL-4 pre.)')
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
+    ax.legend()
 
-
-    
 
 def surf_gc(ax, cytokC_pg):
     size = 40
