@@ -24,33 +24,32 @@ def perform_decomposition(tensor, r):
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
-def find_R2X(values, n_comp):
+def find_R2X(values, factors):
     '''Compute R2X'''
     z_values = z_score_values(values)
-    factors = perform_decomposition(z_values, n_comp)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
-def split_R2X(values, n_comp):
+def split_R2X(values, factors_list, n_comp):
     """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)
     R2X_matrix = np.zeros((3,n_comp)) # A 3 by n_comp matrix to store the R2X values for each split tensor. 
     
-    for ii in range(1, n_comp +1):
-        factors = perform_decomposition(z_values, ii)
+    for ii in range(n_comp):
+        factors = factors_list[ii]
         values_reconstructed = tensorly.kruskal_to_tensor(factors)
         
         LigandTensor = z_values[:,:,:, 0:6]
         Ligand_reconstructed = values_reconstructed[:,:,:,0:6]
-        R2X_matrix[0,ii-1] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
+        R2X_matrix[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
         
         SurfTensor = z_values[:,:,:, 6:14]
         Surf_reconstructed = values_reconstructed[:,:,:,6:14]
-        R2X_matrix[1,ii-1] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
+        R2X_matrix[1,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
         
         TotalTensor = z_values[:,:,:, 14:22]
         Total_reconstructed = values_reconstructed[:,:,:,14:22]
-        R2X_matrix[2, ii-1] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
+        R2X_matrix[2, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
 
     return R2X_matrix
 

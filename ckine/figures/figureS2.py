@@ -3,6 +3,7 @@ This creates Figure S2.
 """
 import string
 import numpy as np
+import pandas as pds
 import os
 import pickle
 import itertools
@@ -10,18 +11,22 @@ import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from .figureCommon import subplotLabel, getSetup
-from ..tensor_generation import prepare_tensor
-from ..Tensor_analysis import perform_decomposition, combo_low_high
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
-    filename = os.path.abspath(os.path.realpath(filename))
 
-    with open(filename,'rb') as f:
-        factors, cell_names = pickle.load(f)
+    factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
+    factors_filename = os.path.abspath(os.path.realpath(factors_filename))
+
+    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
+    data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
+    cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
+
+    with open(factors_filename,'rb') as f:
+        factors_list = pickle.load(f)
+    factors = factors_list[19]
 
     x, y = 10, 4
     ssize = 3
