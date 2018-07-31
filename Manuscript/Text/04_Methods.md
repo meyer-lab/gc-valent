@@ -6,26 +6,26 @@ All analysis was implemented in Python, and can be found at <https://github.com/
 
 ### Base model
 
-Cytokine binding to receptors was modeled using a kinetic model.  The ligands of interest were four cytokines: IL2, IL15, IL7, and IL9. Each ligand can bind to the common gamma chain receptor (gc) and a private family of receptors specific to each ligand. IL2's private receptors were IL2Ra and IL2Rb; IL15's private receptors were IL15Ra and IL2Rb; IL7's private receptor was IL7Ra; IL9's private receptor was IL9R. After a ligand binds to a receptor, it forms a complex that can dimerize with other free receptors to make larger complexes. All receptors were immobilized on the cells, meaning no soluble receptor was present in any compartment. Every complex has exactly one ligand and has at least one receptor. Each of these dimerization steps had forward and reverse reaction rate constants based on the dissociation constants of the complexes involved.
+Cytokine binding to receptors was modeled using a kinetic model.  The ligands of interest were six cytokines: IL2, IL15, IL4, IL7, IL9, and IL21. Each ligand can bind to the common gamma chain receptor (gc) and a private family of receptors specific to each ligand. IL2's private receptors were IL2Ra and IL2Rb; IL15's private receptors were IL15Ra and IL2Rb; IL4's private receptor was IL4Ra; IL7's private receptor was IL7Ra; IL9's private receptor was IL9R; IL21's private receptor was IL21Ra. After a ligand binds to a private receptor, it forms a complex that can dimerize with other private receptors or gamma chain to make larger complexes. All receptors were immobilized on the cells, meaning no soluble receptor was present in any compartment. Every complex has exactly one ligand and has at least one receptor. Each of these dimerization steps had forward and reverse reaction rate constants based on the dissociation constants of the complexes involved.
 
 Our model also accounted for endosomal trafficking. All species were allowed to be endocytosed, recycled, and degraded. All types of receptors were synthesized and placed on the cell surfaced at a unique rate. All binding events that occured on the cell surface also occured in the endosome with the same rate parameters. The surface and endosomal ligand concentrations were assumed to be equal for each cytokine. The number densities of each complex and receptor were different between the cell surface and endosome. 
 
-The rate of change for free receptors and complexes were modeled through ordinary differential equations (ODEs). There were 26 ODEs that represented the rate of change for free receptors and complexes on the cell surface, 26 ODEs that represented the rate of change for free receptors and complexes in the endosome, and 4 ODEs that represented the rate of change of ligand concentration. For a complex ($C$) that forms through the binding of ligand ($L$) to free receptor ($R$) with a forward reaction rate ($k_f$) and a reverse reaction rate ($k_r$), the ODE would be:
+The rate of change for free receptors and complexes were modeled through ordinary differential equations (ODEs). There were 28 ODEs that represented the rate of change for free receptors and complexes on the cell surface, 28 ODEs that represented the rate of change for free receptors and complexes in the endosome, and 6 ODEs that represented the rate of change of ligand concentration. For a complex ($C$) that forms through the binding of ligand ($L$) to free receptor ($R$) with a forward reaction rate ($k_f$) and a reverse reaction rate ($k_r$), the ODE would be:
 
 $$dC/dt=(kf*L*R)-(kr*C)$$ 
 
 In this example, $\delta C/\delta t$ is in units of number / cell * min, $L$ is in units of molarity, $R$ is in number / cell, $C$ is in number / cell, $kf$ is in 1 / nM * min, and $kr$ is in 1 / min. For our model, all of the free receptors and complexes were measured in units of number per cell and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of 1 / nM * min, rate constants for the forward dimerization of free receptor to complex had units of 1 / min * number per cell, and the dissociation of a complex into another complex and free receptor had units of 1 / min.
 
-Type I cytokine signaling follows the JAK-STAT signaling pathway which is initiated when two JAK subunits come in contact with one another. JAK proteins are found on the intracellular regions of the gc, IL2Rb, IL7Ra and IL9R receptors; therefore all complexes which contained at least two of those receptors were deemed to be active species.
+Type I cytokine signaling follows the JAK-STAT signaling pathway which is initiated when two JAK subunits come in contact with one another. JAK proteins are found on the intracellular regions of the gc, IL2Rb, IL4Ra, IL7Ra, IL9R, and IL21Ra receptors; therefore all complexes which contained at least two of those receptors were deemed to be active species.
 
-We used a package called scipy.integrate.odeint to solve our ODEs. The inputs for odeint were the initial values of each receptor and complex, time, and all unknown rate parameters. To determine the initial values of each receptor and complex, we ran the model for a  long time with no cytokine present, allowing the system to reach steady state. An absolute tolerance of 1E-2 and relative tolerance of 1E-3 were used when solving our ODEs.
+We used SUNDIALS CVODE to solve our ODEs. The inputs for odeint were the initial values of each receptor and complex, time, and all unknown rate parameters. To determine the initial values of each receptor and complex, we ran the model for a long time with no cytokine present, allowing the system to reach steady state. An absolute tolerance of 1E-2 and relative tolerance of 1E-3 were used when solving our ODEs.
 
 We wrote conservation of species and equilibrium unit tests to ensure that all species in our model behaved in a manner consistent with biological intuition. We also wrote unit tests to ensure the functionality and reproducibility of components in the full model.
 
 
 ### Parameters and assumptions
 
-All ligand-receptor binding processes had a rate constant of $kfbnd$ which was assumed to be on rate of 10^7 M-1 sec-1 (0.6 nM-1 min-1); the only exception to this assumption was the binding of IL2 to gc which was assumed to be on rate of $10^6 M^{-1} sec^{-1}$ [@Voss2428]. All forward reaction rates for dimerization were represented by $k_{fwd}$. All reverse reaction rates were unique. We used detailed balance to eliminate 12 unknown rate constants. Detailed balance loops were based on formation of full complexes and initial assembly. Each forward and reverse reaction rate was related through an equilibrium dissociation constant ($Kd$). Many of these equilibrium dissociation constants were found in published surface plasmon resonance and isothermal calorimetry experiments.
+All ligand-receptor binding processes had a forward rate constant of $kfbnd$ which was assumed to be on rate of 10^7 M-1 sec-1 (0.6 nM-1 min-1); the only exception to this assumption was the binding of free ligand to gc, which was assumed to not occur in our model [@Voss2428]. All forward reaction rates for dimerization were represented by $k_{fwd}$. All reverse reaction rates were unique. We used detailed balance to eliminate 8 unknown reverse reaction rate constants. Detailed balance loops were based on formation of full complexes and initial assembly. Each forward and reverse reaction rate was related through an equilibrium dissociation constant ($Kd$). Many of these equilibrium dissociation constants were found in published surface plasmon resonance and isothermal calorimetry experiments.
 
 
 +------------------+------------------+--------------------------------------+
@@ -36,8 +36,6 @@ All ligand-receptor binding processes had a rate constant of $kfbnd$ which was a
 | $k1rev$/$kfbnd$  | 10 nM            | doi:10.1016/j.jmb.2004.04.038        |
 +------------------+------------------+--------------------------------------+
 | $k2rev$/$kfbnd$  | 144 nM           | doi:10.1016/j.jmb.2004.04.038        |
-+------------------+------------------+--------------------------------------+
-| $k3rev$/$k3fwd$  | 50000 nM         | doi:10.1016/j.jmb.2004.04.038        |
 +------------------+------------------+--------------------------------------+
 | $k10rev$/$kfwd$  | 12 nM            | doi:10.1016/j.jmb.2004.04.038        |
 +------------------+------------------+--------------------------------------+
@@ -51,17 +49,21 @@ All ligand-receptor binding processes had a rate constant of $kfbnd$ which was a
 +------------------+------------------+--------------------------------------+
 | $k14rev$/$kfbnd$ | 438 nM           | doi:10.1038/ni.2449                  |
 +------------------+------------------+--------------------------------------+
-| $k15rev$/$kfbnd$ | 50000 nM         | binding very weak                    |
+| IL4                                                                        |
++------------------+------------------+--------------------------------------+
+| $k32rev$/$kfbnd$ | 1.0 nM           | DOI:10.1126/scisignal.aal1253        |
 +------------------+------------------+--------------------------------------+
 | IL7                                                                        |
 +------------------+------------------+--------------------------------------+
 | $k25rev$/$kfbnd$ | 59 nM            | DOI:10.1111/j.1600-065X.2012.01160.x |
 +------------------+------------------+--------------------------------------+
-| $k26rev$/$kfbnd$ | 50000 nM         | binding very weak                    |
-+------------------+------------------+--------------------------------------+
 | IL9                                                                        |
 +------------------+------------------+--------------------------------------+
-| $k30rev$/$kfbnd$ | 50000 nM         | binding very weak                    |
+| $k29rev$/$kfbnd$ | 0.1 nM           | DOI:10.1073/pnas.89.12.5690          |
++------------------+------------------+--------------------------------------+
+| IL21                                                                       |
++------------------+------------------+--------------------------------------+
+| $k34rev$/$kfbnd$ | 0.07 nM          | DOI:10.1126/scisignal.aal1253        |
 +------------------+------------------+--------------------------------------+
 
 
