@@ -3,6 +3,8 @@ This creates Figure S2.
 """
 import string
 import numpy as np
+import os
+import pickle
 import itertools
 import matplotlib
 import matplotlib.cm as cm
@@ -14,12 +16,16 @@ from ..Tensor_analysis import perform_decomposition, combo_low_high
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    filename = os.path.join(fileDir, '../type-I-ckine-model/ckine/data/factors_results/Sampling.pickle')
+    filename = os.path.abspath(os.path.realpath(filename))
+
+    with open(filename,'rb') as f:
+        factors, cell_names = pickle.load(f)
 
     x, y = 10, 4
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
-    values, _, _, _, cell_names = prepare_tensor(2)
-    factors = perform_decomposition(values, 2*x)
     for row in range(x):
         subplotLabel(ax[row*y], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*row + 1
