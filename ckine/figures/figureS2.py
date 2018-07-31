@@ -17,7 +17,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    filename = os.path.join(fileDir, '../type-I-ckine-model/ckine/data/factors_results/Sampling.pickle')
+    filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     filename = os.path.abspath(os.path.realpath(filename))
 
     with open(filename,'rb') as f:
