@@ -20,9 +20,21 @@ def ySolver(matIn, ts):
 
     # Set some given parameters already determined from fitting
     rxntfR = np.zeros(nParams())
-    rxntfR[6] = 0.00001 #kfwd
-    rxntfR[7:nRxn()] = 0.001  # From fitting: k4rev - k35rev
-    rxntfR[nRxn():22] = 0.1 # From fitting: endo - kdeg
+    rxntfR[6] = 0.004475761 #kfwd
+    rxntfR[7] = 8.543317686 #k4rev
+    rxntfR[8] = 0.12321939  #k5rev
+    rxntfR[9] = 3.107488811 #k16rev
+    rxntfR[10] = 0.212958572 #k17rev
+    rxntfR[11] = 0.013775029 #k22rev
+    rxntfR[12] = 0.151523448 #k23rev
+
+    rxntfR[13:nRxn()] = 0.001  # From fitting: k4rev - k35rev
+
+    rxntfR[17] =  0.080084184 #endo
+    rxntfR[18] = 1.474695447 #activeEndo
+    rxntfR[19] = 0.179927669 #sortF
+    rxntfR[20] = 0.155260036 #kRec
+    rxntfR[21] = 0.017236595 #kDeg 
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations

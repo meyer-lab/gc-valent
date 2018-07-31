@@ -17,7 +17,7 @@ def makeFigure():
 
     x, y = 6, 4
     ssize = 3
-    ax, f = getSetup((ssize*y, ssize*x), (x, y))
+    ax, f = getSetup((1.5*ssize*y, ssize*x), (x, y))
     lig = 5
     values, _, mat, _, cell_names = prepare_tensor(lig)
     factors = perform_decomposition(values, 9)
@@ -98,12 +98,12 @@ def plot_ligands(ax, factors, mat, lig, component_x, component_y):
 
     #colors = cm.rainbow(np.linspace(0, 1, lig))
     IL15_markers = ['*', 'D', 's', 'X' ,'o']
-    labels = ['0.001 nm IL15', '0.018 nm IL15', '0.32 nm IL15', '5.6 nm IL15', '100 nm IL15']
+    labels = ['0.001 nM IL15', '0.018 nM IL15', '0.32 nM IL15', '5.6 nM IL15', '100 nM IL15']
     
     for jj in range(lig):
         ax.scatter(factors[IL15_low_high[jj],component_x - 1], factors[IL15_low_high[jj],component_y - 1], marker = IL15_markers[jj], c = [0,1,2,3,4], cmap = cm, label = labels[jj])
         
-        
+
     leg = ax.legend()
     for k in range(lig):
         leg.legendHandles[k].set_color('black')
