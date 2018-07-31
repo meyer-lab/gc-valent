@@ -69,7 +69,8 @@ def findy(lig, n_timepoints):
     new_mat = np.concatenate((mats, receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     # generate n_timepoints evenly spaced timepoints to 4 hrs
-    ts = np.linspace(0.0, 4 * 60., n_timepoints) 
+    ts = np.logspace(0.0, 4 * 60., n_timepoints)
+    ts = np.insert(ts, 0, 0.0)
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(new_mat), ts.size, nSpecies()))
