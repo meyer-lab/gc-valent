@@ -17,7 +17,7 @@ from ..fit_others import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 9), (3, 4))
+    ax, f = getSetup((10, 6), (2, 4))
 
     # Blank out for the cartoon
     ax[0].axis('off')
@@ -132,19 +132,19 @@ def violinPlots(ax):
     
     rxn.columns = ['kfwd', 'k27rev', 'k33rev']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.075))
+    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
     traf.columns = traf_names()
     b = sns.violinplot(data=traf, ax=ax[1])
-    b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.075))
+    b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
     Rexpr.columns = ['GCexpr', 'IL7Raexpr', 'IL4Raexpr']
     c = sns.violinplot(data=Rexpr, ax=ax[2])
-    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.075))
+    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
     scales.columns = ['IL4 scale', 'IL7 scale']
     d = sns.violinplot(data=scales, ax=ax[3])
-    d.set_xticklabels(d.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.075))
+    d.set_xticklabels(d.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
 
 def pretreat_calc(unkVec, pre_IL4, pre_IL7):
@@ -243,14 +243,19 @@ def surf_gc(ax, cytokC_pg):
     IL4vec = output[:, 0:size]
     IL7vec = output[:, size:(size*2)]
     
-    for ii in range(500):
-        ax.plot(ts, IL4vec[ii, :], color='powderblue', label='IL4', alpha=0.5, zorder=ii)
-        ax.plot(ts, IL7vec[ii, :], color='b', label='IL7', alpha=0.5, zorder=ii)
+    for ii in range(499):
+        ax.plot(ts, IL4vec[ii, :], color='powderblue', alpha=0.5, zorder=ii)
+        ax.plot(ts, IL7vec[ii, :], color='b', alpha=0.5, zorder=ii)
+    
+    # include label for last iteration only
+    ax.plot(ts, IL4vec[499, :], color='powderblue', label='IL4', alpha=0.5, zorder=500)
+    ax.plot(ts, IL7vec[499, :], color='b', label='IL7', alpha=0.5, zorder=500)
     
     ax.set_title("Surface gc: " + str(cytokC_pg) + ' pg/mL')
     ax.set_ylim(0,120)
     ax.set_ylabel("surface gamma chain (% x 100)")
     ax.set_xlabel("time (min)")
+    ax.legend()
     
 def calc_surf_gc(t, cytokC_pg):
     gc_species_IDX = getSurfaceGCSpecies()
