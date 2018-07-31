@@ -101,14 +101,14 @@ def pstat_plot(ax):
         ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5)
         ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5) 
         ax.set_ylabel('pSTAT activation' )
-        ax.set_xlabel('cytokine concentration (nM)')
+        ax.set_xlabel('stimulation concentration (nM)')
 
     for ii in range(0,500):
         output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
         IL4_output = output[0:PTS]
         IL7_output = output[PTS:(PTS*2)]
 
-        plot_structure(IL4_output, IL7_output, "PBMCs stimulated for 10 min.", ax)
+        plot_structure(IL4_output, IL7_output, "pSTAT activity", ax)
         
     ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', label='IL4', zorder=100)
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2], color='powderblue', marker='^', edgecolors='k', zorder=200)
@@ -121,7 +121,7 @@ def violinPlots(ax):
     unkVec, scales = import_samples()
     unkVec = unkVec.transpose()
     
-    rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]])
+    rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]]) # kfwd, k27rev, k33rev
     rxn = rxn.transpose()
     rxn = pd.DataFrame(rxn)
     traf = pd.DataFrame(unkVec[:, 17:22])
@@ -133,7 +133,6 @@ def violinPlots(ax):
     rxn.columns = ['kfwd', 'k27rev', 'k33rev']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.075))
-    
     
     traf.columns = traf_names()
     b = sns.violinplot(data=traf, ax=ax[1])
@@ -222,8 +221,8 @@ def plot_pretreat(ax):
     
     ax.set_title('IL-4 and IL-7 crosstalk')
     ax.set_ylim(0,120)
-    ax.set_ylabel("Percent inhibition (% x 100)")
-    ax.set_xlabel("log10 of pretreatment concentration (nM)")
+    ax.set_ylabel("Percent inhibition")
+    ax.set_xlabel("pretreatment concentration (nM)")
     
     # add experimental data to plots
     ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k', 
@@ -248,10 +247,10 @@ def surf_gc(ax, cytokC_pg):
         ax.plot(ts, IL4vec[ii, :], color='powderblue', label='IL4', alpha=0.5, zorder=ii)
         ax.plot(ts, IL7vec[ii, :], color='b', label='IL7', alpha=0.5, zorder=ii)
     
-    ax.set_title(str(cytokC_pg) + ' pg/mL of stimulation')
+    ax.set_title("Surface gc: " + str(cytokC_pg) + ' pg/mL')
     ax.set_ylim(0,120)
-    ax.set_ylabel("Surface gamma chain (% x 100)")
-    ax.set_xlabel("Time (min)")
+    ax.set_ylabel("surface gamma chain (% x 100)")
+    ax.set_xlabel("time (min)")
     
 def calc_surf_gc(t, cytokC_pg):
     gc_species_IDX = getSurfaceGCSpecies()
