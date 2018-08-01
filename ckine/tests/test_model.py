@@ -102,10 +102,13 @@ class TestModel(unittest.TestCase):
         yOut, _ = runCkineU(np.array([0.0]), self.rxntfR)
         yOut = np.squeeze(yOut)
 
+        rxnNoLigand = self.rxntfR
+        rxnNoLigand[0:6] = 0.0
+
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
 
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, self.rxntfR))
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, rxnNoLigand))
 
     @given(y0=harrays(np.float, nSpecies(), elements=floats(0, 10)))
     def test_reproducible(self, y0):
