@@ -30,6 +30,19 @@ def find_R2X(values, factors):
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
+def R2X_singles(values, factors_list, n_comps):
+    """Generate additional R2X plot for removing single components from final factorization."""
+    z_values = z_score_values(values)
+    factors = factors_list[-1]
+    R2X_array = list()
+    for ii in range(n_comps):
+        new_factors = list()
+        for jj in range(4): #4 because decomposed tensor into 4 factor matrices
+            new_factors.append(np.delete(factors[jj], ii, 1))
+        values_reconstructed = tensorly.kruskal_to_tensor(new_factors)
+        R2X_array.append(1 - np.var(values_reconstructed - z_values) / np.var(z_values))
+    return R2X_array
+
 def split_R2X(values, factors_list, n_comp):
     """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)

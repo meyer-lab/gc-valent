@@ -7,7 +7,7 @@ import numpy as np
 import os
 import pickle
 from ..tensor_generation import prepare_tensor
-from ..Tensor_analysis import find_R2X, split_R2X
+from ..Tensor_analysis import find_R2X, split_R2X, R2X_singles
 
 
 def makeFigure():
@@ -35,7 +35,7 @@ def makeFigure():
     
     plot_split_R2X(ax[3], values, factors_list, n_comps)
     
-    
+    plot_R2X_singles(ax[7], values, factors_list, n_comps)
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -59,7 +59,16 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
     ax.set_xticklabels(np.arange(1, n_comps+1, 2))
     ax.legend()
 
-
+def plot_R2X_singles(ax, values, factors_list, n_comps):
+    """R2X plot for removing single components from final factorization."""
+    R2X_array = R2X_singles(values, factors_list, n_comps)
+    ax.bar(range(1, n_comps+1), R2X_array)
+    ax.set_ylabel('R2X')
+    ax.set_xlabel('Component Index')
+    ax.set_ylim(0, 1)
+    ax.set_xticks(np.arange(1, n_comps+1, 2))
+    ax.set_xticklabels(np.arange(1, n_comps+1, 2))
+    
 
 def plot_split_R2X(ax, tensor, factors_list, n_comps):
     """This function takes in the values tensor, splits it up into a mini tensor corresponding to the splitType. If splitType =1, then split ligand activities, if =2, then split surface receptors, if = 3, then split total receptors."""
