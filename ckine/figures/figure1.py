@@ -25,7 +25,7 @@ def makeFigure():
     rateComp(ax[2], unkVec)
     surf_perc(ax[3:7], 'IL2Rb', unkVec)
     surf_perc(ax[7:11], 'gc', unkVec)
-    violinPlots(ax[11:14], unkVec)
+    violinPlots(ax[11:13], unkVec)
 
     f.tight_layout()
 
@@ -148,36 +148,20 @@ def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
     
-    rev_rxn = pd.DataFrame(unkVec[:, 7:13])
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
     
-    rev_rxn.columns = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev']
-    a = sns.violinplot(data=np.log10(rev_rxn), ax=ax[0])  # creates names based on dataframe columns
-    a.set_xticklabels(a.get_xticklabels(),
-                       rotation=40,
-                       rotation_mode="anchor",
-                       ha="right",
-                       fontsize=8,
-                       position=(0, 0.075))
-    
     traf.columns = traf_names()
-    b = sns.violinplot(data=np.log10(traf), ax=ax[1])
-    b.set_xticklabels(b.get_xticklabels(),
-                       rotation=40,
-                       rotation_mode="anchor",
-                       ha="right",
-                       fontsize=8,
-                       position=(0, 0.075))
+    b = sns.violinplot(data=np.log10(traf), ax=ax[0])
+    b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    b.set_title("Trafficking parameters")
+    b.set_ylabel("log10 of value")
     
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
-    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[2])
-    c.set_xticklabels(c.get_xticklabels(),
-                       rotation=40,
-                       rotation_mode="anchor",
-                       ha="right",
-                       fontsize=8,
-                       position=(0, 0.075))
+    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1])
+    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    c.set_title("Receptor expression rates")
+    c.set_ylabel("log10 of value")
 
 
 def rateComp(ax, unkVec):
@@ -228,10 +212,11 @@ def rateComp(ax, unkVec):
     df.loc[500:1000, 'cytokine'] = 'IL15'
     
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rev. rxn rate', value_name='log10 of value')
+    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of value')
     melted.loc[:, 'log10 of value'] = np.log10(melted.loc[:, 'log10 of value'])
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rev. rxn rate', y='log10 of value', data=melted, hue='cytokine', ax=ax)
+    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax)
+    a.set_title("Analogous reverse reaction rates")
     
     
