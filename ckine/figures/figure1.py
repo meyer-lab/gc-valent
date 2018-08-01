@@ -21,11 +21,11 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    #pstat_act(ax[0:2], unkVec)
+    pstat_act(ax[0:2], unkVec)
     rateComp(ax[2], unkVec)
-    #surf_perc(ax[4:8], 'IL2Rb', unkVec)
-    #surf_perc(ax[8:12], 'gc', unkVec)
-    #violinPlots(ax[12:15], unkVec)
+    surf_perc(ax[3:7], 'IL2Rb', unkVec)
+    surf_perc(ax[7:11], 'gc', unkVec)
+    violinPlots(ax[11:14], unkVec)
 
     f.tight_layout()
 
@@ -228,10 +228,10 @@ def rateComp(ax, unkVec):
     df.loc[500:1000, 'cytokine'] = 'IL15'
     
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rxn', value_name='vals')
-    melted.loc[:, 'vals'] = np.log10(melted.loc[:, 'vals'])
+    melted = pd.melt(df, id_vars='cytokine', var_name='rev. rxn rate', value_name='log10 of value')
+    melted.loc[:, 'log10 of value'] = np.log10(melted.loc[:, 'log10 of value'])
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rxn', y='vals', data=melted, hue='cytokine', ax=ax)
+    a = sns.violinplot(x='rev. rxn rate', y='log10 of value', data=melted, hue='cytokine', ax=ax)
     
     
