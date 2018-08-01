@@ -22,10 +22,10 @@ def makeFigure():
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
     pstat_act(ax[0:2], unkVec)
-    rateComp(ax[2], unkVec)
-    surf_perc(ax[3:7], 'IL2Rb', unkVec)
-    surf_perc(ax[7:11], 'gc', unkVec)
-    violinPlots(ax[11:13], unkVec)
+    #rateComp(ax[2], unkVec)
+    #surf_perc(ax[3:7], 'IL2Rb', unkVec)
+    #surf_perc(ax[7:11], 'gc', unkVec)
+    #violinPlots(ax[11:13], unkVec)
 
     f.tight_layout()
 
@@ -102,24 +102,44 @@ def pstat_act(ax, unkVec):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-
+    IL2_plus = np.zeros((PTS, 500))
+    IL15_minus = IL2_plus.copy()
+    IL15_plus = IL2_plus.copy()
+    IL2_minus = IL2_plus.copy()
+    
+    # calculate activity for each unkVec for all conc.
     for ii in range(0,500):
         output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
-        IL2_plus = output[0:PTS]
-        IL2_minus = output[PTS:(PTS*2)]
-        IL15_plus = output[(PTS*2):(PTS*3)]
-        IL15_minus = output[(PTS*3):(PTS*4)]
+        IL2_plus[:, ii] = output[0:PTS]
+        IL2_minus[:, ii] = output[PTS:(PTS*2)]
+        IL15_plus[:, ii] = output[(PTS*2):(PTS*3)]
+        IL15_minus[:, ii] = output[(PTS*3):(PTS*4)]
 
-        plot_structure(IL2_minus, IL15_minus, "IL2Ra- YT-1 cells", ax[0], cytokC, 'act')
-        plot_structure(IL2_plus, IL15_plus, "IL2Ra+ YT-1 cells", ax[1], cytokC, 'act')
-       
+    # calculate 97.5th and 2.5th percentiles for each cytokine conc. 
+    IL2_plus_top = np.percentile(IL2_plus, 97.5, axis=1)
+    IL2_plus_bot = np.percentile(IL2_plus, 2.5, axis=1)
+    IL2_minus_top = np.percentile(IL2_minus, 97.5, axis=1)
+    IL2_minus_bot = np.percentile(IL2_minus, 2.5, axis=1)
+    IL15_plus_top = np.percentile(IL15_plus, 97.5, axis=1)
+    IL15_plus_bot = np.percentile(IL15_plus, 2.5, axis=1)
+    IL15_minus_top = np.percentile(IL15_minus, 97.5, axis=1)
+    IL15_minus_bot = np.percentile(IL15_minus, 2.5, axis=1)
     
+    # plot shaded regions representing 95% confidence interval
+    ax[0].fill_between(np.log10(cytokC), IL2_minus_top, IL2_minus_bot, color='darkorchid', alpha=0.5)
+    ax[0].fill_between(np.log10(cytokC), IL15_minus_top, IL15_minus_bot, color='goldenrod', alpha=0.5)
+    ax[1].fill_between(np.log10(cytokC), IL2_plus_top, IL2_plus_bot, color='darkorchid', alpha=0.5)
+    ax[1].fill_between(np.log10(cytokC), IL15_plus_top, IL15_plus_bot, color='goldenrod', alpha=0.5)
+       
+    # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
     ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # IL2 in 2Ra-
     ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # IL15 in 2Ra-
     ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100, label='IL2') # IL2 in 2Ra+
     ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101, label='IL15') # IL15 in 2Ra+
+    ax[0].set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='IL2Ra- YT-1 cells')
+    ax[1].set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='IL2Ra+ YT-1 cells')
     ax[0].legend()
     ax[1].legend()
 
