@@ -4,7 +4,7 @@
 import seaborn as sns
 from matplotlib import gridspec, pyplot as plt
 
-def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
+def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
     sns.set(style="whitegrid",
             font_scale=0.7,
             color_codes=True,
