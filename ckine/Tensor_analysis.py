@@ -52,8 +52,6 @@ def R2X_singles(values, factors_list, n_comps):
         R2X_singles_matrix[1,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
         R2X_singles_matrix[2,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
         R2X_singles_matrix[3, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
-            
-            
     return R2X_singles_matrix
 
 def split_R2X(values, factors_list, n_comp):
