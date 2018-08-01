@@ -17,15 +17,15 @@ from ..fit import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 9), (4, 4))
+    ax, f = getSetup((10, 9), (4, 4), mults=[2], multz={2: 2})
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    surf_perc(ax[0:4], 'IL2Rb', unkVec)
-    pstat_act(ax[4:6], unkVec)
-    surf_perc(ax[8:12], 'gc', unkVec)
-    violinPlots(ax[12:15], unkVec)
-    rateComp(ax[15], unkVec)
+    #pstat_act(ax[0:2], unkVec)
+    rateComp(ax[2], unkVec)
+    #surf_perc(ax[4:8], 'IL2Rb', unkVec)
+    #surf_perc(ax[8:12], 'gc', unkVec)
+    #violinPlots(ax[12:15], unkVec)
 
     f.tight_layout()
 
@@ -47,7 +47,6 @@ def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'
         ax.set_xlabel('log10 of cytokine concentration (nM)')
     else:
         print('invalid data_type')   
-    # ax.legend()
 
 def surf_perc(ax, species, unkVec):
     """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
