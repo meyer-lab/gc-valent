@@ -154,7 +154,7 @@ class TestModel(unittest.TestCase):
 
     def test_fullJacobian(self):
         analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
-        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, epsilon=1.0E-6)
+        approx = approx_jacobian(self.fully, lambda x: fullModel(x, 0.0, self.args, self.tfargs), epsilon=1.0E-6)
 
         self.assertTrue(analytical.shape == approx.shape)
 
