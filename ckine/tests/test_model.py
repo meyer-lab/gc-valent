@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, fullJacobian, nSpecies, runCkineUP
-from ..util_analysis.Shuffle_ODE import approx_jacobian
+from scipy.optimize.slsqp import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -154,7 +154,7 @@ class TestModel(unittest.TestCase):
 
     def test_fullJacobian(self):
         analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
-        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-6)
+        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, epsilon=1.0E-6)
 
         self.assertTrue(analytical.shape == approx.shape)
 
