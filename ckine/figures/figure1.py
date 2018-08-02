@@ -7,12 +7,9 @@ from ..model import nParams
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import matplotlib.pyplot as plt
 import pymc3 as pm, os
 from os.path import join
 from ..fit import build_model
-
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -30,17 +27,27 @@ def makeFigure():
     f.tight_layout()
 
     return f
-  
+
 
 def surf_perc(ax, species, unkVec):
     """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
-    if (species == 'IL2Rb'):
-        surf = surf_IL2Rb()
-    elif (species == 'gc'):
-        surf = surf_gc()
-    else:
-        print('not a valid species')
-        return -1
+    if species == 'IL2Rb':
+        surf = surf_IL2Rb() # load proper class
+
+        # overlay experimental data
+        path = os.path.dirname(os.path.abspath(__file__))
+        data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
+        data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values # imports file into pandas array
+        ax[0].scatter(data_minus[:,0], data_minus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra-
+        ax[0].scatter(data_minus[:,0], data_minus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra-
+        ax[1].scatter(data_minus[:,0], data_minus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra-
+        ax[1].scatter(data_minus[:,0], data_minus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra-
+        ax[2].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra+
+        ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
+        ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
+        ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
+    if species == 'gc':
+        surf = surf_gc()    # load proper class
 
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -64,7 +71,7 @@ def surf_perc(ax, species, unkVec):
         IL15_500_plus[:, ii] = output[(size*5):(size*6)]
         IL15_1_minus[:, ii] = output[(size*6):(size*7)]
         IL15_500_minus[:, ii] = output[(size*7):(size*8)]
-    
+
     # plot confidence intervals based on model predictions
     plot_conf_int(ax[0], ts, IL2_1_minus, "darkorchid", "IL2")
     plot_conf_int(ax[0], ts, IL15_1_minus, "goldenrod", "IL15")
@@ -74,33 +81,17 @@ def surf_perc(ax, species, unkVec):
     plot_conf_int(ax[2], ts, IL15_1_plus, "goldenrod", "IL15")
     plot_conf_int(ax[3], ts, IL2_500_plus, "darkorchid", "IL2")
     plot_conf_int(ax[3], ts, IL15_500_plus, "goldenrod", "IL15") 
-    
-    # label axes
+
+    # label axes and show legends
     ax[0].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra-")
     ax[1].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra-")
     ax[2].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra+")
     ax[3].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra+")
-        
-    if (species == 'IL2Rb'):
-        # overlay experimental data
-        path = os.path.dirname(os.path.abspath(__file__))
-        data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
-        data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values # imports file into pandas array
-        ax[0].scatter(data_minus[:,0], data_minus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra-
-        ax[0].scatter(data_minus[:,0], data_minus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra-
-        ax[1].scatter(data_minus[:,0], data_minus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra-
-        ax[1].scatter(data_minus[:,0], data_minus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra-
-        ax[2].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra+
-        ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
-        ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
-        ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
-    
     ax[0].legend()
     ax[1].legend()
     ax[2].legend()
     ax[3].legend()
 
-    
 def pstat_act(ax, unkVec):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
@@ -111,7 +102,7 @@ def pstat_act(ax, unkVec):
     IL15_minus = IL2_plus.copy()
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
-    
+
     # calculate activity for each unkVec for all conc.
     for ii in range(0,500):
         output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
@@ -125,7 +116,7 @@ def pstat_act(ax, unkVec):
     plot_conf_int(ax[0], np.log10(cytokC), IL15_minus, "goldenrod", "IL15")
     plot_conf_int(ax[1], np.log10(cytokC), IL2_plus, "darkorchid", "IL2")
     plot_conf_int(ax[1], np.log10(cytokC), IL15_plus, "goldenrod", "IL15")
-       
+
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
@@ -138,7 +129,7 @@ def pstat_act(ax, unkVec):
     ax[0].legend()
     ax[1].legend()
 
-    
+
 def import_samples():
     """ This function imports the csv results into a numpy array called unkVec. """
     bmodel = build_model()
@@ -152,25 +143,25 @@ def import_samples():
     sortF = trace.get_values('sortF', chains=[0])
     kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
     exprRates = trace.get_values('IL2Raexpr', chains=[0])
-    
+
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
-    
+
     return unkVec
 
 def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
-    
+
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
-    
+
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0])
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     b.set(title="Trafficking parameters", ylabel="log10 of value")
-    
+
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1])
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
@@ -179,17 +170,17 @@ def violinPlots(ax, unkVec):
 
 def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
-    
+
     # assign values from unkVec
-    kfwd, k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[6, :], unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
-    
+    k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
+
     # plug in values from measured constants into arrays of size 500
     kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
     k1rev = np.full((500), (kfbnd * 10))    # doi:10.1016/j.jmb.2004.04.038, 10 nM
     k2rev = np.full((500), (kfbnd * 144))   # doi:10.1016/j.jmb.2004.04.038, 144 nM
     k13rev = np.full((500), (kfbnd * 0.065))    # based on the multiple papers suggesting 30-100 pM
     k14rev = np.full((500), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
-    
+
     # detailed balance
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     k11rev = 63.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
@@ -199,18 +190,18 @@ def rateComp(ax, unkVec):
     k24rev = k13rev * k23rev / k14rev
     k21rev = k22rev * k23rev / k16rev
     k20rev = k22rev * k24rev / k17rev
-    
+
     # add each rate duo as separate column in dataframe
     df = pd.DataFrame({'k1_k13': np.append(k1rev, k13rev), 'k2_k14': np.append(k2rev, k14rev), 'k4_k16': np.append(k4rev, k16rev), 'k5_k17': np.append(k5rev, k17rev), 'k8_k20': np.append(k8rev, k20rev), 'k9_k21': np.append(k9rev, k21rev), 'k10_k22': np.append(k10rev, k22rev), 'k11_k23': np.append(k11rev, k23rev), 'k12_k24': np.append(k12rev, k24rev)})
-    
+
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL2'
     df.loc[500:1000, 'cytokine'] = 'IL15'
-    
+
     # melt into long form and take log value
     melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of value')
     melted.loc[:, 'log10 of value'] = np.log10(melted.loc[:, 'log10 of value'])
-    
+
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
@@ -218,4 +209,3 @@ def rateComp(ax, unkVec):
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap)
     a.set_title("Analogous reverse reaction rates")    
-    
