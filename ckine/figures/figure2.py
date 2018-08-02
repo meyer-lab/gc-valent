@@ -151,7 +151,7 @@ def violinPlots(ax):
     d.set_xticklabels(d.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
 
-def pretreat_calc(unkVec, pre_IL4, pre_IL7):
+def pretreat_calc(unkVec, pre_conc):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
@@ -187,8 +187,8 @@ def pretreat_calc(unkVec, pre_IL4, pre_IL7):
         return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
     
     assert unkVec.size == nParams()
-    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_IL7), np.float64)
-    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_IL4), np.float64)
+    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_conc), np.float64)
+    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_conc), np.float64)
     
     actVec = np.concatenate((actVec_IL4stim, actVec_IL7stim))
     
@@ -219,22 +219,12 @@ def plot_pretreat(ax):
     IL7_stim = IL4_stim.copy()
     
     for ii in range(500):
-        output = pretreat_calc(unkVec[:, ii], pre_conc, pre_conc)
+        output = pretreat_calc(unkVec[:, ii], pre_conc)
         IL4_stim[:, ii] = output[0:PTS]
         IL7_stim[:, ii] = output[PTS:(PTS*2)]
-        
-        #ax.plot(np.log10(pre_IL7), IL4_stim, color='powderblue', zorder=ii)
-        #ax.plot(np.log10(pre_IL4), IL7_stim, color='b', zorder=ii)
-        
-    # calculate top and bottom percentiles
-    IL4_stim_top = np.percentile(IL4_stim, 97.5, axis=1)
-    IL4_stim_bot = np.percentile(IL4_stim, 2.5, axis=1)
-    IL7_stim_top = np.percentile(IL7_stim, 97.5, axis=1)
-    IL7_stim_bot = np.percentile(IL7_stim, 2.5, axis=1)
     
-    # plot percentile ranges
-    ax.fill_between(np.log10(pre_conc), IL4_stim_top, IL4_stim_bot, color='powderblue', alpha=0.5, label='IL-4 stim. (IL-7 pre.)')
-    ax.fill_between(np.log10(pre_conc), IL7_stim_top, IL7_stim_bot, color='b', alpha=0.5, label='IL-7 stim. (IL-4 pre.)')
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim, "powderblue", "IL-4 stim. (IL-7 pre.)")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim, "b", "IL-7 stim. (IL-4 pre.)")
     ax.set(title="IL-4 and IL-7 crosstalk", ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
     
     # add experimental data to plots
