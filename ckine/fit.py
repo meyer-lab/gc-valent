@@ -3,12 +3,10 @@ This file includes the classes and functions necessary to fit the IL2 and IL15 m
 """
 from os.path import join, dirname, abspath
 import pymc3 as pm
-import theano
 import theano.tensor as T
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
-from .differencing_op import runCkineOp, runCkineKineticOp, runCkineDoseOp
-
+from .differencing_op import runCkineKineticOp, runCkineDoseOp
 
 def load_data(filename):
     """ Return path of CSV files. """
@@ -24,7 +22,7 @@ class IL2Rb_trafficking:
 
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
-        
+
         slicingg = np.array([1, 5, 2, 6])
 
         # Concatted data
@@ -55,15 +53,12 @@ class IL2Rb_trafficking:
 class IL2_15_activity:
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in Ring et al. """
     def __init__(self):
-        path = dirname(abspath(__file__))
         data = load_data('./data/IL2_IL15_extracted_data.csv')
+        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
-
         self.cytokM = np.zeros((self.cytokC.size*2, 6), dtype=np.float64)
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
-
-        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
 
     def calc(self, unkVec):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
@@ -104,7 +99,7 @@ class build_model:
 
             ligands = T.zeros(6, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, kfwd, rxnrates, nullRates, endo_activeEndo, sortF, kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64))) 
+            unkVec = T.concatenate((ligands, kfwd, rxnrates, nullRates, endo_activeEndo, sortF, kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
