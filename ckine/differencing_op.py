@@ -12,7 +12,7 @@ class runCkineOp(Op):
     def __init__(self, ts):
         self.dOp = runCkineOpDiff(ts)
 
-    def infer_shape(self, node, i0_shapes):
+    def infer_shape(self, i0_shapes):
         assert len(i0_shapes) == 1
         return [(nSpecies(), )]
 
@@ -40,8 +40,8 @@ class runCkineOpDiff(Op):
 
         if sensi is True:
             return np.squeeze(outt[2])
-        else:
-            return np.squeeze(outt[0])
+
+        return np.squeeze(outt[0])
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, True)
@@ -53,7 +53,7 @@ class runCkineKineticOp(Op):
     def __init__(self, ts, condense):
         self.dOp = runCkineOpKineticDiff(ts, condense)
 
-    def infer_shape(self, node, i0_shapes):
+    def infer_shape(self, i0_shapes):
         assert len(i0_shapes) == 1
         return [(self.dOp.ts.size, )]
 
@@ -80,8 +80,8 @@ class runCkineOpKineticDiff(Op):
 
         if sensi is True:
             return np.dot(np.transpose(outt[2]), self.condense)
-        else:
-            return np.dot(outt[0], self.condense)
+
+        return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
@@ -93,7 +93,7 @@ class runCkineDoseOp(Op):
     def __init__(self, tt, condense, conditions):
         self.dOp = runCkineOpDoseDiff(tt, condense, conditions)
 
-    def infer_shape(self, node, i0_shapes):
+    def infer_shape(self, i0_shapes):
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0], )]
 
@@ -126,8 +126,8 @@ class runCkineOpDoseDiff(Op):
         if sensi is True:
             # We override the ligands, so don't pass along their gradient
             return np.dot(np.transpose(outt[2][:, 6::]), self.condense)
-        else:
-            return np.dot(outt[0], self.condense)
+
+        return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
