@@ -103,17 +103,30 @@ def pstat_plot(ax):
         ax.set_ylabel('pSTAT activation' )
         ax.set_xlabel('stimulation concentration (nM)')
 
+    IL4_output = np.zeros((PTS, 500))
+    IL7_output = IL4_output.copy()
     for ii in range(0,500):
         output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
-        IL4_output = output[0:PTS]
-        IL7_output = output[PTS:(PTS*2)]
+        IL4_output[:, ii] = output[0:PTS]
+        IL7_output[:, ii] = output[PTS:(PTS*2)]
 
-        plot_structure(IL4_output, IL7_output, "pSTAT activity", ax)
+        #plot_structure(IL4_output, IL7_output, "pSTAT activity", ax)
         
-    ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', label='IL4', zorder=100)
+    # calculate top and bottom percentiles
+    IL4_top = np.percentile(IL4_output, 97.5, axis=1)
+    IL4_bot = np.percentile(IL4_output, 2.5, axis=1)
+    IL7_top = np.percentile(IL7_output, 97.5, axis=1)
+    IL7_bot = np.percentile(IL7_output, 2.5, axis=1)
+    
+    # plot shaded regions between confidence intervals
+    ax.fill_between(np.log10(cytokC_common), IL4_top, IL4_bot, color='powderblue', alpha=0.5, label='IL4')
+    ax.fill_between(np.log10(cytokC_common), IL7_top, IL7_bot, color='b', alpha=0.5, label='IL7')
+        
+    ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', zorder=100)
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2], color='powderblue', marker='^', edgecolors='k', zorder=200)
-    ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k', label='IL7', zorder=300)
+    ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,2], color='b', marker='^', edgecolors='k', zorder=400)
+    ax.set(ylabel='pSTAT activation', xlabel='stimulation concentration (nM)', title="pSTAT activity")
     ax.legend()
         
 def violinPlots(ax):
