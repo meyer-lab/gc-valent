@@ -213,28 +213,28 @@ def plot_pretreat(ax):
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation 
-    NUM = 20
-    pre_conc = np.logspace(-3.8, 1.0, num=NUM)
-    IL4_stim = np.zeros((NUM, 500))
+    PTS = 30
+    pre_conc = np.logspace(-3.8, 1.0, num=PTS)
+    IL4_stim = np.zeros((PTS, 500))
     IL7_stim = IL4_stim.copy()
     
     for ii in range(500):
         output = pretreat_calc(unkVec[:, ii], pre_conc, pre_conc)
-        IL4_stim[:, ii] = output[0:NUM]
-        IL7_stim[:, ii] = output[NUM:(NUM*2)]
+        IL4_stim[:, ii] = output[0:PTS]
+        IL7_stim[:, ii] = output[PTS:(PTS*2)]
         
         #ax.plot(np.log10(pre_IL7), IL4_stim, color='powderblue', zorder=ii)
         #ax.plot(np.log10(pre_IL4), IL7_stim, color='b', zorder=ii)
         
     # calculate top and bottom percentiles
     IL4_stim_top = np.percentile(IL4_stim, 97.5, axis=1)
-    IL4_stim_top = np.percentile(IL4_stim, 2.5, axis=1)
+    IL4_stim_bot = np.percentile(IL4_stim, 2.5, axis=1)
     IL7_stim_top = np.percentile(IL7_stim, 97.5, axis=1)
     IL7_stim_bot = np.percentile(IL7_stim, 2.5, axis=1)
     
     # plot percentile ranges
-    ax.fill_between(np.log10(pre_conc), IL4_stim_top, IL4_stim_top, color='powderblue', alpha=0.5, label='IL-4 stim. (IL-7 pre.)')
-    ax.fill_between(np.log10(pre_conc), IL7_stim_top, IL7_stim_top, color='b', alpha=0.5, label='IL-7 stim. (IL-4 pre.)')
+    ax.fill_between(np.log10(pre_conc), IL4_stim_top, IL4_stim_bot, color='powderblue', alpha=0.5, label='IL-4 stim. (IL-7 pre.)')
+    ax.fill_between(np.log10(pre_conc), IL7_stim_top, IL7_stim_bot, color='b', alpha=0.5, label='IL-7 stim. (IL-4 pre.)')
     ax.set(title="IL-4 and IL-7 crosstalk", ylabel="Percent inhibition", xlabel="pretreatment concentration (nM)")
     
     # add experimental data to plots
