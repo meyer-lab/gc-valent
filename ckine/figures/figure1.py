@@ -30,23 +30,7 @@ def makeFigure():
     f.tight_layout()
 
     return f
-
-def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'):
-    """ This function performs the plotting of pSTAT activity and surface receptor calculations given data for both IL2 and IL15 stimulation. """
-    ax.set_title(title)
-    ax.set_ylim(0,120)
-    if (data_type=='surf'):
-        ax.plot(x_axis, IL2vec, color='darkorchid', alpha=0.7)
-        ax.plot(x_axis, IL15vec, color='goldenrod', alpha=0.7)
-        ax.set_ylabel("Surface " + str(species) + " (% x 100)")
-        ax.set_xlabel("Time (min)")
-    elif (data_type=='act'):
-        ax.plot(np.log10(x_axis), IL2vec, color='darkorchid', alpha=0.5)
-        ax.plot(np.log10(x_axis), IL15vec, color='goldenrod', alpha=0.5)
-        ax.set_ylabel('Maximal p-STAT5 (% x 100)')
-        ax.set_xlabel('log10 of cytokine concentration (nM)')
-    else:
-        print('invalid data_type')   
+  
 
 def surf_perc(ax, species, unkVec):
     """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
@@ -185,14 +169,12 @@ def violinPlots(ax, unkVec):
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0])
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set_title("Trafficking parameters")
-    b.set_ylabel("log10 of value")
+    b.set(title="Trafficking parameters", ylabel="log10 of value")
     
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1])
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set_title("Receptor expression rates")
-    c.set_ylabel("log10 of value")
+    c.set(title="Receptor expression rates", ylabel="log10 of value")
 
 
 def rateComp(ax, unkVec):
@@ -201,18 +183,12 @@ def rateComp(ax, unkVec):
     # assign values from unkVec
     kfwd, k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[6, :], unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
     
-    # plug in values from measured constants
+    # plug in values from measured constants into arrays of size 500
     kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
-    k1rev = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
-    k2rev = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
-    k13rev = kfbnd * 0.065 # based on the multiple papers suggesting 30-100 pM
-    k14rev = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
-    
-    # make these scalar values arrays of size 500
-    k1rev = np.full((500), k1rev)
-    k2rev = np.full((500), k2rev)
-    k13rev = np.full((500), k13rev)
-    k14rev = np.full((500), k14rev)
+    k1rev = np.full((500), (kfbnd * 10))    # doi:10.1016/j.jmb.2004.04.038, 10 nM
+    k2rev = np.full((500), (kfbnd * 144))   # doi:10.1016/j.jmb.2004.04.038, 144 nM
+    k13rev = np.full((500), (kfbnd * 0.065))    # based on the multiple papers suggesting 30-100 pM
+    k14rev = np.full((500), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
     
     # detailed balance
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
@@ -224,19 +200,8 @@ def rateComp(ax, unkVec):
     k21rev = k22rev * k23rev / k16rev
     k20rev = k22rev * k24rev / k17rev
     
-    # append analogous rxnrates for IL2/15
-    k1_k13 = np.append(k1rev, k13rev)
-    k2_k14 = np.append(k2rev, k14rev)
-    k4_k16 = np.append(k4rev, k16rev)
-    k5_k17 = np.append(k5rev, k17rev)
-    k8_k20 = np.append(k8rev, k20rev)
-    k9_k21 = np.append(k9rev, k21rev)
-    k10_k22 = np.append(k10rev, k22rev)
-    k11_k23 = np.append(k11rev, k23rev)
-    k12_k24 = np.append(k12rev, k24rev)    
-    
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'k1_k13': k1_k13, 'k2_k14': k2_k14, 'k4_k16': k4_k16, 'k5_k17': k5_k17, 'k8_k20': k8_k20, 'k9_k21': k9_k21, 'k10_k22': k10_k22, 'k11_k23': k11_k23, 'k12_k24': k12_k24})
+    df = pd.DataFrame({'k1_k13': np.append(k1rev, k13rev), 'k2_k14': np.append(k2rev, k14rev), 'k4_k16': np.append(k4rev, k16rev), 'k5_k17': np.append(k5rev, k17rev), 'k8_k20': np.append(k8rev, k20rev), 'k9_k21': np.append(k9rev, k21rev), 'k10_k22': np.append(k10rev, k22rev), 'k11_k23': np.append(k11rev, k23rev), 'k12_k24': np.append(k12rev, k24rev)})
     
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL2'
