@@ -210,9 +210,12 @@ def rateComp(ax, unkVec):
     # melt into long form and take log value
     melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of value')
     melted.loc[:, 'log10 of value'] = np.log10(melted.loc[:, 'log10 of value'])
+    
+    col_list = ["violet", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax)
-    a.set_title("Analogous reverse reaction rates")
-    
+    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap)
+    a.set_title("Analogous reverse reaction rates")    
     
