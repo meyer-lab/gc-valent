@@ -112,13 +112,15 @@ def surf_perc(ax, species, unkVec):
     ax[2].fill_between(ts, IL2_1_plus_top, IL2_1_plus_bot, color='darkorchid', alpha=0.5)
     ax[2].fill_between(ts, IL15_1_plus_top, IL15_1_plus_top, color='goldenrod', alpha=0.5)
     ax[3].fill_between(ts, IL2_500_plus_top, IL2_500_plus_bot, color='darkorchid', alpha=0.5)
-    ax[3].fill_between(ts, IL15_500_plus_top, IL2_500_minus_bot, color='goldenrod', alpha=0.5)
+    ax[3].fill_between(ts, IL15_500_plus_top, IL2_500_minus_bot, color='goldenrod', alpha=0.5)  
     
-    # set labels and titles
-    ax[0].set()
-    
+    ax[0].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra-")
+    ax[1].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra-")
+    ax[2].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra+")
+    ax[3].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra+")
         
     if (species == 'IL2Rb'):
+        # overlay experimental data
         path = os.path.dirname(os.path.abspath(__file__))
         data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
         data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values # imports file into pandas array
