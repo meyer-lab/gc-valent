@@ -235,7 +235,7 @@ def plot_pretreat(ax):
     # plot percentile ranges
     ax.fill_between(np.log10(pre_conc), IL4_stim_top, IL4_stim_bot, color='powderblue', alpha=0.5, label='IL-4 stim. (IL-7 pre.)')
     ax.fill_between(np.log10(pre_conc), IL7_stim_top, IL7_stim_bot, color='b', alpha=0.5, label='IL-7 stim. (IL-4 pre.)')
-    ax.set(title="IL-4 and IL-7 crosstalk", ylabel="Percent inhibition", xlabel="pretreatment concentration (nM)")
+    ax.set(title="IL-4 and IL-7 crosstalk", ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
     
     # add experimental data to plots
     ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
@@ -248,24 +248,22 @@ def plot_pretreat(ax):
 
 
 def surf_gc(ax, cytokC_pg):
-    size = 40
-    ts = np.linspace(0., 100., num=size)
+    PTS = 40
+    ts = np.linspace(0., 100., num=PTS)
     output = calc_surf_gc(ts, cytokC_pg)
-    IL4vec = output[:, 0:size]
-    IL7vec = output[:, size:(size*2)]
+    IL4vec = np.transpose(output[:, 0:PTS])
+    IL7vec = np.transpose(output[:, PTS:(PTS*2)])
     
-    for ii in range(499):
-        ax.plot(ts, IL4vec[ii, :], color='powderblue', alpha=0.5, zorder=ii)
-        ax.plot(ts, IL7vec[ii, :], color='b', alpha=0.5, zorder=ii)
+    # calculate top and bottom percentiles
+    IL4vec_top = np.percentile(IL4vec, 97.5, axis=1)
+    IL4vec_bot = np.percentile(IL4vec, 2.5, axis=1)
+    IL7vec_top = np.percentile(IL7vec, 97.5, axis=1)
+    IL7vec_bot = np.percentile(IL7vec, 2.5, axis=1)
     
-    # include label for last iteration only
-    ax.plot(ts, IL4vec[499, :], color='powderblue', label='IL4', alpha=0.5, zorder=500)
-    ax.plot(ts, IL7vec[499, :], color='b', label='IL7', alpha=0.5, zorder=500)
-    
-    ax.set_title("Surface gc: " + str(cytokC_pg) + ' pg/mL')
-    ax.set_ylim(0,120)
-    ax.set_ylabel("surface gamma chain (% x 100)")
-    ax.set_xlabel("time (min)")
+    # plot percentile ranges
+    ax.fill_between(ts, IL4vec_top, IL4vec_bot, color='powderblue', alpha=0.5, label="IL4")
+    ax.fill_between(ts, IL7vec_top, IL7vec_bot, color='b', alpha=0.5, label="IL7")
+    ax.set(title=("Ligand conc.: " + str(cytokC_pg) + ' pg/mL'), ylabel="surface gamma chain (% x 100)", xlabel="time (min)")
     ax.legend()
     
 def calc_surf_gc(t, cytokC_pg):
