@@ -1,15 +1,16 @@
 """
 This creates Figure 1.
 """
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
-from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
-from ..model import nParams
+import pymc3 as pm, os
+from os.path import join
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import pymc3 as pm, os
-from os.path import join
 from ..fit import build_model
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
+from ..model import nParams
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -33,7 +34,6 @@ def surf_perc(ax, species, unkVec):
     """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
     if species == 'IL2Rb':
         surf = surf_IL2Rb() # load proper class
-
         # overlay experimental data
         path = os.path.dirname(os.path.abspath(__file__))
         data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
@@ -46,6 +46,7 @@ def surf_perc(ax, species, unkVec):
         ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
         ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
         ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
+    
     if species == 'gc':
         surf = surf_gc()    # load proper class
 
@@ -80,9 +81,15 @@ def surf_perc(ax, species, unkVec):
     plot_conf_int(ax[2], ts, IL2_1_plus, "darkorchid", "IL2")
     plot_conf_int(ax[2], ts, IL15_1_plus, "goldenrod", "IL15")
     plot_conf_int(ax[3], ts, IL2_500_plus, "darkorchid", "IL2")
-    plot_conf_int(ax[3], ts, IL15_500_plus, "goldenrod", "IL15") 
+    plot_conf_int(ax[3], ts, IL15_500_plus, "goldenrod", "IL15")
+    
+    # set titles
+    ax[0].set_title()
 
     # label axes and show legends
+    for ii in range(4):
+        ax[ii].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"))
+        ax[ii].legend()
     ax[0].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra-")
     ax[1].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra-")
     ax[2].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra+")
@@ -208,4 +215,4 @@ def rateComp(ax, unkVec):
 
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap)
-    a.set_title("Analogous reverse reaction rates")    
+    a.set_title("Analogous reverse reaction rates")

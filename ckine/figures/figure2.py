@@ -1,16 +1,14 @@
 """
 This creates Figure 2.
 """
+import pymc3 as pm, os
+from os.path import join
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import pymc3 as pm, os
-from os.path import join
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 from ..fit_others import build_model
-
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
