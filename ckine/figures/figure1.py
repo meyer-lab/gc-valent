@@ -21,10 +21,10 @@ def makeFigure():
 
     subplotLabel(ax[0], 'A')
     unkVec = import_samples()
-    pstat_act(ax[0:2], unkVec)
+    #pstat_act(ax[0:2], unkVec)
     #rateComp(ax[2], unkVec)
-    #surf_perc(ax[3:7], 'IL2Rb', unkVec)
-    #surf_perc(ax[7:11], 'gc', unkVec)
+    surf_perc(ax[3:7], 'IL2Rb', unkVec)
+    surf_perc(ax[7:11], 'gc', unkVec)
     #violinPlots(ax[11:13], unkVec)
 
     f.tight_layout()
@@ -61,22 +61,62 @@ def surf_perc(ax, species, unkVec):
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
     size = len(ts)
+    IL2_1_plus = np.zeros((size, 500))
+    IL2_500_plus = IL2_1_plus.copy()
+    IL2_1_minus = IL2_1_plus.copy()
+    IL2_500_minus = IL2_1_plus.copy()
+    IL15_1_plus = IL2_1_plus.copy()
+    IL15_500_plus = IL2_1_plus.copy()
+    IL15_1_minus = IL2_1_plus.copy()
+    IL15_500_minus = IL2_1_plus.copy()
 
     for ii in range(0,500):
         output = surf.calc(unkVec[:, ii], ts) * y_max
-        IL2_1_plus = output[0:(size)]
-        IL2_500_plus = output[(size):(size*2)]
-        IL2_1_minus = output[(size*2):(size*3)]
-        IL2_500_minus = output[(size*3):(size*4)]
-        IL15_1_plus = output[(size*4):(size*5)]
-        IL15_500_plus = output[(size*5):(size*6)]
-        IL15_1_minus = output[(size*6):(size*7)]
-        IL15_500_minus = output[(size*7):(size*8)]
+        IL2_1_plus[:, ii] = output[0:(size)]
+        IL2_500_plus[:, ii] = output[(size):(size*2)]
+        IL2_1_minus[:, ii] = output[(size*2):(size*3)]
+        IL2_500_minus[:, ii] = output[(size*3):(size*4)]
+        IL15_1_plus[:, ii] = output[(size*4):(size*5)]
+        IL15_500_plus[:, ii] = output[(size*5):(size*6)]
+        IL15_1_minus[:, ii] = output[(size*6):(size*7)]
+        IL15_500_minus[:, ii] = output[(size*7):(size*8)]
 
-        plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-', ax[0], ts, 'surf', species)
-        plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1], ts, 'surf', species)
-        plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2], ts, 'surf', species)
-        plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3], ts, 'surf', species)
+        #plot_structure(IL2_1_minus, IL15_1_minus, '1 nM and IL2Ra-', ax[0], ts, 'surf', species)
+        #plot_structure(IL2_500_minus, IL15_500_minus, "500 nM and IL2Ra-", ax[1], ts, 'surf', species)
+        #plot_structure(IL2_1_plus, IL15_1_plus, "1 nM and IL2Ra+", ax[2], ts, 'surf', species)
+        #plot_structure(IL2_500_plus, IL15_500_plus, "500 nM and IL2Ra+", ax[3], ts, 'surf', species)
+        
+    # calculate 97.5th and 2.5th percentiles for each time pt. 
+    IL2_1_plus_top = np.percentile(IL2_1_plus, 97.5, axis=1)
+    IL2_1_plus_bot = np.percentile(IL2_1_plus, 2.5, axis=1)
+    IL2_500_plus_top = np.percentile(IL2_500_plus, 97.5, axis=1)
+    IL2_500_plus_bot = np.percentile(IL2_500_plus, 2.5, axis=1)
+    IL2_1_minus_top = np.percentile(IL2_1_minus, 97.5, axis=1)
+    IL2_1_minus_bot = np.percentile(IL2_1_minus, 2.5, axis=1)
+    IL2_500_minus_top = np.percentile(IL2_500_minus, 97.5, axis=1)
+    IL2_500_minus_bot = np.percentile(IL2_500_minus, 2.5, axis=1)
+    IL15_1_plus_top = np.percentile(IL15_1_plus, 97.5, axis=1)
+    IL15_1_plus_bot = np.percentile(IL15_1_plus, 2.5, axis=1)
+    IL15_500_plus_top = np.percentile(IL15_500_plus, 97.5, axis=1)
+    IL15_500_plus_bot = np.percentile(IL15_500_plus, 2.5, axis=1)
+    IL15_1_minus_top = np.percentile(IL15_1_minus, 97.5, axis=1)
+    IL15_1_minus_bot = np.percentile(IL15_1_minus, 2.5, axis=1)
+    IL15_500_minus_top = np.percentile(IL15_500_minus, 97.5, axis=1)
+    IL15_500_minus_bot = np.percentile(IL15_500_minus, 2.5, axis=1)
+    
+    # plot shaded regions representing 95% confidence interval
+    ax[0].fill_between(ts, IL2_1_minus_top, IL2_1_minus_bot, color='darkorchid', alpha=0.5)
+    ax[0].fill_between(ts, IL15_1_minus_top, IL15_1_minus_bot, color='goldenrod', alpha=0.5)
+    ax[1].fill_between(ts, IL2_500_minus_top, IL2_500_minus_bot, color='darkorchid', alpha=0.5)
+    ax[1].fill_between(ts, IL15_500_minus_top, IL15_500_minus_bot, color='goldenrod', alpha=0.5)
+    ax[2].fill_between(ts, IL2_1_plus_top, IL2_1_plus_bot, color='darkorchid', alpha=0.5)
+    ax[2].fill_between(ts, IL15_1_plus_top, IL15_1_plus_top, color='goldenrod', alpha=0.5)
+    ax[3].fill_between(ts, IL2_500_plus_top, IL2_500_plus_bot, color='darkorchid', alpha=0.5)
+    ax[3].fill_between(ts, IL15_500_plus_top, IL2_500_minus_bot, color='goldenrod', alpha=0.5)
+    
+    # set labels and titles
+    ax[0].set()
+    
         
     if (species == 'IL2Rb'):
         path = os.path.dirname(os.path.abspath(__file__))
