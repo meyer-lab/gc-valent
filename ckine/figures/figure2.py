@@ -1,15 +1,13 @@
 """
 This creates Figure 2.
 """
-from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names, plot_conf_int
-from ..plot_model_prediction import pstat
-from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import matplotlib.pyplot as plt
 import pymc3 as pm, os
 from os.path import join
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 from ..fit_others import build_model
 
 
@@ -171,21 +169,15 @@ def pretreat_calc(unkVec, pre_conc):
     def singleCalc_7stim(unkVec, pre_cytokine, conc):
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = conc
-
         y0, retVal = runCkineU(ts, unkVec2)
-
         assert retVal >= 0
-
         unkVec2[2] = IL7_stim_conc # add in IL7 while leaving IL4 in the system
         returnn, retVal = runCkineY0(y0, ts, unkVec2)
-        
         return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
-    
+
     assert unkVec.size == nParams()
     actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_conc), np.float64)
     actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_conc), np.float64)
-    
-    actVec = np.concatenate((actVec_IL4stim, actVec_IL7stim))
     
     def singleCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -203,7 +195,7 @@ def pretreat_calc(unkVec, pre_conc):
 
 
 def plot_pretreat(ax):
-    unkVec, scales = import_samples()
+    unkVec = import_samples()[0]
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
@@ -246,7 +238,7 @@ def surf_gc(ax, cytokC_pg):
     
 def calc_surf_gc(t, cytokC_pg):
     gc_species_IDX = getSurfaceGCSpecies()
-    unkVec, scales = import_samples()
+    unkVec = import_samples()[0]
     
     def singleCalc(unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
