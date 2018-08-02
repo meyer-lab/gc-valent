@@ -95,13 +95,6 @@ def pstat_plot(ax):
     path = os.path.dirname(os.path.abspath(__file__))
     dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
-    
-    def plot_structure(IL4vec, IL7vec, title, ax):
-        ax.set_title(title)
-        ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5)
-        ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5) 
-        ax.set_ylabel('pSTAT activation' )
-        ax.set_xlabel('stimulation concentration (nM)')
 
     IL4_output = np.zeros((PTS, 500))
     IL7_output = IL4_output.copy()
@@ -109,8 +102,6 @@ def pstat_plot(ax):
         output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
         IL4_output[:, ii] = output[0:PTS]
         IL7_output[:, ii] = output[PTS:(PTS*2)]
-
-        #plot_structure(IL4_output, IL7_output, "pSTAT activity", ax)
         
     # calculate top and bottom percentiles
     IL4_top = np.percentile(IL4_output, 97.5, axis=1)
