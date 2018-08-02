@@ -24,35 +24,31 @@ def perform_decomposition(tensor, r):
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
+def reorient_one(factors):
+    """Function that takes in 1D array of each of the 4 factor matrices and decides if that column should flip or not and then flips it."""
+    component_means = np.array([np.mean(factors[0]), np.mean(factors[1]), np.mean(factors[2]), np.mean(factors[3])])
+
+    if np.sum(component_means < 0) >= 2 and np.sum(component_means < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
+        count = 1
+        for index, factor in enumerate(factors):
+            if component_means[index] < 0 and count < 3:
+                factors[index] = factor * -1
+                count += 1
+
+    elif np.sum(np.array(component_means) < 0) == 4:
+        for index, factor in enumerate(factors):
+            factors[index] = factor * -1
+
+    return factors
+
 def reorient_factors(factors):
     """This function is to reorient the factors if at least one component in two factors matrices are negative."""
-    new_factors = list()
-    for ii in range(4):
-        new_factors.append(np.zeros_like(factors[ii]))
-
     for jj in range(factors[0].shape[1]):
-        component_means = list()
+        factors_in = [factors[0][:,jj], factors[1][:,jj], factors[2][:,jj], factors[3][:,jj]]
+        factors_out = reorient_one(factors_in)
         for kk in range(4):
-            component_means.append(np.mean(factors[kk][:,jj]))
-
-        if np.sum(np.array(component_means) < 0) >= 2 and np.sum(np.array(component_means) < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
-            count = 1
-            for index, ave in enumerate(np.array(component_means)):
-                if ave < 0 and count < 3:
-                    new_factors[index][:, jj] = factors[index][:, jj] * -1
-                    count += 1
-                else:
-                    new_factors[index][:, jj] = factors[index][:, jj]
-
-        elif np.sum(np.array(component_means) < 0) == 4:
-            for index, ave in enumerate(np.array(component_means)):
-                new_factors[index][:, jj] = factors[index][:, jj] * -1
-        else:
-            for index, _ in enumerate(np.array(component_means)):
-                new_factors[index][:, jj] = factors[index][:, jj]
-
-    return new_factors
-
+            factors[kk][:,jj] = factors_out[kk]
+    return factors
 
 def find_R2X(values, factors):
     '''Compute R2X'''
