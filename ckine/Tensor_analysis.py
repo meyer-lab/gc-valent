@@ -36,7 +36,7 @@ def reorient_factors(factors):
             component_means.append(np.mean(factors[kk][:,jj]))
 
         if np.sum(np.array(component_means) < 0) >= 2 and np.sum(np.array(component_means) < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
-            count = 0
+            count = 1
             for index, ave in enumerate(np.array(component_means)):
                 if ave < 0 and count < 3:
                     new_factors[index][:, jj] = factors[index][:, jj] * -1
