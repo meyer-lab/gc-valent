@@ -1,7 +1,7 @@
 """
 This creates Figure 2.
 """
-from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names
+from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names, plot_conf_int
 from ..plot_model_prediction import pstat
 from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 import numpy as np
@@ -254,15 +254,8 @@ def surf_gc(ax, cytokC_pg):
     IL4vec = np.transpose(output[:, 0:PTS])
     IL7vec = np.transpose(output[:, PTS:(PTS*2)])
     
-    # calculate top and bottom percentiles
-    IL4vec_top = np.percentile(IL4vec, 97.5, axis=1)
-    IL4vec_bot = np.percentile(IL4vec, 2.5, axis=1)
-    IL7vec_top = np.percentile(IL7vec, 97.5, axis=1)
-    IL7vec_bot = np.percentile(IL7vec, 2.5, axis=1)
-    
-    # plot percentile ranges
-    ax.fill_between(ts, IL4vec_top, IL4vec_bot, color='powderblue', alpha=0.5, label="IL4")
-    ax.fill_between(ts, IL7vec_top, IL7vec_bot, color='b', alpha=0.5, label="IL7")
+    plot_conf_int(ax, ts, IL4vec, "powderblue", "IL4")
+    plot_conf_int(ax, ts, IL7vec, "b", "IL7")
     ax.set(title=("Ligand conc.: " + str(cytokC_pg) + ' pg/mL'), ylabel="surface gamma chain (% x 100)", xlabel="time (min)")
     ax.legend()
     

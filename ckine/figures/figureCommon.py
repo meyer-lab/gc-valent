@@ -3,6 +3,7 @@
 """
 import seaborn as sns
 from matplotlib import gridspec, pyplot as plt
+import numpy as np
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
     sns.set(style="whitegrid",
@@ -40,3 +41,8 @@ def traf_names():
 
 def Rexpr_names():
     return ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra', 'IL21Ra']
+
+def plot_conf_int(ax, x_axis, y_axis, color, label):
+    y_axis_top = np.percentile(y_axis, 97.5, axis=1)
+    y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
