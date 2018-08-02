@@ -24,30 +24,25 @@ def perform_decomposition(tensor, r):
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
-def reorient_one(factors):
-    """Function that takes in 1D array of each of the 4 factor matrices and decides if that column should flip or not and then flips it."""
-    component_means = np.array([np.mean(factors[0]), np.mean(factors[1]), np.mean(factors[2]), np.mean(factors[3])])
-
+def reorient_one(factors, component_index):
+    """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
+    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index], factors[3][:,component_index]]
+    component_means = np.array([np.mean(factors_idx[0]), np.mean(factors_idx[1]), np.mean(factors_idx[2]), np.mean(factors_idx[3])])
     if np.sum(component_means < 0) >= 2 and np.sum(component_means < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
         count = 1
-        for index, factor in enumerate(factors):
+        for index, factor_idx in enumerate(factors_idx):
             if component_means[index] < 0 and count < 3:
-                factors[index] = factor * -1
+                factors[index][:, component_index] = factor_idx * -1
                 count += 1
-
     elif np.sum(np.array(component_means) < 0) == 4:
-        for index, factor in enumerate(factors):
-            factors[index] = factor * -1
-
+        for index, factor_idx in enumerate(factors_idx):
+            factors[index][:,component_index] = factor_idx * -1
     return factors
 
 def reorient_factors(factors):
     """This function is to reorient the factors if at least one component in two factors matrices are negative."""
     for jj in range(factors[0].shape[1]):
-        factors_in = [factors[0][:,jj], factors[1][:,jj], factors[2][:,jj], factors[3][:,jj]]
-        factors_out = reorient_one(factors_in)
-        for kk in range(4):
-            factors[kk][:,jj] = factors_out[kk]
+        factors = reorient_one(factors, jj)
     return factors
 
 def find_R2X(values, factors):
