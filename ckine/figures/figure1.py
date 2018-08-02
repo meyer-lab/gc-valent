@@ -1,8 +1,8 @@
 """
 This creates Figure 1.
 """
-import pymc3 as pm, os
 from os.path import join
+import pymc3 as pm, os
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -46,7 +46,7 @@ def surf_perc(ax, species, unkVec):
         ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
         ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
         ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
-    
+
     if species == 'gc':
         surf = surf_gc()    # load proper class
 
@@ -65,7 +65,7 @@ def surf_perc(ax, species, unkVec):
         results[:, ii, 3, 1] = output[(size*5):(size*6)]
         results[:, ii, 0, 1] = output[(size*6):(size*7)]
         results[:, ii, 1, 1] = output[(size*7):(size*8)]
-    
+
     for n in range(4):
         # plot results within confidence intervals
         plot_conf_int(ax[n], ts, results[:, :, n, 0], "darkorchid", "IL2")

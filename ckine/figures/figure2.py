@@ -177,11 +177,12 @@ def pretreat_calc(unkVec, pre_conc):
 
 
 def plot_pretreat(ax):
+    """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
     unkVec = import_samples()[0]
     path = os.path.dirname(os.path.abspath(__file__))
-    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
+    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
-    IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation 
+    IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation
     PTS = 30
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
     IL4_stim = np.zeros((PTS, 500))
@@ -207,6 +208,7 @@ def plot_pretreat(ax):
 
 
 def surf_gc(ax, cytokC_pg):
+    """ Generate a plot that shows the relative amount of gc on the cell surface under IL4 and IL7 stimulation. """
     PTS = 40
     ts = np.linspace(0., 100., num=PTS)
     output = calc_surf_gc(ts, cytokC_pg)
@@ -246,5 +248,5 @@ def data_path():
     path = os.path.dirname(os.path.abspath(__file__))
     dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values
-    data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
+    data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
     return (dataIL4, dataIL7, data_pretreat)
