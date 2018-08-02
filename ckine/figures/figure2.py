@@ -103,16 +103,11 @@ def pstat_plot(ax):
         IL4_output[:, ii] = output[0:PTS]
         IL7_output[:, ii] = output[PTS:(PTS*2)]
         
-    # calculate top and bottom percentiles
-    IL4_top = np.percentile(IL4_output, 97.5, axis=1)
-    IL4_bot = np.percentile(IL4_output, 2.5, axis=1)
-    IL7_top = np.percentile(IL7_output, 97.5, axis=1)
-    IL7_bot = np.percentile(IL7_output, 2.5, axis=1)
+    # plot confidence intervals based on model predictions
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output, "powderblue", "IL4")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output, "b", "IL7")
     
-    # plot shaded regions between confidence intervals
-    ax.fill_between(np.log10(cytokC_common), IL4_top, IL4_bot, color='powderblue', alpha=0.5, label='IL4')
-    ax.fill_between(np.log10(cytokC_common), IL7_top, IL7_bot, color='b', alpha=0.5, label='IL7')
-        
+    # overlay experimental data
     ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', zorder=100)
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2], color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k', zorder=300)

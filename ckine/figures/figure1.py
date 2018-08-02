@@ -1,7 +1,7 @@
 """
 This creates Figure 1.
 """
-from .figureCommon import subplotLabel, getSetup, traf_names
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..model import nParams
 import numpy as np
@@ -80,35 +80,18 @@ def surf_perc(ax, species, unkVec):
         IL15_500_plus[:, ii] = output[(size*5):(size*6)]
         IL15_1_minus[:, ii] = output[(size*6):(size*7)]
         IL15_500_minus[:, ii] = output[(size*7):(size*8)]
-        
-    # calculate 97.5th and 2.5th percentiles for each time pt. 
-    IL2_1_plus_top = np.percentile(IL2_1_plus, 97.5, axis=1)
-    IL2_1_plus_bot = np.percentile(IL2_1_plus, 2.5, axis=1)
-    IL2_500_plus_top = np.percentile(IL2_500_plus, 97.5, axis=1)
-    IL2_500_plus_bot = np.percentile(IL2_500_plus, 2.5, axis=1)
-    IL2_1_minus_top = np.percentile(IL2_1_minus, 97.5, axis=1)
-    IL2_1_minus_bot = np.percentile(IL2_1_minus, 2.5, axis=1)
-    IL2_500_minus_top = np.percentile(IL2_500_minus, 97.5, axis=1)
-    IL2_500_minus_bot = np.percentile(IL2_500_minus, 2.5, axis=1)
-    IL15_1_plus_top = np.percentile(IL15_1_plus, 97.5, axis=1)
-    IL15_1_plus_bot = np.percentile(IL15_1_plus, 2.5, axis=1)
-    IL15_500_plus_top = np.percentile(IL15_500_plus, 97.5, axis=1)
-    IL15_500_plus_bot = np.percentile(IL15_500_plus, 2.5, axis=1)
-    IL15_1_minus_top = np.percentile(IL15_1_minus, 97.5, axis=1)
-    IL15_1_minus_bot = np.percentile(IL15_1_minus, 2.5, axis=1)
-    IL15_500_minus_top = np.percentile(IL15_500_minus, 97.5, axis=1)
-    IL15_500_minus_bot = np.percentile(IL15_500_minus, 2.5, axis=1)
     
-    # plot shaded regions representing 95% confidence interval
-    ax[0].fill_between(ts, IL2_1_minus_top, IL2_1_minus_bot, color='darkorchid', alpha=0.5, label='IL2')
-    ax[0].fill_between(ts, IL15_1_minus_top, IL15_1_minus_bot, color='goldenrod', alpha=0.5, label='IL15')
-    ax[1].fill_between(ts, IL2_500_minus_top, IL2_500_minus_bot, color='darkorchid', alpha=0.5, label='IL2')
-    ax[1].fill_between(ts, IL15_500_minus_top, IL15_500_minus_bot, color='goldenrod', alpha=0.5, label='IL15')
-    ax[2].fill_between(ts, IL2_1_plus_top, IL2_1_plus_bot, color='darkorchid', alpha=0.5, label='IL2')
-    ax[2].fill_between(ts, IL15_1_plus_top, IL15_1_plus_top, color='goldenrod', alpha=0.5, label='IL15')
-    ax[3].fill_between(ts, IL2_500_plus_top, IL2_500_plus_bot, color='darkorchid', alpha=0.5, label='IL2')
-    ax[3].fill_between(ts, IL15_500_plus_top, IL2_500_minus_bot, color='goldenrod', alpha=0.5, label='IL15')  
+    # plot confidence intervals based on model predictions
+    plot_conf_int(ax[0], ts, IL2_1_minus, "darkorchid", "IL2")
+    plot_conf_int(ax[0], ts, IL15_1_minus, "goldenrod", "IL15")
+    plot_conf_int(ax[1], ts, IL2_500_minus, "darkorchid", "IL2")
+    plot_conf_int(ax[1], ts, IL15_500_minus, "goldenrod", "IL15")
+    plot_conf_int(ax[2], ts, IL2_1_plus, "darkorchid", "IL2")
+    plot_conf_int(ax[2], ts, IL15_1_plus, "goldenrod", "IL15")
+    plot_conf_int(ax[3], ts, IL2_500_plus, "darkorchid", "IL2")
+    plot_conf_int(ax[3], ts, IL15_500_plus, "goldenrod", "IL15") 
     
+    # label axes
     ax[0].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra-")
     ax[1].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra-")
     ax[2].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra+")
@@ -153,21 +136,11 @@ def pstat_act(ax, unkVec):
         IL15_plus[:, ii] = output[(PTS*2):(PTS*3)]
         IL15_minus[:, ii] = output[(PTS*3):(PTS*4)]
 
-    # calculate 97.5th and 2.5th percentiles for each cytokine conc. 
-    IL2_plus_top = np.percentile(IL2_plus, 97.5, axis=1)
-    IL2_plus_bot = np.percentile(IL2_plus, 2.5, axis=1)
-    IL2_minus_top = np.percentile(IL2_minus, 97.5, axis=1)
-    IL2_minus_bot = np.percentile(IL2_minus, 2.5, axis=1)
-    IL15_plus_top = np.percentile(IL15_plus, 97.5, axis=1)
-    IL15_plus_bot = np.percentile(IL15_plus, 2.5, axis=1)
-    IL15_minus_top = np.percentile(IL15_minus, 97.5, axis=1)
-    IL15_minus_bot = np.percentile(IL15_minus, 2.5, axis=1)
-    
-    # plot shaded regions representing 95% confidence interval
-    ax[0].fill_between(np.log10(cytokC), IL2_minus_top, IL2_minus_bot, color='darkorchid', alpha=0.5, label='IL2')
-    ax[0].fill_between(np.log10(cytokC), IL15_minus_top, IL15_minus_bot, color='goldenrod', alpha=0.5, label='IL15')
-    ax[1].fill_between(np.log10(cytokC), IL2_plus_top, IL2_plus_bot, color='darkorchid', alpha=0.5, label='IL2')
-    ax[1].fill_between(np.log10(cytokC), IL15_plus_top, IL15_plus_bot, color='goldenrod', alpha=0.5, label='IL15')
+    # plot confidence intervals based on model predictions
+    plot_conf_int(ax[0], np.log10(cytokC), IL2_minus, "darkorchid", "IL2")
+    plot_conf_int(ax[0], np.log10(cytokC), IL15_minus, "goldenrod", "IL15")
+    plot_conf_int(ax[1], np.log10(cytokC), IL2_plus, "darkorchid", "IL2")
+    plot_conf_int(ax[1], np.log10(cytokC), IL15_plus, "goldenrod", "IL15")
        
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))

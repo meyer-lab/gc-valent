@@ -43,6 +43,7 @@ def Rexpr_names():
     return ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra', 'IL21Ra']
 
 def plot_conf_int(ax, x_axis, y_axis, color, label):
+    """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 97.5, axis=1)
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
