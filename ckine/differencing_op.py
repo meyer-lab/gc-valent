@@ -12,7 +12,7 @@ class runCkineOp(Op):
     def __init__(self, ts):
         self.dOp = runCkineOpDiff(ts)
 
-    def infer_shape(self, i0_shapes):
+    def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
         return [(nSpecies(), )]
 
@@ -53,7 +53,7 @@ class runCkineKineticOp(Op):
     def __init__(self, ts, condense):
         self.dOp = runCkineOpKineticDiff(ts, condense)
 
-    def infer_shape(self, i0_shapes):
+    def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
         return [(self.dOp.ts.size, )]
 
@@ -93,7 +93,7 @@ class runCkineDoseOp(Op):
     def __init__(self, tt, condense, conditions):
         self.dOp = runCkineOpDoseDiff(tt, condense, conditions)
 
-    def infer_shape(self, i0_shapes):
+    def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0], )]
 

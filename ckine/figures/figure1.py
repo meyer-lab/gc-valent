@@ -84,20 +84,15 @@ def surf_perc(ax, species, unkVec):
     plot_conf_int(ax[3], ts, IL15_500_plus, "goldenrod", "IL15")
     
     # set titles
-    ax[0].set_title()
+    ax[0].set_title("1 nM and IL2Ra-")
+    ax[1].set_title("500 nM and IL2Ra-")
+    ax[2].set_title("1 nM and IL2Ra+")
+    ax[3].set_title("500 nM and IL2Ra+")
 
     # label axes and show legends
     for ii in range(4):
-        ax[ii].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"))
+        ax[ii].set(xlabel="time (min)", ylabel=("surface " + str(species) + " (%)"))
         ax[ii].legend()
-    ax[0].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra-")
-    ax[1].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra-")
-    ax[2].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="1 nM and IL2Ra+")
-    ax[3].set(xlabel="time", ylabel=("surface " + str(species) + " (%)"), title="500 nM and IL2Ra+")
-    ax[0].legend()
-    ax[1].legend()
-    ax[2].legend()
-    ax[3].legend()
 
 def pstat_act(ax, unkVec):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
