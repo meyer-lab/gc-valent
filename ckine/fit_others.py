@@ -1,12 +1,11 @@
 """
 This file includes the classes and functions necessary to fit the IL4 and IL7 model to experimental data.
 """
-import pymc3 as pm, theano.tensor as T, os
 from os.path import join
-from theano import shared
+import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies
-from .differencing_op import runCkineOp, runCkineDoseOp
+from .differencing_op import runCkineDoseOp
 
 class IL4_7_activity:
     def __init__(self):
@@ -38,7 +37,6 @@ class IL4_7_activity:
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
         # Normalize to the scaling constants, put together into one vector
-        # TODO: make sure indexing in unkVec is correct for scales
         actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
@@ -68,7 +66,6 @@ class build_model:
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
             
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
