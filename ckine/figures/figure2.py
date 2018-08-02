@@ -1,8 +1,8 @@
 """
 This creates Figure 2.
 """
-import pymc3 as pm, os
 from os.path import join
+import pymc3 as pm, os
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -23,8 +23,6 @@ def makeFigure():
     plot_pretreat(ax[2])
     surf_gc(ax[3], 100.)
     violinPlots(ax[4:8])
-    
-    
 
     f.tight_layout()
 
@@ -44,43 +42,34 @@ def import_samples():
     sortF = trace.get_values('sortF', chains=[0])
     kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
     scales = trace.get_values('scales', chains=[0])
-    
     GCexpr = (328. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
     IL7Raexpr = (2591. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
     IL4Raexpr = (254. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
 
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., 
-            endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], 0., 0.,
-            np.squeeze(GCexpr[ii]), 0., np.squeeze(IL7Raexpr[ii]), 0., np.squeeze(IL4Raexpr[ii]), 0.])
-    
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], 0., 0., np.squeeze(GCexpr[ii]), 0., np.squeeze(IL7Raexpr[ii]), 0., np.squeeze(IL4Raexpr[ii]), 0.])
+
     return unkVec, scales
 
 def pstat_calc(unkVec, scales, cytokC):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
-    # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.]) # was 10. in literature
-    
+
     def singleCalc(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
-
         returnn, retVal = runCkineU(ts, unkVec)
-
         assert retVal >= 0
-
         return np.dot(returnn, activity)
-    
+
     assert unkVec.size == nParams()
     actVec_IL7 = np.fromiter((singleCalc(unkVec, 2, x) for x in cytokC), np.float64)
     actVec_IL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC), np.float64)
-    
-    actVec = np.concatenate((actVec_IL4 * scales[0], actVec_IL7 * scales[1]))
-    return actVec
-    
+    return np.concatenate((actVec_IL4 * scales[0], actVec_IL7 * scales[1]))
+
 def pstat_plot(ax):
     ''' This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. '''
     PTS = 30
@@ -258,11 +247,10 @@ def calc_surf_gc(t, cytokC_pg):
         
     return (result / np.max(result)) * 100.
 
-
 def data_path():
+    """ Loads the Gonnard data from the appropriate CSV files. """
     path = os.path.dirname(os.path.abspath(__file__))
     dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values
     data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     return (dataIL4, dataIL7, data_pretreat)
-

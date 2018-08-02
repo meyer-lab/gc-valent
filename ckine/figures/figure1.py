@@ -53,46 +53,33 @@ def surf_perc(ax, species, unkVec):
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
     size = len(ts)
-    IL2_1_plus = np.zeros((size, 500))
-    IL2_500_plus = IL2_1_plus.copy()
-    IL2_1_minus = IL2_1_plus.copy()
-    IL2_500_minus = IL2_1_plus.copy()
-    IL15_1_plus = IL2_1_plus.copy()
-    IL15_500_plus = IL2_1_plus.copy()
-    IL15_1_minus = IL2_1_plus.copy()
-    IL15_500_minus = IL2_1_plus.copy()
+    results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
     for ii in range(0,500):
         output = surf.calc(unkVec[:, ii], ts) * y_max
-        IL2_1_plus[:, ii] = output[0:(size)]
-        IL2_500_plus[:, ii] = output[(size):(size*2)]
-        IL2_1_minus[:, ii] = output[(size*2):(size*3)]
-        IL2_500_minus[:, ii] = output[(size*3):(size*4)]
-        IL15_1_plus[:, ii] = output[(size*4):(size*5)]
-        IL15_500_plus[:, ii] = output[(size*5):(size*6)]
-        IL15_1_minus[:, ii] = output[(size*6):(size*7)]
-        IL15_500_minus[:, ii] = output[(size*7):(size*8)]
-
-    # plot confidence intervals based on model predictions
-    plot_conf_int(ax[0], ts, IL2_1_minus, "darkorchid", "IL2")
-    plot_conf_int(ax[0], ts, IL15_1_minus, "goldenrod", "IL15")
-    plot_conf_int(ax[1], ts, IL2_500_minus, "darkorchid", "IL2")
-    plot_conf_int(ax[1], ts, IL15_500_minus, "goldenrod", "IL15")
-    plot_conf_int(ax[2], ts, IL2_1_plus, "darkorchid", "IL2")
-    plot_conf_int(ax[2], ts, IL15_1_plus, "goldenrod", "IL15")
-    plot_conf_int(ax[3], ts, IL2_500_plus, "darkorchid", "IL2")
-    plot_conf_int(ax[3], ts, IL15_500_plus, "goldenrod", "IL15")
+        results[:, ii, 2, 0] = output[0:(size)]
+        results[:, ii, 3, 0] = output[(size):(size*2)]
+        results[:, ii, 0, 0] = output[(size*2):(size*3)]
+        results[:, ii, 1, 0] = output[(size*3):(size*4)]
+        results[:, ii, 2, 1] = output[(size*4):(size*5)]
+        results[:, ii, 3, 1] = output[(size*5):(size*6)]
+        results[:, ii, 0, 1] = output[(size*6):(size*7)]
+        results[:, ii, 1, 1] = output[(size*7):(size*8)]
     
+    for n in range(4):
+        # plot results within confidence intervals
+        plot_conf_int(ax[n], ts, results[:, :, n, 0], "darkorchid", "IL2")
+        plot_conf_int(ax[n], ts, results[:, :, n, 1], "goldenrod", "IL15")
+        # label axes and show legends
+        ax[n].set(xlabel="time (min)", ylabel=("surface " + str(species) + " (%)"))
+        ax[n].legend()
+
     # set titles
     ax[0].set_title("1 nM and IL2Ra-")
     ax[1].set_title("500 nM and IL2Ra-")
     ax[2].set_title("1 nM and IL2Ra+")
     ax[3].set_title("500 nM and IL2Ra+")
 
-    # label axes and show legends
-    for ii in range(4):
-        ax[ii].set(xlabel="time (min)", ylabel=("surface " + str(species) + " (%)"))
-        ax[ii].legend()
 
 def pstat_act(ax, unkVec):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
