@@ -6,6 +6,7 @@ import pymc3 as pm, os
 import numpy as np
 import seaborn as sns
 import pandas as pd
+import string
 from ..fit import build_model
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
@@ -15,20 +16,19 @@ from ..model import nParams
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[8], multz={8: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 8], multz={0: 2, 8: 2})
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
-    ax[1].axis('off')
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec = import_samples()
-    pstat_act(ax[2:4], unkVec)
-    surf_perc(ax[4:8], 'IL2Rb', unkVec)
-    rateComp(ax[8], unkVec)
-    violinPlots(ax[9:11], unkVec)
+    pstat_act(ax[1:3], unkVec)
+    surf_perc(ax[3:7], 'IL2Rb', unkVec)
+    rateComp(ax[7], unkVec)
+    violinPlots(ax[8:10], unkVec)
 
     f.tight_layout()
 
