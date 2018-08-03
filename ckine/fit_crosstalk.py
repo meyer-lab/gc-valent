@@ -4,7 +4,7 @@ This file includes the classes and functions necessary to fit the IL4 and IL7 mo
 from os.path import join
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies, runCkineY0
+from .model import getTotalActiveSpecies, getTotalActiveCytokine
 from .differencing_op import runCkineDoseOp
 
 class IL4_7_activity:
@@ -51,46 +51,48 @@ class crosstalk:
         self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
         data = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
+        self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
+        self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
 
     def singleCalc_4stim(self, unkVec, pre_cytokine, conc):
         ''' This function generates the IL4 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. '''
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = conc
-        y0, retVal = runCkineU(ts, unkVec2)
+        y0, retVal = runCkineU(self.ts, unkVec2)
         assert retVal >= 0
-        unkVec2[4] = IL4_stim_conc # add in IL4 while leaving IL7 in system
-        returnn, retVal = runCkineY0(y0, ts, unkVec2)
+        unkVec2[4] = self.IL4_stim_conc # add in IL4 while leaving IL7 in system
+        returnn, retVal = runCkineY0(y0, self.ts, unkVec2)
         return getTotalActiveCytokine(4, np.squeeze(returnn)) # only look at active species associated with IL4
 
     def singleCalc_7stim(self, unkVec, pre_cytokine, conc):
         """ This function generates the IL7 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = conc
-        y0, retVal = runCkineU(ts, unkVec2)
+        y0, retVal = runCkineU(self.ts, unkVec2)
         assert retVal >= 0
-        unkVec2[2] = IL7_stim_conc # add in IL7 while leaving IL4 in the system
-        returnn, retVal = runCkineY0(y0, ts, unkVec2)
+        unkVec2[2] = self.IL7_stim_conc # add in IL7 while leaving IL4 in the system
+        returnn, retVal = runCkineY0(y0, self.ts, unkVec2)
         return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
 
     def singleCalc_no_pre(self, unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
-        returnn, retVal = runCkineU(ts, unkVec)
+        returnn, retVal = runCkineU(self.ts, unkVec)
         assert retVal >= 0
-        return np.dot(returnn, activity)
+        return np.dot(returnn, self.activity)
 
     def calc(self, unkVec):
         """ Generates residual calculation that compares model to data. """
         assert unkVec.size == nParams()
-        actVec_IL4stim = np.fromiter((self.singleCalc_4stim(unkVec, 2, x) for x in pre_conc), np.float64)
-        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x) for x in pre_conc), np.float64)
-        IL4stim_no_pre = self.singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
-        IL7stim_no_pre = self.singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
+        actVec_IL4stim = np.fromiter((self.singleCalc_4stim(unkVec, 2, x) for x in self.pre_IL7), np.float64)
+        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x) for x in self.pre_IL4), np.float64)
+        IL4stim_no_pre = self.singleCalc_no_pre(unkVec, 4, self.IL4_stim_conc)
+        IL7stim_no_pre = self.singleCalc_no_pre(unkVec, 2, self.IL7_stim_conc)
         
-        case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.
-        case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.
-        inh_vec = np.concatenate((case1, case1, case1, case2, case2, case2 ))
+        case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
+        case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        inh_vec = np.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
 
