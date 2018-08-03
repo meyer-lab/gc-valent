@@ -5,12 +5,10 @@ from os.path import join
 import pymc3 as pm, os
 import numpy as np
 import seaborn as sns
-import pandas as pd
+import pandas as pds
 import string
-from ..fit import build_model
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
-from ..model import nParams
 
 
 def makeFigure():
@@ -24,7 +22,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec = import_samples()
+    unkVec = import_samples_2_15()
     pstat_act(ax[1:3], unkVec)
     surf_perc(ax[3:7], 'IL2Rb', unkVec)
     rateComp(ax[7], unkVec)
@@ -41,8 +39,8 @@ def surf_perc(ax, species, unkVec):
         surf = surf_IL2Rb() # load proper class
         # overlay experimental data
         path = os.path.dirname(os.path.abspath(__file__))
-        data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
-        data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values # imports file into pandas array
+        data_minus = pds.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values # imports file into pandas array
+        data_plus = pds.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values # imports file into pandas array
         ax[0].scatter(data_minus[:,0], data_minus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra-
         ax[0].scatter(data_minus[:,0], data_minus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra-
         ax[1].scatter(data_minus[:,0], data_minus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra-
@@ -113,7 +111,7 @@ def pstat_act(ax, unkVec):
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
-    data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
+    data = pds.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
     ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra-
     ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra-
     ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra+
@@ -124,32 +122,12 @@ def pstat_act(ax, unkVec):
     ax[1].legend()
 
 
-def import_samples():
-    """ This function imports the csv results into a numpy array called unkVec. """
-    bmodel = build_model()
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    rxn = trace.get_values('rxn', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0])
-
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
-
-    return unkVec
-
 def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
 
-    traf = pd.DataFrame(unkVec[:, 17:22])
-    Rexpr = pd.DataFrame(unkVec[:, 22:26])
+    traf = pds.DataFrame(unkVec[:, 17:22])
+    Rexpr = pds.DataFrame(unkVec[:, 22:26])
 
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
@@ -186,14 +164,14 @@ def rateComp(ax, unkVec):
     k20rev = k22rev * k24rev / k17rev
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'k1_k13': np.append(k1rev, k13rev), 'k2_k14': np.append(k2rev, k14rev), 'k4_k16': np.append(k4rev, k16rev), 'k5_k17': np.append(k5rev, k17rev), 'k8_k20': np.append(k8rev, k20rev), 'k9_k21': np.append(k9rev, k21rev), 'k10_k22': np.append(k10rev, k22rev), 'k11_k23': np.append(k11rev, k23rev), 'k12_k24': np.append(k12rev, k24rev)})
+    df = pds.DataFrame({'k1_k13': np.append(k1rev, k13rev), 'k2_k14': np.append(k2rev, k14rev), 'k4_k16': np.append(k4rev, k16rev), 'k5_k17': np.append(k5rev, k17rev), 'k8_k20': np.append(k8rev, k20rev), 'k9_k21': np.append(k9rev, k21rev), 'k10_k22': np.append(k10rev, k22rev), 'k11_k23': np.append(k11rev, k23rev), 'k12_k24': np.append(k12rev, k24rev)})
 
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL2'
     df.loc[500:1000, 'cytokine'] = 'IL15'
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of value')
+    melted = pds.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of value')
     melted.loc[:, 'log10 of value'] = np.log10(melted.loc[:, 'log10 of value'])
 
     col_list = ["violet", "goldenrod"]
