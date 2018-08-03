@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pandas as pds
 from .figureCommon import subplotLabel, getSetup, load_cells, import_samples_2_15
-from from ..plot_model_prediction import pstat
+from ..plot_model_prediction import pstat
 
 
 def makeFigure():
