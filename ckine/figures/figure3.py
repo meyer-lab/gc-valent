@@ -35,7 +35,7 @@ def makeFigure():
     
     plot_split_R2X(ax[3], values, factors_list, n_comps)
     
-    plot_R2X_singles(ax[7], values, factors_list, n_comps)
+    plot_R2X_singles(ax[7], values, factors_list, n_comps = 14)
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
