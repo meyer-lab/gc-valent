@@ -22,6 +22,7 @@ def makeFigure():
     subplotLabel(ax[4], 'C')
     subplotLabel(ax[8], 'D')
     subplotLabel(ax[9], 'E')
+    subplotLabel(ax[10], 'F')
 
     unkVec = import_samples()
     pstat_act(ax[2:4], unkVec)
@@ -151,12 +152,12 @@ def violinPlots(ax, unkVec):
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
 
     traf.columns = traf_names()
-    b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0)
+    b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, cut=0)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     b.set(title="Trafficking parameters", ylabel="log10 of value")
 
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
-    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0)
+    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, cut=0)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel="log10 of value")
 
@@ -200,5 +201,5 @@ def rateComp(ax, unkVec):
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0)
+    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, scale="area")
     a.set_title("Analogous reverse reaction rates")
