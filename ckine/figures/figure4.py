@@ -38,18 +38,17 @@ def single_cell_act(unkVec, cytokC):
 def all_cells(ax, cell_data, cell_names, unkVec):
     """ Loops through all cell types and calculates activities. """
     cell_data = cell_data.values    # convert to numpy array
-    PTS = 30    # number of cytokine concentrations that are used
-    cytokC = np.logspace(-3.3, 2.7, PTS)
+    PTS = 60    # number of cytokine concentrations that are used
+    cytokC = np.logspace(-6.3, 2.7, PTS)
     numCells = cell_data.shape[1] - 1   # first column is receptor names
     results = np.zeros((PTS, numCells))
     
-    # for ii in range(0, numCells):       # for all cell types
-    for ii in range(0, 2):      # just testing first two cell types for now
+    for ii in range(0, numCells):       # for all cell types
         unkVec[22:30] = cell_data[:, ii+1] # place cell data in all rows of unkVec
         ax.plot(np.log10(cytokC), single_cell_act(unkVec, cytokC), label=cell_names[ii])
-        print("done with " + str(ii) + " cell type")
+        #print("done with " + str(ii) + " cell type")
         
-    ax.legend()
+    #ax.legend()
     # plot: x-axis is cytokC, y_axis is activity, different lines are cell types
     #ax.plot(cytokC, results[:, 0], title=cell_names[0])    
 
