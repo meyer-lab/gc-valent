@@ -24,13 +24,13 @@ def makeFigure():
 
     unkVec, scales = import_samples()
     pstat_plot(ax[1], unkVec, scales)
-    plot_pretreat(ax[2], unkVec)
+    plot_pretreat(ax[2], unkVec, "Inhibition with active endocytosis")
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
     
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo)
+    plot_pretreat(ax[8], unkVec_noActiveEndo, "Inhibition without active endocytosis")
 
     f.tight_layout()
 
@@ -182,7 +182,7 @@ def pretreat_calc(unkVec, pre_conc):
     return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
 
-def plot_pretreat(ax, unkVec):
+def plot_pretreat(ax, unkVec, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
@@ -200,7 +200,7 @@ def plot_pretreat(ax, unkVec):
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim, "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim, "b", "IL-7 stim. (IL-4 pre.)")
-    ax.set(title="IL-4 and IL-7 crosstalk", ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
+    ax.set(title=title, ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
 
     # add experimental data to plots
     ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
