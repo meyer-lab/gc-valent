@@ -6,6 +6,7 @@ import numpy as np
 import os
 import pandas as pds
 from .figureCommon import subplotLabel, getSetup, load_cells, import_samples_2_15
+from from ..plot_model_prediction import pstat
 
 
 def makeFigure():
@@ -19,10 +20,14 @@ def makeFigure():
 
     data, cell_names = load_cells()
     unkVec = import_samples_2_15()
-    print("loaded data and unkVec")
 
     f.tight_layout()
 
     return f
 
-#def IL2_vs_cells(ax, cell_data, unkVec)
+def IL2_vs_cells(ax, cell_data, cell_names, unkVec):
+    """ Cytokine activity vs IL2 dose for all cell populations. """
+    PTS = 30
+    cytokC = np.logspace(-3.3, 2.7, PTS)
+    act = np.fromiter((pstat.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
+

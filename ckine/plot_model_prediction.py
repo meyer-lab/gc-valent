@@ -55,7 +55,7 @@ class pstat:
         self.ts = np.array([500.]) # was 500. in literature
 
     def singleCalc(self, unkVec, cytokine, conc):
-        """ Calculates the surface IL2Rb over time for one condition. """
+        """ Calculates the pSTAT activity for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
 
