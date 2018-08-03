@@ -27,6 +27,10 @@ def makeFigure():
     plot_pretreat(ax[2], unkVec)
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
+    
+    unkVec_noActiveEndo = unkVec.copy()
+    unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
+    plot_pretreat(ax[8], unkVec_noActiveEndo)
 
     f.tight_layout()
 
