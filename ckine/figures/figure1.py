@@ -15,15 +15,19 @@ from ..model import nParams
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 9), (4, 4), mults=[2], multz={2: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[8], multz={8: 2})
 
     subplotLabel(ax[0], 'A')
+    subplotLabel(ax[2], 'B')
+    subplotLabel(ax[4], 'C')
+    subplotLabel(ax[8], 'D')
+    subplotLabel(ax[9], 'E')
+
     unkVec = import_samples()
-    pstat_act(ax[0:2], unkVec)
-    rateComp(ax[2], unkVec)
-    surf_perc(ax[3:7], 'IL2Rb', unkVec)
-    surf_perc(ax[7:11], 'gc', unkVec)
-    violinPlots(ax[11:13], unkVec)
+    pstat_act(ax[2:4], unkVec)
+    surf_perc(ax[4:8], 'IL2Rb', unkVec)
+    rateComp(ax[8], unkVec)
+    violinPlots(ax[9:11], unkVec)
 
     f.tight_layout()
 
@@ -147,12 +151,12 @@ def violinPlots(ax, unkVec):
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
 
     traf.columns = traf_names()
-    b = sns.violinplot(data=np.log10(traf), ax=ax[0])
+    b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     b.set(title="Trafficking parameters", ylabel="log10 of value")
 
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
-    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1])
+    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel="log10 of value")
 
@@ -196,5 +200,5 @@ def rateComp(ax, unkVec):
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap)
+    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0)
     a.set_title("Analogous reverse reaction rates")
