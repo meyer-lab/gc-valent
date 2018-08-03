@@ -2,7 +2,10 @@
 This creates Figure 4.
 """
 import string
-from .figureCommon import subplotLabel, getSetup
+import numpy as np
+import os
+import pandas as pds
+from .figureCommon import subplotLabel, getSetup, load_cells
 
 
 def makeFigure():
@@ -14,6 +17,9 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
+    data, cell_names = load_cells()
+
     f.tight_layout()
 
     return f
+

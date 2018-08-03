@@ -2,6 +2,8 @@
 This file contains functions that are used in multiple figures.
 """
 import seaborn as sns
+import os
+import pandas as pds
 from matplotlib import gridspec, pyplot as plt
 import numpy as np
 
@@ -44,3 +46,11 @@ def plot_conf_int(ax, x_axis, y_axis, color, label):
     y_axis_top = np.percentile(y_axis, 97.5, axis=1)
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
+
+def load_cells():
+    """ Loads CSV file that gives Rexpr levels for different cell types. """
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
+    data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
+    cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
+    return data, cell_names
