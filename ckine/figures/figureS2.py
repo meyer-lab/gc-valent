@@ -69,7 +69,7 @@ def plot_values(ax, factors, component_x, component_y):
     for q,p in zip(factors[6:14, component_x - 1], factors[5:13, component_y - 1]):
         ax.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors), label = 'Surface Receptor')
         
-    for q,p in zip(factors[14::, component_x - 1], factors[13::, component_y - 1]):
+    for q,p in zip(factors[14::, component_x - 1], factors[14::, component_y - 1]):
         ax.plot(q, p, linestyle = '', c = 'k', marker = next(markersReceptors), label = 'Total Receptor')
 
     # Put a legend to the right of the current axis

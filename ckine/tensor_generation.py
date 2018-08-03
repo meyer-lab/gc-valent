@@ -91,7 +91,7 @@ def reduce_values(y_of_combos):
     for j in range(len(indices)):
         values[:,:,5+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
     for k in range(len(indices)):
-        values[:,:,5+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
+        values[:,:,5+len(indices)+k] = values[:,:,5+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
 
 def prepare_tensor(lig, n_timepoints = 100):
