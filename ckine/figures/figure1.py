@@ -201,5 +201,5 @@ def rateComp(ax, unkVec):
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, scale="area")
+    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, scale='area', bw=10)
     a.set_title("Analogous reverse reaction rates")
