@@ -21,22 +21,30 @@ def makeFigure():
     data, cell_names = load_cells()
     unkVec = import_samples_2_15()
     
-    IL2_vs_cells(ax[0], data, cell_names, unkVec)
+    all_cells(ax[0], data, cell_names, unkVec)
 
     f.tight_layout()
 
     return f
 
-def IL2_vs_cells(ax, cell_data, cell_names, unkVec):
-    """ Cytokine activity vs IL2 dose for all cell populations. """
+def single_cell_act(unkVec):
+    """ Cytokine activity for all IL2 doses for single cell line. """
     pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
-    print("unkVec.shape: " + str(unkVec.shape))
     act = np.zeros((PTS, unkVec.shape[1]))
     for ii in range(unkVec.shape[1]):
         act[:, ii] = np.fromiter((pstat5.singleCalc(unkVec[:, ii], 0, x) for x in cytokC), np.float64)
-    print("act.shape: " + str(act.shape))
     act_mean = np.mean(act, axis=1)
-    print("act_mean.shape: " + str(act_mean.shape))
+    return act_mean
+    
+    
+def all_cells(ax, cell_data, cell_names, unkVec):
+    """ Loops through all cell types and calculates activities. """
+    cell_data = cell_data.values    # convert to numpy array
+    for ii in range(1, cell_data.shape[1]):
+        for n in range(unkVec.shape[1]):
+            unkVec[22:30, n] = cell_data[:, ii] # place cell data in all rows of unkVec
+        print(single_cell_act(unkVec))
+        
 
