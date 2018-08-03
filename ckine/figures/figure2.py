@@ -22,10 +22,11 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    pstat_plot(ax[1])
-    plot_pretreat(ax[2])
-    surf_gc(ax[3], 100.)
-    violinPlots(ax[4:8])
+    unkVec, scales = import_samples()
+    pstat_plot(ax[1], unkVec, scales)
+    plot_pretreat(ax[2], unkVec)
+    surf_gc(ax[3], 100., unkVec)
+    violinPlots(ax[4:8], unkVec, scales)
 
     f.tight_layout()
 
@@ -73,13 +74,12 @@ def pstat_calc(unkVec, scales, cytokC):
     actVec_IL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC), np.float64)
     return np.concatenate((actVec_IL4 * scales[0], actVec_IL7 * scales[1]))
 
-def pstat_plot(ax):
+def pstat_plot(ax, unkVec, scales):
     ''' This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. '''
     PTS = 30
     cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
     cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
-    unkVec, scales = import_samples()
     path = os.path.dirname(os.path.abspath(__file__))
     dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
@@ -103,9 +103,8 @@ def pstat_plot(ax):
     ax.set(ylabel='pSTAT activation', xlabel='stimulation concentration (nM)', title="pSTAT activity")
     ax.legend()
 
-def violinPlots(ax):
+def violinPlots(ax, unkVec, scales):
     """ Create violin plots of model posterior. """
-    unkVec, scales = import_samples()
     unkVec = unkVec.transpose()
 
     rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]]) # kfwd, k27rev, k33rev
@@ -179,9 +178,8 @@ def pretreat_calc(unkVec, pre_conc):
     return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
 
-def plot_pretreat(ax):
+def plot_pretreat(ax, unkVec):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
-    unkVec = import_samples()[0]
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
@@ -210,11 +208,11 @@ def plot_pretreat(ax):
     ax.legend()
 
 
-def surf_gc(ax, cytokC_pg):
+def surf_gc(ax, cytokC_pg, unkVec):
     """ Generate a plot that shows the relative amount of gc on the cell surface under IL4 and IL7 stimulation. """
     PTS = 40
     ts = np.linspace(0., 100., num=PTS)
-    output = calc_surf_gc(ts, cytokC_pg)
+    output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
     IL7vec = np.transpose(output[:, PTS:(PTS*2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue", "IL4")
@@ -222,10 +220,9 @@ def surf_gc(ax, cytokC_pg):
     ax.set(title=("Ligand conc.: " + str(cytokC_pg) + ' pg/mL'), ylabel="surface gamma chain (% x 100)", xlabel="time (min)")
     ax.legend()
 
-def calc_surf_gc(t, cytokC_pg):
+def calc_surf_gc(t, cytokC_pg, unkVec):
     """ Calculates the percent of gc on the surface over time while under IL7 and IL4 stimulation. """
     gc_species_IDX = getSurfaceGCSpecies()
-    unkVec = import_samples()[0]
 
     def singleCalc(unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
