@@ -16,7 +16,7 @@ from ..Tensor_analysis import reorient_factors
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
 
