@@ -17,12 +17,12 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((10, 7), (3, 4), mults=[8], multz={8: 2})
 
-    subplotLabel(ax[0], 'A')
-    subplotLabel(ax[2], 'B')
-    subplotLabel(ax[4], 'C')
-    subplotLabel(ax[8], 'D')
-    subplotLabel(ax[9], 'E')
-    subplotLabel(ax[10], 'F')
+    # blank out first two axes for cartoon
+    ax[0].axis('off')
+    ax[1].axis('off')
+
+    for ii, item in enumerate(ax):
+        subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec = import_samples()
     pstat_act(ax[2:4], unkVec)

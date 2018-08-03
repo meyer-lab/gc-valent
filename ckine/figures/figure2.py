@@ -6,6 +6,7 @@ import pymc3 as pm, os
 import numpy as np
 import seaborn as sns
 import pandas as pd
+import string
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 from ..fit_others import build_model
@@ -13,12 +14,14 @@ from ..fit_others import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 6), (2, 4))
+    ax, f = getSetup((10, 9), (3, 3))
 
     # Blank out for the cartoon
     ax[0].axis('off')
 
-    subplotLabel(ax[0], 'A')
+    for ii, item in enumerate(ax):
+        subplotLabel(item, string.ascii_uppercase[ii])
+
     pstat_plot(ax[1])
     plot_pretreat(ax[2])
     surf_gc(ax[3], 100.)
