@@ -57,7 +57,7 @@ def R2X_singles(values, factors_list, n_comps):
     LigandTensor = z_values[:,:,:, 0:6]
     SurfTensor = z_values[:,:,:, 6:14]
     TotalTensor = z_values[:,:,:, 14:22]
-    
+
     factors = factors_list[n_comps]
     R2X_singles_matrix = np.zeros((4,n_comps)) #1st row is overall R2X; 2nd row is ligand activity R2X; 3rd is Surface receptor; 4th is total receptor
     for ii in range(n_comps):
@@ -86,13 +86,13 @@ def split_R2X(values, factors_list, n_comp):
     for ii in range(n_comp):
         factors = factors_list[ii]
         values_reconstructed = tensorly.kruskal_to_tensor(factors)
-        
+
         Ligand_reconstructed = values_reconstructed[:,:,:,0:6]
         R2X_matrix[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
-        
+
         Surf_reconstructed = values_reconstructed[:,:,:,6:14]
         R2X_matrix[1,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
-        
+
         Total_reconstructed = values_reconstructed[:,:,:,14:22]
         R2X_matrix[2, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
 
