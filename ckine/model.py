@@ -12,6 +12,7 @@ libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 libb.runCkineY0.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 
 
 __nSpecies = 62
@@ -38,6 +39,33 @@ __nRxn = 17
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
     return __nRxn
+
+
+def runCkinePreT (pret, tt, rxntfr, preLig, sensi=False):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
+    rxntfr = rxntfr.copy()
+    assert rxntfr.size == __nParams
+    assert rxntfr[19] < 1.0 # Check that sortF won't throw
+
+    assert preLig.size == 6
+
+    yOut = np.zeros(__nSpecies, dtype=np.float64)
+
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
+
+
+    retVal = libb.runCkinePretreat(pret, tt, yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                   rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), preLig.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                   sensi, sensP)
+
+    if sensi is True:
+        return (yOut, retVal, sensV)
+
+    return (yOut, retVal)
 
 
 def runCkineU (tps, rxntfr, sensi=False):

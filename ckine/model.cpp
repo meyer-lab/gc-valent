@@ -442,6 +442,55 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 }
 
 
+extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const preStim, const bool sensi, double * const sensiOut) {
+	solver sMem;
+	sMem.sensi = sensi;
+	std::copy_n(rxnRatesIn, Nparams, sMem.params.begin());
+	std::copy_n(preStim, Nlig, sMem.params.begin()); // Overwrite with prestimulation ligands
+
+	ratesS rattes(rxnRatesIn);
+	array<double, Nspecies> y0 = solveAutocrine(&rattes);
+
+	// Just the full model
+	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
+	std::copy(y0.begin(), y0.end(), NV_DATA_S(sMem.state));
+
+	solver_setup(&sMem, sMem.params.data());
+
+	double tret = 0;
+
+	int returnVal = CVode(sMem.cvode_mem, pret, sMem.state, &tret, CV_NORMAL);
+		
+	if (returnVal < 0) {
+		std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+		solverFree(&sMem);
+		return returnVal;
+	}
+
+	std::copy_n(rxnRatesIn, Nlig, sMem.params.begin()); // Copy in stimulation ligands
+
+	returnVal = CVode(sMem.cvode_mem, pret + tt, sMem.state, &tret, CV_NORMAL);
+		
+	if (returnVal < 0) {
+		std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+		solverFree(&sMem);
+		return returnVal;
+	}
+
+	// Copy out result
+	std::copy_n(NV_DATA_S(sMem.state), Nspecies, out);
+
+	if (sensi) {
+		tret = pret + tt; // Just make sure this is set to the right time
+		CVodeGetSens(sMem.cvode_mem, &tret, sMem.yS);
+		copyOutSensi(sensiOut, &sMem);
+	}
+
+	solverFree(&sMem);
+	return 0;
+}
+
+
 extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
 	vector<int> retVals(nDoses, -1);
 	vector<std::thread> ts;
