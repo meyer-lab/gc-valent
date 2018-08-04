@@ -102,10 +102,10 @@ def combo_low_high(mat, lig):
     """ This function determines which combinations were high and low according to our initial conditions. """
     # First six values are IL2, IL15, IL7, IL9, IL4, IL21 that are low and the bottom 6 are their high in terms of combination values.
     ILs = np.logspace(-3, 2, num=lig)
-    
+
     IL2_low_high = [[] for _ in range(len(ILs))]
     IL15_low_high = [[] for _ in range(len(ILs))]
-    
+
     #lows = [[] for _ in range(2)]
     #highs = [[] for _ in range(2)]
     # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
