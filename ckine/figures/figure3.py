@@ -32,16 +32,8 @@ def makeFigure():
 
     plot_R2X(ax[3], values, factors_list, n_comps)
     plot_split_R2X(ax[3], values, factors_list, n_comps)
-
-    
-<<<<<<< HEAD
     plot_R2X_singles(ax[7], values, factors_list, n_comps = 13)
-=======
-    plot_R2X_singles(ax[7], values, factors_list, n_comps = 14)
 
-
-
->>>>>>> 89ab4805462cf9407c820ba7c8fb65ecfcbc1c15
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
