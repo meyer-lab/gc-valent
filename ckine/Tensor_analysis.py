@@ -78,9 +78,7 @@ def R2X_singles(values, factors_list, n_comps):
 def split_R2X(values, factors_list, n_comp):
     """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)
-
     R2X_matrix = np.zeros((3,n_comp)) # A 3 by n_comp matrix to store the R2X values for each split tensor. 
-
     LigandTensor = z_values[:,:,:, 0:6]
     SurfTensor = z_values[:,:,:, 6:14]
     TotalTensor = z_values[:,:,:, 14:22]
