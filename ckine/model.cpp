@@ -381,8 +381,11 @@ void copyOutSensi(double *out, solver *sMem) {
 }
 
 
-extern "C" int runCkineY0 (const double * const y0in, double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
 	ratesS rattes(rxnRatesIn);
+
+	array<double, Nspecies> y0 = solveAutocrine(&rattes);
+
 	size_t itps = 0;
 
 	solver sMem;
@@ -390,14 +393,14 @@ extern "C" int runCkineY0 (const double * const y0in, double * const tps, const 
 
 	// Just the full model
 	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
-	std::copy_n(y0in, Nspecies, NV_DATA_S(sMem.state));
+	std::copy_n(y0.data(), Nspecies, NV_DATA_S(sMem.state));
 
 	solver_setup(&sMem, rxnRatesIn);
 
 	double tret = 0;
 
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
-		std::copy_n(y0in, Nspecies, out);
+		std::copy_n(y0.data(), Nspecies, out);
 
 		if (sensi) copyOutSensi(sensiOut, &sMem);
 
@@ -433,20 +436,9 @@ extern "C" int runCkineY0 (const double * const y0in, double * const tps, const 
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
-	ratesS rattes(rxnRatesIn);
-
-	array<double, Nspecies> y0 = solveAutocrine(&rattes);
-
-	return runCkineY0 (y0.data(), tps, ntps, out, rxnRatesIn, sensi, sensiOut);
-}
-
-
-extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const preStim, const bool sensi, double * const sensiOut) {
+extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim, const bool sensi, double * const sensiOut) {
 	solver sMem;
 	sMem.sensi = sensi;
-	std::copy_n(rxnRatesIn, Nparams, sMem.params.begin());
-	std::copy_n(preStim, Nlig, sMem.params.begin()); // Overwrite with prestimulation ligands
 
 	ratesS rattes(rxnRatesIn);
 	array<double, Nspecies> y0 = solveAutocrine(&rattes);
@@ -455,7 +447,7 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
 	std::copy(y0.begin(), y0.end(), NV_DATA_S(sMem.state));
 
-	solver_setup(&sMem, sMem.params.data());
+	solver_setup(&sMem, rxnRatesIn);
 
 	double tret = 0;
 
@@ -467,7 +459,7 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 		return returnVal;
 	}
 
-	std::copy_n(rxnRatesIn, Nlig, sMem.params.begin()); // Copy in stimulation ligands
+	std::copy_n(postStim, Nlig, sMem.params.begin()); // Copy in stimulation ligands
 
 	returnVal = CVode(sMem.cvode_mem, pret + tt, sMem.state, &tret, CV_NORMAL);
 		
