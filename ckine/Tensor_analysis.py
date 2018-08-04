@@ -58,7 +58,7 @@ def R2X_singles(values, factors_list, n_comps):
     SurfTensor = z_values[:,:,:, 6:14]
     TotalTensor = z_values[:,:,:, 14:22]
     
-    factors = factors_list[-1]
+    factors = factors_list[n_comps]
     R2X_singles_matrix = np.zeros((4,n_comps)) #1st row is overall R2X; 2nd row is ligand activity R2X; 3rd is Surface receptor; 4th is total receptor
     for ii in range(n_comps):
         new_factors = list()

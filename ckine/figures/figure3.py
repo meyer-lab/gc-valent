@@ -9,7 +9,6 @@ import pickle
 from ..tensor_generation import prepare_tensor
 from ..Tensor_analysis import find_R2X, split_R2X, R2X_singles
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -35,7 +34,7 @@ def makeFigure():
     
     plot_split_R2X(ax[3], values, factors_list, n_comps)
     
-    plot_R2X_singles(ax[7], values, factors_list, n_comps = 14)
+    plot_R2X_singles(ax[7], values, factors_list, n_comps = 13)
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -60,9 +59,9 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
     ax.legend()
 
 def plot_R2X_singles(ax, values, factors_list, n_comps):
-    """R2X plot for removing single components from final factorization."""
-    R2X_matrix = split_R2X(values, factors_list, n_comps)
-    R2X_singles_matrix = R2X_singles(values, factors_list, n_comps)
+    """R2X plot for removing single components from final factorization & performing percent reduction."""
+    R2X_matrix = split_R2X(values, factors_list, n_comps) #To get the old value
+    R2X_singles_matrix = R2X_singles(values, factors_list, n_comps) #To get the new value
     old_R2X = np.zeros((3,n_comps))
 
     for ii in range(3):
