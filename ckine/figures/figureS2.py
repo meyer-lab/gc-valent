@@ -36,7 +36,6 @@ def makeFigure():
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
-    #empts = list(np.arange(4, x*y, y)
     for row in range(x):
         subplotLabel(ax[row*y], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*row + 1
@@ -55,9 +54,6 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
-
-    #f.tight_layout()
-
     return f
 
 
