@@ -35,8 +35,8 @@ class TestOp(unittest.TestCase):
         utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV])
 
     def test_runCkinePreSOp(self):
-        # TODO: Ligands have to be zero at the moment for the test to pass. Long-term would be best to remove ligands from sensitivity.
-        utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]), np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])), [self.unkV]) 
+        utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
+                                       np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV]) 
 
     def test_runCkineKineticOp(self):
         utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])

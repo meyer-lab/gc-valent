@@ -50,8 +50,8 @@ class runCkineOpDiff(Op):
 class runCkinePreSOp(Op):
     itypes, otypes = [dvector], [dvector]
 
-    def __init__(self, tpre, ts, prelig):
-        self.dOp = runCkinePreSOpDiff(tpre, ts, prelig)
+    def __init__(self, tpre, ts, postlig):
+        self.dOp = runCkinePreSOpDiff(tpre, ts, postlig)
 
     def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
@@ -68,18 +68,19 @@ class runCkinePreSOp(Op):
 class runCkinePreSOpDiff(Op):
     itypes, otypes = [dvector], [dmatrix]
 
-    def __init__(self, tpre, ts, prelig):
+    def __init__(self, tpre, ts, postlig):
         if ts.size > 1:
             raise NotImplementedError('This Op only works with a single time point.')
 
-        assert prelig.size == 6
+        assert postlig.size == 6
 
         self.ts = ts
         self.tpre = tpre
-        self.prelig = prelig
+        self.postlig = postlig
 
     def runCkine(self, inputs, sensi):
-        outt = runCkinePreT(self.tpre, self.ts, inputs[0], self.prelig, sensi)
+        outt = runCkinePreT(self.tpre, self.ts, inputs[0], self.postlig, sensi)
+
         assert outt[1] >= 0
         assert outt[0].size == nSpecies()
 
