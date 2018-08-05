@@ -4,7 +4,10 @@ This creates Figure 3.
 import string
 import os
 import pickle
-import numpy as np
+import numpy as np, pandas as pds
+import matplotlib.cm as cm
+import itertools
+from sklearn.decomposition.pca import PCA
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup
 from ..Tensor_analysis import find_R2X, split_R2X, R2X_singles
@@ -24,6 +27,13 @@ def makeFigure():
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
 
+
+    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
+    data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
+    cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
+    numpy_data = data.values
+    Receptor_data = np.delete(numpy_data, 0, 1)
+
     with open(factors_filename,'rb') as ff:
         factors_list = pickle.load(ff)
     factors = factors_list[19]
@@ -34,13 +44,55 @@ def makeFigure():
     plot_R2X(ax[3], values, factors_list, n_comps)
     plot_split_R2X(ax[3], values, factors_list, n_comps)
     plot_R2X_singles(ax[7], values, factors_list, n_comps)
+    
+    PCA_receptor(ax[10], ax[11], cell_names, Receptor_data)
+
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    f.tight_layout()
+    #f.tight_layout()
 
     return f
+
+def PCA_receptor(ax1, ax2, cell_names, data):
+    """Plot PCA scores and loadings for Receptor Expression Data. """
+    pca = PCA(n_components = 2)
+    
+    scores = pca.fit(data.T).transform(data.T) #34 cells by n_comp
+    loadings = pca.components_ #n_comp by 8 receptors
+    #print(pca.explained_variance_ratio_)
+
+    colors = cm.rainbow(np.linspace(0, 1, 34))
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
+    markersReceptors = ['^', '4', 'P', '*', 'D', 's', 'X' ,'o']
+    labelReceptors = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra', 'IL21Ra']
+
+    for ii in range(scores.shape[0]):
+        ax1.scatter(scores[ii,0], scores[ii,1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
+    
+    for jj in range(loadings.shape[1]):
+        ax2.scatter(loadings[0,jj], loadings[0,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
+    
+    x_max1 = np.max(np.absolute(np.asarray(ax1.get_xlim())))*1.1
+    y_max1 = np.max(np.absolute(np.asarray(ax1.get_ylim())))*1.1
+
+    x_max2 = np.max(np.absolute(np.asarray(ax2.get_xlim())))*1.1
+    y_max2 = np.max(np.absolute(np.asarray(ax2.get_ylim())))*1.1
+
+    ax1.set_xlim(-x_max1, x_max1)
+    ax1.set_ylim(-y_max1, y_max1)
+    ax1.set_xlabel('PC1')
+    ax1.set_ylabel('PC2')
+    ax1.set_title('Scores')
+    ax1.legend(loc='upper left', bbox_to_anchor=(2.25, 1.735))
+
+    ax2.set_xlim(-x_max2, x_max2)
+    ax2.set_ylim(-y_max2, y_max2)
+    ax2.set_xlabel('PC1')
+    ax2.set_ylabel('PC2')
+    ax2.set_title('Loadings')
+    ax2.legend()
 
 def plot_R2X(ax, tensor, factors_list, n_comps):
     """Function to plot R2X bar graph."""
