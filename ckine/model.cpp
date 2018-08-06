@@ -461,6 +461,8 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 
 	std::copy_n(postStim, Nlig, sMem.params.begin()); // Copy in stimulation ligands
 
+	CVodeReInit(sMem.cvode_mem, pret, sMem.state);
+
 	returnVal = CVode(sMem.cvode_mem, pret + tt, sMem.state, &tret, CV_NORMAL);
 		
 	if (returnVal < 0) {
