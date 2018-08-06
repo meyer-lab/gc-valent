@@ -251,6 +251,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.greater(yOut_6[54:56], 0.0).all())
 
     def test_preT(self):
+        """ Test that solver works for specific failure case in generating Figure 2. """
         unkVec = np.array([0., 0., 0., 0., 0., 0., 0.0749207, 1., 1., 1., 1., 1., 1., 6.957E-060, 1., 0.0461, 1., 0.107808, 0.0992, 0.327773, 0.120915, 0.118431, 0., 0., 11.4292, 0., 90.2838, 0., 8.85067, 0.])
         ts = np.array([10.]) # was 10. in literature
         IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
@@ -261,3 +262,20 @@ class TestModel(unittest.TestCase):
         ligands[2] = IL7_stim_conc
         returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
         self.assertGreaterEqual(retVal, 0)
+        
+    def test_empty_preT(self):
+        """ Test that runCkinePreT with no pretreatment ligand matches runCkineU. """
+        unkVec_pre = np.array([0., 0., 0., 0., 0., 0., 0.0749207, 1., 1., 1., 1., 1., 1., 6.957E-060, 1., 0.0461, 1., 0.107808, 0.0992, 0.327773, 0.120915, 0.118431, 0., 0., 11.4292, 0., 90.2838, 0., 8.85067, 0.])
+        ts = np.array([10.]) # was 10. in literature
+        IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
+        IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+        ligands = np.zeros((6))
+        ligands[2] = IL7_stim_conc
+        returnn_1, retVal_1, sensV_1 = runCkinePreT(ts, ts, unkVec_pre, ligands, sensi=True)
+        
+        unkVec_stim = unkVec_pre.copy()
+        unkVec_stim[2] = IL7_stim_conc
+        returnn_2, retVal_2, sensV_2 = runCkineU(ts, unkVec_stim, sensi=True)
+
+        self.assertEqual(returnn_1.all(), returnn_2.all())
+        self.assertEqual(sensV_1.all(), sensV_2.all())
