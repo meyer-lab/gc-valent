@@ -249,3 +249,15 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.greater(yOut_4[48:50], 0.0).all())
         self.assertTrue(np.greater(yOut_5[51:53], 0.0).all())
         self.assertTrue(np.greater(yOut_6[54:56], 0.0).all())
+
+    def test_preT(self):
+        unkVec = np.array([0., 0., 0., 0., 0., 0., 0.0749207, 1., 1., 1., 1., 1., 1., 6.957E-060, 1., 0.0461, 1., 0.107808, 0.0992, 0.327773, 0.120915, 0.118431, 0., 0., 11.4292, 0., 90.2838, 0., 8.85067, 0.])
+        ts = np.array([10.]) # was 10. in literature
+        IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
+        IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+        unkVec2 = unkVec.copy()
+        unkVec2[4] = 0.00671141
+        ligands = np.zeros((6))
+        ligands[2] = IL7_stim_conc
+        returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
+        self.assertGreaterEqual(retVal, 0)
