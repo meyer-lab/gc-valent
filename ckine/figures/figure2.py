@@ -148,17 +148,16 @@ def pretreat_calc(unkVec, pre_conc):
         ''' This function generates the IL4 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. '''
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = conc
-        y0, retVal = runCkineU(ts, unkVec2)
+        ligands = np.zeros((6))
+        ligands[4] = IL4_stim_conc
+        returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
         assert retVal >= 0
-        unkVec2[4] = IL4_stim_conc # add in IL4 while leaving IL7 in system
-        returnn, retVal = runCkinePreT(y0, ts, unkVec2)
         return getTotalActiveCytokine(4, np.squeeze(returnn)) # only look at active species associated with IL4
 
     def singleCalc_7stim(unkVec, pre_cytokine, conc):
         """ This function generates the IL7 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = conc
-        # unkVec2[2] = IL7_stim_conc # add in IL7 while leaving IL4 in the system
         ligands = np.zeros((6))
         ligands[2] = IL7_stim_conc
         returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
