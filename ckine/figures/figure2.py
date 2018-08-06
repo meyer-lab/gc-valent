@@ -150,6 +150,7 @@ def pretreat_calc(unkVec, pre_conc):
         unkVec2[pre_cytokine] = conc
         ligands = np.zeros((6))
         ligands[4] = IL4_stim_conc
+        ligands[pre_cytokine] = conc # pretreatment ligand stays in system
         returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
         assert retVal >= 0
         return getTotalActiveCytokine(4, np.squeeze(returnn)) # only look at active species associated with IL4
@@ -160,6 +161,7 @@ def pretreat_calc(unkVec, pre_conc):
         unkVec2[pre_cytokine] = conc
         ligands = np.zeros((6))
         ligands[2] = IL7_stim_conc
+        ligands[pre_cytokine] = conc # pretreatment ligand stays in system
         returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
         assert retVal >= 0
         return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
