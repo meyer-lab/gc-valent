@@ -2,6 +2,8 @@
 #include <string>
 
 
+constexpr size_t Nlig = 6; // Number of ligands
+
 // Measured in the literature
 constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 constexpr double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
@@ -27,7 +29,7 @@ constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human
 
 class ratesS {
 public:
-	std::array<double, 6> ILs; // IL2, 15, 7, 9, 4, 21
+	std::array<double, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
 	double kfwd;
 	double k4rev;
 	double k5rev;
