@@ -65,17 +65,22 @@ class crosstalk:
         Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
         
         # perform the experiment
-        Op(unkVec2)
+        outt = Op(unkVec2)
         
-        return getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn)) # only look at active species associated with stimulation cytokine
+        return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
 
     def singleCalc_no_pre(self, unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
-        unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
-        returnn, retVal = runCkineU(self.ts, unkVec)
-        assert retVal >= 0
-        return np.dot(returnn, self.activity)
+        unkVec2 = unkVec.copy()
+        unkVec2[cytokine] = conc
+        
+        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
+
+        # Run the experiment
+        outt = Op(unkVec2)
+
+        return outt
+
 
     def calc(self, unkVec):
         """ Generates residual calculation that compares model to data. """
