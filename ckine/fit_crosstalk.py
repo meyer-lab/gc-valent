@@ -105,7 +105,7 @@ class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
         self.act = IL4_7_activity()
-        self.cross = crosstalk()
+        # self.cross = crosstalk()
         self.M = self.build()
 
     def build(self):
@@ -131,13 +131,13 @@ class build_model:
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
-            Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc 
+            # Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc 
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
-            pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
+            # pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
 
             pm.Normal('fitD_int', sd=700, observed=Y_int)
-            pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
+            # pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
