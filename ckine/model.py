@@ -13,6 +13,7 @@ libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_do
 libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
+libb.runCkineY0.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 
 
@@ -43,6 +44,7 @@ def nRxn():
 
 
 def runCkineU (tps, rxntfr, sensi=False):
+    rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
@@ -59,6 +61,32 @@ def runCkineU (tps, rxntfr, sensi=False):
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
                            sensi, sensP)
+
+    if sensi is True:
+        return (yOut, retVal, sensV)
+    else:
+        return (yOut, retVal)
+
+
+def runCkineY0 (y0, tps, rxntfr, sensi=False):
+    assert y0.size == __nSpecies
+    assert rxntfr.size == __nParams
+    assert rxntfr[19] < 1.0 # Check that sortF won't throw
+
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
+
+
+    retVal = libb.runCkineY0(y0.ctypes.data_as(ct.POINTER(ct.c_double)),
+                             tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                             yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                             rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                             sensi, sensP)
 
     if sensi is True:
         return (yOut, retVal, sensV)
@@ -202,6 +230,12 @@ def getSurfaceIL2RbSpecies():
     condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
     return condense
 
+def getSurfaceGCSpecies():
+    """ Returns a list of vectors for which surface species contain the gc receptor. """
+    condense = np.zeros(__nSpecies)
+    condense[np.array([2, 6, 7, 8, 13, 14, 15, 18, 21])] = 1
+    return condense
+
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
@@ -211,6 +245,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
+    assert(yVec.ndim == 1)
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 
