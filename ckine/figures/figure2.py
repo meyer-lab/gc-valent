@@ -8,7 +8,7 @@ import seaborn as sns
 import pandas as pd
 import string
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
-from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
+from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkinePreT, getTotalActiveCytokine
 from ..fit_others import build_model
 
 def makeFigure():
@@ -144,31 +144,19 @@ def pretreat_calc(unkVec, pre_conc):
     IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
 
-    def singleCalc_4stim(unkVec, pre_cytokine, conc):
-        ''' This function generates the IL4 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. '''
+    def singleCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine] = conc
+        unkVec2[pre_cytokine] = pre_conc
         ligands = np.zeros((6))
-        ligands[4] = IL4_stim_conc
-        ligands[pre_cytokine] = conc # pretreatment ligand stays in system
+        ligands[stim_cytokine] = stim_conc
+        ligands[pre_cytokine] = pre_conc # pretreatment ligand stays in system
         returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
         assert retVal >= 0
-        return getTotalActiveCytokine(4, np.squeeze(returnn)) # only look at active species associated with IL4
-
-    def singleCalc_7stim(unkVec, pre_cytokine, conc):
-        """ This function generates the IL7 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
-        unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine] = conc
-        ligands = np.zeros((6))
-        ligands[2] = IL7_stim_conc
-        ligands[pre_cytokine] = conc # pretreatment ligand stays in system
-        returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
-        assert retVal >= 0
-        return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
+        return getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn)) # only look at active species associated with IL4
 
     assert unkVec.size == nParams()
-    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_conc), np.float64)
-    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_conc), np.float64)
+    actVec_IL4stim = np.fromiter((singleCalc(unkVec, 2, x, 4, IL4_stim_conc) for x in pre_conc), np.float64)
+    actVec_IL7stim = np.fromiter((singleCalc(unkVec, 4, x, 2, IL7_stim_conc) for x in pre_conc), np.float64)
 
     def singleCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
