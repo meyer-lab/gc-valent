@@ -62,7 +62,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     data = stats.zscore(data.astype(float), axis = 0)
     scores = pca.fit(data.T).transform(data.T) #34 cells by n_comp
     loadings = pca.components_ #n_comp by 8 receptors
-    #print(pca.explained_variance_ratio_)
+    expVar = pca.explained_variance_ratio_
 
     colors = cm.rainbow(np.linspace(0, 1, 34))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
@@ -73,25 +73,25 @@ def PCA_receptor(ax1, ax2, cell_names, data):
         ax1.scatter(scores[ii,0], scores[ii,1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
     
     for jj in range(loadings.shape[1]):
-        ax2.scatter(loadings[0,jj], loadings[0,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
+        ax2.scatter(loadings[0,jj], loadings[1,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
     
     x_max1 = np.max(np.absolute(np.asarray(ax1.get_xlim())))*1.1
     y_max1 = np.max(np.absolute(np.asarray(ax1.get_ylim())))*1.1
 
     x_max2 = np.max(np.absolute(np.asarray(ax2.get_xlim())))*1.1
     y_max2 = np.max(np.absolute(np.asarray(ax2.get_ylim())))*1.1
-
+    
     ax1.set_xlim(-x_max1, x_max1)
     ax1.set_ylim(-y_max1, y_max1)
-    ax1.set_xlabel('PC1')
-    ax1.set_ylabel('PC2')
+    ax1.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
+    ax1.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
     ax1.set_title('Scores')
     ax1.legend(loc='upper left', bbox_to_anchor=(3.5, 1.735))
 
     ax2.set_xlim(-x_max2, x_max2)
     ax2.set_ylim(-y_max2, y_max2)
-    ax2.set_xlabel('PC1')
-    ax2.set_ylabel('PC2')
+    ax2.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
+    ax2.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
     ax2.set_title('Loadings')
     ax2.legend()
 
