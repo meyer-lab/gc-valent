@@ -5,6 +5,7 @@ import string
 import os
 import pickle
 import numpy as np, pandas as pds
+from scipy import stats
 import matplotlib.cm as cm
 import itertools
 from sklearn.decomposition.pca import PCA
@@ -45,7 +46,7 @@ def makeFigure():
     plot_split_R2X(ax[3], values, factors_list, n_comps)
     plot_R2X_singles(ax[7], values, factors_list, n_comps)
     
-    PCA_receptor(ax[10], ax[11], cell_names, Receptor_data)
+    PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -58,7 +59,7 @@ def makeFigure():
 def PCA_receptor(ax1, ax2, cell_names, data):
     """Plot PCA scores and loadings for Receptor Expression Data. """
     pca = PCA(n_components = 2)
-    
+    data = stats.zscore(data.astype(float), axis = 0)
     scores = pca.fit(data.T).transform(data.T) #34 cells by n_comp
     loadings = pca.components_ #n_comp by 8 receptors
     #print(pca.explained_variance_ratio_)
@@ -85,7 +86,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     ax1.set_xlabel('PC1')
     ax1.set_ylabel('PC2')
     ax1.set_title('Scores')
-    ax1.legend(loc='upper left', bbox_to_anchor=(2.25, 1.735))
+    ax1.legend(loc='upper left', bbox_to_anchor=(3.5, 1.735))
 
     ax2.set_xlim(-x_max2, x_max2)
     ax2.set_ylim(-y_max2, y_max2)
