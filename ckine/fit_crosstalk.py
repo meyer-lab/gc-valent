@@ -62,6 +62,7 @@ class crosstalk:
         ligands = np.zeros((6))
         ligands[stim_cytokine] = stim_conc
         ligands[pre_cytokine] = pre_conc
+        
         Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
         
         # perform the experiment
@@ -73,8 +74,10 @@ class crosstalk:
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
         unkVec2 = unkVec.copy()
         unkVec2[cytokine] = conc
+        ligands = np.zeros((6))
+        ligands[cytokine] = conc
         
-        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
+        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=ligands)
 
         # Run the experiment
         outt = Op(unkVec2)
