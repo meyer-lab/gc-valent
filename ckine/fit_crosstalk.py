@@ -5,7 +5,7 @@ from os.path import join
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getTotalActiveCytokine
-from .differencing_op import runCkineDoseOp
+from .differencing_op import runCkineDoseOp, runCkinePreSOp
 
 class IL4_7_activity:
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord et al. """
@@ -54,25 +54,20 @@ class crosstalk:
         self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
 
-    def singleCalc_4stim(self, unkVec, pre_cytokine, conc):
-        ''' This function generates the IL4 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. '''
-        unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine] = conc
-        y0, retVal = runCkineU(self.ts, unkVec2)
-        assert retVal >= 0
-        unkVec2[4] = self.IL4_stim_conc # add in IL4 while leaving IL7 in system
-        returnn, retVal = runCkineY0(y0, self.ts, unkVec2)
-        return getTotalActiveCytokine(4, np.squeeze(returnn)) # only look at active species associated with IL4
 
-    def singleCalc_7stim(self, unkVec, pre_cytokine, conc):
-        """ This function generates the IL7 active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
+    def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
         unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine] = conc
-        y0, retVal = runCkineU(self.ts, unkVec2)
-        assert retVal >= 0
-        unkVec2[2] = self.IL7_stim_conc # add in IL7 while leaving IL4 in the system
-        returnn, retVal = runCkineY0(y0, self.ts, unkVec2)
-        return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
+        unkVec2[pre_cytokine] = pre_conc
+        ligands = np.zeros((6))
+        ligands[stim_cytokine] = stim_conc
+        ligands[pre_cytokine] = pre_conc
+        Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
+        
+        # perform the experiment
+        Op(unkVec2)
+        
+        return getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn)) # only look at active species associated with stimulation cytokine
 
     def singleCalc_no_pre(self, unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -85,8 +80,10 @@ class crosstalk:
     def calc(self, unkVec):
         """ Generates residual calculation that compares model to data. """
         assert unkVec.size == nParams()
-        actVec_IL4stim = np.fromiter((self.singleCalc_4stim(unkVec, 2, x) for x in self.pre_IL7), np.float64)
-        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x) for x in self.pre_IL4), np.float64)
+        # IL7 pretreatment with IL4 stimulation
+        actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, self.IL4_stim_conc, 4) for x in self.pre_IL7), np.float64)
+        # IL4 pretreatment with IL7 stimulation
+        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x, self.IL7_stim_conc, 2) for x in self.pre_IL4), np.float64)
         IL4stim_no_pre = self.singleCalc_no_pre(unkVec, 4, self.IL4_stim_conc)
         IL7stim_no_pre = self.singleCalc_no_pre(unkVec, 2, self.IL7_stim_conc)
         
