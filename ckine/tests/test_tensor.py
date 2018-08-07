@@ -3,7 +3,7 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from ..Tensor_analysis import find_R2X, perform_decomposition
+from ..Tensor_analysis import find_R2X
 from ..tensor_generation import findy
 
 
@@ -14,8 +14,7 @@ class TestModel(unittest.TestCase):
         tensor = np.random.rand(20,35,100,20)
         arr = []
         for i in range(1,8):
-            factors = perform_decomposition(tensor, i)
-            R2X = find_R2X(tensor, factors)
+            R2X = find_R2X(tensor, i)
             arr.append(R2X)
         for j in range(len(arr)-1):
             self.assertTrue(arr[j] < arr[j+1])
@@ -25,6 +24,6 @@ class TestModel(unittest.TestCase):
 
     def test_tensor_parameters(self, r=1):
         '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
-        y_combos, new_mat = findy(r,50)[0:2]
+        y_combos, new_mat = findy(r)[0:2]
 
         self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
