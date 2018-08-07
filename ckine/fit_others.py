@@ -52,7 +52,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=1, shape=1)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=10, shape=1)
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
@@ -67,7 +67,7 @@ class build_model:
             scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
 
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
-            unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
+            unkVec = T.concatenate((unkVec, Tzero, Tzero, T.stack(GCexpr), Tzero, T.stack(IL7Raexpr), Tzero, T.stack(IL4Raexpr), Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
 
