@@ -23,8 +23,6 @@ class IL4_7_activity:
         self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
 
         self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # measurements aren't normalized
-        self.activity = getTotalActiveSpecies().astype(np.float64)
-
 
     def calc(self, unkVec, scales):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
@@ -41,6 +39,7 @@ class IL4_7_activity:
 
         # return residual
         return self.fit_data - actVec
+
     
 class crosstalk:
     """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
