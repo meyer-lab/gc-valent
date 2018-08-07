@@ -6,6 +6,7 @@ import numpy as np
 from ..differencing_op import runCkineOp, runCkineKineticOp, runCkineDoseOp, runCkinePreSOp
 from ..model import nSpecies, nParams, getTotalActiveSpecies
 
+np.set_printoptions(threshold=np.inf)
 
 def setupJacobian(Op, unk):
     a = T.dvector('tempVar')
