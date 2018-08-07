@@ -47,7 +47,6 @@ class TestOp(unittest.TestCase):
         
         utt.verify_grad(Op, [self.doseUnkV])
 
-    @unittest.skip("Not working in MacOS at the moment.")
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
         # Setup an Op for conditions with no ligand, looking at cytokine activity
@@ -65,7 +64,6 @@ class TestOp(unittest.TestCase):
         # Assert that all the conditions are the same so the derivatives are the same
         self.assertAlmostEqual(np.std(np.sum(Jac, axis=1)), 0.0)
 
-    @unittest.skip("Not working in MacOS at the moment.")
     def test_runCkinePreSOpJac(self):
         Op = runCkinePreSOp(np.array([100.]), np.array([100.]), np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])) 
 
@@ -73,14 +71,3 @@ class TestOp(unittest.TestCase):
         f, Jac = setupJacobian(Op, self.unkV)
 
         print(Jac)
-
-
-
-
-
-
-
-
-
-
-
