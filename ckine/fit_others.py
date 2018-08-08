@@ -40,6 +40,65 @@ class IL4_7_activity:
         # return residual
         return self.fit_data - actVec
 
+class crosstalk:
+    """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
+    def __init__(self):
+        self.activity = getTotalActiveSpecies().astype(np.float64)
+        self.ts = np.array([10.]) # was 10. in literature
+        self.IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
+        self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+        data = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values
+        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
+        self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
+        self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
+
+
+    def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
+        unkVec2 = unkVec.copy()
+        unkVec2[pre_cytokine] = pre_conc
+        ligands = np.zeros((6))
+        ligands[stim_cytokine] = stim_conc
+        ligands[pre_cytokine] = pre_conc
+        
+        Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
+        
+        # perform the experiment
+        outt = Op(unkVec2)
+        
+        return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
+
+    def singleCalc_no_pre(self, unkVec, cytokine, conc):
+        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+        unkVec2 = unkVec.copy()
+        unkVec2[cytokine] = conc
+        ligands = np.zeros((6))
+        ligands[cytokine] = conc
+        
+        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=ligands)
+
+        # Run the experiment
+        outt = Op(unkVec2)
+
+        return outt
+
+
+    def calc(self, unkVec):
+        """ Generates residual calculation that compares model to data. """
+        assert unkVec.size == nParams()
+        # IL7 pretreatment with IL4 stimulation
+        actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, self.IL4_stim_conc, 4) for x in self.pre_IL7), np.float64)
+        # IL4 pretreatment with IL7 stimulation
+        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x, self.IL7_stim_conc, 2) for x in self.pre_IL4), np.float64)
+        IL4stim_no_pre = self.singleCalc_no_pre(unkVec, 4, self.IL4_stim_conc)
+        IL7stim_no_pre = self.singleCalc_no_pre(unkVec, 2, self.IL7_stim_conc)
+        
+        case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
+        case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        inh_vec = np.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
+
+        return inh_vec - self.fit_data
+
 
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
