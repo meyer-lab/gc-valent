@@ -56,6 +56,9 @@ class crosstalk:
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
         self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
+        self.pre_cytokM = np.zeros((10, 6), dtype=np.float64)   # 5 concentrations per pretreat ligand
+        self.pre_cytokM[0:5, 4] = self.pre_IL4
+        self.pre_cytokM[5:10, 2] = self.pre_IL7
 
 
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
