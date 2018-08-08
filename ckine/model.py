@@ -4,13 +4,10 @@ A file that includes the model and important helper functions.
 import os
 import ctypes as ct
 import numpy as np
-from scipy.integrate import odeint
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
-libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
@@ -66,8 +63,8 @@ def runCkinePreT (pret, tt, rxntfr, postLig, sensi=False):
 
     if sensi is True:
         return (yOut, retVal, sensV)
-    else:
-        return (yOut, retVal)
+
+    return (yOut, retVal)
 
 
 def runCkineU (tps, rxntfr, sensi=False):
@@ -92,11 +89,12 @@ def runCkineU (tps, rxntfr, sensi=False):
 
     if sensi is True:
         return (yOut, retVal, sensV)
-    else:
-        return (yOut, retVal)
+
+    return (yOut, retVal)
 
 
 def runCkineUP (tp, rxntfr, sensi=False):
+    """ Version of runCkine that runs in parallel. """
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
@@ -114,38 +112,12 @@ def runCkineUP (tp, rxntfr, sensi=False):
 
     if sensi is True:
         return (yOut, retVal, sensV)
-    else:
-        return (yOut, retVal)
+
+    return (yOut, retVal)
 
 
-def dy_dt(y, t, rxn):
-
-    assert rxn.size == __nRxn
-    rxntfr = np.concatenate((rxn, np.ones(13, dtype=np.float64)*0.9))
-
-    yOut = np.zeros_like(y)
-
-    libb.dydt_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return yOut
-
-
-def jacobian(y, t, rxn):
-
-    assert rxn.size == __nRxn
-
-    # Pad with zeros so we don't get a sortF panic
-    rxn = rxn.copy()
-    rxn = np.concatenate((rxn, np.zeros(20, dtype=np.float64)))
-
-    yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
-
-    libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return yOut
-
-def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument once we add more to fullJacobian
+def fullJacobian(y, t, rxntfR):
+    """ Calculates the Jacobian matrix for all species in our model. """
     assert rxntfR.size == __nParams
 
     yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
@@ -153,9 +125,8 @@ def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument
     libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
     return yOut
 
-def fullModel(y, t, rxn, tfr):
-
-    rxntfr = np.concatenate((rxn, tfr))
+def fullModel(y, t, rxntfr):
+    """ Implement the full model based on dydt, trafficking, expression. """
     assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
@@ -168,48 +139,6 @@ def fullModel(y, t, rxn, tfr):
 
 __active_species_IDX = np.zeros(__halfL, dtype=np.float64)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
-
-def solveAutocrine(trafRates):
-    """Faster approach to solve for steady state by directly calculating the starting point without needing odeint."""
-    y0 = np.zeros(__nSpecies , np.float64)
-
-    recIDX = np.array([0, 1, 2, 9, 16, 19, 22, 25], np.int)
-
-    # Expr
-    expr = trafRates[5:13]
-
-    internalFrac = 0.5 # Same as that used in TAM model
-
-    # Expand out trafficking terms
-    endo, sortF, kRec, kDeg = trafRates[np.array([0, 2, 3, 4])]
-
-    # Correct for sorting fraction
-    kRec = kRec*(1-sortF)
-    kDeg = kDeg*sortF
-
-    # Assuming no autocrine ligand, so can solve steady state
-    # Add the species
-    y0[recIDX + __halfL] = expr / kDeg / internalFrac
-    y0[recIDX] = (expr + kRec*y0[recIDX + __halfL]*internalFrac)/endo
-
-    return y0
-
-
-def solveAutocrineComplete(rxnRates, trafRates):
-    """This function determines the starting point for odeint. It runs the model for a really long time with no cytokine present to come to some steady state."""
-    rxnRates = rxnRates.copy()
-    autocrineT = np.array([0.0, 100000.0])
-
-    y0 = np.zeros(__nSpecies, np.float64)
-
-    # For now assume 0 autocrine ligand
-    rxnRates[0:6] = 0.0
-
-    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
-
-    yOut = odeint(full_lambda, y0, autocrineT, mxstep=int(1E5))
-
-    return yOut[1, :]
 
 
 def getActiveSpecies():
@@ -247,7 +176,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    assert(yVec.ndim == 1)
+    assert yVec.ndim == 1
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 
