@@ -3,6 +3,7 @@
 #include <numeric>
 #include <array>
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
@@ -24,6 +25,8 @@ using std::copy;
 using std::vector;
 using std::fill;
 using std::string;
+using std::endl;
+using std::cout;
 
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
 
@@ -76,7 +79,9 @@ array<double, Nspecies> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, Nspecies> &y0) {
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s) {
+	array<double, Nspecies> y0 = solveAutocrine(r);
+
 	for (size_t is = 0; is < Nparams; is++)
 		N_VConst(0.0, y0s[is]);
 
@@ -111,13 +116,16 @@ struct solver {
 	N_Vector *yS;
 	SUNMatrix A;
 	bool sensi;
-	double *params;
+	array<double, Nparams> params;
 };
 
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
 	if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
+	ratesS ratt(sMem->params.data());
+
+	std::lock_guard<std::mutex> lock(print_mutex);
 
 	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
 	std::cout << msg << std::endl;
@@ -126,8 +134,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	for (size_t ii = 0; ii < Nparams; ii++) {
 		std::cout << sMem->params[ii] << "\t";
 	}
-	
-	ratesS ratt(sMem->params);
 	
 	ratt.print();
 
@@ -187,6 +193,12 @@ void solver_setup(solver *sMem, const double * const params) {
 	
 	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, static_cast<void *>(sMem));
 
+	// Pass along the parameter structure to the differential equations
+	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(sMem->params.data())) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
+	}
+
 	/* Call CVodeInit to initialize the integrator memory and specify the
 	 * user's right hand side function in y'=f(t,y), the inital time T0, and
 	 * the initial dependent variable vector y. */
@@ -195,10 +207,10 @@ void solver_setup(solver *sMem, const double * const params) {
 		throw std::runtime_error(string("Error calling CVodeInit in solver_setup."));
 	}
 	
-	// Call CVodeSVtolerances to specify the scalar relative and absolute tolerances
-	if (CVodeSStolerances(sMem->cvode_mem, tolIn, tolIn) < 0) {
+	// Call CVodeWFtolerances to specify the tolerances
+	if (CVodeWFtolerances(sMem->cvode_mem, ewt) < 0) {
 		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
+		throw std::runtime_error(string("Error calling CVodeWFtolerances in solver_setup."));
 	}
 
 	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
@@ -211,59 +223,44 @@ void solver_setup(solver *sMem, const double * const params) {
 	}
 
 	CVDlsSetJacFn(sMem->cvode_mem, Jac);
-	
-	// Pass along the parameter structure to the differential equations
-	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
-	}
 
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
-}
 
-
-void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, Nspecies> &y0) { 
 	// Now we are doing a sensitivity analysis
-	sMem->sensi = true;
+	if (sMem->sensi) {
+		// Set sensitivity initial conditions
+		sMem->yS = N_VCloneVectorArray(Nparams, sMem->state);
+		ratesS rattes(sMem->params.data());
+		solveAutocrineS(&rattes, sMem->yS);
 
-	// Set sensitivity initial conditions
-	sMem->yS = N_VCloneVectorArray(Nparams, sMem->state);
-	solveAutocrineS(rr, sMem->yS, y0);
+		// Call CVodeSensInit1 to activate forward sensitivity computations
+		// and allocate internal memory for CVODES related to sensitivity
+		// calculations. Computes the right-hand sides of the sensitivity
+		// ODE, one at a time
+		if (CVodeSensInit(sMem->cvode_mem, Nparams, CV_SIMULTANEOUS, nullptr, sMem->yS) < 0) {
+			solverFree(sMem);
+			throw std::runtime_error(string("Error calling CVodeSensInit in solver_setup."));
+		}
 
-	// Call CVodeSensInit1 to activate forward sensitivity computations
-	// and allocate internal memory for CVODES related to sensitivity
-	// calculations. Computes the right-hand sides of the sensitivity
-	// ODE, one at a time
-	if (CVodeSensInit(sMem->cvode_mem, Nparams, CV_SIMULTANEOUS, nullptr, sMem->yS) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSensInit in solver_setup."));
-	}
+		// Call CVodeSensEEtolerances to estimate tolerances for sensitivity 
+		// variables based on the rolerances supplied for states variables and 
+		// the scaling factor pbar
+		if (CVodeSensEEtolerances(sMem->cvode_mem) < 0) {
+			solverFree(sMem);
+			throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
+		}
 
-	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), tolIn);
+		array<double, Nparams> paramArr;
+		std::copy_n(params, Nparams, paramArr.begin());
+		for(size_t is = 0; is < Nparams; is++) {
+			if (paramArr[is] < 0.01) paramArr[is] = 0.01;
+		}
 
-	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
-	// variables based on the rolerances supplied for states variables and 
-	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, tolIn, abs.data()) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
-	}
-
-	array<double, Nparams> paramArr;
-	array<int, Nparams> paramList;
-	std::copy_n(params, Nparams, paramArr.begin());
-	for(size_t is = 0; is < Nparams; is++) {
-		paramList[is] = static_cast<int>(is);
-
-		if (paramArr[is] < std::numeric_limits<double>::epsilon())
-			paramArr[is] = 0.1;
-	}
-
-	// Specify problem parameter information for sensitivity calculations
-	if (CVodeSetSensParams(sMem->cvode_mem, params, paramArr.data(), paramList.data()) < 0) {
-		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
+		// Specify problem parameter information for sensitivity calculations
+		if (CVodeSetSensParams(sMem->cvode_mem, sMem->params.data(), paramArr.data(), nullptr) < 0) {
+			solverFree(sMem);
+			throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
+		}
 	}
 }
 
@@ -282,18 +279,14 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 
 	size_t itps = 0;
 
-	array<double, Nspecies> y0;
-	std::copy_n(y0in, y0.size(), y0.begin());
-
 	solver sMem;
+	sMem.sensi = sensi;
 
 	// Just the full model
 	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
 	std::copy_n(y0.data(), Nspecies, NV_DATA_S(sMem.state));
 
 	solver_setup(&sMem, rxnRatesIn);
-
-	if (sensi) solver_setup_sensi(&sMem, &rattes, rxnRatesIn, y0);
 
 	double tret = 0;
 
@@ -321,7 +314,7 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 		}
 
 		// Copy out result
-		std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
+		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out + Nspecies*itps);
 
 		if (sensi) {
 			CVodeGetSens(sMem.cvode_mem, &tps[itps], sMem.yS);
@@ -383,7 +376,7 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 }
 
 
-extern "C" int runCkineParallel (double *rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
+extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
 	vector<int> retVals(nDoses, -1);
 	vector<std::thread> ts;
 
