@@ -1,20 +1,19 @@
 """
 This file includes the classes and functions necessary to fit the IL4 and IL7 model to experimental data.
 """
-import pymc3 as pm, theano.tensor as T, os
 from os.path import join
-from theano import shared
+import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies
-from .differencing_op import runCkineOp, runCkineDoseOp
+from .model import getTotalActiveSpecies, getTotalActiveCytokine
+from .differencing_op import runCkineDoseOp, runCkinePreSOp
 
 class IL4_7_activity:
+    """ This class is responsible for calculating residuals between model predictions and the data from Gonnord et al. """
     def __init__(self):
-        """This loads the experiment data and saves it as a member matrix and it also makes a vector of the ligand concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
         dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
         dataIL7 = pds.read_csv(join(path, "./data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
-        
+
         # units are converted from pg/mL to nM
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
         self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
@@ -23,12 +22,10 @@ class IL4_7_activity:
         self.cytokM[0:self.cytokC_4.size, 4] = self.cytokC_4
         self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
 
-        self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # the measurements are not normalized
-        self.activity = getTotalActiveSpecies().astype(np.float64)
-
+        self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # measurements aren't normalized
 
     def calc(self, unkVec, scales):
-        """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
+        """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
         Op = runCkineDoseOp(tt=np.array(10.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
@@ -37,18 +34,78 @@ class IL4_7_activity:
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
-        # Normalize to the scaling constants, put together into one vector
-        # TODO: make sure indexing in unkVec is correct for scales
+        # Multiply by scaling constants and put together in one vector
         actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
 
-        # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
+        # return residual
         return self.fit_data - actVec
+
+    
+class crosstalk:
+    """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
+    def __init__(self):
+        self.activity = getTotalActiveSpecies().astype(np.float64)
+        self.ts = np.array([10.]) # was 10. in literature
+        self.IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
+        self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+        data = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values
+        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
+        self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
+        self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
+
+
+    def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
+        unkVec2 = unkVec.copy()
+        unkVec2[pre_cytokine] = pre_conc
+        ligands = np.zeros((6))
+        ligands[stim_cytokine] = stim_conc
+        ligands[pre_cytokine] = pre_conc
+        
+        Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
+        
+        # perform the experiment
+        outt = Op(unkVec2)
+        
+        return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
+
+    def singleCalc_no_pre(self, unkVec, cytokine, conc):
+        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+        unkVec2 = unkVec.copy()
+        unkVec2[cytokine] = conc
+        ligands = np.zeros((6))
+        ligands[cytokine] = conc
+        
+        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=ligands)
+
+        # Run the experiment
+        outt = Op(unkVec2)
+
+        return outt
+
+
+    def calc(self, unkVec):
+        """ Generates residual calculation that compares model to data. """
+        assert unkVec.size == nParams()
+        # IL7 pretreatment with IL4 stimulation
+        actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, self.IL4_stim_conc, 4) for x in self.pre_IL7), np.float64)
+        # IL4 pretreatment with IL7 stimulation
+        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x, self.IL7_stim_conc, 2) for x in self.pre_IL4), np.float64)
+        IL4stim_no_pre = self.singleCalc_no_pre(unkVec, 4, self.IL4_stim_conc)
+        IL7stim_no_pre = self.singleCalc_no_pre(unkVec, 2, self.IL7_stim_conc)
+        
+        case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
+        case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        inh_vec = np.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
+
+        return inh_vec - self.fit_data
 
 
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
         self.act = IL4_7_activity()
+        # self.cross = crosstalk()
         self.M = self.build()
 
     def build(self):
@@ -68,17 +125,19 @@ class build_model:
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
-            
+
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
+            # Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc 
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
+            # pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
 
             pm.Normal('fitD_int', sd=700, observed=Y_int)
+            # pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -90,6 +149,7 @@ class build_model:
         self.trace = pm.sample(init='advi', model=self.M)
 
     def fit_ADVI(self):
+        """ Running fit_advi instead of true sampling. """
         with self.M:
             approx = pm.fit(40000, method='fullrank_advi')
             self.trace = approx.sample()
