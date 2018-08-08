@@ -106,7 +106,7 @@ class build_model:
         self.act = IL4_7_activity()
         self.M = self.build()
 
-    def build(self):
+    def build(self, pretreat=False):
         """The PyMC model that incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."""
         M = pm.Model()
 
@@ -133,6 +133,11 @@ class build_model:
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
             pm.Normal('fitD_int', sd=700, observed=Y_int)
+            
+            if (pretreat == True):
+                Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc
+                pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
+                pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
