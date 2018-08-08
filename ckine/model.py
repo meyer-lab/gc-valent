@@ -43,7 +43,6 @@ def nRxn():
 def runCkinePreT (pret, tt, rxntfr, postLig, sensi=False):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
-    print(rxntfr.size)
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
@@ -171,8 +170,8 @@ def getSurfaceGCSpecies():
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
-    assert len(yVec) == __halfL
-    return np.sum((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]])
+    # assert len(yVec) == __halfL
+    return ((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]]).sum()
 
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
