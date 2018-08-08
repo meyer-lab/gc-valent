@@ -4,7 +4,7 @@ This file includes the classes and functions necessary to fit the IL4 and IL7 mo
 from os.path import join
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies
+from .model import getTotalActiveSpecies, nParams
 from .differencing_op import runCkineDoseOp
 
 class IL4_7_activity:
@@ -47,7 +47,8 @@ class crosstalk:
         self.ts = np.array([10.]) # was 10. in literature
         self.IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
         self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
-        data = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values
+        path = os.path.dirname(os.path.abspath(__file__))
+        data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
         self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
@@ -85,7 +86,6 @@ class crosstalk:
 
     def calc(self, unkVec):
         """ Generates residual calculation that compares model to data. """
-        assert unkVec.size == nParams()
         # IL7 pretreatment with IL4 stimulation
         actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, self.IL4_stim_conc, 4) for x in self.pre_IL7), np.float64)
         # IL4 pretreatment with IL7 stimulation
