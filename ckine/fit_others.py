@@ -56,15 +56,17 @@ class crosstalk:
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
         self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
-        self.pre_cytokM = np.zeros((10, 6), dtype=np.float64)   # 5 concentrations per pretreat ligand
-        self.pre_cytokM[0:5, 4] = self.pre_IL4
-        self.pre_cytokM[5:10, 2] = self.pre_IL7
+        #self.pre_cytokM = np.zeros((10, 6), dtype=np.float64)   # 5 concentrations per pretreat ligand
+        #self.pre_cytokM[0:5, 4] = self.pre_IL4
+        #self.pre_cytokM[5:10, 2] = self.pre_IL7
 
 
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
         unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
         ligands = np.zeros((6))
+        print('stim_cytokine: ' + str(stim_cytokine))
+        print('pre_cytokine: ' + str(pre_cytokine))
         ligands[stim_cytokine] = stim_conc
         ligands[pre_cytokine] = pre_conc
         
@@ -90,9 +92,9 @@ class crosstalk:
     def calc(self, unkVec):
         """ Generates residual calculation that compares model to data. """
         # IL7 pretreatment with IL4 stimulation
-        actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, self.IL4_stim_conc, 4) for x in self.pre_IL7), np.float64)
+        actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, 4, self.IL4_stim_conc) for x in self.pre_IL7), np.float64)
         # IL4 pretreatment with IL7 stimulation
-        actVec_IL7stim = np.fromiter((self.singleCalc(unkVec, 4, x, self.IL7_stim_conc, 2) for x in self.pre_IL4), np.float64)
+        actVec_IL7stim = np.fromiter((self.singleCalc(unkVec, 4, x, 2, self.IL7_stim_conc) for x in self.pre_IL4), np.float64)
         IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
         
         case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
