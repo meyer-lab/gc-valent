@@ -43,6 +43,7 @@ def nRxn():
 def runCkinePreT (pret, tt, rxntfr, postLig, sensi=False):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
+    print(rxntfr.size)
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
