@@ -6,9 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, jacobian, fullJacobian, nSpecies, runCkineUP
-from ..util_analysis.Shuffle_ODE import approx_jacobian
-from ..Tensor_analysis import find_R2X
+from scipy.optimize.slsqp import approx_jacobian
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkinePreT
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")

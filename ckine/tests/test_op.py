@@ -3,7 +3,7 @@ import theano
 import theano.tensor as T
 from theano.tests import unittest_tools as utt
 import numpy as np
-from ..differencing_op import runCkineOp, runCkineKineticOp, runCkineDoseOp
+from ..differencing_op import runCkineOp, runCkineKineticOp, runCkineDoseOp, runCkinePreSOp
 from ..model import nSpecies, nParams, getTotalActiveSpecies
 
 
@@ -33,6 +33,11 @@ class TestOp(unittest.TestCase):
 
     def test_runCkineOp(self):
         utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV])
+
+    @unittest.skip('TODO: Think the sensitivity analysis here is slightly off—this should be able to pass.')
+    def test_runCkinePreSOp(self):
+        utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
+                                       np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV]) 
 
     def test_runCkineKineticOp(self):
         utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])
