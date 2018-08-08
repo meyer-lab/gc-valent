@@ -56,8 +56,7 @@ class crosstalk:
 
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
-        unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine] = pre_conc
+        unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
         ligands = np.zeros((6))
         ligands[stim_cytokine] = stim_conc
         ligands[pre_cytokine] = pre_conc
@@ -71,8 +70,7 @@ class crosstalk:
 
     def singleCalc_no_pre(self, unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
-        unkVec2 = unkVec.copy()
-        unkVec2[cytokine] = conc
+        unkVec2 = T.set_subtensor(unkVec[pcytokine], conc)
         ligands = np.zeros((6))
         ligands[cytokine] = conc
         
