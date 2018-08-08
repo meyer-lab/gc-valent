@@ -104,6 +104,7 @@ class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
         self.act = IL4_7_activity()
+        self.cross = crosstalk()
         self.M = self.build()
 
     def build(self, pretreat=False):
