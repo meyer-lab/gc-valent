@@ -9,6 +9,7 @@ from hypothesis.extra.numpy import arrays as harrays
 from scipy.optimize.slsqp import approx_jacobian
 from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkinePreT
 
+
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
 
@@ -22,6 +23,7 @@ conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
                     np.array([2, 6, 7, 8, 13, 14, 15, 18, 21, 24, 27])] # gc
 
 class TestModel(unittest.TestCase):
+    """ Here are the unit tests. """
     def assertPosEquilibrium(self, X, func):
         """Assert that all species came to equilibrium."""
         # All the species abundances should be above zero
@@ -49,23 +51,14 @@ class TestModel(unittest.TestCase):
 
         self.rxntfR = np.concatenate((self.args, self.tfargs))
 
-    def test_length(self):
-        self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
-
-    @given(y0=harrays(np.float, 28, elements=floats(1, 10)))
-    def test_conservation(self, y0):
-        """Check for the conservation of each of the initial receptors."""
-        dy = dy_dt(y0, 0.0, self.args)
-        # Check for conservation of each receptor
-        for idxs in conservation_IDX:
-            self.assertConservation(dy, 0.0, idxs)
 
     @given(y0=harrays(np.float, nSpecies(), elements=floats(1, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
-        kw = np.zeros(self.tfargs.shape, dtype=np.float64)
+        rxntfR = self.rxntfR.copy()
+        rxntfR[17:30] = 0.0
 
-        dy = fullModel(y0, 0.0, self.args, kw)
+        dy = fullModel(y0, 0.0, rxntfR)
 
         # Check for conservation of each surface receptor
         for idxs in conservation_IDX:
@@ -74,7 +67,7 @@ class TestModel(unittest.TestCase):
         # Check for conservation of each endosomal receptor
         for idxs in conservation_IDX:
             self.assertConservation(dy, 0.0, idxs + 28)
-            
+
     def test_equlibrium(self):
         '''System should still come to equilibrium after being stimulated with ligand'''
         t = np.array([0.0, 100000.0])
@@ -98,54 +91,43 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(retVal, 0)
 
         # check that dydt is ~0
-        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2[0:17], rxnIL2[17:30]))
-        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15[0:17], rxnIL15[17:30]))
-        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7[0:17], rxnIL7[17:30]))
-        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9[0:17], rxnIL9[17:30]))
-        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4[0:17], rxnIL4[17:30]))
-        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21[0:17], rxnIL21[17:30]))
+        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2))
+        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15))
+        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7))
+        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9))
+        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4))
+        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21))
 
     def test_fullModel(self):
-        """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
-        yOut = solveAutocrine(self.tfargs)
+        """ Assert that we're at autocrine steady-state at t=0. """
+        yOut, _ = runCkineU(np.array([0.0]), self.rxntfR)
+        yOut = np.squeeze(yOut)
 
-        yOut2 = solveAutocrineComplete(self.args, self.tfargs)
-
-        kw = self.args.copy()
-
-        kw[0:6] = 0.
+        rxnNoLigand = self.rxntfR
+        rxnNoLigand[0:6] = 0.0
 
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
 
-        # Autocrine condition assumes no cytokine present, and so no activity
-        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut2), 0.0, places=5)
-
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs))
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, rxnNoLigand))
 
     @given(y0=harrays(np.float, nSpecies(), elements=floats(0, 10)))
     def test_reproducible(self, y0):
+        """ Make sure full model is reproducible under same conditions. """
 
-        dy1 = fullModel(y0, 0.0, self.args, self.tfargs)
-
-        dy2 = fullModel(y0, 1.0, self.args, self.tfargs)
-
-        dy3 = fullModel(y0, 2.0, self.args, self.tfargs)
+        dy1 = fullModel(y0, 0.0, self.rxntfR)
 
         # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - dy2), 1E-8)
+        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 1.0, self.rxntfR)), 1E-8)
 
         # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
+        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 2.0, self.rxntfR)), 1E-8)
 
     @given(vec=harrays(np.float, 30, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
-        # Force sorting fraction to be less than 1.0
-        vec[19] = np.tanh(vec[19])*0.9
-
+        """ Make sure model runs properly by checking retVal. """
+        vec[19] = np.tanh(vec[19])*0.9 # Force sorting fraction to be less than 1.0
         retVal = runCkineU(self.ts, vec)[1]
-
-        # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
     def test_runCkineParallel(self):
@@ -161,30 +143,14 @@ class TestModel(unittest.TestCase):
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
 
-    def test_jacobian(self):
-        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
-        Both Jacobians are evaluating the partial derivatives of dydt.'''
-        analytical = jacobian(self.y0, self.ts[0], self.args)
-        approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error
-
-        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
-
-        if not np.all(closeness):
-            IDXdiff = np.where(np.logical_not(closeness))
-            print(IDXdiff)
-            print(analytical[IDXdiff])
-            print(approx[IDXdiff])
-
-        self.assertTrue(np.all(closeness))
-
     def test_fullJacobian(self):
-        analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
-        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-6)
+        """ Test that our analytical jacobian matches an approximate jacobian. """
+        analytical = fullJacobian(self.fully, 0.0, self.rxntfR)
+        approx = approx_jacobian(self.fully, lambda x: fullModel(x, 0.0, self.rxntfR), epsilon=1.0E-6)
 
         self.assertTrue(analytical.shape == approx.shape)
 
         closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
-
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
             print(IDXdiff)
@@ -219,7 +185,6 @@ class TestModel(unittest.TestCase):
         rxntfR[0:6] = 0.0
         rxntfR[6] = 1.0E-6 # Damp down kfwd
         rxntfR[7:22] = 0.1 # Fill all in to avoid parameter variation
-        
         rxntfR[18] = 10.0 # Turn up active endocytosis
         rxntfR[21] = 0.02 # Turn down degradation
         rxntfR[22:30] = 10.0 # Control expression
