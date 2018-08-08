@@ -111,7 +111,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=10, shape=1)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=1, shape=1)
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
