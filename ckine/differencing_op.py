@@ -69,9 +69,7 @@ class runCkinePreSOpDiff(Op):
     itypes, otypes = [dvector], [dmatrix]
 
     def __init__(self, tpre, ts, postlig):
-        if ts.size > 1:
-            raise NotImplementedError('This Op only works with a single time point.')
-
+        assert ts.size == 1
         assert postlig.size == 6
 
         self.ts = ts
