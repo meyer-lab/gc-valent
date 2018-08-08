@@ -47,6 +47,10 @@ class crosstalk:
         self.ts = np.array([10.]) # was 10. in literature
         self.IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
         self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+        self.cytokM = np.zeros((2, 6), dtype=np.float64)
+        self.cytokM[0, 4] = self.IL4_stim_conc
+        self.cytokM[1, 2] = self.IL7_stim_conc
+        
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
@@ -68,18 +72,16 @@ class crosstalk:
         
         return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
 
-    def singleCalc_no_pre(self, unkVec, cytokine, conc):
+    def singleCalc_no_pre(self, unkVec):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
-        unkVec2 = T.set_subtensor(unkVec[pcytokine], conc)
-        ligands = np.zeros((6))
-        ligands[cytokine] = conc
-        
-        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=ligands)
+        Op = runCkineDoseOp(tt=np.array(10.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
-        outt = Op(unkVec2)
+        outt = Op(unkVec)
 
-        return outt
+        actVecIL4 = outt[0]
+        actVecIL7 = outt[1]
+        return actVecIL4, actVecIL7
 
 
     def calc(self, unkVec):
@@ -87,9 +89,8 @@ class crosstalk:
         # IL7 pretreatment with IL4 stimulation
         actVec_IL4stim = np.fromiter((self.singleCalc(unkVec, 2, x, self.IL4_stim_conc, 4) for x in self.pre_IL7), np.float64)
         # IL4 pretreatment with IL7 stimulation
-        actVec_IL7stim = np.fromiter((self.singleCalc_7stim(unkVec, 4, x, self.IL7_stim_conc, 2) for x in self.pre_IL4), np.float64)
-        IL4stim_no_pre = self.singleCalc_no_pre(unkVec, 4, self.IL4_stim_conc)
-        IL7stim_no_pre = self.singleCalc_no_pre(unkVec, 2, self.IL7_stim_conc)
+        actVec_IL7stim = np.fromiter((self.singleCalc(unkVec, 4, x, self.IL7_stim_conc, 2) for x in self.pre_IL4), np.float64)
+        IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
         
         case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
         case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.    # % inhibition of IL7 act. after IL4 pre.
