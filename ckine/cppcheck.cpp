@@ -118,45 +118,6 @@ protected:
 			CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 		}
 	}
-
-	void testrunCkinePretreat() {
-		lognormal_distribution<> dis(0.6, 0.25);
-
-		array<double, 6> postStim = {{0.1, 0.1, 0.0, 1.0, 1.0, 0.1}};
-		array<double, Nspecies> output;
-		array<double, Nspecies> output2;
-		array<double, Nparams> rxnRatesIn;
-		array<double, Nparams*Nspecies> soutput;
-		array<double, Nparams*Nspecies> soutput2;
-
-		for (size_t ii = 0; ii < 10; ii++) {
-			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
-
-			rxnRatesIn[19] = tanh(rxnRatesIn[19])*0.9;
-
-			int retVal = runCkinePretreat(10.0, 10.0, output.data(), rxnRatesIn.data(), postStim.data(), true, soutput.data());
-
-			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkinePretreat(10.0, 10.0, output2.data(), rxnRatesIn.data(), postStim.data(), true, soutput2.data());
-
-			std::transform(output.begin(), output.end(), output2.begin(), output2.begin(), std::minus<double>());
-			double sumDiff = inner_product(output2.begin(), output2.end(), output2.begin(), 0.0);
-
-			std::transform(soutput.begin(), soutput.end(), soutput2.begin(), soutput2.begin(), std::minus<double>());
-			sumDiff += inner_product(soutput2.begin(), soutput2.end(), soutput2.begin(), 0.0);
-
-			if (retVal < 0) {
-				for (auto i = rxnRatesIn.begin(); i != rxnRatesIn.end(); ++i)
-					std::cout << *i << ' ';
-
-				cout << std::endl;
-			}
-
-			CPPUNIT_ASSERT(retVal >= 0);
-			CPPUNIT_ASSERT(retVal2 >= 0);
-			CPPUNIT_ASSERT(sumDiff < std::numeric_limits<double>::epsilon());
-		}
-	}
 };
 
 // the main method
