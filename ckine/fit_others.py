@@ -64,19 +64,18 @@ class crosstalk:
         unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
         ligands = np.zeros((6))
         ligands[stim_cytokine] = stim_conc
-        print("pre_conc: " + str(pre_conc))
         ligands[pre_cytokine] = pre_conc
-        
+
         Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
-        
+
         # perform the experiment
         outt = Op(unkVec2)
-        
+
         return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
 
     def singleCalc_no_pre(self, unkVec):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
-        Op = runCkineDoseOp(tt=np.array(10.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
+        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
         outt = Op(unkVec)
@@ -90,10 +89,10 @@ class crosstalk:
         """ Generates residual calculation that compares model to data. """
         # with no pretreatment
         IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
-        
+
         # add 6 zeros to front of unkVec to handle ligands
         unkVec = T.concatenate((T.zeros(6, dtype=np.float64), unkVec))
-        
+
         # IL7 pretreatment with IL4 stimulation
         actVec_IL4stim = T.stack((list(self.singleCalc(unkVec, 2, x, 4, self.IL4_stim_conc) for x in self.pre_IL7)))
 
@@ -142,7 +141,8 @@ class build_model:
 
             pm.Normal('fitD_int', sd=700, observed=Y_int)
             
-            if (pretreat == True):
+            if pretreat == True:
+                print('inside if-statement')
                 Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
                 pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
