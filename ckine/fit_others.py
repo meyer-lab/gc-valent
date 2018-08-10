@@ -9,7 +9,7 @@ from .model import getTotalActiveSpecies, nParams, getTotalActiveCytokine
 from .differencing_op import runCkineDoseOp, runCkinePreSOp
 
 class IL4_7_activity:
-    """ This class is responsible for calculating residuals between model predictions and the data from Gonnord et al. """
+    """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
@@ -62,9 +62,11 @@ class crosstalk:
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
         unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
+        
+        # create ligands array for stimulation at t=0
         ligands = np.zeros((6))
         ligands[stim_cytokine] = stim_conc
-        ligands[pre_cytokine] = pre_conc
+        ligands[pre_cytokine] = pre_conc    # assume pretreatment ligand stays constant
 
         Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
 
@@ -90,7 +92,7 @@ class crosstalk:
         # with no pretreatment
         IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
 
-        # add 6 zeros to front of unkVec to handle ligands
+        # add 6 zeros to front of unkVec to handle ligands within unkVec
         unkVec = T.concatenate((T.zeros(6, dtype=np.float64), unkVec))
 
         # IL7 pretreatment with IL4 stimulation
@@ -107,7 +109,7 @@ class crosstalk:
 
 
 class build_model:
-    """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
+    """ Build a model that minimizes residuals in above classes by using MCMC to find optimal rate parameters. """
     def __init__(self, pretreat=False):
         self.act = IL4_7_activity()
         self.cross = crosstalk()
