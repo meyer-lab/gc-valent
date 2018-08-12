@@ -6,10 +6,16 @@ from ckine.Tensor_analysis import perform_decomposition
 
 n_ligands = 2
 values, _, _, _, _ = prepare_tensor(n_ligands)
+factors_activity = []
+for jj in range(4):
+    factors = perform_decomposition(values[:,:,:,[0,1,2,3,4]], jj+1)
+    factors_activity.append(factors)
+
 factors_list = []
 for ii in range(20):
     factors = perform_decomposition(values, ii+1)
     factors_list.append(factors)
+
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine/data/factors_results/Sampling.pickle")
 with open(filename, 'wb') as f:
-    pickle.dump((factors_list), f)
+    pickle.dump([factors_list, factors_activity], f)
