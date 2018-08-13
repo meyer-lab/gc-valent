@@ -149,7 +149,7 @@ class build_model:
 
             pm.Normal('fitD_int', sd=700, observed=Y_int)
             if self.pretreat == True:
-                pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
+                pm.Normal('fitD_cross', sd=5, observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
