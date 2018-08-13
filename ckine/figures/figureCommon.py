@@ -66,10 +66,10 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos):
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
             ax1.plot(q, p, linestyle = '', c = 'r', marker = next(markersLigand), label = next(labelLigand))
-            if factors.shape[0] <= 5 and ax_pos == 3:
+            if factors.shape[0] <= 10 and ax_pos == 3:
                 ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
 
-    if factors.shape[0] > 5:
+    if factors.shape[0] > 10:
         for q,p in zip(factors[5:13, component_x - 1], factors[5:13, component_y - 1]):
             ax1.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors), label = next(labelSurface))
 

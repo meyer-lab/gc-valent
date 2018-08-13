@@ -1,5 +1,6 @@
 """File to pickle factorization into a new file."""
 import os
+import numpy as np
 import pickle
 from ckine.tensor_generation import prepare_tensor
 from ckine.Tensor_analysis import perform_decomposition
@@ -7,8 +8,8 @@ from ckine.Tensor_analysis import perform_decomposition
 n_ligands = 2
 values, _, _, _, _ = prepare_tensor(n_ligands)
 factors_activity = []
-for jj in range(4):
-    factors = perform_decomposition(values[:,:,:,[0,1,2,3,4]], jj+1)
+for jj in range(6):
+    factors = perform_decomposition(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), jj+1)
     factors_activity.append(factors)
 
 factors_list = []

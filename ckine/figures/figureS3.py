@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pds
 import os
 import pickle
+from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
-from ..Tensor_analysis import reorient_factors
+from ..Tensor_analysis import reorient_factors, find_R2X
 
 
 def makeFigure():
@@ -27,11 +28,11 @@ def makeFigure():
     with open(factors_filename,'rb') as f:
         factors_activity = pickle.load(f)[1]
 
-    n_comps = 3
+    n_comps = 5
     factors = factors_activity[n_comps]
     newfactors = reorient_factors(factors)
 
-    x, y = 2, 4
+    x, y = 3, 4
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
@@ -53,4 +54,10 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
+
+    values, _, _, _, _ = prepare_tensor(2)
+    for n in range(6):
+        factors = factors_activity[n]
+        R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors)
+        print(R2X)
     return f
