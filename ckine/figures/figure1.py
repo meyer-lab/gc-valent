@@ -175,9 +175,11 @@ def rateComp(ax, unkVec):
     k13rev = np.full((500), (kfbnd * 0.065))    # based on the multiple papers suggesting 30-100 pM
     k14rev = np.full((500), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
 
-    # detailed balance
+    # proportions known through measurements 
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     k11rev = 63.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    
+    # detailed balance
     k12rev = k1rev * k11rev / k2rev # loop for IL2_IL2Ra_IL2Rb
     k9rev = k10rev * k11rev / k4rev
     k8rev = k10rev * k12rev / k5rev
