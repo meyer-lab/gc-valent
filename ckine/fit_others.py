@@ -2,13 +2,14 @@
 This file includes the classes and functions necessary to fit the IL4 and IL7 model to experimental data.
 """
 from os.path import join
+import theano
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies
-from .differencing_op import runCkineDoseOp
+from .model import getTotalActiveSpecies, nParams, getTotalActiveCytokine
+from .differencing_op import runCkineDoseOp, runCkinePreSOp
 
 class IL4_7_activity:
-    """ This class is responsible for calculating residuals between model predictions and the data from Gonnord et al. """
+    """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
@@ -23,8 +24,6 @@ class IL4_7_activity:
         self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
 
         self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # measurements aren't normalized
-        self.activity = getTotalActiveSpecies().astype(np.float64)
-
 
     def calc(self, unkVec, scales):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
@@ -42,11 +41,79 @@ class IL4_7_activity:
         # return residual
         return self.fit_data - actVec
 
+class crosstalk:
+    """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
+    def __init__(self):
+        self.activity = getTotalActiveSpecies().astype(np.float64)
+        self.ts = np.array([10.]) # was 10. in literature
+        self.IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
+        self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+        self.cytokM = np.zeros((2, 6), dtype=np.float64)
+        self.cytokM[0, 4] = self.IL4_stim_conc
+        self.cytokM[1, 2] = self.IL7_stim_conc
+        
+        path = os.path.dirname(os.path.abspath(__file__))
+        data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
+        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
+        self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
+        self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
+
+
+    def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
+        unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
+        
+        # create ligands array for stimulation at t=0
+        ligands = np.zeros((6))
+        ligands[stim_cytokine] = stim_conc
+        ligands[pre_cytokine] = pre_conc    # assume pretreatment ligand stays constant
+
+        Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
+
+        # perform the experiment
+        outt = Op(unkVec2)
+
+        return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
+
+    def singleCalc_no_pre(self, unkVec):
+        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+        Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
+
+        # Run the experiment
+        outt = Op(unkVec)
+
+        actVecIL4 = outt[0]
+        actVecIL7 = outt[1]
+        return actVecIL4, actVecIL7
+
+
+    def calc(self, unkVec):
+        """ Generates residual calculation that compares model to data. """
+        # with no pretreatment
+        IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
+
+        # add 6 zeros to front of unkVec to handle ligands within unkVec
+        unkVec = T.concatenate((T.zeros(6, dtype=np.float64), unkVec))
+
+        # IL7 pretreatment with IL4 stimulation
+        actVec_IL4stim = T.stack((list(self.singleCalc(unkVec, 2, x, 4, self.IL4_stim_conc) for x in self.pre_IL7)))
+
+        # IL4 pretreatment with IL7 stimulation
+        actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.IL7_stim_conc) for x in self.pre_IL4)))
+
+        case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
+        case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
+
+        return inh_vec - self.fit_data
+
 
 class build_model:
-    """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
-    def __init__(self):
+    """ Build a model that minimizes residuals in above classes by using MCMC to find optimal rate parameters. """
+    def __init__(self, pretreat=False):
         self.act = IL4_7_activity()
+        self.cross = crosstalk()
+        self.pretreat = pretreat
         self.M = self.build()
 
     def build(self):
@@ -72,10 +139,17 @@ class build_model:
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
+            if self.pretreat == True:
+                Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc
+
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
+            if self.pretreat == True:
+                pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
 
             pm.Normal('fitD_int', sd=700, observed=Y_int)
+            if self.pretreat == True:
+                pm.Normal('fitD_cross', sd=5, observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
