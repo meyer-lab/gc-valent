@@ -48,7 +48,7 @@ class crosstalk:
         self.cytokM = np.zeros((2, 6), dtype=np.float64)
         self.cytokM[0, 4] = 100. / 14900. # concentration used for IL4 stimulation
         self.cytokM[1, 2] = 50. / 17400. # concentration used for IL7 stimulation
-        
+
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
@@ -59,7 +59,7 @@ class crosstalk:
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
         unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
-        
+
         # create ligands array for stimulation at t=0
         ligands = np.zeros((6))
         ligands[stim_cytokine] = stim_conc
@@ -98,8 +98,8 @@ class crosstalk:
         # IL4 pretreatment with IL7 stimulation
         actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.IL7_stim_conc) for x in self.pre_IL4)))
 
-        case1 = 1-(actVec_IL4stim/IL4stim_no_pre) * 100.    # % inhibition of IL4 act. after IL7 pre.
-        case2 = 1-(actVec_IL7stim/IL7stim_no_pre) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
+        case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
         inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
