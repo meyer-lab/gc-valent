@@ -46,11 +46,9 @@ class crosstalk:
     def __init__(self):
         self.activity = getTotalActiveSpecies().astype(np.float64)
         self.ts = np.array([10.]) # was 10. in literature
-        self.IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
-        self.IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
         self.cytokM = np.zeros((2, 6), dtype=np.float64)
-        self.cytokM[0, 4] = self.IL4_stim_conc
-        self.cytokM[1, 2] = self.IL7_stim_conc
+        self.cytokM[0, 4] = 100. / 14900. # concentration used for IL4 stimulation
+        self.cytokM[1, 2] = 50. / 17400. # concentration used for IL7 stimulation
         
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
