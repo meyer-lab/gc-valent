@@ -55,7 +55,7 @@ def reorient_factors(factors):
 
 def find_R2X(values, factors, subt = True):
     '''Compute R2X'''
-    z_values = z_score_values(values, subtract = subt )
+    z_values = z_score_values(values, subtract = subt)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
