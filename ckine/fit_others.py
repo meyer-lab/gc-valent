@@ -93,10 +93,10 @@ class crosstalk:
         unkVec = T.concatenate((T.zeros(6, dtype=np.float64), unkVec))
 
         # IL7 pretreatment with IL4 stimulation
-        actVec_IL4stim = T.stack((list(self.singleCalc(unkVec, 2, x, 4, self.IL4_stim_conc) for x in self.pre_IL7)))
+        actVec_IL4stim = T.stack((list(self.singleCalc(unkVec, 2, x, 4, self.cytokM[0, 4]) for x in self.pre_IL7)))
 
         # IL4 pretreatment with IL7 stimulation
-        actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.IL7_stim_conc) for x in self.pre_IL4)))
+        actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.cytokM[1, 2]) for x in self.pre_IL4)))
 
         case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
         case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
