@@ -92,7 +92,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    if ax_pos == 5 and factors.shape[1] <= 4:
+    if ax_pos == 5 and factors.shape[1] <= 10:
         ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
     
     elif ax_pos == 5:

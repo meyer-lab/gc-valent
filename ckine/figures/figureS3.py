@@ -58,6 +58,6 @@ def makeFigure():
     values, _, _, _, _ = prepare_tensor(2)
     for n in range(6):
         factors = factors_activity[n]
-        R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors)
+        R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors, subt = False)
         print(R2X)
     return f

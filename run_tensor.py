@@ -9,7 +9,7 @@ n_ligands = 2
 values, _, _, _, _ = prepare_tensor(n_ligands)
 factors_activity = []
 for jj in range(6):
-    factors = perform_decomposition(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), jj+1)
+    factors = perform_decomposition(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), jj+1, subt = False)
     factors_activity.append(factors)
 
 factors_list = []
