@@ -44,7 +44,6 @@ class IL4_7_activity:
 class crosstalk:
     """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
     def __init__(self):
-        self.activity = getTotalActiveSpecies().astype(np.float64)
         self.ts = np.array([10.]) # was 10. in literature
         self.cytokM = np.zeros((2, 6), dtype=np.float64)
         self.cytokM[0, 4] = 100. / 14900. # concentration used for IL4 stimulation
