@@ -101,3 +101,16 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
 def plot_ligands(ax, factors, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
     ax.scatter(factors[:,component_x - 1], factors[:,component_y - 1])
+
+def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
+    """ Add cartoon to a figure file. """
+    import svgutils.transform as st
+
+    # Overlay Figure 4 cartoon
+    template = st.fromfile(figFile)
+    cartoon = st.fromfile(cartoonFile).getroot()
+
+    cartoon.moveto(x, y, scale=scalee)
+
+    template.append(cartoon)
+    template.save(figFile)
