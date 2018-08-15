@@ -174,11 +174,6 @@ def rateComp(ax, unkVec):
     k2rev = np.full((500), (kfbnd * 144))   # doi:10.1016/j.jmb.2004.04.038, 144 nM
     k13rev = np.full((500), (kfbnd * 0.065))    # based on the multiple papers suggesting 30-100 pM
     k14rev = np.full((500), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
-    
-    print("k1rev = " + str(np.log(kfbnd * 10)))
-    print("k2rev = " + str(np.log(kfbnd * 144)))
-    print("k13rev = " + str(np.log(kfbnd * 0.065)))
-    print("k14rev = " + str(np.log(kfbnd * 468)))
 
     # proportions known through measurements 
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
