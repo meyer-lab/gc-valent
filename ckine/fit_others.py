@@ -36,7 +36,7 @@ class IL4_7_activity:
 
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
-        
+
         # incorporate IC50 scale
         actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
         actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
@@ -165,7 +165,7 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='advi', model=self.M)
+        self.trace = pm.sample(init='advi', model=self.M, cores=1)
 
     def fit_ADVI(self):
         """ Running fit_advi instead of true sampling. """
