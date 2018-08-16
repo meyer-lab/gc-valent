@@ -94,10 +94,14 @@ class crosstalk:
         return actVecIL4, actVecIL7
 
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, scales):
         """ Generates residual calculation that compares model to data. """
         # with no pretreatment
         IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
+
+        # incorporate IC50
+        IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
+        IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
         # add 6 zeros to front of unkVec to handle ligands within unkVec
         unkVec = T.concatenate((T.zeros(6, dtype=np.float64), unkVec))
@@ -107,6 +111,11 @@ class crosstalk:
 
         # IL4 pretreatment with IL7 stimulation
         actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.cytokM[1, 2]) for x in self.pre_IL4)))
+
+        # incorporate IC50
+        actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
+        actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
+
 
         case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
         case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
@@ -147,7 +156,7 @@ class build_model:
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
             if self.pretreat == True:
-                Y_cross = self.cross.calc(unkVec)   # fitting the data based on cross.calc
+                Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
 
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
