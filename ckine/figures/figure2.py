@@ -188,10 +188,6 @@ def pretreat_calc(unkVec, scales, pre_conc):
     # incorporate IC50
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
-    
-    #print("after IC50")
-    #print("IL4stim_no_pre: " + str(IL4stim_no_pre))
-    #print("IL7stim_no_pre: " + str(IL7stim_no_pre))
 
     return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
