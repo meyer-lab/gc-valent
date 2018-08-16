@@ -154,7 +154,7 @@ class build_model:
             if self.pretreat == True:
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
 
-            pm.Normal('fitD_int', sd=700, observed=Y_int)
+            pm.Normal('fitD_int', sd=0.1, observed=Y_int)
             if self.pretreat == True:
                 pm.Normal('fitD_cross', sd=5, observed=Y_cross)
 
