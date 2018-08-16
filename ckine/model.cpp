@@ -3,7 +3,7 @@
 #include <numeric>
 #include <array>
 #include <thread>
-#include <mutex>
+#include <unistd.h>
 #include <vector>
 #include <list>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
@@ -377,17 +377,17 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 	return 0;
 }
 
-bool launched = false;
+pid_t launched = -1;
 ThreadPool *pool;
 
 extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
 	int retVal = 1000;
-	if (launched == false) {
-		pool = new ThreadPool();
-		launched = true;
-	}
-
 	std::list<std::future<int>> results;
+
+	if (launched != ::getpid()) {
+		pool = new ThreadPool();
+		launched = ::getpid();
+	}
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
