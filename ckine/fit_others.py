@@ -37,8 +37,12 @@ class IL4_7_activity:
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
-        # Multiply by scaling constants and put together in one vector
-        actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
+        # normalize each actVec by its maximum
+        actVecIL4 = actVecIL4 / np.amax(actVecIL4)
+        actVecIL7 = actVecIL7 / np.amax(actVecIL7)
+
+        # Divide by itself plus scale, then combine into one vector
+        actVec = T.concatenate(((actVecIL4  / (actVecIL4 + scales[0])), (actVecIL4  / (actVecIL4 + scales[0]), (actVecIL7 / (actVecIL7 + scales[1]), (actVecIL7 / (actVecIL7 + scales[1])))
 
         # return residual
         return self.fit_data - actVec
@@ -132,7 +136,7 @@ class build_model:
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
+            scales = pm.Lognormal('scales', mu=1000, sd=10, shape=2) # create scaling constants for activity measurements
 
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
