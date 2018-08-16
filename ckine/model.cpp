@@ -3,7 +3,6 @@
 #include <numeric>
 #include <array>
 #include <thread>
-#include <unistd.h>
 #include <vector>
 #include <list>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
@@ -377,21 +376,15 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 	return 0;
 }
 
-pid_t launched = -1;
-ThreadPool *pool;
+ThreadPool pool;
 
 extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
-	if (launched != ::getpid()) {
-		pool = new ThreadPool();
-		launched = ::getpid();
-	}
-
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool->enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii));
+		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
