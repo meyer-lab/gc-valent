@@ -24,13 +24,13 @@ def makeFigure():
 
     unkVec, scales = import_samples()
     pstat_plot(ax[1], unkVec, scales)
-    plot_pretreat(ax[2], unkVec, "Inhibition with active endocytosis")
+    plot_pretreat(ax[2], unkVec, scales, "Inhibition with active endocytosis")
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
     
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, "Inhibition without active endocytosis")
+    plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
 
     f.tight_layout()
 
@@ -148,7 +148,7 @@ def violinPlots(ax, unkVec, scales):
     d.set_xticklabels(d.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
 
 
-def pretreat_calc(unkVec, pre_conc):
+def pretreat_calc(unkVec, scales, pre_conc):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.]) # was 10. in literature
@@ -168,6 +168,15 @@ def pretreat_calc(unkVec, pre_conc):
     assert unkVec.size == nParams()
     actVec_IL4stim = np.fromiter((singleCalc(unkVec, 2, x, 4, IL4_stim_conc) for x in pre_conc), np.float64)
     actVec_IL7stim = np.fromiter((singleCalc(unkVec, 4, x, 2, IL7_stim_conc) for x in pre_conc), np.float64)
+    
+    # normalize to 1
+    actVec_IL4stim = actVec_IL4stim / np.amax(actVec_IL4stim)
+    actVec_IL7stim = actVec_IL7stim / np.amax(actVec_IL7stim)
+    
+    # incorporate IC50
+    actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
+    actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
+    
 
     def singleCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -179,11 +188,19 @@ def pretreat_calc(unkVec, pre_conc):
 
     IL4stim_no_pre = singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
     IL7stim_no_pre = singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
+    
+    # normalize to 1
+    IL4stim_no_pre = IL4stim_no_pre / np.amax(IL4stim_no_pre)
+    IL7stim_no_pre = IL7stim_no_pre / np.amax(IL7stim_no_pre)
+    
+    # incorporate IC50
+    IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
+    IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
     return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
 
-def plot_pretreat(ax, unkVec, title):
+def plot_pretreat(ax, unkVec, scales, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
@@ -193,9 +210,9 @@ def plot_pretreat(ax, unkVec, title):
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
     IL4_stim = np.zeros((PTS, 500))
     IL7_stim = IL4_stim.copy()
-
+    
     for ii in range(500):
-        output = pretreat_calc(unkVec[:, ii], pre_conc)
+        output = pretreat_calc(unkVec[:, ii], scales[ii, :], pre_conc)
         IL4_stim[:, ii] = output[0:PTS]
         IL7_stim[:, ii] = output[PTS:(PTS*2)]
 
