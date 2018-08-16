@@ -23,10 +23,10 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples()
-    pstat_plot(ax[1], unkVec, scales)
+    #pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Inhibition with active endocytosis")
-    surf_gc(ax[3], 100., unkVec)
-    violinPlots(ax[4:8], unkVec, scales)
+    #surf_gc(ax[3], 100., unkVec)
+    #violinPlots(ax[4:8], unkVec, scales)
     
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
@@ -169,10 +169,6 @@ def pretreat_calc(unkVec, scales, pre_conc):
     actVec_IL4stim = np.fromiter((singleCalc(unkVec, 2, x, 4, IL4_stim_conc) for x in pre_conc), np.float64)
     actVec_IL7stim = np.fromiter((singleCalc(unkVec, 4, x, 2, IL7_stim_conc) for x in pre_conc), np.float64)
     
-    # normalize to 1
-    actVec_IL4stim = actVec_IL4stim / np.amax(actVec_IL4stim)
-    actVec_IL7stim = actVec_IL7stim / np.amax(actVec_IL7stim)
-    
     # incorporate IC50
     actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
     actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
@@ -189,13 +185,13 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL4stim_no_pre = singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
     IL7stim_no_pre = singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
     
-    # normalize to 1
-    IL4stim_no_pre = IL4stim_no_pre / np.amax(IL4stim_no_pre)
-    IL7stim_no_pre = IL7stim_no_pre / np.amax(IL7stim_no_pre)
-    
     # incorporate IC50
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
+    
+    #print("after IC50")
+    #print("IL4stim_no_pre: " + str(IL4stim_no_pre))
+    #print("IL7stim_no_pre: " + str(IL7stim_no_pre))
 
     return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
