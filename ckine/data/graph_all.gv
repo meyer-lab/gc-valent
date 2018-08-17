@@ -58,7 +58,6 @@ digraph cgamma_cytok {
         style=filled;
     	color=mediumorchid2;
     	node [style=filled,color=mediumorchid4, margin=0];
-        label= "IL2 Family"
 
         "1" [shape=diamond,style=filled,height=.1,width=.1];
         "IL2" -> "1" [dir=none,weight=1];
@@ -111,7 +110,6 @@ digraph cgamma_cytok {
     	color=goldenrod1;
     	node [style=filled,color=goldenrod4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL15 Family"
 
         "13" [shape=diamond,style=filled,height=.1,width=.1];
         "IL15" -> "13";
@@ -164,7 +162,6 @@ digraph cgamma_cytok {
     	color=dodgerblue;
     	node [style=filled,color=dodgerblue4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL7 Family"
         
         "25" [shape=diamond,style=filled,height=.1,width=.1];
         "IL7" -> "25";
@@ -182,7 +179,6 @@ digraph cgamma_cytok {
     	color=darkolivegreen2;
     	node [style=filled,color=darkolivegreen4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL9 Family"
         
         "29" [shape=diamond, style=filled, height=.1, width=.1];
         "IL9" -> "29";
@@ -200,7 +196,6 @@ digraph cgamma_cytok {
     	color=lightcyan;
     	node [style=filled, color=lightcyan4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL4 Family"
         
         "32" [shape=diamond, style=filled, height=0.1, width=0.1];
         "IL4" -> "32";
@@ -217,7 +212,6 @@ digraph cgamma_cytok {
     	color=slategray2;
     	node [style=filled, color=slategray4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL21 Family"
         
         "34" [shape=diamond,style=filled,height=.1,width=.1];
         "IL21" -> "34";
