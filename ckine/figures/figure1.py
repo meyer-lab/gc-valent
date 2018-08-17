@@ -16,7 +16,7 @@ from ..model import nParams
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 8], multz={0: 2, 8: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 8], multz={0: 2, 8: 2}, empts=[3])
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
@@ -25,10 +25,10 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec = import_samples()
-    pstat_act(ax[1:3], unkVec)
-    surf_perc(ax[3:7], 'IL2Rb', unkVec)
-    rateComp(ax[7], unkVec)
-    violinPlots(ax[8:10], unkVec)
+    pstat_act(ax[1], unkVec)
+    #surf_perc(ax[2:6], 'IL2Rb', unkVec)
+    #rateComp(ax[6], unkVec)
+    #violinPlots(ax[7:9], unkVec)
 
     f.tight_layout()
 
@@ -106,22 +106,20 @@ def pstat_act(ax, unkVec):
         IL15_minus[:, ii] = output[(PTS*3):(PTS*4)]
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax[0], np.log10(cytokC), IL2_minus, "darkorchid", "IL2")
-    plot_conf_int(ax[0], np.log10(cytokC), IL15_minus, "goldenrod", "IL15")
-    plot_conf_int(ax[1], np.log10(cytokC), IL2_plus, "darkorchid", "IL2")
-    plot_conf_int(ax[1], np.log10(cytokC), IL15_plus, "goldenrod", "IL15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL2")
+    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid", "IL2")
+    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod", "IL15")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
-    ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra-
-    ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra-
-    ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra+
-    ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra+
-    ax[0].set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='IL2Ra- YT-1 cells')
-    ax[1].set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='IL2Ra+ YT-1 cells')
-    ax[0].legend()
-    ax[1].legend()
+    ax.scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100, label="IL2, 2Ra-") # IL2 in 2Ra-
+    ax.scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL15, 2Ra-") # IL15 in 2Ra-
+    ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL2, 2Ra+") # IL2 in 2Ra+
+    ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL15, 2Ra+") # IL15 in 2Ra+
+    ax.set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
 
 
 def import_samples():
