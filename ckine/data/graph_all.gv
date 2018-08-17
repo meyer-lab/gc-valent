@@ -1,6 +1,5 @@
 digraph cgamma_cytok {
     ratio = "compress";
-    label = "Type I Cytokine Model";
     graph [pad=0, ranksep=0.2, nodesep=0.05];
 
     subgraph specises {
@@ -12,51 +11,49 @@ digraph cgamma_cytok {
     subgraph species {
         node [margin=0.03];
 
-        "IL2"   [shape=circle, fontname = "helvetica" ];
-        "2Ra" [shape=box, fontname = "helvetica"   ];
-        "2Rb" [shape=box, style=filled, color="goldenrod1:mediumorchid3", fontname = "helvetica"];
-        "2-2Ra" [shape=box, fontname = "helvetica"];
-        "2-2Rb" [shape=box, fontname = "helvetica"];
-        "2-2Ra" [shape=box, fontname = "helvetica"];
-        "2-2Ra" [shape=box, fontname = "helvetica"];
-        "2-2Ra-2Rb" [shape=box, fontname = "helvetica" ];
-        "2-2Ra-gc" [shape=box, fontname = "helvetica" ];
-        "2-2Rb-gc" [shape=box, color=red, fontname = "helvetica" ];
-        "2-2Ra-2Rb-gc" [shape=box, color=red, fontname = "helvetica" ];
+        "IL2"   [shape=circle, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
+        "2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled   ];
+        "2Rb" [shape=box, style=filled, fontname = "helvetica", fillcolor="goldenrod1:mediumorchid3", style=filled];
+        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Ra-2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
+        "2-2Ra-gc" [shape=box, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled];
+        "2-2Rb-gc" [shape=box, color=red, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled, penwidth=2.5];
+        "2-2Ra-2Rb-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=mediumorchid2, style=filled , penwidth=2.5];
 
-        "IL15"  [shape=circle, fontname = "helvetica"];
-        "15Ra"    [shape=box, fontname = "helvetica"];
-        "15-15Ra"   [shape=box, fontname = "helvetica"];
-        "15-2Rb"    [shape=box, fontname = "helvetica"];
-        "15-15Ra-2Rb" [shape=box, fontname = "helvetica"];
-        "15-15Ra-gc"    [shape=box, fontname = "helvetica"];
-        "15-2Rb-gc" [shape=box, color=red, fontname = "helvetica"];
-        "15-15Ra-2Rb-gc"  [shape=box, color=red, fontname = "helvetica"];
+        "IL15"  [shape=circle, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15Ra"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-15Ra"   [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-2Rb"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-15Ra-2Rb" [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-15Ra-gc"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-2Rb-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=goldenrod1, style=filled, penwidth=2.5];
+        "15-15Ra-2Rb-gc"  [shape=box, color=red, fontname = "helvetica", fillcolor=goldenrod1, style=filled, penwidth=2.5];
 
-        "IL7"   [shape=circle, fontname = "helvetica"];
-        "7Ra" [shape=box, fontname = "helvetica"];
-        "7-7Ra" [shape=box, fontname = "helvetica"];
-        "7-7Ra-gc"  [shape=box, color=red, fontname = "helvetica"];
+        "IL7"   [shape=circle, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
+        "7Ra" [shape=box, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
+        "7-7Ra" [shape=box, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
+        "7-7Ra-gc"  [shape=box, color=red, fontname = "helvetica", fillcolor=dodgerblue, style=filled, penwidth=2.5];
 
-        "IL9"   [shape=circle, fontname = "helvetica"];
-        "9R" [shape=box , fontname = "helvetica"   ];
-        "9-9R" [shape=box, fontname = "helvetica"];
-        "9-9R-gc" [shape=box, color=red, fontname = "helvetica" ];
+        "IL9"   [shape=circle, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled];
+        "9R" [shape=box , fontname = "helvetica" , fillcolor=darkolivegreen2, style=filled  ];
+        "9-9R" [shape=box, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled];
+        "9-9R-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled , penwidth=2.5];
 
-        "IL4"   [shape=circle, fontname = "helvetica"];
-        "4Ra" [shape=box, fontname = "helvetica"    ];
-        "4-4Ra" [shape=box, fontname = "helvetica"];
-        "4-4Ra-gc" [shape=box, color=red, fontname = "helvetica" ];
+        "IL4"   [shape=circle, fontname = "helvetica", fillcolor=lightcyan, style=filled];
+        "4Ra" [shape=box, fontname = "helvetica" , fillcolor=lightcyan, style=filled   ];
+        "4-4Ra" [shape=box, fontname = "helvetica", fillcolor=lightcyan, style=filled];
+        "4-4Ra-gc" [shape=box, color=red, fontname = "helvetica" , fillcolor=lightcyan, style=filled , penwidth=2.5];
 
-        "IL21"   [shape=circle, fontname = "helvetica"];
-        "21Ra" [shape=box , fontname = "helvetica"   ];
-        "21-21Ra" [shape=box, fontname = "helvetica"];
-        "21-21Ra-gc" [shape=box, color=red, fontname = "helvetica" ];
+        "IL21"   [shape=circle, fontname = "helvetica", fillcolor=slategray2, style=filled];
+        "21Ra" [shape=box , fontname = "helvetica", fillcolor=slategray2, style=filled   ];
+        "21-21Ra" [shape=box, fontname = "helvetica", fillcolor=slategray2, style=filled];
+        "21-21Ra-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=slategray2, style=filled , penwidth=2.5 ];
     }
 
     subgraph cluster_IL2 {
-        style=filled;
-    	color=mediumorchid2;
     	node [style=filled,color=mediumorchid4, margin=0];
 
         "1" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
@@ -106,8 +103,6 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL15 {
-        style=filled;
-    	color=goldenrod1;
     	node [style=filled,color=goldenrod4, margin=0];
         edge [dir=none, weight=1];
 
@@ -158,8 +153,6 @@ digraph cgamma_cytok {
         }
 
     subgraph cluster_IL7 {
-        style=filled;
-    	color=dodgerblue;
     	node [style=filled,color=dodgerblue4, margin=0];
         edge [dir=none, weight=1];
         
@@ -175,8 +168,6 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL9 {
-        style=filled;
-    	color=darkolivegreen2;
     	node [style=filled,color=darkolivegreen4, margin=0];
         edge [dir=none, weight=1];
         
@@ -192,8 +183,6 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL4 {
-        style=filled;
-    	color=lightcyan;
     	node [style=filled, color=lightcyan4, margin=0];
         edge [dir=none, weight=1];
         
@@ -208,8 +197,6 @@ digraph cgamma_cytok {
         "33" -> "4-4Ra-gc";
     }
     subgraph cluster_IL21 {
-        style=filled;
-    	color=slategray2;
     	node [style=filled, color=slategray4, margin=0];
         edge [dir=none, weight=1];
         
