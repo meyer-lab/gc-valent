@@ -25,10 +25,10 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec = import_samples()
-    #pstat_act(ax[1], unkVec)
-    #surf_perc(ax[2:4], 'IL2Rb', unkVec)
+    pstat_act(ax[1], unkVec)
+    surf_perc(ax[2:4], 'IL2Rb', unkVec)
     violinPlots(ax[6:8], unkVec)
-    #rateComp(ax[6], unkVec)
+    rateComp(ax[8], unkVec)
     
 
     f.tight_layout()
