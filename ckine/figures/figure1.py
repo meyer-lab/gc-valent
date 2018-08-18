@@ -25,8 +25,8 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec = import_samples()
-    pstat_act(ax[1], unkVec)
-    #surf_perc(ax[2:6], 'IL2Rb', unkVec)
+    #pstat_act(ax[1], unkVec)
+    surf_perc(ax[2:4], 'IL2Rb', unkVec)
     #rateComp(ax[6], unkVec)
     #violinPlots(ax[7:9], unkVec)
 
@@ -47,10 +47,10 @@ def surf_perc(ax, species, unkVec):
         ax[0].scatter(data_minus[:,0], data_minus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra-
         ax[1].scatter(data_minus[:,0], data_minus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra-
         ax[1].scatter(data_minus[:,0], data_minus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra-
-        ax[2].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra+
-        ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
-        ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
-        ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
+        ax[0].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra+
+        ax[0].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
+        ax[1].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
+        ax[1].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
 
     if species == 'gc':
         surf = surf_gc()    # load proper class
@@ -73,17 +73,14 @@ def surf_perc(ax, species, unkVec):
 
     for n in range(4):
         # plot results within confidence intervals
-        plot_conf_int(ax[n], ts, results[:, :, n, 0], "darkorchid", "IL2")
-        plot_conf_int(ax[n], ts, results[:, :, n, 1], "goldenrod", "IL15")
-        # label axes and show legends
-        ax[n].set(xlabel="time (min)", ylabel=("surface " + str(species) + " (%)"))
-        ax[n].legend()
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid", "IL2")
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod", "IL15")
 
-    # set titles
-    ax[0].set_title("1 nM and IL2Ra-")
-    ax[1].set_title("500 nM and IL2Ra-")
-    ax[2].set_title("1 nM and IL2Ra+")
-    ax[3].set_title("500 nM and IL2Ra+")
+    # label axes and titles
+    ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 Cells and 500 nM")
+    ax[1].set_ylim(0,115)
+    ax[0].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 Cells and 1 nM")
+    ax[0].set_ylim(0,115)
 
 
 def pstat_act(ax, unkVec):
