@@ -16,7 +16,7 @@ from ..model import nParams
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 8], multz={0: 2, 8: 2}, empts=[3])
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[3])
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
@@ -26,9 +26,10 @@ def makeFigure():
 
     unkVec = import_samples()
     #pstat_act(ax[1], unkVec)
-    surf_perc(ax[2:4], 'IL2Rb', unkVec)
+    #surf_perc(ax[2:4], 'IL2Rb', unkVec)
+    violinPlots(ax[6:8], unkVec)
     #rateComp(ax[6], unkVec)
-    #violinPlots(ax[7:9], unkVec)
+    
 
     f.tight_layout()
 
