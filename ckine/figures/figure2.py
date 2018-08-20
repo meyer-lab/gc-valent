@@ -23,10 +23,10 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples()
-    #pstat_plot(ax[1], unkVec, scales)
+    pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Inhibition with active endocytosis")
-    #surf_gc(ax[3], 100., unkVec)
-    #violinPlots(ax[4:8], unkVec, scales)
+    surf_gc(ax[3], 100., unkVec)
+    violinPlots(ax[4:8], unkVec, scales)
     
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
