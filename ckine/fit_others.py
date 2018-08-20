@@ -155,16 +155,14 @@ class build_model:
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
-            if self.pretreat == True:
-                Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
-
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
-            if self.pretreat == True:
-                pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
 
             pm.Normal('fitD_int', sd=0.1, observed=Y_int)
+
             if self.pretreat == True:
+                Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
+                pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
                 pm.Normal('fitD_cross', sd=5, observed=Y_cross)
 
             # Save likelihood
