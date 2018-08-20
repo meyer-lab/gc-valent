@@ -170,7 +170,6 @@ def getSurfaceGCSpecies():
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
-    # assert len(yVec) == __halfL
     return ((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]]).sum()
 
 
