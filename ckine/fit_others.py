@@ -163,7 +163,7 @@ class build_model:
             if self.pretreat == True:
                 Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
-                pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
+                pm.Normal('fitD_cross', sd=5, observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
