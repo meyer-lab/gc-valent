@@ -11,7 +11,7 @@ import itertools
 from sklearn.decomposition.pca import PCA
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -35,12 +35,20 @@ def makeFigure():
     Receptor_data = np.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
-        factors_list = pickle.load(ff)[0]
-    factors = factors_list[19]
+        both = pickle.load(ff)
+    factors_list = both[0]
+    factors_activity = both[1]
 
+    factors = factors_list[19]
+    factors = reorient_factors(factors)
     values, _, _, _, _ = prepare_tensor(2)
 
-
+    n_comps = 5
+    factors_activ = factors_activity[n_comps]
+    newfactors_activ = reorient_factors(factors_activ)
+    plot_timepoints(ax[5], newfactors_activ[0])
+    
+    
     PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
     plot_R2X(ax[3], values, factors_list, n_comps = 20)
     plot_split_R2X(ax[3], values, factors_list, n_comps = 20)
@@ -53,6 +61,18 @@ def makeFigure():
     #f.tight_layout()
 
     return f
+
+def plot_timepoints(ax, factors):
+    """Function to put all timepoint plots in one figure."""
+    ts = np.logspace(-3., np.log10(4 * 60.), 100)
+    ts = np.insert(ts, 0, 0.0)
+    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    for ii in range(factors.shape[1]):
+        ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))
+        ax.scatter(ts[-1], factors[-1, ii], s = 12, color = 'k')
+    ax.set_xlabel('Time (min)')
+    ax.set_ylabel('Component')
+    ax.legend()
 
 def plot_reduction_ligand(ax, values, factors):
     """Function to plot the percent by reduction in R2X for each ligand type."""

@@ -82,6 +82,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos):
 
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
+    print(factors.shape)
     ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
     ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
 
