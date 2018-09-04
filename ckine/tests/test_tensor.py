@@ -39,4 +39,3 @@ class TestModel(unittest.TestCase):
             new_factors = reorient_factors(factors)
             reconstruct_new = tensorly.kruskal_to_tensor(new_factors)
             np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
-            #self.assertAlmostEqual(reconstruct_old.tolist(), reconstruct_new.tolist())
