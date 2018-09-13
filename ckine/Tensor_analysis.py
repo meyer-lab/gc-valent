@@ -62,9 +62,7 @@ def find_R2X(values, factors, subt = True):
 def R2X_remove_one(values, factors, n_comps):
     """Generate additional R2X plot for removing single components from final factorization."""
     z_values = z_score_values(values)
-    LigandTensor = z_values[:,:,:, 0:6]
-    SurfTensor = z_values[:,:,:, 6:14]
-    TotalTensor = z_values[:,:,:, 14:22]
+    LigandTensor = z_values[:,:,:, 0:5]
 
     R2X_singles_arr = np.zeros((2, n_comps)) #0 is ligand; 1 is overall
     for ii in range(n_comps):
@@ -73,7 +71,7 @@ def R2X_remove_one(values, factors, n_comps):
             new_factors.append(np.delete(factors[jj], ii, 1))
 
         overall_reconstructed = tensorly.kruskal_to_tensor(new_factors)
-        Ligand_reconstructed = overall_reconstructed[:,:,:,0:6]
+        Ligand_reconstructed = overall_reconstructed[:,:,:,0:5]
 
         R2X_singles_arr[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
         R2X_singles_arr[1,ii] = 1 - np.var(overall_reconstructed - z_values) / np.var(z_values)
