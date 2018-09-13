@@ -36,24 +36,24 @@ def makeFigure():
 
     with open(factors_filename,'rb') as ff:
         both = pickle.load(ff)
-    factors_list = both[0]
-    factors_activity = both[1]
+    factors_activity = both[1] #Only the activities tensor (without surface and total receptors)
 
-    factors = factors_list[19]
+    factors = factors_activity[5]
     factors = reorient_factors(factors)
+
     values, _, _, _, _ = prepare_tensor(2)
+    values = np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3)
 
     n_comps = 5
     factors_activ = factors_activity[n_comps]
-    newfactors_activ = reorient_factors(factors_activ)
-    plot_timepoints(ax[5], newfactors_activ[0])
-    
+    newfactors_activ = reorient_factors(factors_activ)    
     
     PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
-    plot_R2X(ax[3], values, factors_list, n_comps = 20)
-    plot_split_R2X(ax[3], values, factors_list, n_comps = 20)
-    plot_R2X_singles(ax[7], values, factors_list[13], n_comps = 14)
-    plot_reduction_ligand(ax[4], values, factors_list[13])
+    plot_R2X(ax[3], values, factors_activity, n_comps = 6)
+    plot_split_R2X(ax[3], values, factors_activity, n_comps = 6)
+    plot_R2X_singles(ax[7], values, newfactors_activ, n_comps = 6)
+    plot_reduction_ligand(ax[4], values, newfactors_activ)
+
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -62,31 +62,19 @@ def makeFigure():
 
     return f
 
-def plot_timepoints(ax, factors):
-    """Function to put all timepoint plots in one figure."""
-    ts = np.logspace(-3., np.log10(4 * 60.), 100)
-    ts = np.insert(ts, 0, 0.0)
-    colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    for ii in range(factors.shape[1]):
-        ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))
-        ax.scatter(ts[-1], factors[-1, ii], s = 12, color = 'k')
-    ax.set_xlabel('Time (min)')
-    ax.set_ylabel('Component')
-    ax.legend()
-
 def plot_reduction_ligand(ax, values, factors):
     """Function to plot the percent by reduction in R2X for each ligand type."""
     old_R2X = R2X_split_ligand(values, factors) #array of 6 old values for R2X
     
-    new_R2X = percent_reduction_by_ligand(values, factors) #array of 6 by n_comp for R2X for each ligand after removing each component. 
+    new_R2X = percent_reduction_by_ligand(values, factors) #array of 5 by n_comp for R2X for each ligand after removing each component. 
     
     percent_reduction = np.zeros_like(new_R2X)
-    for ii in range(6):
+    for ii in range(5):
         percent_reduction[ii,:] = 1 - new_R2X[ii, :] / old_R2X[ii]
     
-    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4', 'IL21']
-    colorsMarker = ['bo', 'go', 'ro', 'ko', 'mo', 'yo']
-    for kk in range(6):
+    labels = ['Combined IL2 and IL15', 'IL7', 'IL9', 'IL4', 'IL21']
+    colorsMarker = ['bo', 'ro', 'ko', 'mo', 'yo']
+    for kk in range(5):
         ax.plot(range(1,factors[0].shape[1]+1), percent_reduction[kk,:], colorsMarker[kk], label = labels[kk])
     ax.set_xlabel('Component Index')
     ax.set_ylabel('Percent Reduction in R2X')
@@ -142,16 +130,14 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
     ax.set_ylim(0, 1)
-    ax.set_xticks(np.arange(1, n_comps+1, 2))
-    ax.set_xticklabels(np.arange(1, n_comps+1, 2))
+    ax.set_xticks(np.arange(1, n_comps+1))
+    ax.set_xticklabels(np.arange(1, n_comps+1))
     ax.legend()
 
 def plot_split_R2X(ax, tensor, factors_list, n_comps):
     """This function takes in the values tensor, splits it up into a mini tensor corresponding to quantity type."""
     R2X_matrix = split_types_R2X(tensor, factors_list, n_comps)
     ax.plot(range(1,n_comps+1), R2X_matrix[:,0], 'bo', label = 'Ligand Activity R2X')
-    ax.plot(range(1,n_comps+1), R2X_matrix[:,1], 'ro', label = 'Surface Receptors R2X')
-    ax.plot(range(1,n_comps+1), R2X_matrix[:,2], 'go', label = 'Total Receptors R2X')
     ax.legend()    
 
 def plot_R2X_singles(ax, values, factors, n_comps):
@@ -161,17 +147,14 @@ def plot_R2X_singles(ax, values, factors, n_comps):
 
     R2X_singles_mx = R2X_remove_one(values, factors, n_comps) #To get the new values for each type including overall; of shape 4
     percent_reduction = np.zeros_like(R2X_singles_mx)
-    for ii in range(4):
+    for ii in range(2):
         percent_reduction[ii,:] = 1 - R2X_singles_mx[ii, :] / old_arr[ii]
 
     ax.plot(range(1,n_comps+1), percent_reduction[0,:], 'bo', label = 'Ligand Activity R2X')
-    ax.plot(range(1,n_comps+1), percent_reduction[1,:], 'ro', label = 'Surface Receptors R2X')
-    ax.plot(range(1,n_comps+1), percent_reduction[2,:], 'go', label = 'Total Receptors R2X')
-    ax.plot(range(1,n_comps+1), percent_reduction[3,:], 'ko', label = 'Overall R2X')
+    ax.plot(range(1,n_comps+1), percent_reduction[1,:], 'ko', label = 'Overall R2X')
     ax.set_ylabel('Percent Reduction in R2X')
     ax.set_xlabel('Component Index')
     ax.set_ylim(0, 1)
-    ax.set_xticks(np.arange(1, n_comps+1, 2))
-    ax.set_xticklabels(np.arange(1, n_comps+1, 2))
+    ax.set_xticks(np.arange(1, n_comps+1))
+    ax.set_xticklabels(np.arange(1, n_comps+1))
     ax.legend()
-
