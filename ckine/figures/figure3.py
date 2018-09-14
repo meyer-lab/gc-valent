@@ -4,10 +4,10 @@ This creates Figure 3.
 import string
 import os
 import pickle
+import itertools
 import numpy as np, pandas as pds
 from scipy import stats
 import matplotlib.cm as cm
-import itertools
 from sklearn.decomposition.pca import PCA
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup
@@ -46,8 +46,8 @@ def makeFigure():
 
     n_comps = 5
     factors_activ = factors_activity[n_comps]
-    newfactors_activ = reorient_factors(factors_activ)    
-    
+    newfactors_activ = reorient_factors(factors_activ)
+
     PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
     plot_R2X(ax[3], values, factors_activity, n_comps = 6)
     plot_reduction_ligand(ax[4], values, newfactors_activ)
@@ -63,13 +63,13 @@ def makeFigure():
 def plot_reduction_ligand(ax, values, factors):
     """Function to plot the percent by reduction in R2X for each ligand type."""
     old_R2X = R2X_split_ligand(values, factors) #array of 6 old values for R2X
-    
-    new_R2X = percent_reduction_by_ligand(values, factors) #array of 5 by n_comp for R2X for each ligand after removing each component. 
-    
+
+    new_R2X = percent_reduction_by_ligand(values, factors) #array of 5 by n_comp for R2X for each ligand after removing each component.
+
     percent_reduction = np.zeros_like(new_R2X)
     for ii in range(5):
         percent_reduction[ii,:] = 1 - new_R2X[ii, :] / old_R2X[ii]
-    
+
     labels = ['Combined IL2 and IL15', 'IL7', 'IL9', 'IL4', 'IL21']
     colorsMarker = ['bo', 'ro', 'ko', 'mo', 'yo']
     for kk in range(5):
@@ -93,16 +93,16 @@ def PCA_receptor(ax1, ax2, cell_names, data):
 
     for ii in range(scores.shape[0]):
         ax1.scatter(scores[ii,0], scores[ii,1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    
+
     for jj in range(loadings.shape[1]):
         ax2.scatter(loadings[0,jj], loadings[1,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
-    
+
     x_max1 = np.max(np.absolute(np.asarray(ax1.get_xlim())))*1.1
     y_max1 = np.max(np.absolute(np.asarray(ax1.get_ylim())))*1.1
 
     x_max2 = np.max(np.absolute(np.asarray(ax2.get_xlim())))*1.1
     y_max2 = np.max(np.absolute(np.asarray(ax2.get_ylim())))*1.1
-    
+
     ax1.set_xlim(-x_max1, x_max1)
     ax1.set_ylim(-y_max1, y_max1)
     ax1.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')

@@ -2,10 +2,10 @@
 This creates Figure S2.
 """
 import string
-import numpy as np
-import pandas as pds
 import os
 import pickle
+import numpy as np
+import pandas as pds
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors
 

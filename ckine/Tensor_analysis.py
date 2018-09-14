@@ -9,7 +9,7 @@ tensorly.set_backend('numpy')
 
 def z_score_values(A, subtract = True):
     '''Function that takes in the values tensor and z-scores it.'''
-    if subtract == True:
+    if subtract is True:
         B = np.zeros_like(A)
         for i in range(A.shape[3]):
             slice_face = A[:,:,:,i]
@@ -17,7 +17,7 @@ def z_score_values(A, subtract = True):
             sigma = np.std(slice_face)
             z_scored_slice = (slice_face - mu) / sigma
             B[:,:,:,i] = z_scored_slice
-    elif subtract == False:
+    elif subtract is False:
         B = np.zeros_like(A)
         for i in range(A.shape[3]):
             slice_face = A[:,:,:,i]
@@ -81,19 +81,19 @@ def R2X_remove_one(values, factors, n_comps):
 def split_one_comp(values, factors):
     """Decompose and reconstruct with just one designated component, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)
-    R2X_array = np.zeros((2)) # An array of to store the R2X values for each split tensor and the overall one [index 3]. 
+    R2X_array = np.zeros((2)) # An array of to store the R2X values for each split tensor and the overall one [index 3].
     LigandTensor = z_values[:,:,:, 0:5]
-    
+
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     R2X_array[1] = 1 - np.var(values_reconstructed -z_values) / np.var(z_values) #overall
-    
+
     Ligand_reconstructed = values_reconstructed[:,:,:,0:5]
     R2X_array[0] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor) #ligand
     return R2X_array
 
 def split_types_R2X(values, factors_list, n_comp):
     """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X. n_comp here is the number of components."""
-    R2X_matrix = np.zeros((n_comp,2)) # A 4 by n_comp matrix to store the R2X values for each split tensor. 
+    R2X_matrix = np.zeros((n_comp,2)) # A 4 by n_comp matrix to store the R2X values for each split tensor.
 
     for ii in range(n_comp):
         array = split_one_comp(values, factors_list[ii])
@@ -160,12 +160,12 @@ def percent_reduction_by_ligand(values, factors):
     AllLigandTensors = split_values_by_ligand(z_values)
 
     R2X_ligand_mx = np.zeros((5, factors[0].shape[1])) #0 is IL2 and IL15 Combined; 1 is IL7; 2 is IL9; 3 is IL4; 4 is IL21
-    
+
     for ii in range(factors[0].shape[1]):
         new_factors = list()
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
             new_factors.append(np.delete(factors[jj], ii, 1))
-    
+
         overall_reconstructed = tensorly.kruskal_to_tensor(new_factors)
         AllLigandReconstructed = split_values_by_ligand(overall_reconstructed)
         for jj in range(5):
