@@ -50,8 +50,6 @@ def makeFigure():
     
     PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
     plot_R2X(ax[3], values, factors_activity, n_comps = 6)
-    plot_split_R2X(ax[3], values, factors_activity, n_comps = 6)
-    plot_R2X_singles(ax[7], values, newfactors_activ, n_comps = 6)
     plot_reduction_ligand(ax[4], values, newfactors_activ)
 
     # Add subplot labels
@@ -132,29 +130,3 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
     ax.set_ylim(0, 1)
     ax.set_xticks(np.arange(1, n_comps+1))
     ax.set_xticklabels(np.arange(1, n_comps+1))
-    ax.legend()
-
-def plot_split_R2X(ax, tensor, factors_list, n_comps):
-    """This function takes in the values tensor, splits it up into a mini tensor corresponding to quantity type."""
-    R2X_matrix = split_types_R2X(tensor, factors_list, n_comps)
-    ax.plot(range(1,n_comps+1), R2X_matrix[:,0], 'bo', label = 'Ligand Activity R2X')
-    ax.legend()    
-
-def plot_R2X_singles(ax, values, factors, n_comps):
-    """R2X plot for removing single components from final factorization & performing percent reduction."""    
-
-    old_arr = split_one_comp(values, factors) #Array of old values for that one particular component for all 4 quanitity types (overall, ligand,surface, total)
-
-    R2X_singles_mx = R2X_remove_one(values, factors, n_comps) #To get the new values for each type including overall; of shape 4
-    percent_reduction = np.zeros_like(R2X_singles_mx)
-    for ii in range(2):
-        percent_reduction[ii,:] = 1 - R2X_singles_mx[ii, :] / old_arr[ii]
-
-    ax.plot(range(1,n_comps+1), percent_reduction[0,:], 'bo', label = 'Ligand Activity R2X')
-    ax.plot(range(1,n_comps+1), percent_reduction[1,:], 'ko', label = 'Overall R2X')
-    ax.set_ylabel('Percent Reduction in R2X')
-    ax.set_xlabel('Component Index')
-    ax.set_ylim(0, 1)
-    ax.set_xticks(np.arange(1, n_comps+1))
-    ax.set_xticklabels(np.arange(1, n_comps+1))
-    ax.legend()
