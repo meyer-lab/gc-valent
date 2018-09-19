@@ -51,7 +51,7 @@ class TestOp(unittest.TestCase):
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
         # Setup an Op for conditions with no ligand, looking at cytokine activity
-        Op = runCkineDoseOp(np.array(10.0), getTotalActiveSpecies().astype(np.float64), np.zeros_like(self.conditions))
+        Op = runCkineDoseOp(np.array([10.0]), getTotalActiveSpecies().astype(np.float64), np.zeros_like(self.conditions))
         
         # Calculate the Jacobian
         f, Jac = setupJacobian(Op, self.doseUnkV)
@@ -64,3 +64,21 @@ class TestOp(unittest.TestCase):
         
         # Assert that all the conditions are the same so the derivatives are the same
         self.assertAlmostEqual(np.std(np.sum(Jac, axis=1)), 0.0)
+
+    def test_runCkinePreSOp_noPostTreat(self):
+        """ Test that runCkineOp and runCkinePreSOp return the same Jacobian when there is pretreatment only for runCkinePreSOp. """
+        # Setup an Op for conditions with cytokines present, sufficient pre-treat time, and no post-treat time
+        ligands = np.zeros((6))
+        ligands[2], ligands[4] = 25., 50.
+        PreOp = runCkinePreSOp(tpre=np.array([10.0]), ts=np.array([0.0]), postlig=ligands)
+        
+        # Calculate the Jacobian
+        preF, Jac = setupJacobian(PreOp, self.doseUnkV)
+        
+        # Setup an Op for runCkineOp under the same conditions
+        Op = runCkineOp(np.array([10.0]))
+        
+        # Calculate the Jacobian
+        f, Jac2 = setupJacobian(Op, self.doseUnkV)
+        
+        self.assertAlmostEqual(preF, f)
