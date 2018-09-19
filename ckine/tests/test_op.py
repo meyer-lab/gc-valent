@@ -73,12 +73,14 @@ class TestOp(unittest.TestCase):
         PreOp = runCkinePreSOp(tpre=np.array([10.0]), ts=np.array([0.0]), postlig=ligands)
         
         # Calculate the Jacobian
-        preF, Jac = setupJacobian(PreOp, self.doseUnkV)
+        preF, Jac = setupJacobian(PreOp, self.unkV)
         
         # Setup an Op for runCkineOp under the same conditions
         Op = runCkineOp(np.array([10.0]))
         
         # Calculate the Jacobian
-        f, Jac2 = setupJacobian(Op, self.doseUnkV)
+        f, Jac2 = setupJacobian(Op, self.unkV)
         
+        print("preF.shape: " + str(preF.shape))
+        print("f.shape: " + str(f.shape))
         self.assertAlmostEqual(preF, f)
