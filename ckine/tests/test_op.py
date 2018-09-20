@@ -81,4 +81,19 @@ class TestOp(unittest.TestCase):
         # Calculate the Jacobian
         f, Jac2 = setupJacobian(Op, self.unkV)
         
-        self.assertAlmostEqual(preF.all(), f.all())
+        np.set_printoptions(threshold=np.nan)
+        
+        closeness = np.isclose(preF, f, rtol=0.00001, atol=0.00001)
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+
+        self.assertTrue(np.all(closeness))
+        
+        closeness = np.isclose(Jac, Jac2, rtol=0.01, atol=0.01)
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+            print((Jac - Jac2)[IDXdiff])
+
+        self.assertTrue(np.all(closeness))
