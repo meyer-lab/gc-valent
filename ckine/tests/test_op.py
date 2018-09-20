@@ -81,6 +81,4 @@ class TestOp(unittest.TestCase):
         # Calculate the Jacobian
         f, Jac2 = setupJacobian(Op, self.unkV)
         
-        print("preF.shape: " + str(preF.shape))
-        print("f.shape: " + str(f.shape))
-        self.assertAlmostEqual(preF, f)
+        self.assertAlmostEqual(preF.all(), f.all())
