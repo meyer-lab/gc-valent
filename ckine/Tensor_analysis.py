@@ -171,3 +171,9 @@ def percent_reduction_by_ligand(values, factors):
         for jj in range(5):
             R2X_ligand_mx[jj,ii] = 1 - np.var(AllLigandReconstructed[jj] - AllLigandTensors[jj]) / np.var(AllLigandTensors[jj])
     return R2X_ligand_mx
+
+def scale_time_factors(factors, component_number):
+    """Scale the timepoint factor component by dividing the mean and then in the values plot multiply the values by that same number."""
+    factors[3][:, component_number-1] = factors[3][:, component_number-1] * np.mean(factors[0][:,component_number-1])
+    factors[0][:, component_number-1] = factors[0][:,component_number-1] / np.mean(factors[0][:,component_number-1])
+    return factors
