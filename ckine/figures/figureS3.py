@@ -9,7 +9,7 @@ import pickle
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
+from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import reorient_factors, find_R2X
 
 
@@ -65,15 +65,3 @@ def makeFigure():
         R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors, subt = False)
         print(R2X)
     return f
-
-def plot_timepoints(ax, factors):
-    """Function to put all timepoint plots in one figure."""
-    ts = np.logspace(-3., np.log10(4 * 60.), 100)
-    ts = np.insert(ts, 0, 0.0)
-    colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    for ii in range(factors.shape[1]):
-        ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))
-        ax.scatter(ts[-1], factors[-1, ii], s = 12, color = 'k')
-    ax.set_xlabel('Time (min)')
-    ax.set_ylabel('Component')
-    ax.legend()
