@@ -174,7 +174,7 @@ def percent_reduction_by_ligand(values, factors):
 
 def scale_time_factors(factors, component_number):
     """Scale the timepoint factor component by dividing the mean and then in the values plot multiply the values by that same number."""
-    scale_factor = np.mean(factors[0][:,component_number-1])
+    scale_factor = np.mean(factors[0][:, component_number-1])
     factors[3][:, component_number-1] *= scale_factor
     factors[0][:, component_number-1] /= scale_factor
     return factors
