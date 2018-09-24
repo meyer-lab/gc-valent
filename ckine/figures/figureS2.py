@@ -25,7 +25,7 @@ def makeFigure():
     
     values, _, _, _, _ = prepare_tensor(2)
     values = values[:,:,:,[0,1,2,3,4]]
-    rank_list = [2,10,8,6]
+    rank_list = [2,10,8,5]
     out = perform_tucker(values, rank_list)
 
     factors = out[1]
@@ -40,19 +40,26 @@ def makeFigure():
         if row >= np.floor(rank_list[2]/2):
             ax[row*y + 2].axis('off')
 
-        if row >= np.floor((rank_list[3]-1)/2):
+        if row > np.floor(rank_list[3]/2):
             ax[row*y +3].axis('off')
         
         plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
         if compNum < rank_list[2]:
             plot_ligands(ax[row*y + 2], factors[2], compNum, compNum+1)
-        if compNum < rank_list[3] - 1:
+        if compNum < rank_list[3]:
             plot_values(ax[row*y + 3] , factors[3], compNum, compNum+1, ax_pos = row*y + 3)
+        elif compNum == rank_list[3]:
+            plot_values(ax[row*y + 3] , factors[3], compNum-1, compNum, ax_pos = row*y + 3)
+
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
+            
+            if compNum == rank_list[3] and col == 3:
+                ax[row*y + col].set_xlabel('Component ' + str(compNum-1))
+                ax[row*y + col].set_ylabel('Component ' + str(compNum))
 
             x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
             y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
