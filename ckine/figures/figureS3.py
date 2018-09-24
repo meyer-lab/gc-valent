@@ -10,7 +10,7 @@ from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
-from ..Tensor_analysis import reorient_factors, find_R2X, scale_time_factors
+from ..Tensor_analysis import reorient_factors, find_R2X, scale_time_factors, scale_all
 
 
 def makeFigure():
@@ -31,7 +31,7 @@ def makeFigure():
     n_comps = 5
     factors = factors_activity[n_comps]
     newfactors = reorient_factors(factors)
-    newfactors = scale_time_factors(newfactors, 1)
+    newfactors = scale_all(newfactors)
     x, y = 3, 4
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))

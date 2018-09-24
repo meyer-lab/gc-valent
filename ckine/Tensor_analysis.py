@@ -178,3 +178,9 @@ def scale_time_factors(factors, component_number):
     factors[3][:, component_number-1] *= scale_factor
     factors[0][:, component_number-1] /= scale_factor
     return factors
+
+def scale_all(factors):
+    """Function to rescale all components. Timepoint factor matrix and values factor matrix."""
+    for ii in range(factors[0].shape[1]):
+        factors = scale_time_factors(factors, ii)
+    return factors
