@@ -11,15 +11,15 @@ tensorly.set_backend('numpy')
 def z_score_values(A, subtract = True):
     '''Function that takes in the values tensor and z-scores it.'''
     B = np.zeros_like(A)
+    mus = np.mean(A, axis=3)
+    sigmas = np.std(A, axis=3)
+    
+    if subtract is False:
+        mus[:] = 0.0
+    
     for i in range(A.shape[3]):
-        slice_face = A[:,:,:,i]
-        mu = np.mean(slice_face)
-        sigma = np.std(slice_face)
-        if subtract is True:
-            z_scored_slice = (slice_face - mu) / sigma
-        elif subtract is False:
-            z_scored_slice = slice_face / sigma
-        B[:,:,:,i] = z_scored_slice
+        B[:,:,:,i] = (A[:,:,:,i] - mus[i]) / sigmas[i]
+
     return B
 
 def perform_decomposition(tensor, r, subt = True):
