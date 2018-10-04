@@ -5,7 +5,7 @@ import pickle
 from ckine.tensor_generation import prepare_tensor
 from ckine.Tensor_analysis import perform_decomposition
 
-n_ligands = 2
+n_ligands = 5
 values, _, _, _, _ = prepare_tensor(n_ligands)
 factors_activity = []
 for jj in range(6):
