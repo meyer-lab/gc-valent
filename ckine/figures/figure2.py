@@ -189,7 +189,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
-    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
+    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre))*100., (1-(actVec_IL7stim/IL7stim_no_pre))*100.))
 
 
 def plot_pretreat(ax, unkVec, scales, title):
@@ -199,7 +199,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation
     PTS = 30
-    pre_conc = np.logspace(-3.8, 1.0, num=PTS)
+    pre_conc = np.logspace(-3.8, 5.0, num=PTS)
     IL4_stim = np.zeros((PTS, 500))
     IL7_stim = IL4_stim.copy()
 
