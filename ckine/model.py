@@ -48,7 +48,6 @@ def runCkinePreT (pret, tt, rxntfr, postLig):
 
     assert postLig.size == 6
 
-    print("pretreatment ligands: " + str(rxntfr[0:6]))   # print ligand concs during pretreatment
     yOut = np.zeros(__nSpecies, dtype=np.float64)
 
 
