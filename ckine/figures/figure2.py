@@ -189,7 +189,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
-    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre))*100., (1-(actVec_IL7stim/IL7stim_no_pre))*100.))
+    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
 
 def plot_pretreat(ax, unkVec, scales, title):
