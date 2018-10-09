@@ -13,7 +13,7 @@ from ..fit import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4))
+    ax, f = getSetup((7, 6), (3, 4), mults=[0], multz={0: 2})
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -38,9 +38,9 @@ def relativeGC(ax, unkVec2, unkVec4):
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'k04': k4rev, 'k10': k10rev, 'k17': k17rev, 'k22': k22rev, 'k27': k27rev, 'k33': k33rev})
+    df = pd.DataFrame({'k04': k4rev, 'k05': k5rev, 'k10': k10rev, 'k16': k16rev, 'k17': k17rev, 'k22': k22rev, 'k27': k27rev, 'k33': k33rev})
     
-    col_list = ["violet", "violet", "goldenrod", "goldenrod", "blue", "lightblue"]
+    col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
     
