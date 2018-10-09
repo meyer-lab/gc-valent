@@ -45,8 +45,8 @@ class TestModel(unittest.TestCase):
         tensor = np.random.rand(20,35,100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
-        for ii in range(n_comp):
-            newfactors = scale_time_factors(factors, ii)
+        for ii in range(1,n_comp):
+            newfactors = scale_time_factors(factors, ii -1)
             reconstruct_new = tensorly.kruskal_to_tensor(newfactors)
             np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
 
