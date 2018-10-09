@@ -7,6 +7,7 @@ import pandas as pds
 import os
 import pickle
 from ..tensor_generation import prepare_tensor
+import tensorly
 from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints

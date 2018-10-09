@@ -8,6 +8,7 @@ import itertools
 import numpy as np, pandas as pds
 from scipy import stats
 import matplotlib.cm as cm
+import tensorly
 from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
 from sklearn.decomposition.pca import PCA
