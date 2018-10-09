@@ -13,7 +13,7 @@ from ..fit import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4), mults=[0], multz={0: 2}, empts=[2,3,4,5,6,7])
+    ax, f = getSetup((7, 6), (3, 4), mults=[0], multz={0: 2})
 
     # Add subplot labels
     for ii, item in enumerate(ax):
