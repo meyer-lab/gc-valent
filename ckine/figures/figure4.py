@@ -38,10 +38,13 @@ def relativeGC(ax, unkVec2, unkVec4):
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'k4': k4rev, 'k10': k10rev, 'k17': k17rev, 'k22': k22rev, 'k27': k27rev, 'k33': k33rev})
+    df = pd.DataFrame({'k04': k4rev, 'k10': k10rev, 'k17': k17rev, 'k22': k22rev, 'k27': k27rev, 'k33': k33rev})
     
-    # df.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
-    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, bw=10)
+    col_list = ["violet", "violet", "goldenrod", "goldenrod", "blue", "lightblue"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    cmap = sns.set_palette(col_list_palette)
+    
+    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, bw=10, cmap=cmap, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     a.set(title="Relative gc affinity", ylabel="log10 of value")
     
