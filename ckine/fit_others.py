@@ -149,7 +149,7 @@ class build_model:
             Rexpr = endo_activeEndo[0] / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF)))
             GCexpr = 328. * Rexpr # constant according to measured number per cell
             IL7Raexpr = 2591. * Rexpr # constant according to measured number per cell
-            IL4Raexpr = (254. * Rexpr # constant according to measured number per cell
+            IL4Raexpr = 254. * Rexpr # constant according to measured number per cell
             scales = pm.Lognormal('scales', mu=np.log(10.), sd=5, shape=2) # create scaling constants for activity measurements
 
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
