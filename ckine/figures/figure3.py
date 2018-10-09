@@ -8,6 +8,8 @@ import itertools
 import numpy as np, pandas as pds
 from scipy import stats
 import matplotlib.cm as cm
+from tensorly.decomposition import tucker
+tensorly.set_backend('numpy')
 from sklearn.decomposition.pca import PCA
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup
@@ -27,7 +29,6 @@ def makeFigure():
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
 
-
     expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
@@ -35,14 +36,13 @@ def makeFigure():
     Receptor_data = np.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
-        both = pickle.load(ff)
-    factors_activity = both[1] #Only the activities tensor (without surface and total receptors)
+        two_files = pickle.load(ff)
+    factors_activity = two_files[0] #Only the activities tensor (without surface and total receptors)
 
     factors = factors_activity[5]
     factors = reorient_factors(factors)
 
-    values, _, _, _, _ = prepare_tensor(2)
-    values = np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3)
+    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in. 
 
     n_comps = 5
     factors_activ = factors_activity[n_comps]
