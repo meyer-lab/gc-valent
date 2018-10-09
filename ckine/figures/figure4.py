@@ -3,6 +3,8 @@ This creates Figure 4.
 """
 import string
 from .figureCommon import subplotLabel, getSetup
+from ..fit_others import build_model as build_model_others
+from ..fit import build_model
 
 
 def makeFigure():
@@ -17,7 +19,6 @@ def makeFigure():
     f.tight_layout()
 
     return f
-
 
 
 def relativeGC(ax, unkVec):

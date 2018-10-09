@@ -1,8 +1,9 @@
 """
 This file contains functions that are used in multiple figures.
 """
+from os.path import join
+import pymc3 as pm, os
 import string
-import os
 import pickle
 import itertools
 import seaborn as sns
@@ -11,6 +12,8 @@ import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
+from ..model import nParams
+from ..fit import build_model as build_model_2_15
 
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
@@ -115,3 +118,23 @@ def plot_timepoints(ax, factors):
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.legend()
+
+def import_samples_2_15():
+    """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
+    bmodel = build_model_2_15()
+    n_params = nParams()
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
+    kfwd = trace.get_values('kfwd', chains=[0])
+    rxn = trace.get_values('rxn', chains=[0])
+    endo_activeEndo = trace.get_values('endo', chains=[0])
+    sortF = trace.get_values('sortF', chains=[0])
+    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
+    exprRates = trace.get_values('IL2Raexpr', chains=[0])
+
+    unkVec = np.zeros((n_params, 500))
+    for ii in range (0, 500):
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+
+    return unkVec
