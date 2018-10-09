@@ -13,7 +13,7 @@ from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[3])
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
