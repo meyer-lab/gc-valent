@@ -115,7 +115,7 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2] / IL4_data_max, color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,1] / IL7_data_max, color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,2] / IL7_data_max, color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='pSTAT activation', xlabel='stimulation concentration (nM)', title="pSTAT activity")
+    ax.set(ylabel='Percent of maximal p-STAT (% x 1)', xlabel='log10 of stimulation concentration (nM)', title="pSTAT activity")
     ax.legend()
 
 def violinPlots(ax, unkVec, scales):
@@ -134,19 +134,19 @@ def violinPlots(ax, unkVec, scales):
     rxn.columns = ['kfwd', 'k27rev', 'k33rev']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-    a.set_ylabel("log10 of value")
+    a.set_ylabel("log10 of rate")
     a.set_title("Reverse reaction rates")
 
     traf.columns = traf_names()
     b = sns.violinplot(data=traf, ax=ax[1])
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-    b.set_ylabel("value")
+    b.set_ylabel("Rate (1/min)")
     b.set_title("Trafficking parameters")
 
     Rexpr.columns = ['GCexpr', 'IL7Raexpr', 'IL4Raexpr']
     c = sns.violinplot(data=Rexpr, ax=ax[2])
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-    c.set_ylabel("value")
+    c.set_ylabel("Rate (#/cell/min)")
     c.set_title("Receptor expression rates")
 
     scales.columns = ['IL4 scale', 'IL7 scale']
