@@ -3,10 +3,10 @@ This creates Figure 2.
 """
 from os.path import join
 import os
+import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import string
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7
 from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkinePreT, getTotalActiveCytokine
 
@@ -131,6 +131,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
 
     def singleCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ Calculate for single case. """
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = pre_conc
         ligands = np.zeros((6))
