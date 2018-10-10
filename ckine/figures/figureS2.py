@@ -7,6 +7,9 @@ import pandas as pds
 import os
 import pickle
 from ..tensor_generation import prepare_tensor
+import tensorly
+from tensorly.decomposition import tucker
+tensorly.set_backend('numpy')
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors, perform_tucker
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
@@ -23,7 +26,16 @@ def makeFigure():
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
     
-    values, _, _, _, _ = prepare_tensor(2)
+
+    factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
+    factors_filename = os.path.abspath(os.path.realpath(factors_filename))
+    numpy_data = data.values
+    Receptor_data = np.delete(numpy_data, 0, 1)
+
+    with open(factors_filename,'rb') as ff:
+        two_files = pickle.load(ff)
+    
+    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
     values = values[:,:,:,[0,1,2,3,4]]
     rank_list = [2,10,8,5]
     out = perform_tucker(values, rank_list)
