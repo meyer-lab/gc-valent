@@ -5,7 +5,8 @@ import string
 import pandas as pd
 import seaborn as sns
 import numpy as np
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7
+import matplotlib.cm as cm
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
