@@ -2,10 +2,10 @@
 This creates Figure S1.
 """
 import string
-import numpy as np
-import pandas as pds
 import os
 import pickle
+import numpy as np
+import pandas as pds
 from ..tensor_generation import prepare_tensor
 import tensorly
 from tensorly.decomposition import tucker
@@ -38,7 +38,7 @@ def makeFigure():
 
     plot_timepoints(ax[0], newfactors[0])
 
-    
+
     for row in range(x):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*row + 1

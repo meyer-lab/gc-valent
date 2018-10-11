@@ -1,6 +1,10 @@
 """
 This creates Figure 3.
 """
+from sklearn.decomposition.pca import PCA
+from ..tensor_generation import prepare_tensor
+from .figureCommon import subplotLabel, getSetup
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
 import string
 import os
 import pickle
@@ -11,10 +15,6 @@ import matplotlib.cm as cm
 import tensorly
 from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
-from sklearn.decomposition.pca import PCA
-from ..tensor_generation import prepare_tensor
-from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -43,7 +43,7 @@ def makeFigure():
     factors = factors_activity[5]
     factors = reorient_factors(factors)
 
-    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in. 
+    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
     values = np.concatenate((values, values), axis = 3)
     n_comps = 5
     factors_activ = factors_activity[n_comps]
