@@ -6,12 +6,10 @@ import os
 import pickle
 import numpy as np
 import pandas as pds
-from ..tensor_generation import prepare_tensor
 import tensorly
-from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
-from ..Tensor_analysis import reorient_factors, find_R2X, scale_time_factors, scale_all
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from ..Tensor_analysis import reorient_factors, scale_all
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""

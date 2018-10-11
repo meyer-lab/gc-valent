@@ -11,9 +11,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pds
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
-from ..Tensor_analysis import reorient_factors, perform_tucker
-from ..Tensor_analysis import reorient_factors, find_R2X_tucker
+from ..Tensor_analysis import reorient_factors, perform_tucker, find_R2X_tucker
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -62,7 +60,6 @@ def makeFigure():
             plot_values(ax[row*y + 3] , factors[3], compNum, compNum+1, ax_pos = row*y + 3)
         elif compNum == rank_list[3]:
             plot_values(ax[row*y + 3] , factors[3], compNum-1, compNum, ax_pos = row*y + 3)
-
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):

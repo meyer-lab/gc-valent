@@ -4,7 +4,7 @@ Unit test file.
 import unittest
 import numpy as np
 import tensorly
-from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_time_factors, scale_all
+from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_all
 from ..tensor_generation import findy
 tensorly.set_backend('numpy')
 
