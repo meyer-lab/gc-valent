@@ -24,7 +24,7 @@ def makeFigure():
 
     unkVec, scales = import_samples()
     pstat_plot(ax[1], unkVec, scales)
-    plot_pretreat(ax[2], unkVec, scales, "Inhibition with active endocytosis")
+    plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
 
