@@ -48,7 +48,7 @@ def relativeGC(ax, unkVec2, unkVec4):
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, bw=10, cmap=cmap, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    a.set(title="Relative gc affinity", ylabel="log10 of value")
+    a.set(title="Relative gc affinity", ylabel="log10 of 1/nM/min")
 
 def single_cell_act(unkVec, cytokC):
     """ Cytokine activity for all IL2 doses for single cell line. """
@@ -72,7 +72,8 @@ def all_cells(ax, cell_data, cell_names, unkVec):
         unkVec[22:30] = cell_data[:, ii+1]  # place cell data into unkVec
         act = single_cell_act(unkVec, cytokC)
         ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
-        if (act[0] > 0.1):
-            print(cell_names[ii]) # tells us that proB_FrBC_BM and T_DP_Th cells respond at the lowest IL2 conc.
+        # if (act[0] > 0.1):
+        #   print(cell_names[ii]) # tells us that proB_FrBC_BM and T_DP_Th cells respond at the lowest IL2 conc.
         
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
+    ax.set(title="Cell Response to IL-2", ylabel="Relative pSTAT5 activity (% x 1)", xlabel="log10 IL-2 conc. (nM)")
