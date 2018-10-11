@@ -3,13 +3,14 @@ import os
 import numpy as np
 import pickle
 from ckine.tensor_generation import prepare_tensor
-from ckine.Tensor_analysis import perform_decomposition, perform_tucker
+from ckine.Tensor_analysis import perform_decomposition, perform_tucker, find_R2X_tucker
 
 n_ligands = 5
 values, _, _, _, _ = prepare_tensor(n_ligands)
 
-rank_list = [10,10,10,10]
+rank_list = [5,15,25,5]
 out_tucker = perform_tucker(values[:,:,:,[0,1,2,3,4]], rank_list) #This contains the core tensor and the factors matrices to help in storing. 
+print(find_R2X_tucker(values[:,:,:,[0,1,2,3,4]], out_tucker, subt = True))
 
 factors_activity = []
 for jj in range(6):
