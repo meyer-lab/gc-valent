@@ -12,7 +12,7 @@ from ..plot_model_prediction import pstat
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4), mults=[0, 4], multz={0: 2, 4: 3})
+    ax, f = getSetup((7, 6), (3, 4), mults=[0, 2], multz={0: 2, 2: 2})
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -23,8 +23,8 @@ def makeFigure():
     data, cell_names = load_cells()
     unkVec_2_15 = import_samples_2_15()
     unkVec_4_7, scales = import_samples_4_7()
+    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    all_cells(ax[3], data, cell_names, unkVec_2_15[:, 0])
 
 
     return f
@@ -75,4 +75,4 @@ def all_cells(ax, cell_data, cell_names, unkVec):
         if (act[0] > 0.1):
             print(cell_names[ii]) # tells us that proB_FrBC_BM and T_DP_Th cells respond at the lowest IL2 conc.
         
-    ax.legend(loc='upper left', bbox_to_anchor=(1.6, 1.2))
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
