@@ -29,7 +29,7 @@ class TestModel(unittest.TestCase):
         y_combos, new_mat = findy(r,50)[0:2]
 
         self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
-    
+
     def test_reorientation(self, n_comp = 20):
         """Test if reorienting the factors matrices changes anything about the original tensor itself."""
         tensor = np.random.rand(20, 35, 100, n_comp)
