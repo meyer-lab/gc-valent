@@ -1,10 +1,12 @@
 """
 Theano Op for using differencing for Jacobian calculation.
 """
+import concurrent.futures
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import runCkineU, nSpecies, nParams, runCkineUP
+from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT
 
+pool = concurrent.futures.ThreadPoolExecutor()
 
 class runCkineOp(Op):
     itypes, otypes = [dvector], [dvector]
@@ -45,6 +47,64 @@ class runCkineOpDiff(Op):
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, True)
+
+
+class runCkinePreSOp(Op):
+    itypes, otypes = [dvector], [dvector]
+
+    def __init__(self, tpre, ts, postlig):
+        self.dOp = runCkinePreSOpDiff(tpre, ts, postlig)
+
+    def infer_shape(self, node, i0_shapes):
+        assert len(i0_shapes) == 1
+        return [(nSpecies(), )]
+
+    def perform(self, node, inputs, outputs):
+        outputs[0][0] = self.dOp.runCkine(inputs[0])
+
+    def grad(self, inputs, g):
+        """ Calculate the runCkineOp gradient. """
+        return [dot(g[0], self.dOp(inputs[0]))]
+
+
+class runCkinePreSOpDiff(Op):
+    itypes, otypes = [dvector], [dmatrix]
+
+    def __init__(self, tpre, ts, postlig):
+        assert ts.size == 1
+        assert postlig.size == 6
+
+        self.ts = ts
+        self.tpre = tpre
+        self.postlig = postlig
+
+    def runCkine(self, inputs):
+        outt = runCkinePreT(self.tpre, self.ts, inputs, self.postlig)
+
+        assert outt[1] >= 0
+        assert outt[0].size == nSpecies()
+
+        return np.squeeze(outt[0])
+
+    def perform(self, node, inputs, outputs):
+        x0 = inputs[0]
+        f0 = self.runCkine(x0)
+        epsilon = 1.0E-6
+
+        jac = np.zeros((len(x0), len(f0)), dtype=np.float64)
+        dxl = list()
+
+        for i in range(len(x0)):
+            dx = x0.copy()
+            dx[i] = dx[i] + epsilon
+            dxl.append(dx)
+
+        dxlr = pool.map(self.runCkine, dxl)
+
+        for i, item in enumerate(dxlr):
+            jac[i] = (item - f0)/epsilon
+
+        outputs[0][0] = np.transpose(jac)
 
 
 class runCkineKineticOp(Op):

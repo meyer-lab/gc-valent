@@ -34,7 +34,7 @@ def ySolver(matIn, ts):
     rxntfR[18] = 1.474695447 #activeEndo
     rxntfR[19] = 0.179927669 #sortF
     rxntfR[20] = 0.155260036 #kRec
-    rxntfR[21] = 0.017236595 #kDeg 
+    rxntfR[21] = 0.017236595 #kDeg
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations
@@ -83,7 +83,7 @@ def findy(lig, n_timepoints):
 
 def reduce_values(y_of_combos):
     """Reduce y_of_combinations into necessary values."""
-    active_list = [np.array([7, 8, 14, 15]),np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine; NOte we combined the activity of IL2 and IL15
+    active_list = [np.array([7, 8, 14, 15]),np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine; Note we combined the activity of IL2 and IL15
     values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],21))
     indices = [np.array([0, 3, 5, 6, 8]), np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), np.array([9, 10, 12, 13, 15]), np.array([16, 17, 18]), np.array([19, 20, 21]), np.array([22, 23, 24]),np.array([25, 26, 27])]
     for i in range(5): #first 6 total active cytokines
