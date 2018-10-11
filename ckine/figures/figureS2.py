@@ -2,6 +2,7 @@
 This creates Figure S2.
 """
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
+import tensorly
 from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
 from ..tensor_generation import prepare_tensor
@@ -10,7 +11,6 @@ import os
 import pickle
 import numpy as np
 import pandas as pds
-import tensorly
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors, perform_tucker
 from ..Tensor_analysis import reorient_factors, find_R2X_tucker
