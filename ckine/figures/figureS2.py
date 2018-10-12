@@ -1,14 +1,14 @@
 """
 This creates Figure S2.
 """
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
-import tensorly
-tensorly.set_backend('numpy')
-import string
 import os
+import string
 import pickle
 import numpy as np
 import pandas as pds
+import tensorly
+tensorly.set_backend('numpy')
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 
 def makeFigure():
