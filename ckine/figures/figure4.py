@@ -101,6 +101,12 @@ def IL2_receptor_activity(ax, unkVec):
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100")
+        ax[r].set(xlabel="log10 of cytokine conc. (nM)", ylabel="Total pSTAT activity")
+
+    ax[0].set_title("IL2Ra")
+    ax[1].set_title("IL2Rb")
+    ax[2].set_title("Gamma chain")
+    ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
 
 def rec_act_singleCalc(unkVec, cytokine, conc):
     """ Calculates the surface IL2Rb over time for one condition. """
