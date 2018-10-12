@@ -13,13 +13,11 @@ from ..model import getTotalActiveSpecies, runCkineU
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4), mults=[0, 2], multz={0: 2, 2: 2})
+    ax, f = getSetup((7, 6), (3, 4), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 8, 9, 10])
 
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
-
-    f.tight_layout()
 
     data, cell_names = load_cells()
     unkVec_2_15 = import_samples_2_15()
@@ -27,6 +25,9 @@ def makeFigure():
     #relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     #all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
     IL2_receptor_activity(ax[2:5], unkVec_2_15)
+    
+    f.tight_layout(w_pad=0.1, h_pad=1.0)
+
 
     return f
 
@@ -96,17 +97,17 @@ def IL2_receptor_activity(ax, unkVec):
                 output = rec_act_calc(unkVec2[:, ii], cytokC) * y_max
                 activity[:, ii, n, r] = output[0:PTS]
 
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "k", "0.01")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1,r], "darkblue", "0.1")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "royalblue", "0.01x")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1,r], "navy", "0.1x")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1x")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10x")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100x")
         ax[r].set(xlabel="log10 of cytokine conc. (nM)", ylabel="Total pSTAT activity")
 
     ax[0].set_title("IL2Ra")
     ax[1].set_title("IL2Rb")
     ax[2].set_title("Gamma chain")
-    ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
+    ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
 
 def rec_act_singleCalc(unkVec, cytokine, conc):
     """ Calculates the surface IL2Rb over time for one condition. """
