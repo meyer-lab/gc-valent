@@ -102,7 +102,7 @@ def IL2_receptor_activity(ax, unkVec):
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1x")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10x")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100x")
-        ax[r].set(xlabel="log10 of cytokine conc. (nM)", ylabel="Total pSTAT activity")
+        ax[r].set(xlabel="log10 of IL-2 conc. (nM)", ylabel="Total pSTAT activity")
 
     ax[0].set_title("IL2Ra")
     ax[1].set_title("IL2Rb")
