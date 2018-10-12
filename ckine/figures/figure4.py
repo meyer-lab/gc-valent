@@ -93,7 +93,7 @@ def IL2_receptor_activity(ax, unkVec):
             unkVec2 = unkVec.copy()
             unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
             for ii in range(0,50):
-                output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
+                output = pstat5.calc(unkVec2[:, ii], cytokC) * y_max
                 activity[:, ii, n, r] = output[0:PTS]
 
     plot_conf_int(ax[0], np.log10(cytokC), activity[:,:,0,0], "darkorchid", "0.01")
