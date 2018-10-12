@@ -64,7 +64,6 @@ def all_cells(ax, cell_data, cell_names, unkVec):
     PTS = 60    # number of cytokine concentrations that are used
     cytokC = np.logspace(-5, 0, PTS)
     numCells = cell_data.shape[1] - 1   # first column is receptor names
-    results = np.zeros((PTS, numCells))
     
     colors = cm.rainbow(np.linspace(0, 1, numCells))
     
