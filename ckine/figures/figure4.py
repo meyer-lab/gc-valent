@@ -23,8 +23,8 @@ def makeFigure():
     data, cell_names = load_cells()
     unkVec_2_15 = import_samples_2_15()
     unkVec_4_7, scales = import_samples_4_7()
-    relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
+    #relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
+    #all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
     IL2_receptor_activity(ax[2:5], unkVec_2_15)
 
     return f
@@ -88,9 +88,10 @@ def IL2_receptor_activity(ax, unkVec):
     factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
     receptors = np.array([22, 23, 24]) # indices of IL2Ra, IL2Rb, gc
     for r in range(0,3):
-        for n in factors:
+        print(factors.size)
+        for n in range(factors.size):
             unkVec2 = unkVec.copy()
-            unkVec2[22+r] *= n  # multiply receptor expression rate by factor
+            unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
             for ii in range(0,500):
                 output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
                 activity[:, ii, n] = output[0:PTS]
