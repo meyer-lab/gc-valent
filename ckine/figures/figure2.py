@@ -90,7 +90,7 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2] / IL4_data_max, color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,1] / IL7_data_max, color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,2] / IL7_data_max, color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='Percent of maximal p-STAT (% x 1)', xlabel='log10 of stimulation concentration (nM)', title="pSTAT activity")
+    ax.set(ylabel='Fraction of maximal p-STAT', xlabel='log10 of stimulation concentration (nM)', title="pSTAT activity")
     ax.legend()
 
 def violinPlots(ax, unkVec, scales):

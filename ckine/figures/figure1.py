@@ -113,7 +113,7 @@ def pstat_act(ax, unkVec):
     ax.scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL15, 2Ra-") # IL15 in 2Ra-
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL2, 2Ra+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL15, 2Ra+") # IL15 in 2Ra+
-    ax.set(ylabel='Percent of maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
+    ax.set(ylabel='Percent of maximal p-STAT5 (%)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
     ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
 
 def violinPlots(ax, unkVec):
