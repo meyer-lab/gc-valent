@@ -7,7 +7,8 @@ import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
-from ..plot_model_prediction import pstat
+# from ..plot_model_prediction import pstat
+from ..model import getTotalActiveSpecies, runCkineU
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -80,7 +81,6 @@ def all_cells(ax, cell_data, cell_names, unkVec):
 
 def IL2_receptor_activity(ax, unkVec):
     """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
-    pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
@@ -93,7 +93,7 @@ def IL2_receptor_activity(ax, unkVec):
             unkVec2 = unkVec.copy()
             unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
             for ii in range(0,50):
-                output = pstat5.calc(unkVec2[:, ii], cytokC) * y_max
+                output = rec_act_calc(unkVec2[:, ii], cytokC) * y_max
                 activity[:, ii, n, r] = output[0:PTS]
 
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "k", "0.01")
@@ -101,3 +101,20 @@ def IL2_receptor_activity(ax, unkVec):
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100")
+
+def rec_act_singleCalc(unkVec, cytokine, conc):
+    """ Calculates the surface IL2Rb over time for one condition. """
+    unkVec = unkVec.copy()
+    unkVec[cytokine] = conc
+    ts = np.array([500.])
+    returnn, retVal = runCkineU(ts, unkVec)
+
+    assert retVal >= 0
+    activity = getTotalActiveSpecies().astype(np.float64)
+    return np.dot(returnn, activity)
+
+def rec_act_calc(unkVec, cytokC):
+    '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
+    actVec = np.fromiter((rec_act_singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
+
+    return actVec
