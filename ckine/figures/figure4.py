@@ -6,7 +6,7 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
 from ..plot_model_prediction import pstat
 
 def makeFigure():
@@ -23,9 +23,9 @@ def makeFigure():
     data, cell_names = load_cells()
     unkVec_2_15 = import_samples_2_15()
     unkVec_4_7, scales = import_samples_4_7()
-    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-
+    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
+    IL2_receptor_activity(ax[2:5], unkVec_2_15)
 
     return f
 
@@ -77,3 +77,27 @@ def all_cells(ax, cell_data, cell_names, unkVec):
         
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="Relative pSTAT5 activity (% x 1)", xlabel="log10 IL-2 conc. (nM)")
+
+def IL2_receptor_activity(ax, unkVec):
+    """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
+    pstat5 = pstat()
+    PTS = 30
+    cytokC = np.logspace(-3.3, 2.7, PTS)
+    y_max = 100.
+    activity = np.zeros((PTS, 500, 5))
+    factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
+    receptors = np.array([22, 23, 24]) # indices of IL2Ra, IL2Rb, gc
+    for r in range(0,3):
+        for n in factors:
+            unkVec2 = unkVec.copy()
+            unkVec2[22+r] *= n  # multiply receptor expression rate by factor
+            for ii in range(0,500):
+                output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
+                activity[:, ii, n] = output[0:PTS]
+
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0], "darkorchid", "0.01")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1], "darkorchid", "0.1")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2], "darkorchid", "1")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3], "darkorchid", "10")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4], "darkorchid", "100")
+
