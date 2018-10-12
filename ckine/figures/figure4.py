@@ -84,8 +84,8 @@ def IL2_receptor_activity(ax, unkVec):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-    activity = np.zeros((PTS, 50, 5))
-    factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
+    activity = np.zeros((PTS, 50, 5, 3))
+    factors = np.array([10**-6, 10**-3, 1, 10**3, 10**6]) # factors that we multiply the receptor expression rates by
     for r in range(0,3):
         print("receptor: " + str(r+22))
         for n in range(factors.size):
@@ -94,11 +94,22 @@ def IL2_receptor_activity(ax, unkVec):
             unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
             for ii in range(0,50):
                 output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
-                activity[:, ii, n] = output[0:PTS]
+                activity[:, ii, n, r] = output[0:PTS]
 
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0], "darkorchid", "0.01")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1], "darkorchid", "0.1")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2], "darkorchid", "1")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3], "darkorchid", "10")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4], "darkorchid", "100")
+    plot_conf_int(ax[0], np.log10(cytokC), activity[:,:,0,0], "darkorchid", "0.01")
+    plot_conf_int(ax[0], np.log10(cytokC), activity[:,:,1,0], "blue", "0.1")
+    plot_conf_int(ax[0], np.log10(cytokC), activity[:,:,2,0], "r", "1")
+    plot_conf_int(ax[0], np.log10(cytokC), activity[:,:,3,0], "k", "10")
+    plot_conf_int(ax[0], np.log10(cytokC), activity[:,:,4,0], "y", "100")
 
+    plot_conf_int(ax[1], np.log10(cytokC), activity[:,:,0,1], "darkorchid", "0.01")
+    plot_conf_int(ax[1], np.log10(cytokC), activity[:,:,1,1], "blue", "0.1")
+    plot_conf_int(ax[1], np.log10(cytokC), activity[:,:,2,1], "r", "1")
+    plot_conf_int(ax[1], np.log10(cytokC), activity[:,:,3,1], "k", "10")
+    plot_conf_int(ax[1], np.log10(cytokC), activity[:,:,4,1], "y", "100")
+
+    plot_conf_int(ax[2], np.log10(cytokC), activity[:,:,0,2], "darkorchid", "0.01")
+    plot_conf_int(ax[2], np.log10(cytokC), activity[:,:,1,2], "blue", "0.1")
+    plot_conf_int(ax[2], np.log10(cytokC), activity[:,:,2,2], "r", "1")
+    plot_conf_int(ax[2], np.log10(cytokC), activity[:,:,3,2], "k", "10")
+    plot_conf_int(ax[2], np.log10(cytokC), activity[:,:,4,2], "y", "100")
