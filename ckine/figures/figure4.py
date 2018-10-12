@@ -13,7 +13,7 @@ from ..model import getTotalActiveSpecies, runCkineU
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 8, 9, 10])
+    ax, f = getSetup((7, 6), (3, 4), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7])
 
     # Add subplot labels
     for ii, item in enumerate(ax):
