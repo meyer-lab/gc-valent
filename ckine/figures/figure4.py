@@ -96,8 +96,8 @@ def IL2_receptor_activity(ax, unkVec):
                 output = pstat5.calc(unkVec2[:, ii], cytokC) * y_max
                 activity[:, ii, n, r] = output[0:PTS]
 
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "darkorchid", "0.01")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1,r], "blue", "0.1")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "r", "1")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "k", "10")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "y", "100")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "k", "0.01")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1,r], "darkblue", "0.1")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10")
+        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100")
