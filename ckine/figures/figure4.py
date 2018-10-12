@@ -84,15 +84,15 @@ def IL2_receptor_activity(ax, unkVec):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-    activity = np.zeros((PTS, 500, 5))
+    activity = np.zeros((PTS, 50, 5))
     factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
-    receptors = np.array([22, 23, 24]) # indices of IL2Ra, IL2Rb, gc
     for r in range(0,3):
-        print(factors.size)
+        print("receptor: " + str(r+22))
         for n in range(factors.size):
+            print("factor: " + str(factors[n]))
             unkVec2 = unkVec.copy()
             unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
-            for ii in range(0,500):
+            for ii in range(0,50):
                 output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
                 activity[:, ii, n] = output[0:PTS]
 
