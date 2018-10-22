@@ -7,7 +7,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
-# from ..plot_model_prediction import pstat
+from ..plot_model_prediction import pstat
 from ..model import getTotalActiveSpecies, runCkineU
 
 def makeFigure():
@@ -22,8 +22,8 @@ def makeFigure():
     data, cell_names = load_cells()
     unkVec_2_15 = import_samples_2_15()
     unkVec_4_7, scales = import_samples_4_7()
-    #relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    #all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
+    relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
+    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
     IL2_receptor_activity(ax[2:5], unkVec_2_15)
     
     f.tight_layout(w_pad=0.1, h_pad=1.0)
@@ -74,9 +74,7 @@ def all_cells(ax, cell_data, cell_names, unkVec):
         unkVec[22:30] = cell_data[:, ii+1]  # place cell data into unkVec
         act = single_cell_act(unkVec, cytokC)
         ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
-        # if (act[0] > 0.1):
-        #   print(cell_names[ii]) # tells us that proB_FrBC_BM and T_DP_Th cells respond at the lowest IL2 conc.
-        
+
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="Relative pSTAT5 activity (% x 1)", xlabel="log10 IL-2 conc. (nM)")
 
@@ -88,9 +86,7 @@ def IL2_receptor_activity(ax, unkVec):
     activity = np.zeros((PTS, 50, 5, 3))
     factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
     for r in range(0,3):
-        print("receptor: " + str(r+22))
         for n in range(factors.size):
-            print("factor: " + str(factors[n]))
             unkVec2 = unkVec.copy()
             unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
             for ii in range(0,50):
