@@ -6,7 +6,7 @@ from os.path import join
 import string
 import pickle
 import itertools
-import pymc3 as pm
+import pymc3 as pm, os
 import seaborn as sns
 import numpy as np
 import pandas as pds
