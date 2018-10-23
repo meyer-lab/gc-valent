@@ -25,7 +25,7 @@ def makeFigure():
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
     IL2_receptor_activity(ax[2:5], unkVec_2_15)
-    
+
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
 
@@ -69,7 +69,7 @@ def all_cells(ax, cell_data, cell_names, unkVec):
     results = np.zeros((PTS, numCells))
     
     colors = cm.rainbow(np.linspace(0, 1, numCells))
-    
+
     for ii in range(0, numCells):       # for all cell types
         unkVec[22:30] = cell_data[:, ii+1]  # place cell data into unkVec
         act = single_cell_act(unkVec, cytokC)
