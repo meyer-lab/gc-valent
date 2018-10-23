@@ -9,11 +9,12 @@ from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_rem
 import string
 import os
 import pickle
-import itertools
+from sklearn.decomposition.pca import PCA
+from .figureCommon import subplotLabel, getSetup
+from ..Tensor_analysis import find_R2X, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
 import numpy as np, pandas as pds
 from scipy import stats
 import tensorly
-from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
 
 def makeFigure():

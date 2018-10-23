@@ -1,15 +1,15 @@
 """
 This file contains functions that are used in multiple figures.
 """
+import os
 from os.path import join
 import string
 import pickle
 import itertools
-import pymc3 as pm, os
+import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
-import matplotlib
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from ..model import nParams
