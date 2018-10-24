@@ -37,13 +37,13 @@ class IL4_7_activity:
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
-        # normalize each actVec by its maximum... do I need to be doing this?
-        actVecIL4 = actVecIL4 / T.max(actVecIL4)
-        actVecIL7 = actVecIL7 / T.max(actVecIL7)
-
         # incorporate IC50 scale
         actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
         actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
+
+        # normalize each actVec by its maximum... do I need to be doing this?
+        actVecIL4 = actVecIL4 / T.max(actVecIL4)
+        actVecIL7 = actVecIL7 / T.max(actVecIL7)
 
         # put into one vector
         actVec = T.concatenate((actVecIL4, actVecIL4, actVecIL7, actVecIL7))
@@ -116,7 +116,6 @@ class crosstalk:
         # incorporate IC50
         actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
-
 
         case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
         case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
