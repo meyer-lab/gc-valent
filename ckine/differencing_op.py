@@ -19,7 +19,7 @@ class runCkineOp(Op):
         assert len(i0_shapes) == 1
         return [(nSpecies(), )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, False)
 
     def grad(self, inputs, g):
@@ -48,7 +48,7 @@ class runCkineOpDiff(Op):
 
         return np.squeeze(outt[0])
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, True)
 
 
@@ -64,7 +64,7 @@ class runCkinePreSOp(Op):
         assert len(i0_shapes) == 1
         return [(nSpecies(), )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs[0])
 
     def grad(self, inputs, g):
@@ -93,7 +93,7 @@ class runCkinePreSOpDiff(Op):
 
         return np.squeeze(outt[0])
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         x0 = inputs[0]
         f0 = self.runCkine(x0)
         epsilon = 1.0E-6
@@ -126,7 +126,7 @@ class runCkineKineticOp(Op):
         assert len(i0_shapes) == 1
         return [(self.dOp.ts.size, )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, False)
 
     def grad(self, inputs, g):
@@ -154,7 +154,7 @@ class runCkineOpKineticDiff(Op):
 
         return np.dot(outt[0], self.condense)
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
 
 
@@ -170,7 +170,7 @@ class runCkineDoseOp(Op):
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0], )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, sensi=False)
 
     def grad(self, inputs, g):
@@ -204,5 +204,5 @@ class runCkineOpDoseDiff(Op):
 
         return np.dot(outt[0], self.condense)
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
