@@ -38,6 +38,7 @@ class IL4_7_activity:
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
         # Multiply by scaling constants and put together in one vector
+        # do we need to include scaling constants if we're normalizing to the max?
         actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
 
         # return residual
