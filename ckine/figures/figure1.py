@@ -2,16 +2,13 @@
 This creates Figure 1.
 """
 from os.path import join
-import pymc3 as pm, os
+import os
+import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import string
-from ..fit import build_model
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
-from ..model import nParams
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -24,7 +21,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec = import_samples()
+    unkVec = import_samples_2_15()
     pstat_act(ax[1], unkVec)
     surf_perc(ax[2:4], 'IL2Rb', unkVec)
     violinPlots(ax[6:8], unkVec)
@@ -116,29 +113,8 @@ def pstat_act(ax, unkVec):
     ax.scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL15, 2Ra-") # IL15 in 2Ra-
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL2, 2Ra+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL15, 2Ra+") # IL15 in 2Ra+
-    ax.set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
+    ax.set(ylabel='Percent of maximal p-STAT5 (%)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
     ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
-
-
-def import_samples():
-    """ This function imports the csv results into a numpy array called unkVec. """
-    bmodel = build_model()
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    rxn = trace.get_values('rxn', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0])
-
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
-
-    return unkVec
 
 def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
@@ -150,12 +126,12 @@ def violinPlots(ax, unkVec):
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set(title="Trafficking parameters", ylabel="log10 of value")
+    b.set(title="Trafficking parameters", ylabel="log10 of 1/min")
 
     Rexpr.columns = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set(title="Receptor expression rates", ylabel="log10 of value")
+    c.set(title="Receptor expression rates", ylabel="log10 of #/cell/min")
 
 
 def rateComp(ax, unkVec):
@@ -191,15 +167,15 @@ def rateComp(ax, unkVec):
     df.loc[500:1000, 'cytokine'] = 'IL15'
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of value')
-    melted.loc[:, 'log10 of value'] = np.log10(melted.loc[:, 'log10 of value'])
+    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of 1/nM/min')
+    melted.loc[:, 'log10 of 1/nM/min'] = np.log10(melted.loc[:, 'log10 of 1/nM/min'])
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
+    a = sns.violinplot(x='rate', y='log10 of 1/nM/min', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
     a.scatter(2.75, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(3.20, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
     a.scatter(3.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev

@@ -4,7 +4,7 @@ Unit test file.
 import unittest
 import numpy as np
 import tensorly
-from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_time_factors, scale_all
+from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_all
 from ..tensor_generation import findy
 tensorly.set_backend('numpy')
 
@@ -29,9 +29,9 @@ class TestModel(unittest.TestCase):
         y_combos, new_mat = findy(r,50)[0:2]
 
         self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
-    
+
     def test_reorientation(self, n_comp = 20):
-        """Test if reorienting the factors matrices changes anything about the original tensor itself."""
+        """ Test if reorienting the factors matrices changes anything about the original tensor itself. """
         tensor = np.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
         np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
 
     def test_rescale_all(self, n_comp = 20):
-        """Test if rescaling every component keeps the tensor the same."""
+        """ Test if rescaling every component keeps the tensor the same. """
         tensor = np.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
