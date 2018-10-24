@@ -151,9 +151,9 @@ def pretreat_calc(unkVec, scales, pre_conc):
     actVec_IL4stim = np.fromiter((singleCalc(unkVec, 2, x, 4, IL4_stim_conc) for x in pre_conc), np.float64)
     actVec_IL7stim = np.fromiter((singleCalc(unkVec, 4, x, 2, IL7_stim_conc) for x in pre_conc), np.float64)
 
-    actVec_IL4stim = actVec_IL4stim * scales[0]
-    actVec_IL7stim = actVec_IL7stim * scales[1]
-
+    # incorporate IC50
+    actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
+    actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
 
     def singleCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -166,8 +166,9 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL4stim_no_pre = singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
     IL7stim_no_pre = singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
 
-    IL4stim_no_pre = IL4stim_no_pre * scales[0]
-    IL7stim_no_pre = IL7stim_no_pre * scales[1]
+    # incorporate IC50
+    IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
+    IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
     return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
 
