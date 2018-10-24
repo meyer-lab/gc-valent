@@ -37,9 +37,16 @@ class IL4_7_activity:
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
-        # Multiply by scaling constants and put together in one vector
-        # do we need to include scaling constants if we're normalizing to the max?
-        actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
+        # normalize each actVec by its maximum... do I need to be doing this?
+        actVecIL4 = actVecIL4 / T.max(actVecIL4)
+        actVecIL7 = actVecIL7 / T.max(actVecIL7)
+
+        # incorporate IC50 scale
+        actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
+        actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
+
+        # put into one vector
+        actVec = T.concatenate((actVecIL4, actVecIL4, actVecIL7, actVecIL7))
 
         # return residual
         return self.fit_data - actVec
@@ -105,6 +112,7 @@ class crosstalk:
         # IL4 pretreatment with IL7 stimulation
         actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.cytokM[1, 2]) for x in self.pre_IL4)))
 
+        # shoudld I be dividing by the max before doing this?
         # incorporate IC50
         actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])

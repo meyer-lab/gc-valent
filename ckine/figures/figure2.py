@@ -52,8 +52,13 @@ def pstat_calc(unkVec, scales, cytokC):
     actVecIL7 = np.fromiter((singleCalc(unkVec, 2, x) for x in cytokC), np.float64)
     actVecIL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC), np.float64)
 
-    actVecIL4 = actVecIL4 * scales[0]
-    actVecIL7 = actVecIL7 * scales[1]
+    # normalize each actVec by its maximum... do I need to be doing this?
+    actVecIL4 = actVecIL4 / T.max(actVecIL4)
+    actVecIL7 = actVecIL7 / T.max(actVecIL7)
+
+    # incorporate IC50 scale
+    actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
+    actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
 
     return np.concatenate((actVecIL4, actVecIL7))
 
