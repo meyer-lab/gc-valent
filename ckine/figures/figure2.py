@@ -57,8 +57,8 @@ def pstat_calc(unkVec, scales, cytokC):
     actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
 
     # normalize each actVec by its maximum... do I need to be doing this?
-    actVecIL4 = actVecIL4 / T.max(actVecIL4)
-    actVecIL7 = actVecIL7 / T.max(actVecIL7)
+    actVecIL4 = actVecIL4 / np.max(actVecIL4)
+    actVecIL7 = actVecIL7 / np.max(actVecIL7)
     return np.concatenate((actVecIL4, actVecIL7))
 
 def pstat_plot(ax, unkVec, scales):
