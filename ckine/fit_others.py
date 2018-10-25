@@ -142,12 +142,12 @@ class build_model:
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
             endo_activeEndo = T.ones(2, dtype=np.float64)
-            endo_activeEndo[0] *= 0.080189183
-            endo_activeEndo[1] *= 1.463922832
+            endo_activeEndo = T.set_subtensor(endo_activeEndo[0], 0.080189183)
+            endo_activeEndo = T.set_subtensor(endo_activeEndo[1], 1.463922832)
             sortF = T.ones(1, dtype=np.float64) * 0.179757424
             kRec_kDeg = T.ones(2, dtype=np.float64)
-            kRec_kDeg[0] *= 0.154753853
-            kRec_kDeg[1] *= 0.017205254
+            kRec_kDeg = T.set_subtensor(kRec_kDeg[0], 0.154753853)
+            kRec_kDeg = T.set_subtensor(kRec_kDeg[1], 0.017205254)
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
