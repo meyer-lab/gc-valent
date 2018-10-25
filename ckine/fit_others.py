@@ -6,6 +6,7 @@ import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getTotalActiveCytokine
 from .differencing_op import runCkineDoseOp, runCkinePreSOp
+from .figures/figureCommon import import_samples_2_15
 
 class IL4_7_activity:
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
@@ -131,6 +132,7 @@ class build_model:
         self.cross = crosstalk()
         self.pretreat = pretreat
         self.M = self.build()
+        self.results_2_15 = import_samples_2_15()
 
     def build(self):
         """The PyMC model that incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."""
@@ -143,7 +145,8 @@ class build_model:
             Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
-            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
+            endo_activeEndo = T.zeros(2, dtype=np.float64)
+            endo_activeEndo[0] = 
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
