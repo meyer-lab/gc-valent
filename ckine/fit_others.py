@@ -132,7 +132,7 @@ class build_model:
         self.cross = crosstalk()
         self.pretreat = pretreat
         self.M = self.build()
-        self.results_2_15 = import_samples_2_15()
+        self.rates = import_samples_2_15()
 
     def build(self):
         """The PyMC model that incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."""
@@ -146,9 +146,12 @@ class build_model:
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
             endo_activeEndo = T.zeros(2, dtype=np.float64)
-            endo_activeEndo[0] = 
-            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
+            endo_activeEndo[0] = self.rates[17]
+            endo_activeEndo[1] = self.rates[18]
+            sortF = T.ones(1, dtype=np.float64) * self.rates[19]
+            kRec_kDeg = T.zeros(2, dtype=np.float64)
+            kRec_kDeg[0] = self.rates[20]
+            kRec_kDeg[1] = self.rates[21]
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
