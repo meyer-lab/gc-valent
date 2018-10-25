@@ -6,7 +6,7 @@ import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getTotalActiveCytokine
 from .differencing_op import runCkineDoseOp, runCkinePreSOp
-from .figures/figureCommon import import_samples_2_15
+from .fit import build_model as build_model_2_15
 
 class IL4_7_activity:
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
@@ -26,7 +26,6 @@ class IL4_7_activity:
         IL4_data_max = np.amax(np.concatenate((dataIL4[:,1], dataIL4[:,2])))
         IL7_data_max = np.amax(np.concatenate((dataIL7[:,1], dataIL7[:,2])))
         self.fit_data = np.concatenate((dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max)) # measurements ARE normalized to max of own species
-
 
     def calc(self, unkVec, scales):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
@@ -123,6 +122,27 @@ class crosstalk:
         inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
+
+
+def import_samples_2_15():
+    """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
+    bmodel = build_model_2_15()
+    n_params = nParams()
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
+    kfwd = trace.get_values('kfwd', chains=[0])
+    rxn = trace.get_values('rxn', chains=[0])
+    endo_activeEndo = trace.get_values('endo', chains=[0])
+    sortF = trace.get_values('sortF', chains=[0])
+    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
+    exprRates = trace.get_values('IL2Raexpr', chains=[0])
+
+    unkVec = np.zeros((n_params, 500))
+    for ii in range (0, 500):
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+
+    return unkVec
 
 
 class build_model:
