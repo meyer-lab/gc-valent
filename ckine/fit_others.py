@@ -6,7 +6,6 @@ import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getTotalActiveCytokine
 from .differencing_op import runCkineDoseOp, runCkinePreSOp
-from .fit import build_model as build_model_2_15
 
 class IL4_7_activity:
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
@@ -123,28 +122,6 @@ class crosstalk:
 
         return inh_vec - self.fit_data
 
-
-def import_samples_2_15():
-    """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    bmodel = build_model_2_15()
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    rxn = trace.get_values('rxn', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0])
-
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
-
-    return unkVec
-
-
 class build_model:
     """ Build a model that minimizes residuals in above classes by using MCMC to find optimal rate parameters. """
     def __init__(self, pretreat=False):
@@ -152,7 +129,6 @@ class build_model:
         self.cross = crosstalk()
         self.pretreat = pretreat
         self.M = self.build()
-        self.rates = import_samples_2_15()
 
     def build(self):
         """The PyMC model that incorporates Bayesian Statistics in order to store what the likelihood of the model is for a given point."""
@@ -165,13 +141,13 @@ class build_model:
             Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
-            endo_activeEndo = T.zeros(2, dtype=np.float64)
-            endo_activeEndo[0] = self.rates[17]
-            endo_activeEndo[1] = self.rates[18]
-            sortF = T.ones(1, dtype=np.float64) * self.rates[19]
-            kRec_kDeg = T.zeros(2, dtype=np.float64)
-            kRec_kDeg[0] = self.rates[20]
-            kRec_kDeg[1] = self.rates[21]
+            endo_activeEndo = T.ones(2, dtype=np.float64)
+            endo_activeEndo[0] *= 0.080189183
+            endo_activeEndo[1] *= 1.463922832
+            sortF = T.ones(1, dtype=np.float64) * 0.179757424
+            kRec_kDeg = T.ones(2, dtype=np.float64)
+            kRec_kDeg[0] *= 0.154753853
+            kRec_kDeg[1] *= 0.017205254
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
