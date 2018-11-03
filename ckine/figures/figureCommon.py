@@ -146,7 +146,7 @@ def import_samples_4_7():
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL4-7_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
+    kfwd = 0.00448600766505774
     k27rev = trace.get_values('k27rev', chains=[0])
     k33rev = trace.get_values('k33rev', chains=[0])
     endo_activeEndo = np.array([0.080189183, 1.463922832])
