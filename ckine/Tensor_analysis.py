@@ -43,7 +43,7 @@ def find_R2X_tucker(values, out, subt = True):
 
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
-    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index], factors[3][:,component_index]]
+    factors_idx = cp.array(factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index], factors[3][:,component_index])
     component_means = cp.array([cp.mean(cp.power(factors_idx[0],3)), cp.mean(cp.power(factors_idx[1],3)), cp.mean(cp.power(factors_idx[2],3)), cp.mean(cp.power(factors_idx[3],3))])
     if cp.sum(component_means < 0) >= 2 and cp.sum(component_means < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
         count = 1
