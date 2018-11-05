@@ -21,8 +21,8 @@ class TestModel(unittest.TestCase):
         for j in range(len(arr)-1):
             self.assertTrue(arr[j] < arr[j+1])
         #confirm R2X is >= 0 and <=1
-        self.assertGreaterEqual(cp.min(cp.array(arr)),0)
-        self.assertLessEqual(cp.max(cp.array(arr)),1)
+        self.assertGreaterEqual(np.min(arr),0)
+        self.assertLessEqual(np.max(arr),1)
 
     def test_tensor_parameters(self, r=1):
         '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
