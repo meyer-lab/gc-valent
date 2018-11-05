@@ -4,7 +4,7 @@ This creates Figure S2.
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
 import tensorly
 from tensorly.decomposition import tucker
-tensorly.set_backend('numpy')
+tensorly.set_backend('cupy')
 from ..tensor_generation import prepare_tensor
 import string
 import os
@@ -28,7 +28,7 @@ def makeFigure():
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
     numpy_data = data.values
-    Receptor_data = np.delete(numpy_data, 0, 1)
+    Receptor_data = cp.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
@@ -47,10 +47,10 @@ def makeFigure():
         if row >= 1:
             ax[row*y].axis('off')
 
-        if row >= np.floor(rank_list[2]/2):
+        if row >= cp.floor(rank_list[2]/2):
             ax[row*y + 2].axis('off')
 
-        if row > np.floor(rank_list[3]/2):
+        if row > cp.floor(rank_list[3]/2):
             ax[row*y +3].axis('off')
         
         plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
@@ -70,8 +70,8 @@ def makeFigure():
                 ax[row*y + col].set_xlabel('Component ' + str(compNum-1))
                 ax[row*y + col].set_ylabel('Component ' + str(compNum))
 
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
+            x_max = cp.max(cp.absolute(cp.asarray(ax[row*y + col].get_xlim())))*1.1
+            y_max = cp.max(cp.absolute(cp.asarray(ax[row*y + col].get_ylim())))*1.1
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)

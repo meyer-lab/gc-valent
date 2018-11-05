@@ -14,7 +14,7 @@ from scipy import stats
 import matplotlib.cm as cm
 import tensorly
 from tensorly.decomposition import tucker
-tensorly.set_backend('numpy')
+tensorly.set_backend('cupy')
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -34,7 +34,7 @@ def makeFigure():
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
     numpy_data = data.values
-    Receptor_data = np.delete(numpy_data, 0, 1)
+    Receptor_data = cp.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
@@ -44,7 +44,7 @@ def makeFigure():
     factors = reorient_factors(factors)
 
     values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
-    values = np.concatenate((values, values), axis = 3)
+    values = cp.concatenate((values, values), axis = 3)
     n_comps = 5
     factors_activ = factors_activity[n_comps]
     newfactors_activ = reorient_factors(factors_activ)
@@ -67,7 +67,7 @@ def plot_reduction_ligand(ax, values, factors):
 
     new_R2X = percent_reduction_by_ligand(values, factors) #array of 5 by n_comp for R2X for each ligand after removing each component.
 
-    percent_reduction = np.zeros_like(new_R2X)
+    percent_reduction = cp.zeros_like(new_R2X)
     for ii in range(5):
         percent_reduction[ii,:] = 1 - new_R2X[ii, :] / old_R2X[ii]
 
@@ -87,7 +87,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     loadings = pca.components_ #n_comp by 8 receptors
     expVar = pca.explained_variance_ratio_
 
-    colors = cm.rainbow(np.linspace(0, 1, 34))
+    colors = cm.rainbow(cp.linspace(0, 1, 34))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
     markersReceptors = ['^', '4', 'P', '*', 'D', 's', 'X' ,'o']
     labelReceptors = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra', 'IL21Ra']
@@ -98,11 +98,11 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     for jj in range(loadings.shape[1]):
         ax2.scatter(loadings[0,jj], loadings[1,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
 
-    x_max1 = np.max(np.absolute(np.asarray(ax1.get_xlim())))*1.1
-    y_max1 = np.max(np.absolute(np.asarray(ax1.get_ylim())))*1.1
+    x_max1 = cp.max(cp.absolute(cp.asarray(ax1.get_xlim())))*1.1
+    y_max1 = cp.max(cp.absolute(cp.asarray(ax1.get_ylim())))*1.1
 
-    x_max2 = np.max(np.absolute(np.asarray(ax2.get_xlim())))*1.1
-    y_max2 = np.max(np.absolute(np.asarray(ax2.get_ylim())))*1.1
+    x_max2 = cp.max(cp.absolute(cp.asarray(ax2.get_xlim())))*1.1
+    y_max2 = cp.max(cp.absolute(cp.asarray(ax2.get_ylim())))*1.1
 
     ax1.set_xlim(-x_max1, x_max1)
     ax1.set_ylim(-y_max1, y_max1)
@@ -129,5 +129,5 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
     ax.set_ylim(0, 1)
-    ax.set_xticks(np.arange(1, n_comps+1))
-    ax.set_xticklabels(np.arange(1, n_comps+1))
+    ax.set_xticks(cp.arange(1, n_comps+1))
+    ax.set_xticklabels(cp.arange(1, n_comps+1))

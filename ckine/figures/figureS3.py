@@ -7,7 +7,7 @@ import pickle
 import numpy as np
 import pandas as pds
 import tensorly
-tensorly.set_backend('numpy')
+tensorly.set_backend('cupy')
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import reorient_factors, scale_all
 
@@ -51,8 +51,8 @@ def makeFigure():
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
 
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
+            x_max = cp.max(cp.absolute(cp.asarray(ax[row*y + col].get_xlim())))*1.1
+            y_max = cp.max(cp.absolute(cp.asarray(ax[row*y + col].get_ylim())))*1.1
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
