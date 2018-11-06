@@ -28,8 +28,11 @@ csl: ./Manuscript/Templates/nature.csl
 # Introduction
 
 - The common gamma chain cytokine family is central to regulation of the immune system
-- Efforts to engineer gc behavior and/or gc treatments
 - Many receptor families are composed of multiple ligands, receptors, and cell populations
 	- [@Antebi_BMP]
+- Efforts to engineer gc behavior and/or gc treatments
+    - [@ring_mechanistic_2012]
+- Efforts to model behavior of cytokine families
+    - [@Feinerman437]
 - Transition to paper
 
