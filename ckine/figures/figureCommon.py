@@ -159,7 +159,7 @@ def import_samples_4_7():
 
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[0], endo_activeEndo[1], sortF, kRec_kDeg[0], kRec_kDeg[1], 0., 0., np.squeeze(GCexpr), 0., np.squeeze(IL7Raexpr), 0., np.squeeze(IL4Raexpr), 0.])
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd, 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[0], endo_activeEndo[1], sortF, kRec_kDeg[0], kRec_kDeg[1], 0., 0., np.squeeze(GCexpr), 0., np.squeeze(IL7Raexpr), 0., np.squeeze(IL4Raexpr), 0.])
 
     return unkVec, scales
 
