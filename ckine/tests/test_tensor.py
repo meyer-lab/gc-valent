@@ -37,7 +37,7 @@ class TestModel(unittest.TestCase):
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
         new_factors = reorient_factors(factors)
         reconstruct_new = tensorly.kruskal_to_tensor(new_factors)
-        np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
+        np.testing.assert_almost_equal(cp.asnumpy(reconstruct_old), cp.asnumpy(reconstruct_new))
 
     def test_rescale_all(self, n_comp = 20):
         """Test if rescaling every component keeps the tensor the same."""
@@ -46,4 +46,4 @@ class TestModel(unittest.TestCase):
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
         newfactors = scale_all(factors)
         reconstruct_new = tensorly.kruskal_to_tensor(newfactors)
-        np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
+        np.testing.assert_almost_equal(cp.asnumpy(reconstruct_old), cp.asnumpy(reconstruct_new))
