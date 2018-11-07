@@ -63,8 +63,9 @@ def reorient_factors(factors):
     return factors
 
 def find_R2X(values, factors, subt = True):
-    '''Compute R2X'''
+    '''Compute R2X. Note that the inputs values and factors are in numpy. But since tensorly backend is cupy, need to convert to cupy.'''
     z_values = z_score_values(values, subtract = subt)
+    factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
