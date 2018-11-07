@@ -128,6 +128,7 @@ def R2X_split_ligand(values, factors):
     """Determine R2X for each ligand type for one factors matrix. Follows similar procedure to split_R2X. Return a single array with R2X for each cytokine. IL2 and 15 are still combined here."""
     z_values = z_score_values(values)
     AllLigandTensors = split_values_by_ligand(z_values)
+    factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     AllLigandReconstructed = split_values_by_ligand(values_reconstructed)
     R2X_by_ligand = np.zeros(5) #R2X at each component number with respect to each of the 6 cytokines
