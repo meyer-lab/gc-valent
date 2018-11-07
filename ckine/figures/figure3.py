@@ -9,7 +9,7 @@ import string
 import os
 import pickle
 import itertools
-import numpy as np, pandas as pds
+import numpy as np, pandas as pds, cupy as cp
 from scipy import stats
 import matplotlib.cm as cm
 import tensorly
@@ -34,7 +34,7 @@ def makeFigure():
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
     numpy_data = data.values
-    Receptor_data = cp.delete(numpy_data, 0, 1)
+    Receptor_data = np.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
