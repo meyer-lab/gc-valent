@@ -9,7 +9,7 @@ from ..tensor_generation import prepare_tensor
 import string
 import os
 import pickle
-import numpy as np
+import numpy as np, cupy as cp
 import pandas as pds
 from ..Tensor_analysis import reorient_factors, perform_tucker, find_R2X_tucker
 
