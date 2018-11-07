@@ -28,12 +28,12 @@ def makeFigure():
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
     numpy_data = data.values
-    Receptor_data = cp.delete(numpy_data, 0, 1)
+    Receptor_data = np.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
     
-    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
+    values = cp.asnumpy(tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1])) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
     values = values[:,:,:,[0,1,2,3,4]]
     rank_list = [2,10,8,5]
     out = perform_tucker(values, rank_list)
@@ -47,10 +47,10 @@ def makeFigure():
         if row >= 1:
             ax[row*y].axis('off')
 
-        if row >= cp.floor(rank_list[2]/2):
+        if row >= np.floor(rank_list[2]/2):
             ax[row*y + 2].axis('off')
 
-        if row > cp.floor(rank_list[3]/2):
+        if row > np.floor(rank_list[3]/2):
             ax[row*y +3].axis('off')
         
         plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
@@ -70,8 +70,8 @@ def makeFigure():
                 ax[row*y + col].set_xlabel('Component ' + str(compNum-1))
                 ax[row*y + col].set_ylabel('Component ' + str(compNum))
 
-            x_max = cp.max(cp.absolute(cp.asarray(ax[row*y + col].get_xlim())))*1.1
-            y_max = cp.max(cp.absolute(cp.asarray(ax[row*y + col].get_ylim())))*1.1
+            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
+            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)

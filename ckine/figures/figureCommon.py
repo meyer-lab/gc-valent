@@ -79,7 +79,7 @@ def plot_timepoint(ax, factors, component_x, component_y):
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
     """This function plots the combination decomposition based on cell type."""
-    colors = cm.rainbow(cp.linspace(0, 1, len(cell_names)))
+    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
 
     for ii in range(len(factors[:, component_x - 1])):
@@ -110,7 +110,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
     ts = np.logspace(-3., np.log10(4 * 60.), 100)
-    ts = cp.array(np.insert(ts, 0, 0.0))
+    ts = np.array(np.insert(ts, 0, 0.0))
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
         ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))

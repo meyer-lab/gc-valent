@@ -19,6 +19,7 @@ for jj in range(6):
     tic = time.clock()
     print(jj)
     factors = perform_decomposition(cp.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), jj+1, subt = False)
+    factors = [cp.asnumpy(factors[0]), cp.asnumpy(factors[1]), cp.asnumpy(factors[2]), cp.asnumpy(factors[3])]
     factors_activity.append(factors)
 toc = time.clock()
 print(toc - tic)
