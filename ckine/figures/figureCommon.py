@@ -110,7 +110,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
     ts = np.logspace(-3., np.log10(4 * 60.), 100)
-    ts = np.array(np.insert(ts, 0, 0.0))
+    ts = np.insert(ts, 0, 0.0)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
         ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))
