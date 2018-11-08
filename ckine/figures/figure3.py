@@ -21,7 +21,6 @@ def makeFigure():
     # Get list of axis objects
     x, y = 3, 4
     ax, f = getSetup((16, 14), (x, y))
-
     # Blank out for the cartoon
     ax[0].axis('off')
 
