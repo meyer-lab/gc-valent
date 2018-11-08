@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
         np.testing.assert_almost_equal(cp.asnumpy(reconstruct_old), cp.asnumpy(reconstruct_new))
 
     def test_rescale_all(self, n_comp = 20):
-        """Test if rescaling every component keeps the tensor the same."""
+      """Test if rescaling every component keeps the tensor the same."""
         tensor = cp.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
