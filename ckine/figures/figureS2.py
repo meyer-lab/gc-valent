@@ -1,20 +1,15 @@
 """
 This creates Figure S2.
 """
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
-import tensorly
-from tensorly.decomposition import tucker
-tensorly.set_backend('cupy')
-from ..tensor_generation import prepare_tensor
 import string
 import os
-import string
 import pickle
 import numpy as np, cupy as cp
 import pandas as pds
 import tensorly
-tensorly.set_backend('numpy')
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from tensorly.decomposition import tucker
+tensorly.set_backend('cupy')
+from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 
 def makeFigure():

@@ -1,18 +1,17 @@
 """
 This creates Figure 3.
 """
-from sklearn.decomposition.pca import PCA
-import matplotlib.cm as cm
-from ..tensor_generation import prepare_tensor
-from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
-import string
 import os
 import pickle
 import itertools
-import numpy as np, pandas as pds, cupy as cp
-from scipy import stats
 import tensorly
+import numpy as np, pandas as pds, cupy as cp
+import string
+from scipy import stats
+from sklearn.decomposition.pca import PCA
+import matplotlib.cm as cm
+from .figureCommon import subplotLabel, getSetup
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
 from tensorly.decomposition import tucker
 tensorly.set_backend('cupy')
 
