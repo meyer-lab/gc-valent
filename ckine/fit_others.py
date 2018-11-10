@@ -174,7 +174,7 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000, nuts_kwargs={'max_treedepth': 15, 'target_accept': 0.90})
+        self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000, nuts_kwargs={'max_treedepth': 20, 'target_accept': 0.90})
 
     def fit_ADVI(self):
         """ Running fit_advi instead of true sampling. """
