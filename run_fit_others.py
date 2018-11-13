@@ -10,4 +10,5 @@ if __name__ == "__main__": #only go into this loop if you're running fit.py dire
     M = build_model(pretreat=True)
     M.build()
     M.sampling()
-    pm.backends.text.dump("IL4-7_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
+    # pm.backends.text.dump("IL4-7_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
+    pm.backends.text.Text("IL4-7_find_MAP_results", model=M)
