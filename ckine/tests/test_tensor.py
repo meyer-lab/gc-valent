@@ -12,7 +12,7 @@ class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
     def test_R2X(self):
         '''Test to ensure R2X for higher components is larger.'''
-        tensor = cp.random.rand(20,35,100,20)
+        tensor = np.random.rand(20,35,100,20)
         arr = []
         for i in range(1,8):
             factors = perform_decomposition(tensor, i)
@@ -31,7 +31,7 @@ class TestModel(unittest.TestCase):
 
     def test_reorientation(self, n_comp = 20):
         """Test if reorienting the factors matrices changes anything about the original tensor itself."""
-        tensor = cp.random.rand(20, 35, 100, n_comp)
+        tensor = np.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
         new_factors = reorient_factors(factors)
@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
 
     def test_rescale_all(self, n_comp = 20):
         """Test if rescaling every component keeps the tensor the same."""
-        tensor = cp.random.rand(20, 35, 100, n_comp)
+        tensor = np.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
         newfactors = scale_all(factors)

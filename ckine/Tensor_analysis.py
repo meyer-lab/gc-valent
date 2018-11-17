@@ -7,15 +7,14 @@ import cupy as cp
 import tensorly
 from tensorly.decomposition import parafac
 from tensorly.decomposition import tucker
-tensorly.set_backend('cupy')
 
 def z_score_values(A, subtract = True):
     '''Function that takes in the values tensor and z-scores it.'''
-    B = cp.zeros_like(A)
+    B = np.zeros_like(A)
     for i in range(A.shape[3]):
-        slice_face = cp.array(A[:,:,:,i])
-        mu = cp.mean(slice_face)
-        sigma = cp.std(slice_face)
+        slice_face = A[:,:,:,i]
+        mu = np.mean(slice_face)
+        sigma = np.std(slice_face)
         if subtract is True:
             z_scored_slice = (slice_face - mu) / sigma
         elif subtract is False:
@@ -25,21 +24,27 @@ def z_score_values(A, subtract = True):
 
 def perform_decomposition(tensor, r, subt = True):
     '''Apply z scoring and perform PARAFAC decomposition'''
+    tensorly.set_backend('cupy')
     values_z = z_score_values(tensor, subtract = subt)
+    values_z = cp.array(values_z)
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
 def perform_tucker(tensor, rank_list, subt = True):
     '''Function to peform tucker decomposition.'''
+    tensorly.set_backend('cupy')
     values_z = z_score_values(tensor, subtract = subt)
+    values_z = cp.array(values_z)
     out = tucker(values_z, ranks = rank_list, init = 'random') #index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
     return out
 
 def find_R2X_tucker(values, out, subt = True):
     '''Compute R2X for the tucker decomposition.'''
+    tensorly.set_backend('cupy')
     z_values = z_score_values(values, subtract = subt)
     values_reconstructed = tensorly.tucker_to_tensor(out[0], out[1])
-    return 1 - cp.var(values_reconstructed - z_values) / cp.var(z_values)
+    values_reconstructed = cp.asnumpy(values_reconstructed)
+    return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
