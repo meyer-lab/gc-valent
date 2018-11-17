@@ -42,8 +42,7 @@ def find_R2X_tucker(values, out, subt = True):
     '''Compute R2X for the tucker decomposition.'''
     tensorly.set_backend('cupy')
     z_values = z_score_values(values, subtract = subt)
-    values_reconstructed = tensorly.tucker_to_tensor(out[0], out[1])
-    values_reconstructed = cp.asnumpy(values_reconstructed)
+    values_reconstructed = cp.asnumpy(tensorly.tucker_to_tensor(out[0], out[1]))
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def reorient_one(factors, component_index):
@@ -71,8 +70,7 @@ def find_R2X(values, factors, subt = True):
     '''Compute R2X. Note that the inputs values and factors are in numpy. But since tensorly backend is cupy, need to convert to cupy.'''
     z_values = z_score_values(values, subtract = subt)
     factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
-    values_reconstructed = tensorly.kruskal_to_tensor(factors)
-    values_reconstructed = cp.asnumpy(values_reconstructed)
+    values_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(factors))
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def R2X_remove_one(values, factors, n_comps):
@@ -86,7 +84,7 @@ def R2X_remove_one(values, factors, n_comps):
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
             new_factors.append(np.delete(factors[jj], ii, 1))
 
-        overall_reconstructed = tensorly.kruskal_to_tensor(new_factors)
+        overall_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(new_factors))
         Ligand_reconstructed = overall_reconstructed[:,:,:,0:5]
 
         R2X_singles_arr[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
@@ -135,7 +133,7 @@ def R2X_split_ligand(values, factors):
     z_values = z_score_values(values)
     AllLigandTensors = split_values_by_ligand(z_values)
     factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
-    values_reconstructed = tensorly.kruskal_to_tensor(factors)
+    values_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(factors))
     AllLigandReconstructed = split_values_by_ligand(values_reconstructed)
     R2X_by_ligand = np.zeros(5) #R2X at each component number with respect to each of the 6 cytokines
     for ii in range(5):
