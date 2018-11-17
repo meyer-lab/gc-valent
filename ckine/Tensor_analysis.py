@@ -72,6 +72,7 @@ def find_R2X(values, factors, subt = True):
     z_values = z_score_values(values, subtract = subt)
     factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
+    values_reconstructed = cp.asnumpy(values_reconstructed)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def R2X_remove_one(values, factors, n_comps):
