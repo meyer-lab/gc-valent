@@ -69,6 +69,7 @@ def reorient_factors(factors):
 def find_R2X(values, factors, subt = True):
     '''Compute R2X. Note that the inputs values and factors are in numpy. But since tensorly backend is cupy, need to convert to cupy.'''
     z_values = z_score_values(values, subtract = subt)
+    factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
     values_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(factors))
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
@@ -131,6 +132,7 @@ def R2X_split_ligand(values, factors):
     """Determine R2X for each ligand type for one factors matrix. Follows similar procedure to split_R2X. Return a single array with R2X for each cytokine. IL2 and 15 are still combined here."""
     z_values = z_score_values(values)
     AllLigandTensors = split_values_by_ligand(z_values)
+    factors = [cp.array(factors[0]), cp.array(factors[1]), cp.array(factors[2]), cp.array(factors[3])]
     values_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(factors))
     AllLigandReconstructed = split_values_by_ligand(values_reconstructed)
     R2X_by_ligand = np.zeros(5) #R2X at each component number with respect to each of the 6 cytokines
@@ -154,6 +156,7 @@ def percent_reduction_by_ligand(values, factors):
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
             new_factors.append(np.delete(factors[jj], ii, 1))
     
+        new_factors = [cp.array(new_factors[0]), cp.array(new_factors[1]), cp.array(new_factors[2]), cp.array(new_factors[3])]
         overall_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(new_factors))
         AllLigandReconstructed = split_values_by_ligand(overall_reconstructed)
         for jj in range(5):
