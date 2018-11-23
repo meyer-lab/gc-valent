@@ -174,8 +174,9 @@ class build_model:
 
     def sampling(self, k27rev, k33rev, scale_1, scale_2):
         """This is the sampling that actually runs the model."""
-        # self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000, nuts_kwargs={'max_treedepth': 20, 'target_accept': 0.90})
-        self.trace = pm.find_MAP(model=self.M, start={'k27rev': k27rev, 'k33rev': k33rev, 'scales': np.array([scale_1, scale_2])})
+        self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000)
+        # , nuts_kwargs={'max_treedepth': 20, 'target_accept': 0.90})
+        #self.trace = pm.find_MAP(model=self.M, start={'k27rev': k27rev, 'k33rev': k33rev, 'scales': np.array([scale_1, scale_2])})
 
     def fit_ADVI(self):
         """ Running fit_advi instead of true sampling. """
