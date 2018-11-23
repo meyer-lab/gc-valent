@@ -169,13 +169,13 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
-    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
+    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre))))
 
 
 def plot_pretreat(ax, unkVec, scales, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
     path = os.path.dirname(os.path.abspath(__file__))
-    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
+    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values / 100.
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation
     PTS = 30

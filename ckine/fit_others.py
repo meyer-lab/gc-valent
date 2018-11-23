@@ -60,7 +60,7 @@ class crosstalk:
 
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
-        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
+        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8])) / 100.
         self.pre_IL7 = data[:, 0] / 17400.  # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5] / 14900.  # concentrations of IL4 used as pretreatment
 
@@ -116,8 +116,8 @@ class crosstalk:
         actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
 
-        case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
-        case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        case1 = (1-(actVec_IL4stim/IL4stim_no_pre))    # % inhibition of IL4 act. after IL7 pre.
+        case2 = (1-(actVec_IL7stim/IL7stim_no_pre))    # % inhibition of IL7 act. after IL4 pre.
         inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
@@ -135,7 +135,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = T.ones(1, dtype=np.float64) * 0.00448600766505774
+            kfwd = T.ones(1, dtype=np.float64) * 0.09932580369085173 #0.00448600766505774
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
