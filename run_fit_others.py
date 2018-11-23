@@ -23,5 +23,5 @@ if __name__ == "__main__": #only go into this loop if you're running fit.py dire
     #    M.sampling(k27, k33, scale1, scale2)
     #    print(M.trace)
     M.sampling()
-    #print(M.trace)
-    pm.backends.text.dump("IL4-7_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
+    print(M.trace)
+    #pm.backends.text.dump("IL4-7_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
