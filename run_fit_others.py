@@ -22,6 +22,6 @@ if __name__ == "__main__": #only go into this loop if you're running fit.py dire
     #    print("start - k27rev: " + str(k27) + ", k33rev: " + str(k33) + ", scale1: " + str(scale1) + ", scale2: " + str(scale2))
     #    M.sampling(k27, k33, scale1, scale2)
     #    print(M.trace)
-    M.sampling()
-    print(M.trace)
+    M.fit_ADVI()
+    pm.backends.text.dump("IL4-7_fitADVI_results", M.trace)
     #pm.backends.text.dump("IL4-7_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py

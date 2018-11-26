@@ -135,7 +135,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = T.ones(1, dtype=np.float64) * 0.09932580369085173 #0.00448600766505774
+            kfwd = T.ones(1, dtype=np.float64) * 0.00448600766505774 # 0.09932580369085173
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
@@ -176,8 +176,7 @@ class build_model:
         """This is the sampling that actually runs the model."""
         # self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000)
         # , nuts_kwargs={'max_treedepth': 20, 'target_accept': 0.90})
-        self.trace = pm.find_MAP(model=self.M)
-        # start={'k27rev': k27rev, 'k33rev': k33rev, 'scales': np.array([scale_1, scale_2])})
+        # self.trace = pm.find_MAP(model=self.M)
 
     def fit_ADVI(self):
         """ Running fit_advi instead of true sampling. """
