@@ -33,7 +33,8 @@ csl: ./Manuscript/Templates/nature.csl
 - Efforts to engineer gc behavior and/or gc treatments
     - [@ring_mechanistic_2012]
 - Efforts to model behavior of cytokine families
-    - [@Feinerman437]
-    - Modeling effects of different IL2Ra abundnaces seen in lymphocytes [@Cotarira17] 
+    - Model of T cell proliferative response to IL-2 and IL-4. [@BURKE199742]
+    - High level model of how IL-2 feedback loops regulate T cell populations. [@Feinerman437]
+    - Showed how high IL2Ra abundnaces lowered the IL-2 EC50 but dampened the signaling responses of IL-7 and IL-15. Their work was mostly experimental (flow cytometry)  [@Cotarira17] 
 - Transition to paper
 
