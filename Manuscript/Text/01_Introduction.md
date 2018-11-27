@@ -42,6 +42,7 @@ csl: ./Manuscript/Templates/nature.csl
         - Accounting for trafficking allows for more accurate ligand depletion and cell proliferation model in case of IL-2. [@Fallon2000]
         - Trafficking and TCR inhibition of pSTAT5 activation can be used to improve reaction model of IL-2... potentially get rid of this [@Tkach2014TCT]
     - Focused on competition for common gamma chain
-        - Showed how high IL2Ra abundnaces lowered the IL-2 EC50 but dampened the signaling responses of IL-7 and IL-15. Their work was mostly experimental (flow cytometry)  [@Cotarira17] 
+        - Showed how high IL2Ra abundnaces lowered the IL-2 EC50 but dampened the signaling responses of IL-7 and IL-15. Their work was mostly experimental (flow cytometry)  [@Cotarira17]
+        - Abundance of gamma chain on surface played role in IL-2 mediated activation. [@Ponce2016]
 - Transition to paper
 
