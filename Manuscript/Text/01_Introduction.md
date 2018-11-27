@@ -34,5 +34,6 @@ csl: ./Manuscript/Templates/nature.csl
     - [@ring_mechanistic_2012]
 - Efforts to model behavior of cytokine families
     - [@Feinerman437]
+    - Modeling effects of different IL2Ra abundnaces seen in lymphocytes [@Cotarira17] 
 - Transition to paper
 
