@@ -32,7 +32,7 @@ csl: ./Manuscript/Templates/nature.csl
 	- [@Antebi_BMP]
 - Efforts to engineer gc behavior and/or gc treatments
     - [@ring_mechanistic_2012]
-    - IL-2 mutant library created and tested to see if any mutations increased binding affinity to receptors and therefore greater T cell activity. 
+    - IL-2 mutant library created and tested to see if any mutations increased binding affinity to receptors and therefore greater T cell activity. [@Berndt1994]
 - Efforts to model behavior of cytokine families
     - Modeling that doesn't account for trafficking
         - Model of T cell proliferative response to IL-2 and IL-4. [@BURKE199742]
