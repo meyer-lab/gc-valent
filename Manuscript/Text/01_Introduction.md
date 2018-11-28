@@ -30,11 +30,11 @@ csl: ./Manuscript/Templates/nature.csl
 - The common gamma chain cytokine family is central to regulation of the immune system
     - Giving IL-15 doses to monkeys caused expansion of NK and T-eff cell lines, making it a potential therapy in cancers and immunodeficiencies. [@Sneller6845]
     - Transgenic mice that overexpressed IL-15 revealed that IL-15 selectively propagates memory T cells by blocking IL-2-induced T cell death. [@Marks-Konczalik11445]
-    
 - Many receptor families are composed of multiple ligands, receptors, and cell populations
 	- [@Antebi_BMP]
 - Efforts to engineer gc behavior and/or gc treatments
     - [@ring_mechanistic_2012]
+    - Specific IL-2 amino acid substitutions render it incapable from binding to IL2Ra. [@Collins7709]
     - IL-2 mutant library created and tested to see if any mutations increased binding affinity to receptors and therefore greater T cell activity. [@Berndt1994]
 - Efforts to model behavior of cytokine families
     - Model that explains the positive and negative feedback loops of TCR antigen recognition [@Fran{\c c}oisE888]
