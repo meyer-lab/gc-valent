@@ -39,6 +39,7 @@ csl: ./Manuscript/Templates/nature.csl
         - Model of T cell proliferative response to IL-2 and IL-4. [@BURKE199742]
         - High level model of how IL-2 feedback loops regulate T cell populations. Focus on helper T and regulatory T cells. [@Feinerman437], [@Garcia2012]. 
     - Modeling that accounts for trafficking
+        - IL-2 stimulates downregulation of IL2Ra due to endocytosis of IL2R complexes. [@Duprez15091988]
         - Accounting for trafficking allows for more accurate ligand depletion and cell proliferation model in case of IL-2. [@Fallon2000]
         - Trafficking and TCR inhibition of pSTAT5 activation can be used to improve reaction model of IL-2... potentially get rid of this [@Tkach2014TCT]
     - Focused on competition for common gamma chain
