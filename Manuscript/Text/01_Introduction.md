@@ -30,6 +30,7 @@ csl: ./Manuscript/Templates/nature.csl
 - The common gamma chain cytokine family is central to regulation of the immune system
     - Giving IL-15 doses to monkeys caused expansion of NK and T-eff cell lines, making it a potential therapy in cancers and immunodeficiencies. [@Sneller6845]
     - Transgenic mice that overexpressed IL-15 revealed that IL-15 selectively propagates memory T cells by blocking IL-2-induced T cell death. [@Marks-Konczalik11445]
+    - gamma chain cytokines have accrued interest as cancer immunotherapeutics due to their ability to regulate lymphocytes. [@Pulliam2015]
 - Many receptor families are composed of multiple ligands, receptors, and cell populations
 	- [@Antebi_BMP]
 - Efforts to engineer gc behavior and/or gc treatments
