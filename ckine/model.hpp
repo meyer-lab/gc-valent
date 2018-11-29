@@ -6,9 +6,6 @@ constexpr size_t Nlig = 6; // Number of ligands
 
 // Measured in the literature
 constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
-constexpr double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
-
-constexpr double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
 
 // Literature values for k values for IL-15
 constexpr double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
@@ -31,6 +28,8 @@ class ratesS {
 public:
 	std::array<double, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
 	double kfwd;
+	double k1rev;
+	double k2rev;
 	double k4rev;
 	double k5rev;
 	double k8rev;
@@ -59,6 +58,8 @@ public:
 	explicit ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
 		kfwd = rxntfR[6];
+		k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+		k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
 		k4rev = rxntfR[7];
 		k5rev = rxntfR[8];
 		k16rev = rxntfR[9];

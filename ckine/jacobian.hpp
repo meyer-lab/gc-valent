@@ -68,12 +68,12 @@ void jacobian(const double * const y, const ratesS * const r, T &out, const doub
 	
 	// IL2Ra
 	out(0, 0) = -kfbnd * ILs[0] - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
-	out(0, 3) = k1rev; // IL2Ra with respect to IL2_IL2Ra
+	out(0, 3) = r->k1rev; // IL2Ra with respect to IL2_IL2Ra
 	out(0, 5) = r->k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
 	
 	// IL2Rb
 	out(1, 1) = -kfbnd * (ILs[0] + ILs[1]) - r->kfwd * (IL2_IL2Ra_gc + IL2_IL2Ra + IL15_IL15Ra_gc + IL15_IL15Ra); // partial derivative of IL2Rb with respect to IL2Rb
-	out(1, 4) = k2rev; // IL2Rb with respect to IL2_IL2Rb
+	out(1, 4) = r->k2rev; // IL2Rb with respect to IL2_IL2Rb
 	out(1, 5) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
 	out(1, 8) = r->k9rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	out(1, 11) = k14rev; // IL2Rb with respect to IL15_IL2Rb
@@ -88,13 +88,13 @@ void jacobian(const double * const y, const ratesS * const r, T &out, const doub
 	
 	// IL2_IL2Ra
 	out(3, 0) = kfbnd * ILs[0]; // IL2_IL2Ra with respect to IL2Ra
-	out(3, 3) = -r->kfwd * IL2Rb - r->kfwd * gc - k1rev; // IL2_IL2Ra with respect to IL2_IL2Ra
+	out(3, 3) = -r->kfwd * IL2Rb - r->kfwd * gc - r->k1rev; // IL2_IL2Ra with respect to IL2_IL2Ra
 	out(3, 5) = r->k11rev; // IL2_IL2Ra with respect to IL2_IL2Ra_IL2Rb
 	out(3, 6) = r->k4rev; // IL2_IL2Ra with respect to IL2_IL2Ra_gc
 	
 	// IL2_IL2Rb
 	out(4, 1) = kfbnd * ILs[0]; // IL2_IL2Rb with respect to IL2Rb
-	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
+	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - r->k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
 	out(4, 5) = r->k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
 	
 	// IL2_IL2Ra_IL2Rb
@@ -209,9 +209,9 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 	out(halfL + 1, 56) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
 	out(56, halfL+1) = -kfbnd * eIL2; // IL2 binding to IL2Rb
 	out(halfL + 3, 56) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(56, halfL+3) =  k1rev / internalV;
+	out(56, halfL+3) =  r->k1rev / internalV;
 	out(halfL + 4, 56) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(56, halfL+4) = k2rev / internalV;
+	out(56, halfL+4) = r->k2rev / internalV;
 
 	const double eIL15 = y[57] / internalV;
 	out(57, 57) -= kfbnd * (y[halfL+1] + y[halfL + 9]) / internalV;
