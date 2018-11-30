@@ -1,7 +1,9 @@
+#include "reaction.hpp"
+
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 
 template <class T>
-void jacobian(const double * const y, const ratesS * const r, T &out, const double * const ILs) {
+void jacobian(const double * const y, const bindingRates * const r, T &out, const double * const ILs) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
 	const double IL2Rb = y[1];
@@ -63,19 +65,19 @@ void jacobian(const double * const y, const ratesS * const r, T &out, const doub
 		out(ij+3, ij) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
 	};
 
-	complexCkine(3, 0, r->k5rev, r->k8rev); // IL2
+	complexCkine(3, 0, r->k5rev, k8rev(r)); // IL2
 	complexCkine(10, 9, r->k17rev, r->k20rev); // IL15
 	
 	// IL2Ra
 	out(0, 0) = -kfbnd * ILs[0] - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
 	out(0, 3) = r->k1rev; // IL2Ra with respect to IL2_IL2Ra
-	out(0, 5) = r->k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
+	out(0, 5) = k12rev(r); // IL2Ra with respect to IL2_IL2Ra_IL2Rb
 	
 	// IL2Rb
 	out(1, 1) = -kfbnd * (ILs[0] + ILs[1]) - r->kfwd * (IL2_IL2Ra_gc + IL2_IL2Ra + IL15_IL15Ra_gc + IL15_IL15Ra); // partial derivative of IL2Rb with respect to IL2Rb
 	out(1, 4) = r->k2rev; // IL2Rb with respect to IL2_IL2Rb
 	out(1, 5) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out(1, 8) = r->k9rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
+	out(1, 8) = k9rev(r); // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	out(1, 11) = k14rev; // IL2Rb with respect to IL15_IL2Rb
 	out(1, 12) = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
@@ -95,18 +97,18 @@ void jacobian(const double * const y, const ratesS * const r, T &out, const doub
 	// IL2_IL2Rb
 	out(4, 1) = kfbnd * ILs[0]; // IL2_IL2Rb with respect to IL2Rb
 	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - r->k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
-	out(4, 5) = r->k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
+	out(4, 5) = k12rev(r); // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
 	
 	// IL2_IL2Ra_IL2Rb
-	out(5, 5) = -r->kfwd * gc - r->k11rev - r->k12rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb
+	out(5, 5) = -r->kfwd * gc - r->k11rev - k12rev(r); // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb
 	out(5, 8) = r->k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_gc
 	out(6, 6) = -r->kfwd * IL2Rb - r->k4rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_gc
-	out(6, 8) = r->k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
+	out(6, 8) = k9rev(r); // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb_gc
-	out(8, 8) = - r->k8rev - r->k9rev - r->k10rev; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
+	out(8, 8) = - k8rev(r) - k9rev(r) - r->k10rev; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL15Ra
 	out(9, 9) = -kfbnd * ILs[1] - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
@@ -169,11 +171,11 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 
 	// Do surface jacobian
 	Eigen::Block<T> bloc = out.topLeftCorner(halfL, halfL);
-	jacobian(y, r, bloc, r->ILs.data());
+	jacobian(y, &r->surface, bloc, r->ILs.data());
 
 	// Do endo jacobian, different ILs here
 	Eigen::Block<T> blocc = out.block(halfL, halfL, halfL, halfL);
-	jacobian(y + halfL, r, blocc, y + halfL*2);
+	jacobian(y + halfL, &r->endosome, blocc, y + halfL*2);
 
 	// Implement trafficking
 	double endo = 0;
@@ -209,9 +211,9 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 	out(halfL + 1, 56) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
 	out(56, halfL+1) = -kfbnd * eIL2; // IL2 binding to IL2Rb
 	out(halfL + 3, 56) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(56, halfL+3) =  r->k1rev / internalV;
+	out(56, halfL+3) =  r->endosome.k1rev / internalV;
 	out(halfL + 4, 56) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(56, halfL+4) = r->k2rev / internalV;
+	out(56, halfL+4) = r->endosome.k2rev / internalV;
 
 	const double eIL15 = y[57] / internalV;
 	out(57, 57) -= kfbnd * (y[halfL+1] + y[halfL + 9]) / internalV;

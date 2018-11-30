@@ -24,19 +24,14 @@ constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
 constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
 
 
-class ratesS {
-public:
-	std::array<double, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
+struct bindingRates {
 	double kfwd;
 	double k1rev;
 	double k2rev;
 	double k4rev;
 	double k5rev;
-	double k8rev;
-	double k9rev;
 	double k10rev;
 	double k11rev;
-	double k12rev;
 	double k16rev;
 	double k17rev;
 	double k20rev;
@@ -48,6 +43,13 @@ public:
 	double k31rev;
 	double k33rev;
 	double k35rev;
+};
+
+
+class ratesS {
+public:
+	std::array<double, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
+	bindingRates surface, endosome;
 	double endo;
 	double activeEndo;
 	double sortF;
@@ -57,38 +59,32 @@ public:
 
 	explicit ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
-		kfwd = rxntfR[6];
-		k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
-		k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
-		k4rev = rxntfR[7];
-		k5rev = rxntfR[8];
-		k16rev = rxntfR[9];
-		k17rev = rxntfR[10];
-		k22rev = rxntfR[11];
-		k23rev = rxntfR[12];
-		k27rev = rxntfR[13];
-		k31rev = rxntfR[14];
-		k33rev = rxntfR[15];
-		k35rev = rxntfR[16];
+		surface.kfwd = rxntfR[6];
+		surface.k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+		surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+		surface.k4rev = rxntfR[7];
+		surface.k5rev = rxntfR[8];
+		surface.k16rev = rxntfR[9];
+		surface.k17rev = rxntfR[10];
+		surface.k22rev = rxntfR[11];
+		surface.k23rev = rxntfR[12];
+		surface.k27rev = rxntfR[13];
+		surface.k31rev = rxntfR[14];
+		surface.k33rev = rxntfR[15];
+		surface.k35rev = rxntfR[16];
 
 		// These are probably measured in the literature
-		k10rev = 12.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-		k11rev = 63.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-		// To satisfy detailed balance these relationships should hold
-		// Based on initial assembly steps
-		k12rev = k1rev * k11rev / k2rev; // loop for IL2_IL2Ra_IL2Rb
-		// Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
-		k9rev = k10rev * k11rev / k4rev;
-		k8rev = k10rev * k12rev / k5rev;
+		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+		surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
 		// IL15
 		// To satisfy detailed balance these relationships should hold
 		// _Based on initial assembly steps
-		k24rev = k13rev * k23rev / k14rev; // loop for IL15_IL15Ra_IL2Rb still holds
+		surface.k24rev = k13rev * surface.k23rev / k14rev; // loop for IL15_IL15Ra_IL2Rb still holds
 
 		// _Based on formation of full complex
-		k21rev = k22rev * k23rev / k16rev;
-		k20rev = k22rev * k24rev / k17rev;
+		surface.k21rev = surface.k22rev * surface.k23rev / surface.k16rev;
+		surface.k20rev = surface.k22rev * surface.k24rev / surface.k17rev;
 
 		// Set the rates
 		endo = rxntfR[17];
@@ -103,28 +99,27 @@ public:
 
 		// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 		std::copy_n(rxntfR + 22, 8, Rexpr.begin());
+
+		endosome = surface;
 	}
 
 	void print() {
-		std::cout << "kfwd: " << kfwd << std::endl;
-		std::cout << "k4rev: " << k4rev << std::endl;
-		std::cout << "k5rev: " << k5rev << std::endl;
-		std::cout << "k8rev: " << k8rev << std::endl;
-		std::cout << "k9rev: " << k9rev << std::endl;
-		std::cout << "k10rev: " << k10rev << std::endl;
-		std::cout << "k11rev: " << k11rev << std::endl;
-		std::cout << "k12rev: " << k12rev << std::endl;
-		std::cout << "k16rev: " << k16rev << std::endl;
-		std::cout << "k17rev: " << k17rev << std::endl;
-		std::cout << "k20rev: " << k20rev << std::endl;
-		std::cout << "k21rev: " << k21rev << std::endl;
-		std::cout << "k22rev: " << k22rev << std::endl;
-		std::cout << "k23rev: " << k23rev << std::endl;
-		std::cout << "k24rev: " << k24rev << std::endl;
-		std::cout << "k27rev: " << k27rev << std::endl;
-		std::cout << "k31rev: " << k31rev << std::endl;
-		std::cout << "k33rev: " << k33rev << std::endl;
-		std::cout << "k35rev: " << k35rev << std::endl;
+		std::cout << "kfwd: " << surface.kfwd << std::endl;
+		std::cout << "k4rev: " << surface.k4rev << std::endl;
+		std::cout << "k5rev: " << surface.k5rev << std::endl;
+		std::cout << "k10rev: " << surface.k10rev << std::endl;
+		std::cout << "k11rev: " << surface.k11rev << std::endl;
+		std::cout << "k16rev: " << surface.k16rev << std::endl;
+		std::cout << "k17rev: " << surface.k17rev << std::endl;
+		std::cout << "k20rev: " << surface.k20rev << std::endl;
+		std::cout << "k21rev: " << surface.k21rev << std::endl;
+		std::cout << "k22rev: " << surface.k22rev << std::endl;
+		std::cout << "k23rev: " << surface.k23rev << std::endl;
+		std::cout << "k24rev: " << surface.k24rev << std::endl;
+		std::cout << "k27rev: " << surface.k27rev << std::endl;
+		std::cout << "k31rev: " << surface.k31rev << std::endl;
+		std::cout << "k33rev: " << surface.k33rev << std::endl;
+		std::cout << "k35rev: " << surface.k35rev << std::endl;
 		std::cout << "endo: " << endo << std::endl;
 		std::cout << "activeEndo: " << activeEndo << std::endl;
 		std::cout << "sortF: " << sortF << std::endl;

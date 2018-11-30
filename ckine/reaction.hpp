@@ -1,3 +1,5 @@
+#ifndef RXN_CODE_ONCE_
+#define RXN_CODE_ONCE_
 
 std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
@@ -20,7 +22,43 @@ const std::array<bool, halfL> activeV = __active_species_IDX();
 const std::array<size_t, 8> recIDX = {{0, 1, 2, 9, 16, 19, 22, 25}};
 
 
-void dy_dt(const double * const y, const ratesS * const r, double * const dydt, const double * const ILs) {
+/**
+ * @brief      k12rev value. Must hold to satisfy detailed balance.
+ *
+ * @param[in]  r     bindingRates structure.
+ *
+ * @return     Value of k12rev.
+ */
+double k12rev(const bindingRates * const r) {
+	return r->k1rev * r->k11rev / r->k2rev; // loop for IL2_IL2Ra_IL2Rb
+}
+
+
+/**
+ * @brief      k9rev value. Must hold to satisfy detailed balance.
+ *
+ * @param[in]  r     bindingRates structure.
+ *
+ * @return     Value of k9rev.
+ */
+double k9rev(const bindingRates * const r) {
+	return r->k10rev * r->k11rev / r->k4rev; // Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
+}
+
+
+/**
+ * @brief      k8rev value. Must hold to satisfy detailed balance.
+ *
+ * @param[in]  r     bindingRates structure.
+ *
+ * @return     Value of k8rev.
+ */
+double k8rev(const bindingRates * const r) {
+	return r->k10rev * k12rev(r) / r->k5rev; // Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
+}
+
+
+void dy_dt(const double * const y, const bindingRates * const r, double * const dydt, const double * const ILs) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
 	const double IL2Rb = y[1];
@@ -42,15 +80,15 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	const double IL15_IL15Ra_IL2Rb_gc = y[15];
 		
 	// IL2
-	dydt[0] = -kfbnd * IL2Ra * ILs[0] + r->k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[1] = -kfbnd * IL2Rb * ILs[0] + r->k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_IL2Ra_gc + r->k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
+	dydt[0] = -kfbnd * IL2Ra * ILs[0] + r->k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev(r) * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + k12rev(r) * IL2_IL2Ra_IL2Rb;
+	dydt[1] = -kfbnd * IL2Rb * ILs[0] + r->k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev(r) * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
 	dydt[2] = -r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc;
 	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + r->k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc + kfbnd * ILs[0] * IL2Ra - r->k1rev * IL2_IL2Ra;
-	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + r->k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * ILs[0] * IL2Rb - r->k2rev * IL2_IL2Rb;
-	dydt[5] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - r->k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - r->k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[6] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - r->k4rev * IL2_IL2Ra_gc;
-	dydt[7] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc;
-	dydt[8] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - r->k10rev * IL2_IL2Ra_IL2Rb_gc;
+	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + k12rev(r) * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * ILs[0] * IL2Rb - r->k2rev * IL2_IL2Rb;
+	dydt[5] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - r->k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - k12rev(r) * IL2_IL2Ra_IL2Rb;
+	dydt[6] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + k9rev(r) * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - r->k4rev * IL2_IL2Ra_gc;
+	dydt[7] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev(r) * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc;
+	dydt[8] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev(r) * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev(r) * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - r->k10rev * IL2_IL2Ra_IL2Rb_gc;
 
 	// IL15
 	dydt[9] = -kfbnd * IL15Ra * ILs[1] + k13rev * IL15_IL15Ra - r->kfwd * IL15Ra * IL15_IL2Rb_gc + r->k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + r->k24rev * IL15_IL15Ra_IL2Rb;
@@ -83,8 +121,8 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	std::fill(dydt, dydt + Nspecies, 0.0);
 
 	// Calculate cell surface and endosomal reactions
-	dy_dt(y,         r,         dydt, r->ILs.data());
-	dy_dt(y + halfL, r, dydt + halfL,   y + halfL*2);
+	dy_dt(y,          &r->surface,         dydt, r->ILs.data());
+	dy_dt(y + halfL, &r->endosome, dydt + halfL,   y + halfL*2);
 
 	// Handle endosomal ligand balance.
 	// Must come before trafficking as we only calculate this based on reactions balance
@@ -115,3 +153,5 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	for (size_t ii = 0; ii < 6; ii++)
 		dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
 }
+
+#endif
