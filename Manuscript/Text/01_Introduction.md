@@ -40,7 +40,7 @@ csl: ./Manuscript/Templates/nature.csl
     - Specific IL-2 amino acid substitutions render it incapable from binding to IL2Ra. [@Collins7709]
     - IL-2 mutant library created and tested to see if any mutations increased binding affinity to receptors and therefore greater T cell activity. [@Berndt1994]
 - Efforts to model behavior of cytokine families
-    - Model that explains the positive and negative feedback loops of TCR antigen recognition [@Fran{\c c}oisE888]
+    - Model that explains the positive and negative feedback loops of TCR antigen recognition [@FrancoisE888]
     - Modeling that doesn't account for trafficking
         - Model of T cell proliferative response to IL-2 and IL-4. [@BURKE199742]
         - High level model of how IL-2 feedback loops regulate T cell populations. Focus on helper T and regulatory T cells. [@Feinerman437], [@Garcia2012]. 
