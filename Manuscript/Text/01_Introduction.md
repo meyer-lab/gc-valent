@@ -33,6 +33,7 @@ csl: ./Manuscript/Templates/nature.csl
     - gamma chain cytokines have accrued interest as cancer immunotherapeutics due to their ability to regulate lymphocytes. [@Pulliam2015]
     - Mutation in gamma chain causes XSCID. [@NOGUCHI1993147]
     - Cells must express gamma chain in order to undergo lymphoproliferation. [@Amorosi3304]
+    - Gamma chain is tied to hematopoietic cell proliferation. High expression correlates with malignancies and knockouts slow the proliferation of these malignancies. [@Vigliano2012]
 - Many receptor families are composed of multiple ligands, receptors, and cell populations
 	- [@Antebi_BMP]
 - Efforts to engineer gc behavior and/or gc treatments
