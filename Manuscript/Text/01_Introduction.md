@@ -36,12 +36,12 @@ csl: ./Manuscript/Templates/nature.csl
     - Gamma chain is tied to hematopoietic cell proliferation. High expression correlates with malignancies and knockouts slow the proliferation of these malignancies. [@Vigliano2012]
 - Many receptor families are composed of multiple ligands, receptors, and cell populations
 	- [@Antebi_BMP]
+    - hGH affinities do not correlate well with cell stimulation levels because of endosomal trafficking. [@Haugh2004]
 - Efforts to engineer gc behavior and/or gc treatments
     - [@ring_mechanistic_2012]
     - Specific IL-2 amino acid substitutions render it incapable from binding to IL2Ra. [@Collins7709]
     - IL-2 mutant library created and tested to see if any mutations increased binding affinity to receptors and therefore greater T cell activity. [@Berndt1994]
     - "in vitro evolution" was used to create an IL-2 mutant with increased affinity for IL-2Rb. [@Levin2012]
-    - hGH affinities do not correlate well with cell stimulation levels because of endosomal trafficking. [@Haugh2004]
 - Efforts to model behavior of cytokine families
     - Model that explains the positive and negative feedback loops of TCR antigen recognition [@FrancoisE888]
     - Modeling that doesn't account for trafficking
