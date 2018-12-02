@@ -98,6 +98,12 @@ public:
 		Rexpr[2] = rxntfR[8];
 
 		endosome = surface;
+		endosome.k1rev *= 5.0;
+		endosome.k2rev *= 5.0;
+		endosome.k4rev *= 5.0;
+		endosome.k5rev *= 5.0;
+		endosome.k10rev *= 5.0;
+		endosome.k11rev *= 5.0;
 	}
 
 	explicit ratesS(const double * const rxntfR) {
