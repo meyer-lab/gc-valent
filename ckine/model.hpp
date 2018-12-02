@@ -34,11 +34,8 @@ struct bindingRates {
 	double k11rev;
 	double k16rev;
 	double k17rev;
-	double k20rev;
-	double k21rev;
 	double k22rev;
 	double k23rev;
-	double k24rev;
 	double k27rev;
 	double k31rev;
 	double k33rev;
@@ -55,7 +52,53 @@ public:
 	double sortF;
 	double kRec;
 	double kDeg;
-	std::array<double, 8> Rexpr;
+	std::array<double, 8> Rexpr; // Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
+
+	void setTraffic(const double * const traf) {
+		// Set the rates
+		endo = traf[0];
+		activeEndo = traf[1];
+		sortF = traf[2];
+		kRec = traf[3];
+		kDeg = traf[4];
+
+		if (sortF > 1.0) {
+			throw std::runtime_error(std::string("sortF is a fraction and cannot be greater than 1.0."));
+		}
+	}
+
+	explicit ratesS(const double IL, const std::array<double, Nlig> rxntfR) {
+		std::fill(ILs.begin(), ILs.end(), 0.0);
+		ILs[0] = IL;
+		surface.kfwd = rxntfR[0];
+		surface.k1rev = rxntfR[1];
+		surface.k2rev = rxntfR[2];
+		surface.k4rev = rxntfR[3];
+		surface.k5rev = rxntfR[4];
+		surface.k11rev = rxntfR[5];
+		surface.k16rev = 1.0;
+		surface.k17rev = 1.0;
+		surface.k22rev = 1.0;
+		surface.k23rev = 1.0;
+		surface.k27rev = 1.0;
+		surface.k31rev = 1.0;
+		surface.k33rev = 1.0;
+		surface.k35rev = 1.0;
+
+		// These are probably measured in the literature
+		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+
+		std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
+
+		setTraffic(trafP.data());
+
+		std::fill(Rexpr.begin(), Rexpr.end(), 0.0);
+		Rexpr[0] = rxntfR[6];
+		Rexpr[1] = rxntfR[7];
+		Rexpr[2] = rxntfR[8];
+
+		endosome = surface;
+	}
 
 	explicit ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
@@ -77,27 +120,8 @@ public:
 		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 		surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
-		// IL15
-		// To satisfy detailed balance these relationships should hold
-		// _Based on initial assembly steps
-		surface.k24rev = k13rev * surface.k23rev / k14rev; // loop for IL15_IL15Ra_IL2Rb still holds
+		setTraffic(rxntfR + 17);
 
-		// _Based on formation of full complex
-		surface.k21rev = surface.k22rev * surface.k23rev / surface.k16rev;
-		surface.k20rev = surface.k22rev * surface.k24rev / surface.k17rev;
-
-		// Set the rates
-		endo = rxntfR[17];
-		activeEndo = rxntfR[18];
-		sortF = rxntfR[19];
-		kRec = rxntfR[20];
-		kDeg = rxntfR[21];
-
-		if (sortF > 1.0) {
-			throw std::runtime_error(std::string("sortF is a fraction and cannot be greater than 1.0."));
-		}
-
-		// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 		std::copy_n(rxntfR + 22, 8, Rexpr.begin());
 
 		endosome = surface;
@@ -111,11 +135,8 @@ public:
 		std::cout << "k11rev: " << surface.k11rev << std::endl;
 		std::cout << "k16rev: " << surface.k16rev << std::endl;
 		std::cout << "k17rev: " << surface.k17rev << std::endl;
-		std::cout << "k20rev: " << surface.k20rev << std::endl;
-		std::cout << "k21rev: " << surface.k21rev << std::endl;
 		std::cout << "k22rev: " << surface.k22rev << std::endl;
 		std::cout << "k23rev: " << surface.k23rev << std::endl;
-		std::cout << "k24rev: " << surface.k24rev << std::endl;
 		std::cout << "k27rev: " << surface.k27rev << std::endl;
 		std::cout << "k31rev: " << surface.k31rev << std::endl;
 		std::cout << "k33rev: " << surface.k33rev << std::endl;

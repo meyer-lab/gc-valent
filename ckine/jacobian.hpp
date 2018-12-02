@@ -66,7 +66,7 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 	};
 
 	complexCkine(3, 0, r->k5rev, k8rev(r)); // IL2
-	complexCkine(10, 9, r->k17rev, r->k20rev); // IL15
+	complexCkine(10, 9, r->k17rev, k20rev(r)); // IL15
 	
 	// IL2Ra
 	out(0, 0) = -kfbnd * ILs[0] - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
@@ -80,7 +80,7 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 	out(1, 8) = k9rev(r); // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
 	out(1, 11) = k14rev; // IL2Rb with respect to IL15_IL2Rb
 	out(1, 12) = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
+	out(1, 15) = k21rev(r); // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// gc
 	out(2, 6) = r->k4rev; // gc with respect to IL2_IL2Ra_gc
@@ -113,7 +113,7 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 	// IL15Ra
 	out(9, 9) = -kfbnd * ILs[1] - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
 	out(9, 10) = k13rev; // IL15Ra with respect to IL15_IL15Ra
-	out(9, 12) = r->k24rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb
+	out(9, 12) = k24rev(r); // IL15Ra with respect to IL15_IL15Ra_IL2Rb
 	
 	// IL15_IL15Ra
 	out(10, 9) = kfbnd * ILs[1]; // IL15_IL15Ra with respect to IL15Ra
@@ -124,18 +124,18 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 	// IL15_IL2Rb
 	out(11, 1) = kfbnd * ILs[1]; // IL15_IL2Rb with respect to IL2Rb
 	out(11, 11) = -r->kfwd * IL15Ra - r->kfwd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
-	out(11, 12) = r->k24rev; // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
+	out(11, 12) = k24rev(r); // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	
 	// IL15_IL15Ra_IL2Rb
-	out(12, 12) = -r->kfwd * gc - r->k23rev - r->k24rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb
+	out(12, 12) = -r->kfwd * gc - r->k23rev - k24rev(r); // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	out(12, 15) = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_gc
 	out(13, 13) = -r->kfwd * IL2Rb - r->k16rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_gc
-	out(13, 15) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
+	out(13, 15) = k21rev(r); // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
 	
 	// IL15_IL15Ra_IL2Rb_gc
-	out(15, 15) = - r->k20rev - r->k21rev - r->k22rev; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
+	out(15, 15) = - k20rev(r) - k21rev(r) - r->k22rev; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
 
 
 	auto simpleCkine = [&out, &gc, &r, &y](const size_t ij, const double revOne, const double revTwo, const double IL) {
