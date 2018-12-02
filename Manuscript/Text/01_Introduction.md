@@ -37,6 +37,7 @@ csl: ./Manuscript/Templates/nature.csl
 - Many receptor families are composed of multiple ligands, receptors, and cell populations
 	- [@Antebi_BMP]
     - hGH affinities do not correlate well with cell stimulation levels because of endosomal trafficking. [@Haugh2004]
+    - EGFRs are being targeted in cancer therapies due to their increased expression in tumor cells. [@CIARDIELLO20031348]
 - Efforts to engineer gc behavior and/or gc treatments
     - [@ring_mechanistic_2012]
     - Specific IL-2 amino acid substitutions render it incapable from binding to IL2Ra. [@Collins7709]
