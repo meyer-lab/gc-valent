@@ -40,6 +40,7 @@ csl: ./Manuscript/Templates/nature.csl
     - [@ring_mechanistic_2012]
     - Specific IL-2 amino acid substitutions render it incapable from binding to IL2Ra. [@Collins7709]
     - IL-2 mutant library created and tested to see if any mutations increased binding affinity to receptors and therefore greater T cell activity. [@Berndt1994]
+    - "in vitro evolution" was used to create an IL-2 mutant with increased affinity for IL-2Rb. [@Levin2012]
 - Efforts to model behavior of cytokine families
     - Model that explains the positive and negative feedback loops of TCR antigen recognition [@FrancoisE888]
     - Modeling that doesn't account for trafficking
