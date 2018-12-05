@@ -190,7 +190,7 @@ def plot_pretreat(ax, unkVec, scales, title):
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim, "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim, "b", "IL-7 stim. (IL-4 pre.)")
-    ax.set(title=title, ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
+    ax.set(title=title, ylabel="Fraction of inhibition", xlabel="log10 of pretreatment concentration (nM)")
 
     # add experimental data to plots
     ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1] / 100., color='powderblue', zorder=100, marker='^', edgecolors='k')
