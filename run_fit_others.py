@@ -12,4 +12,4 @@ if __name__ == "__main__": #only go into this loop if you're running fit.py dire
     M = build_model(pretreat=True)
     M.build()
     M.fit_ADVI()
-    pm.backends.text.dump("IL4-7_fitADVI_results", M.trace)#instead of pickling data we dump it into file that can be accessed by read_fit_data.py
+    pm.backends.text.dump("IL4-7_fitADVI_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
