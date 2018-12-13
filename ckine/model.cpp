@@ -274,8 +274,22 @@ void copyOutSensi(double *out, solver *sMem) {
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
-	ratesS rattes(rxnRatesIn);
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut, const bool IL2_input) {
+	if (IL2_input)   {
+        // move appropriate rates from rxnRatesIn to rxntfR (rates specific to IL2)
+        const std::array<double, 9> rxntfR;
+        rxntfR[0] = rxnRatesIn[6]; // kfwd
+        rxntfR[1] = ; // k1rev
+        rxntfR[2] = ; // k2rev
+        rxntfR[3] = ; // k4rev
+        rxntfR[4] = ; // k5rev
+        rxntfR[5] = ; // k11rev
+        rxntfR[6] = ; // IL2Ra exprR
+        rxntfR[7] = ; // IL2Rb exprR
+        rxntfR[8] = ; // gc exprR
+        ratesS rattes(rxnRatesIn[0], rxntfR);   }
+    else { 
+        ratesS rattes(rxnRatesIn);   }
 
 	array<double, Nspecies> y0 = solveAutocrine(&rattes);
 

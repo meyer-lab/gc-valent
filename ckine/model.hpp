@@ -67,7 +67,7 @@ public:
 		}
 	}
 
-	explicit ratesS(const double IL, const std::array<double, Nlig> rxntfR) {
+	explicit ratesS(const double IL, const std::array<double, 9> rxntfR) {
 		std::fill(ILs.begin(), ILs.end(), 0.0);
 		ILs[0] = IL;
 		surface.kfwd = rxntfR[0];
