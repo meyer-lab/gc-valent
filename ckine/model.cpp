@@ -278,15 +278,9 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 	if (IL2_input)   {
         // move appropriate rates from rxnRatesIn to rxntfR (rates specific to IL2)
         const std::array<double, 9> rxntfR;
-        rxntfR[0] = rxnRatesIn[6]; // kfwd
-        rxntfR[1] = ; // k1rev
-        rxntfR[2] = ; // k2rev
-        rxntfR[3] = ; // k4rev
-        rxntfR[4] = ; // k5rev
-        rxntfR[5] = ; // k11rev
-        rxntfR[6] = ; // IL2Ra exprR
-        rxntfR[7] = ; // IL2Rb exprR
-        rxntfR[8] = ; // gc exprR
+        for (int i = 0; i < 9; i++) {
+            rxntfR[i] = rxnRatesIn[i+1];   }
+        // call function with different arguments
         ratesS rattes(rxnRatesIn[0], rxntfR);   }
     else { 
         ratesS rattes(rxnRatesIn);   }

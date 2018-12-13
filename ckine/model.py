@@ -9,7 +9,7 @@ import numpy as np
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
+libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double), ct.c_bool)
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 
@@ -75,7 +75,7 @@ def runCkineU (tps, rxntfr, sensi=False):
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP)
+                           sensi, sensP, False)
 
     if sensi is True:
         return (yOut, retVal, sensV)
@@ -99,6 +99,30 @@ def runCkineUP (tp, rxntfr, sensi=False):
 
     retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0], sensi,
                                    yOut.ctypes.data_as(ct.POINTER(ct.c_double)), sensP)
+
+    if sensi is True:
+        return (yOut, retVal, sensV)
+
+    return (yOut, retVal)
+
+def runCkineU_IL2input(tps, rxntfr, sensi=False):
+    """ Version of standard solver that allows user to input values for IL2 rates. """
+    rxntfr = rxntfr.copy()
+    assert rxntfr.size == 10 # 0th element is IL2 conc and other 9 are IL2 rate params
+
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
+
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           sensi, sensP, True)
 
     if sensi is True:
         return (yOut, retVal, sensV)
