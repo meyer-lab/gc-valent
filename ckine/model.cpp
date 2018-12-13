@@ -277,7 +277,7 @@ void copyOutSensi(double *out, solver *sMem) {
 extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut, const bool IL2_input) {
 	if (IL2_input)   {
         // move appropriate rates from rxnRatesIn to rxntfR (rates specific to IL2)
-        const std::array<double, 9> rxntfR;
+        std::array<double, 9> rxntfR;
         for (int i = 0; i < 9; i++) {
             rxntfR[i] = rxnRatesIn[i+1];   }
         // call function with different arguments
