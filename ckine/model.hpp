@@ -67,79 +67,77 @@ public:
 		}
 	}
 
-	explicit ratesS(const double IL, const std::array<double, 9> rxntfR) {
-		std::cout << "calling the IL-2 specific form of ratesS." << std::endl;
-
-        std::fill(ILs.begin(), ILs.end(), 0.0);
-		ILs[0] = IL;
-		surface.kfwd = rxntfR[0];
-		surface.k1rev = rxntfR[1];
-		surface.k2rev = rxntfR[2];
-		surface.k4rev = rxntfR[3];
-		surface.k5rev = rxntfR[4];
-		surface.k11rev = rxntfR[5];
-		surface.k16rev = 1.0;
-		surface.k17rev = 1.0;
-		surface.k22rev = 1.0;
-		surface.k23rev = 1.0;
-		surface.k27rev = 1.0;
-		surface.k31rev = 1.0;
-		surface.k33rev = 1.0;
-		surface.k35rev = 1.0;
-
-		// These are probably measured in the literature
-		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-
-		std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
-
-		setTraffic(trafP.data());
-        
-        std::cout << "done assigning trafficking rates." << std::endl;
-
-		std::fill(Rexpr.begin(), Rexpr.end(), 0.0);
-		Rexpr[0] = rxntfR[6];
-		Rexpr[1] = rxntfR[7];
-		Rexpr[2] = rxntfR[8];
-
-        std::cout << "done assigning receptor expression rates." << std::endl;
-
-		endosome = surface;
-		endosome.k1rev *= 5.0;
-		endosome.k2rev *= 5.0;
-		endosome.k4rev *= 5.0;
-		endosome.k5rev *= 5.0;
-		endosome.k10rev *= 5.0;
-		endosome.k11rev *= 5.0;
-	}
-
 	explicit ratesS(const double * const rxntfR) {
-		//std::cout << "Calling standard form of ratesS" << std::endl;
+        if (rxntfR[0] == 0) // first element is 0 for standard calculation
+        {
+            std::copy_n(rxntfR+1, ILs.size(), ILs.begin());
+            surface.kfwd = rxntfR[7];
+            surface.k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+            surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+            surface.k4rev = rxntfR[8];
+            surface.k5rev = rxntfR[9];
+            surface.k16rev = rxntfR[10];
+            surface.k17rev = rxntfR[11];
+            surface.k22rev = rxntfR[12];
+            surface.k23rev = rxntfR[13];
+            surface.k27rev = rxntfR[14];
+            surface.k31rev = rxntfR[15];
+            surface.k33rev = rxntfR[16];
+            surface.k35rev = rxntfR[17];
 
-        
-        std::copy_n(rxntfR, ILs.size(), ILs.begin());
-		surface.kfwd = rxntfR[6];
-		surface.k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
-		surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
-		surface.k4rev = rxntfR[7];
-		surface.k5rev = rxntfR[8];
-		surface.k16rev = rxntfR[9];
-		surface.k17rev = rxntfR[10];
-		surface.k22rev = rxntfR[11];
-		surface.k23rev = rxntfR[12];
-		surface.k27rev = rxntfR[13];
-		surface.k31rev = rxntfR[14];
-		surface.k33rev = rxntfR[15];
-		surface.k35rev = rxntfR[16];
+            // These are probably measured in the literature
+            surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+            surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
-		// These are probably measured in the literature
-		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-		surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+            setTraffic(rxntfR + 18);
 
-		setTraffic(rxntfR + 17);
+            std::copy_n(rxntfR + 23, 8, Rexpr.begin());
 
-		std::copy_n(rxntfR + 22, 8, Rexpr.begin());
+            endosome = surface;
+        }
+        else if (rxntfR[0] == 1) // case where IL-2 rates are inputs
+        {
+            std::fill(ILs.begin(), ILs.end(), 0.0);
+            ILs[0] = rxntfR[1];   // only care about IL2 conc.
+            surface.kfwd = rxntfR[2];
+            surface.k1rev = rxntfR[3];
+            surface.k2rev = rxntfR[4];
+            surface.k4rev = rxntfR[5];
+            surface.k5rev = rxntfR[6];
+            surface.k11rev = rxntfR[7];
+            surface.k16rev = 1.0;
+            surface.k17rev = 1.0;
+            surface.k22rev = 1.0;
+            surface.k23rev = 1.0;
+            surface.k27rev = 1.0;
+            surface.k31rev = 1.0;
+            surface.k33rev = 1.0;
+            surface.k35rev = 1.0;
 
-		endosome = surface;
+            // These are probably measured in the literature
+            surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+
+            std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
+
+            setTraffic(trafP.data());
+
+            std::cout << "done assigning trafficking rates." << std::endl;
+
+            std::fill(Rexpr.begin(), Rexpr.end(), 0.0);
+            Rexpr[0] = rxntfR[8];
+            Rexpr[1] = rxntfR[9];
+            Rexpr[2] = rxntfR[10];
+
+            std::cout << "done assigning receptor expression rates." << std::endl;
+
+            endosome = surface;
+            endosome.k1rev *= 5.0;
+            endosome.k2rev *= 5.0;
+            endosome.k4rev *= 5.0;
+            endosome.k5rev *= 5.0;
+            endosome.k10rev *= 5.0;
+            endosome.k11rev *= 5.0;
+        }
 	}
 
 	void print() {

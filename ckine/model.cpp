@@ -279,15 +279,18 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
     
     if (IL2_input)   {
         // move appropriate rates from rxnRatesIn to rxntfR (rates specific to IL2)
-        std::array<double, 9> rxntfR;
-        for (int i = 0; i < 9; i++) {
-            rxntfR[i] = rxnRatesIn[i+1];   }
-        // call function with different arguments
-        ratesS rattes(rxnRatesIn[0], rxntfR);   
+        std::array<double, 11> rxntfR;
+        rxntfR[0] = 1;   // first element is 0 when IL2_input is true
+        for (int i = 1; i < 11; i++) {
+            rxntfR[i] = rxnRatesIn[i-1];        }
+        ratesS rattes(rxntfR);   
         y0 = solveAutocrine(&rattes);   }
     else { 
-        // std::cout << "diving into `else` statement" << std::endl;
-        ratesS rattes(rxnRatesIn);   
+        std::array<double, Nparams+1> rxntfR;
+        rxntfR[0] = 0;   // first element is 1 when IL2_input is false
+        for (int i = 1; i < (Nparams+1); i++) {
+            rxntfR[i] = rxnRatesIn[i-1];        }
+        ratesS rattes(rxntfR);   
         y0 = solveAutocrine(&rattes);   }
 
 	size_t itps = 0;
