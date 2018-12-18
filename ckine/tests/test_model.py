@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from scipy.optimize.slsqp import approx_jacobian
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkineU_IL2input
 
 
 settings.register_profile("ci", max_examples=1000)
@@ -249,3 +249,20 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.greater(yOut_4[48:50], 0.0).all())
         self.assertTrue(np.greater(yOut_5[51:53], 0.0).all())
         self.assertTrue(np.greater(yOut_6[54:56], 0.0).all())
+
+    def test_runCkineU_IL2input(self):
+        """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
+        rxntfr_reg = np.ones((10))
+        rxntfr_reg[0] = 250. # set IL-2 concentration to 250 nM
+        rxntfr_tight = rxntfr_reg.copy()
+        rxntfr_tight[2] = 0.01 # IL2 binds to IL2Ra tighter when k1rev is smaller (K_d increases by 100x)
+        
+        # find yOut vectors for both rxntfr's
+        y_reg, _ = runCkineU_IL2input(self.ts, rxntfr_reg)
+        y_tight, _ = runCkineU_IL2input(self.ts, rxntfr_tight)
+        
+        # get total amount of IL-2 derived active species
+        active_reg = getTotalActiveCytokine(0, y_reg)
+        active_tight = getTotalActiveCytokine(0, y_tight)
+        
+        self.assertGreater(active_tight, active_reg) # tighter IL2-IL2Ra binding should lead to greater activation
