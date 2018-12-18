@@ -275,17 +275,19 @@ void copyOutSensi(double *out, solver *sMem) {
 
 
 extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut, const bool IL2_input) {
-	if (IL2_input)   {
+	array<double, Nspecies> y0;
+    
+    if (IL2_input)   {
         // move appropriate rates from rxnRatesIn to rxntfR (rates specific to IL2)
         std::array<double, 9> rxntfR;
         for (int i = 0; i < 9; i++) {
             rxntfR[i] = rxnRatesIn[i+1];   }
         // call function with different arguments
-        ratesS rattes(rxnRatesIn[0], rxntfR);   }
+        ratesS rattes(rxnRatesIn[0], rxntfR);   
+        y0 = solveAutocrine(&rattes);   }
     else { 
-        ratesS rattes(rxnRatesIn);   }
-
-	array<double, Nspecies> y0 = solveAutocrine(&rattes);
+        ratesS rattes(rxnRatesIn);   
+        y0 = solveAutocrine(&rattes);   }
 
 	size_t itps = 0;
 
