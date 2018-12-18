@@ -68,7 +68,9 @@ public:
 	}
 
 	explicit ratesS(const double IL, const std::array<double, 9> rxntfR) {
-		std::fill(ILs.begin(), ILs.end(), 0.0);
+		std::cout << "calling the IL-2 specific form of ratesS." << std::endl;
+
+        std::fill(ILs.begin(), ILs.end(), 0.0);
 		ILs[0] = IL;
 		surface.kfwd = rxntfR[0];
 		surface.k1rev = rxntfR[1];
@@ -91,11 +93,15 @@ public:
 		std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
 
 		setTraffic(trafP.data());
+        
+        std::cout << "done assigning trafficking rates." << std::endl;
 
 		std::fill(Rexpr.begin(), Rexpr.end(), 0.0);
 		Rexpr[0] = rxntfR[6];
 		Rexpr[1] = rxntfR[7];
 		Rexpr[2] = rxntfR[8];
+
+        std::cout << "done assigning receptor expression rates." << std::endl;
 
 		endosome = surface;
 		endosome.k1rev *= 5.0;

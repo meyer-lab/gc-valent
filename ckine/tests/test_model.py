@@ -258,7 +258,9 @@ class TestModel(unittest.TestCase):
         rxntfr_tight[2] = 0.01 # IL2 binds to IL2Ra tighter when k1rev is smaller (K_d increases by 100x)
         
         # find yOut vectors for both rxntfr's
+        print("solving for y_reg")
         y_reg, _ = runCkineU_IL2input(self.ts, rxntfr_reg)
+        print("solving for y_tight")
         y_tight, _ = runCkineU_IL2input(self.ts, rxntfr_tight)
 
         # get total amount of IL-2 derived active species at end of experiment (t=100000)
