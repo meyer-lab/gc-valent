@@ -113,7 +113,10 @@ public:
 	}
 
 	explicit ratesS(const double * const rxntfR) {
-		std::copy_n(rxntfR, ILs.size(), ILs.begin());
+		//std::cout << "Calling standard form of ratesS" << std::endl;
+
+        
+        std::copy_n(rxntfR, ILs.size(), ILs.begin());
 		surface.kfwd = rxntfR[6];
 		surface.k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
 		surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM

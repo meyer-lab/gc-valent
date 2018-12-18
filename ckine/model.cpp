@@ -286,6 +286,7 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
         ratesS rattes(rxnRatesIn[0], rxntfR);   
         y0 = solveAutocrine(&rattes);   }
     else { 
+        // std::cout << "diving into `else` statement" << std::endl;
         ratesS rattes(rxnRatesIn);   
         y0 = solveAutocrine(&rattes);   }
 
