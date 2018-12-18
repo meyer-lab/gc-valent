@@ -260,9 +260,9 @@ class TestModel(unittest.TestCase):
         # find yOut vectors for both rxntfr's
         y_reg, _ = runCkineU_IL2input(self.ts, rxntfr_reg)
         y_tight, _ = runCkineU_IL2input(self.ts, rxntfr_tight)
-        
-        # get total amount of IL-2 derived active species
-        active_reg = getTotalActiveCytokine(0, y_reg)
-        active_tight = getTotalActiveCytokine(0, y_tight)
+
+        # get total amount of IL-2 derived active species at end of experiment (t=100000)
+        active_reg = getTotalActiveCytokine(0, y_reg[1,:])
+        active_tight = getTotalActiveCytokine(0, y_tight[1,:])
         
         self.assertGreater(active_tight, active_reg) # tighter IL2-IL2Ra binding should lead to greater activation
