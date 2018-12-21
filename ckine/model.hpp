@@ -2,6 +2,7 @@
 #include <string>
 
 constexpr size_t Nparams = 30; // number of unknowns for the full model
+constexpr size_t NIL2params = 10; // number of unknowns for the IL2 model
 
 constexpr size_t Nlig = 6; // Number of ligands
 
@@ -164,5 +165,5 @@ constexpr double internalFrac = 0.5; // Same as that used in TAM model
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 28; // number of complexes on surface alone
 
-extern "C" int runCkine (double *tps, size_t ntps, double *out, const double * const rxnRatesIn, const bool sensi, double *sensiOut);
+extern "C" int runCkine (double *tps, size_t ntps, double *out, const double * const rxnRatesIn, const bool sensi, double *sensiOut, bool);
 extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim);

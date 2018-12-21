@@ -226,10 +226,18 @@ int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_d
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut, bool IL2case) {
 	size_t itps = 0;
 
-	solver sMem(std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams), sensi);
+	std::vector<double> v;
+
+	if (IL2case) {
+		v = std::vector<double>(rxnRatesIn, rxnRatesIn + NIL2params);
+	} else {
+		v = std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams);
+	}
+
+	solver sMem(v, sensi);
 
 	double tret = 0;
 
@@ -308,7 +316,7 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii));
+		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii, false));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
