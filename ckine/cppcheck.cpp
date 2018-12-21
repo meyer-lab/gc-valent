@@ -98,16 +98,14 @@ protected:
 		array<double, Nspecies> output;
 		array<double, Nspecies> output2;
 		array<double, Nparams> rxnRatesIn;
-		array<double, Nparams*Nspecies> soutput;
-		array<double, Nparams*Nspecies> soutput2;
 
 		for (size_t ii = 0; ii < 10; ii++) {
 			rxnRatesIn = getParams();
 
-			int retVal = runCkinePretreat(10.0, 10.0, output.data(), rxnRatesIn.data(), postStim.data(), true, soutput.data());
+			int retVal = runCkinePretreat(10.0, 10.0, output.data(), rxnRatesIn.data(), postStim.data());
 
 			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkinePretreat(10.0, 10.0, output2.data(), rxnRatesIn.data(), postStim.data(), true, soutput2.data());
+			int retVal2 = runCkinePretreat(10.0, 10.0, output2.data(), rxnRatesIn.data(), postStim.data());
 
 			checkRetVal(retVal, rxnRatesIn);
 			checkRetVal(retVal2, rxnRatesIn);
@@ -115,7 +113,6 @@ protected:
 			CPPUNIT_ASSERT(retVal >= 0);
 			CPPUNIT_ASSERT(retVal2 >= 0);
 			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
-			CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 		}
 	}
 };
