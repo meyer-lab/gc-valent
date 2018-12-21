@@ -75,7 +75,7 @@ def runCkineU (tps, rxntfr, sensi=False):
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP, False)
+                           sensi, sensP)
 
     if sensi is True:
         return (yOut, retVal, sensV)
