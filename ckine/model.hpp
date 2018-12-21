@@ -68,7 +68,7 @@ public:
 	}
 
 	explicit ratesS(const double * const rxntfR) {
-        if (rxntfR[0] == 0) // first element is 0 for standard calculation
+        if (rxntfR[0] == 0) // first element is 0 for standard calculation (rxntfR size is Nparams+1)
         {
             std::copy_n(rxntfR+1, ILs.size(), ILs.begin());
             surface.kfwd = rxntfR[7];
@@ -95,7 +95,7 @@ public:
 
             endosome = surface;
         }
-        else if (rxntfR[0] == 1) // case where IL-2 rates are inputs
+        else if (rxntfR[0] == 1) // case where IL-2 rates are inputs (rxntfR is of size 11)
         {
             std::fill(ILs.begin(), ILs.end(), 0.0);
             ILs[0] = rxntfR[1];   // only care about IL2 conc.
