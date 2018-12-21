@@ -274,24 +274,10 @@ void copyOutSensi(double *out, solver *sMem) {
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut, const bool IL2_input) {
-	array<double, Nspecies> y0;
-    
-    if (IL2_input)   {
-        // move appropriate rates from rxnRatesIn to rxntfR (rates specific to IL2)
-        std::array<double, 11> rxntfR;
-        rxntfR[0] = 1.0;   // first element is 0 when IL2_input is true
-        for (size_t i = 1; i < 11; i++) {
-            rxntfR[i] = rxnRatesIn[i-1];        }
-        ratesS rattes(rxntfR);   
-        y0 = solveAutocrine(&rattes);   }
-    else { 
-        std::array<double, Nparams+1> rxntfR;
-        rxntfR[0] = 0.0;   // first element is 1 when IL2_input is false
-        for (size_t i = 1; i < (Nparams+1); i++) {
-            rxntfR[i] = rxnRatesIn[i-1];        }
-        ratesS rattes(rxntfR);   
-        y0 = solveAutocrine(&rattes);   }
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
+	ratesS rattes(rxnRatesIn);
+
+	array<double, Nspecies> y0 = solveAutocrine(&rattes);
 
 	size_t itps = 0;
 
@@ -397,7 +383,7 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii, 0)); // assuming last bool is always false
+		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
