@@ -62,6 +62,7 @@ def runCkineU (tps, rxntfr, sensi=False):
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
+    rxntfr = np.insert(rxntfr, 0.0, 0) # Indicate to the solver that we're using the full model
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -88,6 +89,7 @@ def runCkineUP (tp, rxntfr, sensi=False):
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
+    rxntfr = np.insert(rxntfr, 0.0, 0) # Indicate to the solver that we're using the full model
 
     yOut = np.zeros((rxntfr.shape[0], __nSpecies), dtype=np.float64)
 
@@ -109,6 +111,7 @@ def runCkineU_IL2input(tps, rxntfr, sensi=False):
     """ Version of standard solver that allows user to input values for IL2 rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 10 # 0th element is IL2 conc and other 9 are IL2 rate params
+    rxntfr = np.insert(rxntfr, 1.0, 0) # Indicate to the solver that we're using the IL2 model
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
