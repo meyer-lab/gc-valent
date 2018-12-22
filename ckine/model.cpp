@@ -76,7 +76,7 @@ public:
 
 		/* Call CVodeCreate to create the solver memory and specify the
 		 * Backward Differentiation Formula and the use of a Newton iteration */
-		cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+		cvode_mem = CVodeCreate(CV_BDF);
 		if (cvode_mem == nullptr) {
 			throw std::runtime_error(string("Error calling CVodeCreate in solver_setup."));
 		}

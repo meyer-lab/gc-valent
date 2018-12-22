@@ -76,10 +76,10 @@ protected:
 		for (size_t ii = 0; ii < 10; ii++) {
 			rxnRatesIn = getParams();
 
-			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
+			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data(), false);
 
 			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), true, soutput2.data());
+			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), true, soutput2.data(), false);
 
 			checkRetVal(retVal, rxnRatesIn);
 			checkRetVal(retVal2, rxnRatesIn);
