@@ -252,18 +252,17 @@ class TestModel(unittest.TestCase):
 
     def test_runCkineU_IL2(self):
         """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
-        ts = np.array([0.0, 1.0])
         rxntfr_reg = np.ones(10)
         rxntfr_tight = rxntfr_reg.copy()
-        rxntfr_tight[2] = 10.0**-5 # IL2 binds to IL2Ra tighter when k1rev is smaller
+        rxntfr_tight[1] = 10.0**-5 # IL2 binds to IL2Ra tighter when k1rev is smaller
 
         # find yOut vectors for both rxntfr's
-        y_reg, _ = runCkineU_IL2(ts, rxntfr_reg)
-        y_tight, _ = runCkineU_IL2(ts, rxntfr_tight)
+        y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)
+        y_tight, _ = runCkineU_IL2(self.ts, rxntfr_tight)
 
         # get total amount of IL-2 derived active species at end of experiment (t=100000)
-        active_reg = getTotalActiveCytokine(0, y_reg[1,:])
-        active_tight = getTotalActiveCytokine(0, y_tight[1,:])
+        active_reg = getTotalActiveCytokine(0, y_reg[1, :])
+        active_tight = getTotalActiveCytokine(0, y_tight[1, :])
         
         print("y_reg: " + str(active_reg))
         print("y_tight: " + str(active_tight))
