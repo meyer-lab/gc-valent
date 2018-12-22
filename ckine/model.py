@@ -82,6 +82,30 @@ def runCkineU (tps, rxntfr, sensi=False):
 
     return (yOut, retVal)
 
+def runCkineU_IL2 (tps, rxntfr, sensi=False):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
+    rxntfr = rxntfr.copy()
+    assert rxntfr.size == 10
+
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
+
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           sensi, sensP, True)
+
+    if sensi is True:
+        return (yOut, retVal, sensV)
+
+    return (yOut, retVal)
+
 
 def runCkineUP (tp, rxntfr, sensi=False):
     """ Version of runCkine that runs in parallel. """
