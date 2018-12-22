@@ -253,7 +253,7 @@ class TestModel(unittest.TestCase):
     def test_runCkineU_IL2(self):
         """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
         rxntfr_reg = np.ones((10))
-        rxntfr_reg[0] = 250. # set IL-2 concentration to 250 nM for both cases
+        rxntfr_reg[0] = 0.1 # set IL-2 concentration to 250 nM for both cases
         rxntfr_tight = rxntfr_reg.copy()
         rxntfr_tight[2] = 10.0**-5 # IL2 binds to IL2Ra tighter when k1rev is smaller
 
