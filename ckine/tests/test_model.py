@@ -262,6 +262,9 @@ class TestModel(unittest.TestCase):
         y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)
         print("solving for y_tight")
         y_tight, _ = runCkineU_IL2(self.ts, rxntfr_tight)
+        
+        print("y_reg: " + str(y_reg))
+        print("y_tight: " + str(y_tight))
 
         # get total amount of IL-2 derived active species at end of experiment (t=100000)
         active_reg = getTotalActiveCytokine(0, y_reg[1,:])
