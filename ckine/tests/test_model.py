@@ -255,19 +255,17 @@ class TestModel(unittest.TestCase):
         rxntfr_reg = np.ones((10))
         rxntfr_reg[0] = 250. # set IL-2 concentration to 250 nM for both cases
         rxntfr_tight = rxntfr_reg.copy()
-        rxntfr_tight[2] = 10**-5 # IL2 binds to IL2Ra tighter when k1rev is smaller
+        rxntfr_tight[2] = 10.0**-5 # IL2 binds to IL2Ra tighter when k1rev is smaller
 
         # find yOut vectors for both rxntfr's
-        print("solving for y_reg")
         y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)
-        print("solving for y_tight")
         y_tight, _ = runCkineU_IL2(self.ts, rxntfr_tight)
-        
-        print("y_reg: " + str(y_reg))
-        print("y_tight: " + str(y_tight))
 
         # get total amount of IL-2 derived active species at end of experiment (t=100000)
         active_reg = getTotalActiveCytokine(0, y_reg[1,:])
         active_tight = getTotalActiveCytokine(0, y_tight[1,:])
+        
+        print("y_reg: " + str(active_reg))
+        print("y_tight: " + str(active_tight))
 
         self.assertGreater(active_tight, active_reg) # tighter IL2-IL2Ra binding should lead to greater activation
