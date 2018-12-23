@@ -254,14 +254,19 @@ class TestModel(unittest.TestCase):
         """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
         rxntfr_reg = np.ones(10)
         rxntfr_loose = rxntfr_reg.copy()
-        rxntfr_loose[1] = 10.0**-5 # "looser" dimerization occurs when kfwd is small 
+        rxntfr_gc = rxntfr_reg.copy()
+        rxntfr_gc[9] = 0.0 # set gc expression to 0
+        rxntfr_loose[1] = 10.0**-5 # "looser" dimerization occurs when kfwd is small
 
         # find yOut vectors for both rxntfr's
         y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)
         y_loose, _ = runCkineU_IL2(self.ts, rxntfr_loose)
+        y_gc, _ = runCkineU_IL2(self.ts, rxntfr_gc)
 
         # get total amount of IL-2 derived active species at end of experiment (t=100000)
         active_reg = getTotalActiveCytokine(0, y_reg[1, :])
         active_loose = getTotalActiveCytokine(0, y_loose[1, :])
+        active_gc = getTotalActiveCytokine(0, y_gc[1, :])
 
         self.assertLess(active_loose, active_reg) # lower dimerization rate leads to less active complex
+        self.assertLess(active_gc, active_reg) # no gc expression leads to less/no active complex
