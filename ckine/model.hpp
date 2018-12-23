@@ -94,7 +94,10 @@ public:
 
 			std::copy_n(rxntfR.data() + 22, 8, Rexpr.begin());
 
-			endosome = surface;
+			// all reverse rates are 5x larger in the endosome
+            endosome = surface * 5.0;
+            endosome.kfwd /= 5.0;
+            
 		} else {
 			std::fill(ILs.begin(), ILs.end(), 0.0);
 			ILs[0] = rxntfR[0];
