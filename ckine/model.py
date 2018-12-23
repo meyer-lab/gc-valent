@@ -71,7 +71,6 @@ def runCkineU (tps, rxntfr, sensi=False):
     else:
         sensP = ct.POINTER(ct.c_double)()
 
-
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
@@ -94,7 +93,6 @@ def runCkineU_IL2 (tps, rxntfr, sensi=False):
         sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
     else:
         sensP = ct.POINTER(ct.c_double)()
-
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
