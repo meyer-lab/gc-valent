@@ -78,7 +78,7 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 	out(1, 4) = r->k2rev; // IL2Rb with respect to IL2_IL2Rb
 	out(1, 5) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
 	out(1, 8) = k9rev(r); // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
-	out(1, 11) = k14rev; // IL2Rb with respect to IL15_IL2Rb
+	out(1, 11) = r->k14rev; // IL2Rb with respect to IL15_IL2Rb
 	out(1, 12) = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	out(1, 15) = k21rev(r); // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
 	
@@ -112,18 +112,18 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 	
 	// IL15Ra
 	out(9, 9) = -kfbnd * ILs[1] - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
-	out(9, 10) = k13rev; // IL15Ra with respect to IL15_IL15Ra
+	out(9, 10) = r->k13rev; // IL15Ra with respect to IL15_IL15Ra
 	out(9, 12) = k24rev(r); // IL15Ra with respect to IL15_IL15Ra_IL2Rb
 	
 	// IL15_IL15Ra
 	out(10, 9) = kfbnd * ILs[1]; // IL15_IL15Ra with respect to IL15Ra
-	out(10, 10) = -r->kfwd * IL2Rb - r->kfwd * gc - k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
+	out(10, 10) = -r->kfwd * IL2Rb - r->kfwd * gc - r->k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
 	out(10, 12) = r->k23rev; // IL15_IL15Ra with respect to IL15_IL15Ra_IL2Rb
 	out(10, 13) = r->k16rev; // IL15_IL15Ra with respect to IL15_IL15Ra_gc
 	
 	// IL15_IL2Rb
 	out(11, 1) = kfbnd * ILs[1]; // IL15_IL2Rb with respect to IL2Rb
-	out(11, 11) = -r->kfwd * IL15Ra - r->kfwd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
+	out(11, 11) = -r->kfwd * IL15Ra - r->kfwd * gc - r->k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
 	out(11, 12) = k24rev(r); // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
 	
 	// IL15_IL15Ra_IL2Rb
@@ -223,8 +223,8 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 	out(57, halfL+9) = -kfbnd * eIL15; // IL15 binding to IL15Ra
 	out(halfL + 10, 57) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
 	out(halfL + 11, 57) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
-	out(57, halfL+10) = k13rev / internalV;
-	out(57, halfL+11) = k14rev / internalV;
+	out(57, halfL+10) = r->endosome.k13rev / internalV;
+	out(57, halfL+11) = r->endosome.k14rev / internalV;
 
 	auto simpleCkine = [&](const size_t ij, const size_t ix, const double revRate) {
 		const double eIL = y[ix] / internalV;
