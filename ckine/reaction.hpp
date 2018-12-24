@@ -145,10 +145,10 @@ void dy_dt(const double * const y, const bindingRates * const r, double * const 
 		dydt[ij+2] = r->kfwd * gc * y[ij+1] - revTwo * y[ij+2];
 	};
 
-	simpleCkine(16, k25rev, r->k27rev, ILs[2]);
-	simpleCkine(19, k29rev, r->k31rev, ILs[3]);
-	simpleCkine(22, k32rev, r->k33rev, ILs[4]);
-	simpleCkine(25, k34rev, r->k35rev, ILs[5]);
+	simpleCkine(16, r->k25rev, r->k27rev, ILs[2]);
+	simpleCkine(19, r->k29rev, r->k31rev, ILs[3]);
+	simpleCkine(22, r->k32rev, r->k33rev, ILs[4]);
+	simpleCkine(25, r->k34rev, r->k35rev, ILs[5]);
 }
 
 

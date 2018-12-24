@@ -9,18 +9,6 @@ constexpr size_t Nlig = 6; // Number of ligands
 // Measured in the literature
 constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 
-// Literature values for IL-7
-constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
-
-// Literature value for IL-9
-constexpr double k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
-
-// Literature value for IL-4
-constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
-
-// Literature value for IL-21
-constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
-
 
 struct bindingRates {
 	double kfwd;
@@ -36,9 +24,13 @@ struct bindingRates {
 	double k17rev;
 	double k22rev;
 	double k23rev;
+	double k25rev;
 	double k27rev;
+	double k29rev;
 	double k31rev;
+	double k32rev;
 	double k33rev;
+	double k34rev;
 	double k35rev;
 };
 
@@ -78,9 +70,13 @@ public:
 		endosome->k17rev *= 5.0;
 		endosome->k22rev *= 5.0;
 		endosome->k23rev *= 5.0;
+		endosome->k25rev *= 5.0;
 		endosome->k27rev *= 5.0;
+		endosome->k29rev *= 5.0;
 		endosome->k31rev *= 5.0;
+		endosome->k32rev *= 5.0;
 		endosome->k33rev *= 5.0;
+		endosome->k34rev *= 5.0;
 		endosome->k35rev *= 5.0;
     }
 
@@ -100,9 +96,13 @@ public:
 			surface.k17rev = rxntfR[10];
 			surface.k22rev = rxntfR[11];
 			surface.k23rev = rxntfR[12];
+			surface.k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
 			surface.k27rev = rxntfR[13];
+			surface.k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
 			surface.k31rev = rxntfR[14];
+			surface.k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
 			surface.k33rev = rxntfR[15];
+			surface.k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
 			surface.k35rev = rxntfR[16];
 
 			setTraffic(rxntfR.data() + 17);
@@ -127,9 +127,13 @@ public:
 			surface.k17rev = 1.0;
 			surface.k22rev = 1.0;
 			surface.k23rev = 1.0;
+			surface.k25rev = 1.0;
 			surface.k27rev = 1.0;
+			surface.k29rev = 1.0;
 			surface.k31rev = 1.0;
+			surface.k32rev = 1.0;
 			surface.k33rev = 1.0;
+			surface.k34rev = 1.0;
 			surface.k35rev = 1.0;
 
 			// These are probably measured in the literature

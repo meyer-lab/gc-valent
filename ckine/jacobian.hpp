@@ -156,10 +156,10 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 		out(ij+2, ij+2) = -revTwo; // IL_Ra_gc with respect to IL_Ra_gc
 	};
 
-	simpleCkine(16, k25rev, r->k27rev, ILs[2]); // IL7
-	simpleCkine(19, k29rev, r->k31rev, ILs[3]); // IL9
-	simpleCkine(22, k32rev, r->k33rev, ILs[4]); // IL4
-	simpleCkine(25, k34rev, r->k35rev, ILs[5]); // IL21
+	simpleCkine(16, r->k25rev, r->k27rev, ILs[2]); // IL7
+	simpleCkine(19, r->k29rev, r->k31rev, ILs[3]); // IL9
+	simpleCkine(22, r->k32rev, r->k33rev, ILs[4]); // IL4
+	simpleCkine(25, r->k34rev, r->k35rev, ILs[5]); // IL21
 }
 
 
@@ -235,8 +235,8 @@ void fullJacobian(const double * const y, const ratesS * const r, T &out) {
 		out(ix, halfL + ij + 1) = revRate / internalV;
 	};
 
-	simpleCkine(16, 58, k25rev); // IL7
-	simpleCkine(19, 59, k29rev); // IL9
-	simpleCkine(22, 60, k32rev); // IL4
-	simpleCkine(25, 61, k34rev); // IL21
+	simpleCkine(16, 58, r->endosome.k25rev); // IL7
+	simpleCkine(19, 59, r->endosome.k29rev); // IL9
+	simpleCkine(22, 60, r->endosome.k32rev); // IL4
+	simpleCkine(25, 61, r->endosome.k34rev); // IL21
 }
