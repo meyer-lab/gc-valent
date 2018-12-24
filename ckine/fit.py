@@ -60,7 +60,7 @@ class IL2_15_activity:
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, scale):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
         # We don't need the ligands in unkVec for this Op
         unkVec = unkVec[6::]
@@ -70,10 +70,13 @@ class IL2_15_activity:
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
 
-        # Normalize to the maximal activity, put together into one vector
+        # put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
 
-        # return the residual
+        # account for pSTAT5 saturation
+        actCat = actCat / (actCat + scale)
+
+        # normalize from 0 to 1 and return the residual
         return self.fit_data - (actCat / T.max(actCat))
 
 
@@ -96,19 +99,20 @@ class build_model:
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
             ligands = T.zeros(6, dtype=np.float64)
 
             unkVec = T.concatenate((ligands, kfwd, rxnrates, nullRates, endo_activeEndo, sortF, kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
 
-            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_15', sd=0.05, observed=Y_15) # experimental-derived stderr is used
-            pm.Normal('fitD_int', sd=0.02, observed=Y_int)
+            pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15) # experimental-derived stderr is used
+            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
