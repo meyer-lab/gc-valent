@@ -110,6 +110,14 @@ public:
 
 		CVDlsSetJacFn(cvode_mem, Jac);
 
+		// Call CVodeSetConstraints to initialize constraints
+		N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
+		N_VConst(1.0, constraints); // all 1's for nonnegative solution values
+		if (CVodeSetConstraints(cvode_mem, constraints) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetConstraints in solver_setup."));
+		}
+		N_VDestroy(constraints);
+
 		CVodeSetMaxNumSteps(cvode_mem, 800000);
 
 		// Now we are doing a sensitivity analysis
