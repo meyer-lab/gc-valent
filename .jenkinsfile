@@ -11,7 +11,34 @@ pipeline {
       }
     }
     stage('Test')  { steps { sh 'make testcover' } }
-    stage('Build') { steps { sh 'make' } }
+    stage('Build') {
+      parallel {
+        stage('Build Fig 1') {
+          steps { sh 'make ./Manuscript/Figures/figure1.svg' }
+        }
+        stage('Build Fig 2') {
+          steps { sh 'make ./Manuscript/Figures/figure2.svg' }
+        }
+        stage('Build Fig 3') {
+          steps { sh 'make ./Manuscript/Figures/figure3.svg' }
+        }
+        stage('Build Fig 4') {
+          steps { sh 'make ./Manuscript/Figures/figure4.svg' }
+        }
+        stage('Build Fig S1') {
+          steps { sh 'make ./Manuscript/Figures/figureS1.svg' }
+        }
+        stage('Build Fig S2') {
+          steps { sh 'make ./Manuscript/Figures/figureS2.svg' }
+        }
+        stage('Build Fig S3') {
+          steps { sh 'make ./Manuscript/Figures/figureS3.svg' }
+        }
+      }
+      steps {
+        sh 'make'
+      }
+    }
     stage('Lint')  { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
     stage('Report') {
       steps {
