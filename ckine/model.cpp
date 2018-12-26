@@ -205,7 +205,7 @@ int ewt(N_Vector y, N_Vector w, void *ehdata) {
 
 	double tolIn = 1E-7;
 
-	if (sMem->sensi) tolIn = 1E-2;
+	if (sMem->sensi) tolIn = 1E-3;
 
 	for (size_t i = 0; i < Nspecies; i++) {
 		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
