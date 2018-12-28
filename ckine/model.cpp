@@ -18,7 +18,6 @@
 #include <Eigen/Dense>
 #include "model.hpp"
 #include "reaction.hpp"
-#include "jacobian.hpp"
 #include "thread_pool.hpp"
 
 using std::array;
@@ -29,9 +28,7 @@ using std::string;
 using std::endl;
 using std::cout;
 
-static void errorHandler(int, const char *, const char *, char *, void *);
 int ewt(N_Vector, N_Vector, void *);
-int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
 int fullModelCVode (const double, const N_Vector, N_Vector, void *);
 
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
@@ -80,8 +77,6 @@ public:
 		if (cvode_mem == nullptr) {
 			throw std::runtime_error(string("Error calling CVodeCreate in solver_setup."));
 		}
-		
-		CVodeSetErrHandlerFn(cvode_mem, &errorHandler, static_cast<void *>(this));
 
 		// Pass along the parameter structure to the differential equations
 		if (CVodeSetUserData(cvode_mem, static_cast<void *>(this)) < 0) {
@@ -107,8 +102,6 @@ public:
 		if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
 			throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 		}
-
-		CVDlsSetJacFn(cvode_mem, Jac);
 
 		CVodeSetMaxNumSteps(cvode_mem, 800000);
 
@@ -176,55 +169,16 @@ public:
 };
 
 
-static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
-	if (error_code == CV_WARNING) return;
-	solver *sMem = static_cast<solver *>(ehdata);
-	ratesS ratt = sMem->getRates();
-
-	std::lock_guard<std::mutex> lock(print_mutex);
-
-	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
-	std::cout << msg << std::endl;
-	std::cout << "Parameters: ";
-
-	for (size_t ii = 0; ii < Nparams; ii++) {
-		std::cout << sMem->params[ii] << "\t";
-	}
-	
-	ratt.print();
-
-	if (sMem->sensi)
-		std::cout << "Sensitivity enabled." << std::endl;
-
-	std::cout << std::endl << std::endl;
-}
-
-
 int ewt(N_Vector y, N_Vector w, void *ehdata) {
 	solver *sMem = static_cast<solver *>(ehdata);
 
-	double tolIn = 1E-7;
+	double tolIn = 1E-12;
 
-	if (sMem->sensi) tolIn = 1E-3;
+	if (sMem->sensi) tolIn = 1E-7;
 
 	for (size_t i = 0; i < Nspecies; i++) {
 		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
 	}
-
-	return 0;
-}
-
-
-int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	solver *sMem = static_cast<solver *>(user_data);
-	ratesS rattes = sMem->getRates();
-
-	Eigen::Map<JacMat> jac(SM_DATA_D(J));
-
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac);
-
-	jac.transposeInPlace();
 
 	return 0;
 }
@@ -338,14 +292,4 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 	// Get the worst case to return
 	return retVal;
-}
-
-
-extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
-	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS r(v);
-
-	Eigen::Map<JacMat> out(dydt);
-
-	fullJacobian(y_in, &r, out);
 }
