@@ -61,7 +61,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf html ckine/*.dSYM doxy.log graph_all.svg
+	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 20
@@ -76,7 +76,9 @@ testprofile: stats.dat
 	pyprof2calltree -i stats.dat -k
 
 testcpp: ckine/cppcheck
-	ckine/cppcheck
+	valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck
+	valgrind --tool=callgrind ckine/cppcheck
+	gprof2dot -f callgrind callgrind.out.* | dot -Tsvg -o cprofile.svg
 
 doc:
 	doxygen Doxyfile
