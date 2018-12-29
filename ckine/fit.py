@@ -74,7 +74,7 @@ class IL2_15_activity:
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
 
         # account for pSTAT5 saturation
-        # actCat = actCat / (actCat + scale)
+        actCat = actCat / (actCat + scale)
 
         # normalize from 0 to 1 and return the residual
         return self.fit_data - (actCat / T.max(actCat))
