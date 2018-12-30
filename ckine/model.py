@@ -2,17 +2,11 @@
 A file that includes the model and important helper functions.
 """
 import os
-import ctypes as ct
 import numpy as np
+import julia
 
-
-filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
-libb = ct.cdll.LoadLibrary(filename)
-libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double), ct.c_bool)
-libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-
+j = julia.Julia()
+j.include(os.path.join(os.path.dirname(os.path.abspath(__file__)), "./model.jl"))
 
 __nSpecies = 62
 def nSpecies():
@@ -48,13 +42,9 @@ def runCkinePreT (pret, tt, rxntfr, postLig):
 
     assert postLig.size == 6
 
-    yOut = np.zeros(__nSpecies, dtype=np.float64)
+    out = j.runCkinePretreat(pret, tt, rxntfr, postLig)
 
-
-    retVal = libb.runCkinePretreat(pret, tt, yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), postLig.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return (yOut, retVal)
+    return out
 
 
 def runCkineU (tps, rxntfr, sensi=False):
@@ -63,46 +53,25 @@ def runCkineU (tps, rxntfr, sensi=False):
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+    yOut, sensV = j.runCkine(tps, rxntfr, sensi, False)
 
     if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
+        return (yOut, sensV)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP, False)
+    return yOut
 
-    if sensi is True:
-        return (yOut, retVal, sensV)
-
-    return (yOut, retVal)
 
 def runCkineU_IL2 (tps, rxntfr, sensi=False):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 10
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+    yOut, sensV = j.runCkine(tps, rxntfr, sensi, True)
 
     if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
+        return (yOut, sensV)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP, True)
-
-    if sensi is True:
-        return (yOut, retVal, sensV)
-
-    return (yOut, retVal)
+    return yOut
 
 
 def runCkineUP (tp, rxntfr, sensi=False):
@@ -111,21 +80,12 @@ def runCkineUP (tp, rxntfr, sensi=False):
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
-    yOut = np.zeros((rxntfr.shape[0], __nSpecies), dtype=np.float64)
+    yOut, sensV = j.runCkineParallel(rxntfr, tp, sensi)
 
     if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams, rxntfr.shape[0]), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
+        return (yOut, sensV)
 
-    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0], sensi,
-                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)), sensP)
-
-    if sensi is True:
-        return (yOut, retVal, sensV)
-
-    return (yOut, retVal)
+    return yOut
 
 
 def fullModel(y, t, rxntfr):
@@ -134,8 +94,8 @@ def fullModel(y, t, rxntfr):
 
     yOut = np.zeros_like(y)
 
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+    #libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+    #                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
