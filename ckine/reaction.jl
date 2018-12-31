@@ -53,14 +53,12 @@ function fullParam(rxntfR::Vector)
 	surface[20] = kfbnd * 0.07 # DOI: 10.1126/scisignal.aal1253 (human)
 	surface[21] = rxntfR[17];
 
-	trafP = rxntfR[18:end]
+	trafP = view(rxntfR, 18:Nparams)
 
 	# TODO: Add assert about sortF
 
 	# all reverse rates are same in the endosome
-	endosome = surface;
-
-	return ILs, surface, endosome, trafP
+	return ILs, surface, surface, trafP
 end
 
 
@@ -86,13 +84,13 @@ function IL2param(rxntfR::Vector)
 end
 
 
-function dYdT(du::Vector, u::Vector, p::Vector, ILs::Vector)
+function dYdT(du, u, p::Vector, ILs)
 	# IL2Ra, IL2Rb, gc, IL2_IL2Ra, IL2_IL2Rb, IL2_IL2Ra_IL2Rb, IL2_IL2Ra_gc, IL2_IL2Rb_gc, IL2_IL2Ra_IL2Rb_gc
 	# IL15Ra, IL15_IL15Ra, IL15_IL2Rb, IL15_IL15Ra_IL2Rb, IL15_IL15Ra_gc, IL15_IL2Rb_gc, IL15_IL15Ra_IL2Rb_gc
 
 	# IL2/15
 	for i in 0:1
-		pp = p[(1 + i*6):(8 + i*6)]
+		pp = view(p, (1 + i*6):(8 + i*6))
 		k12rev = pp[2] * pp[7] / pp[3] # Detailed balance
 		k8rev = pp[6] * k12rev / pp[5] # Detailed balance
 		k9rev = pp[6] * pp[7] / pp[4] # Detailed balance
@@ -119,21 +117,21 @@ function dYdT(du::Vector, u::Vector, p::Vector, ILs::Vector)
 end
 
 
-function fullModel(du::Vector, u::Vector, pSurf::Vector, pEndo::Vector, trafP::Vector, ILs::Vector)
+function fullModel(du::Vector, u::Vector, pSurf::Vector, pEndo::Vector, trafP, ILs::Vector)
 	fill!(du, 0.0)
 
 	# Calculate cell surface and endosomal reactions
 	dYdT(du, u, pSurf, ILs)
-	dYdT(du[halfL:2*halfL], u[halfL:2*halfL], pEndo, u[halfL*2:Nspecies])
+	dYdT(view(du, halfL:2*halfL), view(u, halfL:2*halfL), pEndo, view(u, halfL*2:Nspecies))
 
 	# Handle endosomal ligand balance.
 	# Must come before trafficking as we only calculate this based on reactions balance
-	du[57] = -sum(du[halfL+4:halfL+9]) / internalV
-	du[58] = -sum(du[halfL+11:halfL+16]) / internalV
-	du[59] = -sum(du[halfL+18:halfL+19]) / internalV
-	du[60] = -sum(du[halfL+21:halfL+22]) / internalV
-	du[61] = -sum(du[halfL+24:halfL+25]) / internalV
-	du[62] = -sum(du[halfL+27:halfL+28]) / internalV
+	du[57] = -sum(view(du, halfL+4:halfL+9)) / internalV
+	du[58] = -sum(view(du, halfL+11:halfL+16)) / internalV
+	du[59] = -sum(view(du, halfL+18:halfL+19)) / internalV
+	du[60] = -sum(view(du, halfL+21:halfL+22)) / internalV
+	du[61] = -sum(view(du, halfL+24:halfL+25)) / internalV
+	du[62] = -sum(view(du, halfL+27:halfL+28)) / internalV
 
 	# Actually calculate the trafficking
 	for ii in range(1, halfL)
@@ -147,17 +145,17 @@ function fullModel(du::Vector, u::Vector, pSurf::Vector, pEndo::Vector, trafP::V
 	end
 
 	# Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-	du[recIDX] += trafP[6:end]
+	du[recIDX] += view(trafP, 6:13)
 
 	# Degradation does lead to some clearance of ligand in the endosome
-	du[(halfL*2 + 1):(halfL*2 + 6)] -= u[(halfL*2 + 1):(halfL*2 + 6)] * trafP[5]
+	du[(halfL*2 + 1):(halfL*2 + 6)] -= view(u, (halfL*2 + 1):(halfL*2 + 6)) * trafP[5]
 
 	return nothing
 end
 
 
 # Initial autocrine condition - DONE
-function solveAutocrine(r::Vector)
+function solveAutocrine(r)
 	# r is endo, activeEndo, sortF, kRec, kDeg, Rexpr*8
 	y0 = fill(zero(promote_type(eltype(r), Float64)), Nspecies)
 
