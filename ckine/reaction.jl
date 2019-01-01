@@ -31,27 +31,22 @@ function IL2Deriv(du::Vector, u::Vector, p::Vector, t)
 end
 
 
-function fullParam(rxntfR::Vector)
+function fullParam(rxntfR)
 	ILs = rxntfR[1:6]
-	surface = Array{promote_type(eltype(rxntfR), Float64)}(undef, 21)
-	surface[1] = rxntfR[7]
+	surface = Array{eltype(rxntfR)}(undef, 21)
+	surface[[1, 4, 5]] = view(rxntfR, 7:9)
 	surface[2] = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
 	surface[3] = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
-	surface[4] = rxntfR[8]
-	surface[5] = rxntfR[9]
 	surface[6] = 12.0 * surface[5] / 1.5 # doi:10.1016/j.jmb.2004.04.038
 	surface[7] = 63.0 * surface[5] / 1.5 # doi:10.1016/j.jmb.2004.04.038
 	surface[8] = kfbnd * 0.065 # based on the multiple papers suggesting 30-100 pM
 	surface[9] = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
 	surface[10:13] = rxntfR[10:13]
 	surface[14] = kfbnd * 59 # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
-	surface[15] = rxntfR[14]
+	surface[[15, 17, 19, 21]] = view(rxntfR, 14:17)
 	surface[16] = kfbnd * 0.1 # DOI:10.1073/pnas.89.12.5690, ~100 pM
-	surface[17] = rxntfR[15]
 	surface[18] = kfbnd * 1.0 # DOI: 10.1126/scisignal.aal1253 (human)
-	surface[19] = rxntfR[16];
 	surface[20] = kfbnd * 0.07 # DOI: 10.1126/scisignal.aal1253 (human)
-	surface[21] = rxntfR[17];
 
 	trafP = view(rxntfR, 18:Nparams)
 
@@ -157,7 +152,7 @@ end
 # Initial autocrine condition - DONE
 function solveAutocrine(r)
 	# r is endo, activeEndo, sortF, kRec, kDeg, Rexpr*8
-	y0 = fill(zero(promote_type(eltype(r), Float64)), Nspecies)
+	y0 = zeros(eltype(r), Nspecies)
 
 	# Expand out trafficking terms
 	kRec = r[4] * (1 - r[3])
@@ -165,10 +160,8 @@ function solveAutocrine(r)
 
 	# Assuming no autocrine ligand, so can solve steady state
 	# Add the species
-	for ii in range(1, length(recIDX))
-		y0[recIDX[ii] + halfL] = r[ii + 5] / kDeg / internalFrac
-		y0[recIDX[ii]] = (r[ii + 5] + kRec*y0[recIDX[ii] + halfL]*internalFrac)/r[1]
-	end
+	y0[recIDX .+ halfL] = view(r, range(5, length=length(recIDX))) / kDeg / internalFrac
+	y0[recIDX] = (view(r, range(5, length=length(recIDX))) + kRec*view(y0, recIDX .+ halfL)*internalFrac)/r[1]
 
 	return y0
 end

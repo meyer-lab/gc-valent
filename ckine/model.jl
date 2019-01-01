@@ -19,7 +19,7 @@ function runCkine(tps, params, sensi, IL2case)
 		prob = ODEProblem(f, u0, (0.0, maximum(tps)), params)
 	end
 
-	sol = solve(prob, Rodas4())
+	sol = solve(prob, CVODE_BDF())
 
 	if sensi
 		return extract_local_sensitivities(sol, tps)
@@ -36,14 +36,14 @@ function runCkinePretreat(pret, tt, params, postStim)
 
 	prob = ODEProblem(fullDeriv, u0, (0.0, pret), params)
 
-	sol = solve(prob, Rodas4())
+	sol = solve(prob, CVODE_BDF())
 
 	# Set ILs in params
 	params[1:6] = postStim
 
 	prob = ODEProblem(fullDeriv, u0, (0.0, tt), params)
 
-	sol = solve(prob, Rodas4())
+	sol = solve(prob, CVODE_BDF())
 
 	return sol(tt)
 end
