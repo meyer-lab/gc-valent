@@ -121,7 +121,7 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='ADVI', model=self.M)
+        self.trace = pm.sample(init='ADVI', model=self.M, cores=1, chains=1)
 
     def profile(self):
         """ Profile the gradient calculation. """
