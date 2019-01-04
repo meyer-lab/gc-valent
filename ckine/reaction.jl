@@ -17,7 +17,7 @@ const kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
 # p[9:12] is k14rev, k16rev, k17rev, k22rev
 # p[13:14] is k23rev, k24rev
 
-function fullDeriv(du::Vector, u::Vector, p::Vector, t)
+function fullDeriv(du, u, p, t)
 	ILs, surface, endosome, trafP = fullParam(params)
 
 	fullModel(du, u, surface, endosome, trafP, ILs)
@@ -31,7 +31,7 @@ function IL2Deriv(du::Vector, u::Vector, p::Vector, t)
 end
 
 
-function fullParam(rxntfR::Vector)
+function fullParam(rxntfR)
 	ILs = rxntfR[1:6]
 	surface = Array{promote_type(eltype(rxntfR), Float64)}(undef, 21)
 	surface[1] = rxntfR[7]
@@ -117,7 +117,7 @@ function dYdT(du, u, p::Vector, ILs)
 end
 
 
-function fullModel(du::Vector, u::Vector, pSurf::Vector, pEndo::Vector, trafP, ILs::Vector)
+function fullModel(du, u, pSurf, pEndo, trafP, ILs)
 	fill!(du, 0.0)
 
 	# Calculate cell surface and endosomal reactions
@@ -157,7 +157,7 @@ end
 # Initial autocrine condition - DONE
 function solveAutocrine(r)
 	# r is endo, activeEndo, sortF, kRec, kDeg, Rexpr*8
-	y0 = fill(zero(promote_type(eltype(r), Float64)), Nspecies)
+	y0 = fill(zero(eltype(r)), Nspecies)
 
 	# Expand out trafficking terms
 	kRec = r[4] * (1 - r[3])
