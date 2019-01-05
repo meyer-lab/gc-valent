@@ -22,7 +22,8 @@ function runCkine(tps, params, sensi, IL2case)
 	sol = solve(prob, CVODE_BDF())
 
 	if sensi
-		return extract_local_sensitivities(sol, tps)
+		# TODO: Fix tps handling
+		return extract_local_sensitivities(sol, tps[2])
 	else
 		return sol(tps), nothing
 	end
