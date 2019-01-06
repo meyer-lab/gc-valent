@@ -443,11 +443,7 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	std::array<double, Nspecies> actVv;
 	std::copy_n(actV, Nspecies, actVv.begin());
 
-	if (IL2case) {
-		v = std::vector<double>(rxnRatesIn, rxnRatesIn + NIL2params);
-	} else {
-		v = std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams);
-	}
+	v = std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams);
 
 	solver sMem(v, actVv);
 

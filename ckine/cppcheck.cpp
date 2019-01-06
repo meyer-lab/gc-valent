@@ -100,7 +100,7 @@ protected:
 		fill(actV.begin(), actV.end(), 0.0);
 		actV[1] = 1.0;
 
-		for (size_t ii = 0; ii < 3; ii++) {
+		for (size_t ii = 0; ii < 30; ii++) {
 			rxnRatesIn = getParams();
 
 			int retVal = runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false);
