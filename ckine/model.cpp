@@ -18,6 +18,7 @@
 #include <Eigen/Dense>
 #include <cppad/cppad.hpp>
 #include "model.hpp"
+#include <adept.h>
 #include "reaction.hpp"
 #include "jacobian.hpp"
 #include "thread_pool.hpp"
@@ -299,7 +300,7 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB)
 
 // fQB routine. Compute integrand for quadratures 
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
-	using CppAD::AD;
+	using adept::adouble;
 	solver *sMem = static_cast<solver *>(user_dataB);
 
 	size_t Np = sMem->params.size();
@@ -308,28 +309,26 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 	eigenV yBdotv(NV_DATA_S(qBdot), NV_LENGTH_S(qBdot));
 	eigenV yBv(NV_DATA_S(yB), NV_LENGTH_S(yB));
 
-	vector<AD<double>> X(Np);
-	vector<double> xx(Np);
+	adept::Stack stack;
 
-	std::copy(sMem->params.begin(), sMem->params.end(), X.begin());
+	vector<adouble> X(Np);
+	adept::set_values(&X[0], Np, sMem->params.data());
 
-	CppAD::Independent(X);
+	stack.new_recording();
 
-	vector<AD<double>> dydt(Nspecies);
+	vector<adouble> dydt(Nspecies);
 
-	ratesS<AD<double>> rattes = ratesS<AD<double>>(X);
+	ratesS<adouble> rattes = ratesS<adouble>(X);
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(y), &rattes, dydt.data());
 
-	CppAD::ADFun<double> f(X, dydt);
+	stack.independent(&X[0], Np);
+	stack.dependent(&dydt[0], Nspecies);
 
-	// Copy in values to actually use as x
-	std::copy(sMem->params.begin(), sMem->params.end(), xx.begin());
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jac_M(Nspecies, Np);
 
-	vector<double> jac(Nspecies*Np);
-	jac = f.Jacobian(xx); // Jacobian for operation sequence
-	Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> jac_M(jac.data(), Nspecies, Np);
+	stack.jacobian(jac_M.data());
 
 	yBdotv = jac_M.transpose()*yBv;
 
