@@ -144,6 +144,7 @@ public:
 
 		// CVodeQuadInit to allocate initernal memory and initialize quadrature integration
 		q = N_VNew_Serial(1);
+		fQ(0.0, state, q, static_cast<void *>(this));
 		if (CVodeQuadInit(cvode_mem, fQ, q) < 0) {
 			throw std::runtime_error(string("Error calling CVodeQuadInit in solver_setup."));
 		}
