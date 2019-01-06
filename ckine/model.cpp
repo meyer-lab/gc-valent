@@ -262,6 +262,8 @@ public:
 			N_VDestroy_Serial(qB);
 			N_VDestroy_Serial(q);
 			N_VDestroy_Serial(yB);
+			SUNLinSolFree(LSB);
+			SUNMatDestroy(AB);
 		}
 
 		N_VDestroy_Serial(state);
