@@ -260,6 +260,8 @@ public:
 		if (sensi) {
 			CVodeSensFree(cvode_mem);
 			N_VDestroy_Serial(qB);
+			N_VDestroy_Serial(q);
+			N_VDestroy_Serial(yB);
 		}
 
 		N_VDestroy_Serial(state);
