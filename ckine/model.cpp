@@ -34,8 +34,14 @@ static void errorHandler(int, const char *, const char *, char *, void *);
 int ewt(N_Vector, N_Vector, void *);
 int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
 int fullModelCVode (const double, const N_Vector, N_Vector, void *);
+static int fQ(double, N_Vector y, N_Vector qdot, void *ehdata);
+static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB);
+static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB);
 
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
+
+typedef Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>> eigenV;
+typedef Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> eigenVC;
 
 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
@@ -53,15 +59,17 @@ extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out,
 	fullModel(y_in, &r, dydt_out);
 }
 
+constexpr bool debug = false;
+
 
 class solver {
 public:
 	void *cvode_mem;
-	SUNLinearSolver LS;
-	N_Vector state, qB;
-	SUNMatrix A;
+	SUNLinearSolver LS, LSB;
+	N_Vector state, qB, q, yB;
+	SUNMatrix A, AB;
 	bool sensi;
-	int ncheck;
+	int ncheck, indexB;
 	double tret;
 	vector<double> params;
 	array<double, Nspecies> activities;
@@ -112,7 +120,7 @@ public:
 
 		CVDlsSetJacFn(cvode_mem, Jac);
 
-		CVodeSetMaxNumSteps(cvode_mem, 800000);
+		CVodeSetMaxNumSteps(cvode_mem, 8000);
 
 		// Call CVodeSetConstraints to initialize constraints
 		N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
@@ -134,10 +142,95 @@ public:
 		std::copy(actIn.begin(), actIn.end(), activities.begin());
 		commonSetup(paramsIn);
 
+		// CVodeQuadInit to allocate initernal memory and initialize quadrature integration
+		q = N_VNew_Serial(1);
+		if (CVodeQuadInit(cvode_mem, fQ, q) < 0) {
+			throw std::runtime_error(string("Error calling CVodeQuadInit in solver_setup."));
+		}
 
+		// Whether or not the quadrature variables are to be used in the step size control mechanism
+		if (CVodeSetQuadErrCon(cvode_mem, SUNTRUE) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetQuadErrCon in solver_setup."));
+		}
+
+		// Specify scalar relative and absolute tolerances
+		if (CVodeQuadSStolerances(cvode_mem, 1.0E-5, 1.0E-5) < 0) {
+			throw std::runtime_error(string("Error calling CVodeQuadSStolerances in solver_setup."));
+		}
+
+		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
+		constexpr int steps = 1; // no. of integration steps between two consecutive ckeckpoints
+		if (CVodeAdjInit(cvode_mem, steps, CV_HERMITE) < 0) {
+			throw std::runtime_error(string("Error calling CVodeAdjInit in solver_setup."));
+		}
 	}
 
-	int CVodeRun(double endT) {
+
+	void backward (double TB1) {
+		indexB = 1;
+		yB = N_VNew_Serial(Nspecies); // Initialize yB
+		qB = N_VNew_Serial(params.size()); // Initialize qB
+		N_VConst(0.0, yB);
+		N_VConst(0.0, qB);
+
+		// CVodeCreateB to specify the solution method for the backward problem
+		if (CVodeCreateB(cvode_mem, CV_BDF, &indexB) < 0) {
+			throw std::runtime_error(string("Error calling CVodeCreateB in solver_setup."));
+		}
+
+		// Call CVodeInitB to allocate internal memory and initialize the backward problem
+		if (CVodeInitB(cvode_mem, indexB, fB, TB1, yB) < 0) {
+			throw std::runtime_error(string("Error calling CVodeInitB in solver_setup."));
+		}
+
+		// Set the scalar relative and absolute tolerances
+		if (CVodeSStolerancesB(cvode_mem, indexB, 1.0E-5, 1.0E-5) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSStolerancesB in solver_setup."));
+		}
+
+		// Attach the user data for backward problem
+		if (CVodeSetUserDataB(cvode_mem, indexB, static_cast<void *>(this)) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
+		}
+
+		// Call CVodeSetConstraintsB to initialize constraints
+		//N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
+		//N_VConst(1.0, constraints); // all 1's for nonnegative solution values
+		//if (CVodeSetConstraintsB(cvode_mem, indexB, constraints) < 0) {
+		//	throw std::runtime_error(string("Error calling CVodeSetConstraintsB in solver_setup."));
+		//}
+		//N_VDestroy(constraints);
+
+		AB = SUNDenseMatrix(Nspecies, Nspecies);
+		LSB = SUNLinSol_Dense(yB, AB);
+		
+		// Call CVDense to specify the CVDENSE dense linear solver
+		if (CVodeSetLinearSolverB(cvode_mem, indexB, LSB, AB) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
+		}
+
+		// Set the user-supplied Jacobian routine JacB
+		if (CVodeSetJacFnB(cvode_mem, indexB, NULL) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetJacFnB in solver_setup."));
+		}
+
+		// Allocate internal memory and initialize backward quadrature integration
+		if (CVodeQuadInitB(cvode_mem, indexB, fQB, qB) < 0) {
+		 	throw std::runtime_error(string("Error calling CVodeQuadInitB in solver_setup."));
+		}
+
+		// Whether or not the quadrature variables are to be used in the step size control
+		if (CVodeSetQuadErrConB(cvode_mem, indexB, true) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetQuadErrConB in solver_setup."));
+		}
+
+		// Specify the scalar relative and absolute tolerances for the backward problem
+		if (CVodeQuadSStolerancesB(cvode_mem, indexB, 1.0E-5, 1.0E-5) < 0) {
+			throw std::runtime_error(string("Error calling CVodeQuadSStolerancesB in solver_setup."));
+		}
+	}
+
+	int CVodeRun(const double endT) {
 		int returnVal;
 
 		if (sensi) {
@@ -145,8 +238,15 @@ public:
 		} else {
 			returnVal = CVode(cvode_mem, endT, state, &tret, CV_NORMAL);
 		}
+
+		if (returnVal >= 0 && debug) {
+			long nst;
+			CVodeGetNumSteps(cvode_mem, &nst);
+			cout << "Number of steps: " << nst << std::endl;
+			cout << "Final time: " << tret << std::endl;
+		}
 		
-		if (returnVal < 0) std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+		if (returnVal < 0) cout << "CVode error in CVode. Code: " << returnVal << std::endl;
 
 		return returnVal;
 	}
@@ -186,17 +286,15 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB)
 
 	std::copy(sMem->activities.begin(), sMem->activities.end(), NV_DATA_S(yBdot));
 
-	Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> yBv(NV_DATA_S(yB), Nspecies);
-	Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> yBdotv(NV_DATA_S(yBdot), Nspecies);
+	eigenVC yBv(NV_DATA_S(yB), Nspecies);
+	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
 
 	JacMat jac;
 
 	// Actually get the Jacobian
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
 
-	// TODO: Might need to transpose
-
-	yBdotv += jac*yBv;
+	yBdotv = -yBdotv - jac.transpose()*yBv;
 
 	return 0;
 }
@@ -205,17 +303,16 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB)
 // fQB routine. Compute integrand for quadratures 
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
 	using CppAD::AD;
-	using Eigen::Map;
-	using Eigen::Dynamic;
-	using Eigen::Matrix;
 	solver *sMem = static_cast<solver *>(user_dataB);
 
 	size_t Np = sMem->params.size();
 
-	Map<Matrix<double, Nspecies, 1>> yBdotv(NV_DATA_S(qBdot), Nspecies);
+	// Wrap the vectors we'll use
+	eigenV yBdotv(NV_DATA_S(qBdot), NV_LENGTH_S(qBdot));
+	eigenV yBv(NV_DATA_S(yB), NV_LENGTH_S(yB));
 
-	vector<AD<double>> X(sMem->params.size());
-	vector<double> xx(sMem->params.size());
+	vector<AD<double>> X(Np);
+	vector<double> xx(Np);
 
 	std::copy(sMem->params.begin(), sMem->params.end(), X.begin());
 
@@ -233,19 +330,11 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 	// Copy in values to actually use as x
 	std::copy(sMem->params.begin(), sMem->params.end(), xx.begin());
 
-
-
-	vector<double> jac(Nspecies * sMem->params.size());
+	vector<double> jac(Nspecies*Np);
 	jac = f.Jacobian(xx); // Jacobian for operation sequence
-	Map<Matrix<double, Dynamic, Dynamic>> jac_M(jac.data(), Nspecies, Np);
+	Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> jac_M(jac.data(), Nspecies, Np);
 
-	// Jac wrt params
-
-	// Jac_p times y
-
-	Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> yBv(NV_DATA_S(yB), Nspecies);
-
-	yBdotv = jac_M*yBv;
+	yBdotv = jac_M.transpose()*yBv;
 
 	return(0);
 }
@@ -258,20 +347,20 @@ static void errorHandler(int error_code, const char *module, const char *functio
 
 	std::lock_guard<std::mutex> lock(print_mutex);
 
-	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
-	std::cout << msg << std::endl;
-	std::cout << "Parameters: ";
+	cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
+	cout << msg << std::endl;
+	cout << "Parameters: ";
 
 	for (size_t ii = 0; ii < Nparams; ii++) {
-		std::cout << sMem->params[ii] << "\t";
+		cout << sMem->params[ii] << "\t";
 	}
 	
 	ratt.print();
 
 	if (sMem->sensi)
-		std::cout << "Sensitivity enabled." << std::endl;
+		cout << "Sensitivity enabled." << std::endl;
 
-	std::cout << std::endl << std::endl;
+	cout << std::endl << std::endl;
 }
 
 
@@ -316,7 +405,7 @@ int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_d
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut, bool IL2case) {
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case) {
 	size_t itps = 0;
 
 	std::vector<double> v;
@@ -337,7 +426,7 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 
 	for (; itps < ntps; itps++) {
 		if (tps[itps] < sMem.tret) {
-			std::cout << "Can't go backwards." << std::endl;
+			cout << "Can't go backwards." << std::endl;
 			return -1;
 		}
 		
@@ -345,6 +434,110 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 
 		// Copy out result
 		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out + Nspecies*itps);
+	}
+
+	return 0;
+}
+
+
+extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, double * const actV, const double * const rxnRatesIn, bool IL2case) {
+	size_t itps = 0;
+
+	std::vector<double> v;
+	std::array<double, Nspecies> actVv;
+	std::copy_n(actV, Nspecies, actVv.begin());
+
+	if (IL2case) {
+		v = std::vector<double>(rxnRatesIn, rxnRatesIn + NIL2params);
+	} else {
+		v = std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams);
+	}
+
+	solver sMem(v, actVv);
+
+	if (tps[0] < std::numeric_limits<double>::epsilon()) {
+		if (CVodeGetQuad(sMem.cvode_mem, &sMem.tret, sMem.q) < 0) return -100;
+		out[0] = NV_Ith_S(sMem.q, 0);
+
+		itps = 1;
+	}
+
+	for (; itps < ntps; itps++) {
+		if (tps[itps] < sMem.tret) {
+			cout << "Can't go backwards." << std::endl;
+			return -1;
+		}
+		
+		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
+
+		// Copy out result
+		if (CVodeGetQuad(sMem.cvode_mem, &sMem.tret, sMem.q) < 0) return -100;
+		out[itps] = NV_Ith_S(sMem.q, 0);
+	}
+
+	if (sMem.CVodeRun(tps[ntps-1] + 10.0) < 0) return -1;
+	sMem.backward(tps[ntps-1] + 10.0);
+
+	for (int bitps = ntps - 1; bitps >= 0; bitps--) {
+		if (CVodeB(sMem.cvode_mem, tps[bitps], CV_NORMAL) < 0) {
+			cout << "CVodeB error." << std::endl;
+		}
+
+		if (CVodeGetQuadB(sMem.cvode_mem, sMem.indexB, &sMem.tret, sMem.qB) < 0) {
+			cout << "CVodeGetQuadB error." << std::endl;
+		}
+
+		std::copy_n(NV_DATA_S(sMem.qB), NV_LENGTH_S(sMem.qB), Sout + bitps*NV_LENGTH_S(sMem.qB));
+	}
+
+	if (CVodeB(sMem.cvode_mem, 0.0, CV_NORMAL) < 0) {
+			cout << "CVodeB error at 0." << std::endl;
+	}
+
+	if (CVodeGetQuadB(sMem.cvode_mem, sMem.indexB, &sMem.tret, sMem.qB) < 0) {
+		cout << "CVodeGetQuadB error at 0." << std::endl;
+	}
+
+	// Store the T=0 case
+	Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> SoutV(Sout, ntps, sMem.params.size());
+	Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor> St0(sMem.params.size());
+	std::copy_n(NV_DATA_S(sMem.qB), NV_LENGTH_S(sMem.qB), St0.data());
+
+
+	// ###### NOW NEED TO ADD IN EFFECT OF INITIAL CONDITION
+	using CppAD::AD;
+
+	size_t Np = sMem.params.size();
+
+	vector<AD<double>> X(Np);
+	vector<double> xx(Np);
+
+	std::copy(sMem.params.begin(), sMem.params.end(), X.begin());
+	std::copy(sMem.params.begin(), sMem.params.end(), xx.begin());
+
+	CppAD::Independent(X);
+
+	ratesS<AD<double>> rattes = ratesS<AD<double>>(X);
+
+	// Get the data in the right form
+	std::array<AD<double>, Nspecies> outAD = solveAutocrine(&rattes);
+
+	vector<AD<double>> outt(1);
+	outt[0] = 0.0;
+
+	for (size_t ii = 0; ii < outAD.size(); ii++) {
+		outt[0] += outAD[ii] * sMem.activities[ii];
+	}
+
+	CppAD::ADFun<double> f(X, outt);
+
+	vector<double> gradZ(Np);
+	gradZ = f.Jacobian(xx);
+	Eigen::Map<Eigen::Matrix<double, 1, Eigen::Dynamic>> gradZV(gradZ.data(), Np);
+	
+	// Add in the effect of the initial condition, then finalize output
+	for (size_t ii = 0; ii < ntps; ii++) {
+		SoutV.row(ii) += gradZV - St0;
 	}
 
 	return 0;
@@ -372,13 +565,13 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 
 ThreadPool pool;
 
-extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
+extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out) {
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii, false));
+		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, false));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
