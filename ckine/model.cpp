@@ -155,7 +155,7 @@ public:
 		}
 
 		// Specify scalar relative and absolute tolerances
-		if (CVodeQuadSStolerances(cvode_mem, 1.0E-5, 1.0E-5) < 0) {
+		if (CVodeQuadSStolerances(cvode_mem, 1.0E-6, 1.0E-6) < 0) {
 			throw std::runtime_error(string("Error calling CVodeQuadSStolerances in solver_setup."));
 		}
 
@@ -185,7 +185,7 @@ public:
 		}
 
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerancesB(cvode_mem, indexB, 1.0E-5, 1.0E-5) < 0) {
+		if (CVodeSStolerancesB(cvode_mem, indexB, 1.0E-3, 1.0E-3) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerancesB in solver_setup."));
 		}
 
@@ -193,14 +193,6 @@ public:
 		if (CVodeSetUserDataB(cvode_mem, indexB, static_cast<void *>(this)) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
 		}
-
-		// Call CVodeSetConstraintsB to initialize constraints
-		//N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
-		//N_VConst(1.0, constraints); // all 1's for nonnegative solution values
-		//if (CVodeSetConstraintsB(cvode_mem, indexB, constraints) < 0) {
-		//	throw std::runtime_error(string("Error calling CVodeSetConstraintsB in solver_setup."));
-		//}
-		//N_VDestroy(constraints);
 
 		AB = SUNDenseMatrix(Nspecies, Nspecies);
 		LSB = SUNLinSol_Dense(yB, AB);
@@ -226,7 +218,7 @@ public:
 		}
 
 		// Specify the scalar relative and absolute tolerances for the backward problem
-		if (CVodeQuadSStolerancesB(cvode_mem, indexB, 1.0E-5, 1.0E-5) < 0) {
+		if (CVodeQuadSStolerancesB(cvode_mem, indexB, 1.0E-6, 1.0E-6) < 0) {
 			throw std::runtime_error(string("Error calling CVodeQuadSStolerancesB in solver_setup."));
 		}
 	}
@@ -461,8 +453,7 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	solver sMem(v, actVv);
 
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
-		if (CVodeGetQuad(sMem.cvode_mem, &sMem.tret, sMem.q) < 0) return -100;
-		out[0] = NV_Ith_S(sMem.q, 0);
+		out[0] = std::inner_product(sMem.activities.begin(), sMem.activities.end(), NV_DATA_S(sMem.state), 0.0);
 
 		itps = 1;
 	}
