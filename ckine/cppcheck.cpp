@@ -114,6 +114,10 @@ protected:
 			CPPUNIT_ASSERT(retVal >= 0);
 			CPPUNIT_ASSERT(retVal2 >= 0);
 
+			for (size_t ii = 0; ii < soutput.size(); ii++) {
+				if (soutput[ii] != soutput2[ii]) cout << ii << endl << endl;
+			}
+
 			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 			CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 		}
