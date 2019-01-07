@@ -16,7 +16,6 @@
 #include <iostream>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <cppad/cppad.hpp>
 #include "model.hpp"
 #include <adept.h>
 #include "reaction.hpp"
@@ -30,6 +29,7 @@ using std::fill;
 using std::string;
 using std::endl;
 using std::cout;
+using adept::adouble;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int ewt(N_Vector, N_Vector, void *);
@@ -300,7 +300,6 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB)
 
 // fQB routine. Compute integrand for quadratures 
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
-	using adept::adouble;
 	solver *sMem = static_cast<solver *>(user_dataB);
 
 	size_t Np = sMem->params.size();
@@ -496,35 +495,31 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 
 
 	// ###### NOW NEED TO ADD IN EFFECT OF INITIAL CONDITION
-	using CppAD::AD;
-
 	size_t Np = sMem.params.size();
 
-	vector<AD<double>> X(Np);
-	vector<double> xx(Np);
+	adept::Stack stack;
 
-	std::copy(sMem.params.begin(), sMem.params.end(), X.begin());
-	std::copy(sMem.params.begin(), sMem.params.end(), xx.begin());
+	vector<adouble> X(Np);
+	adept::set_values(&X[0], Np, sMem.params.data());
 
-	CppAD::Independent(X);
+	stack.new_recording();
 
-	ratesS<AD<double>> rattes = ratesS<AD<double>>(X);
+	ratesS<adouble> rattes = ratesS<adouble>(X);
 
 	// Get the data in the right form
-	std::array<AD<double>, Nspecies> outAD = solveAutocrine(&rattes);
+	std::array<adouble, Nspecies> outAD = solveAutocrine(&rattes);
 
-	vector<AD<double>> outt(1);
-	outt[0] = 0.0;
+	adouble outt = 0.0;
 
 	for (size_t ii = 0; ii < outAD.size(); ii++) {
-		outt[0] += outAD[ii] * sMem.activities[ii];
+		outt += outAD[ii] * sMem.activities[ii];
 	}
 
-	CppAD::ADFun<double> f(X, outt);
+	stack.independent(&X[0], Np);
+	stack.dependent(&outt, 1);
 
-	vector<double> gradZ(Np);
-	gradZ = f.Jacobian(xx);
-	Eigen::Map<Eigen::Matrix<double, 1, Eigen::Dynamic>> gradZV(gradZ.data(), Np);
+	Eigen::Matrix<double, 1, Eigen::Dynamic> gradZV(Np);
+	stack.jacobian(gradZV.data());
 	
 	// Add in the effect of the initial condition, then finalize output
 	for (size_t ii = 0; ii < ntps; ii++) {
