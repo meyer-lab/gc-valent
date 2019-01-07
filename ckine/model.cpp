@@ -31,13 +31,15 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
+constexpr double solveTol = 1.0E-6;
+
 static void errorHandler(int, const char *, const char *, char *, void *);
-int ewt(N_Vector, N_Vector, void *);
 int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
 int fullModelCVode (const double, const N_Vector, N_Vector, void *);
 static int fQ(double, N_Vector y, N_Vector qdot, void *ehdata);
 static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB);
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB);
+static int JacB(double, N_Vector, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
 
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
 
@@ -106,9 +108,9 @@ public:
 			throw std::runtime_error(string("Error calling CVodeInit in solver_setup."));
 		}
 		
-		// Call CVodeWFtolerances to specify the tolerances
-		if (CVodeWFtolerances(cvode_mem, ewt) < 0) {
-			throw std::runtime_error(string("Error calling CVodeWFtolerances in solver_setup."));
+		// Set the scalar relative and absolute tolerances
+		if (CVodeSStolerances(cvode_mem, solveTol, solveTol) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
 		A = SUNDenseMatrix(NV_LENGTH_S(state), NV_LENGTH_S(state));
@@ -121,7 +123,7 @@ public:
 
 		CVDlsSetJacFn(cvode_mem, Jac);
 
-		CVodeSetMaxNumSteps(cvode_mem, 8000);
+		CVodeSetMaxNumSteps(cvode_mem, 800000);
 
 		// Call CVodeSetConstraints to initialize constraints
 		N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
@@ -151,12 +153,12 @@ public:
 		}
 
 		// Whether or not the quadrature variables are to be used in the step size control mechanism
-		if (CVodeSetQuadErrCon(cvode_mem, SUNTRUE) < 0) {
+		if (CVodeSetQuadErrCon(cvode_mem, true) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetQuadErrCon in solver_setup."));
 		}
 
 		// Specify scalar relative and absolute tolerances
-		if (CVodeQuadSStolerances(cvode_mem, 1.0E-6, 1.0E-6) < 0) {
+		if (CVodeQuadSStolerances(cvode_mem, solveTol, solveTol) < 0) {
 			throw std::runtime_error(string("Error calling CVodeQuadSStolerances in solver_setup."));
 		}
 
@@ -186,7 +188,7 @@ public:
 		}
 
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerancesB(cvode_mem, indexB, 1.0E-3, 1.0E-3) < 0) {
+		if (CVodeSStolerancesB(cvode_mem, indexB, solveTol, solveTol) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerancesB in solver_setup."));
 		}
 
@@ -194,6 +196,14 @@ public:
 		if (CVodeSetUserDataB(cvode_mem, indexB, static_cast<void *>(this)) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
 		}
+
+		// Call CVodeSetConstraintsB to initialize constraints
+		N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
+		N_VConst(1.0, constraints); // all 1's for nonnegative solution values
+		if (CVodeSetConstraintsB(cvode_mem, indexB, constraints) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetConstraintsB in solver_setup."));
+		}
+		N_VDestroy(constraints);
 
 		AB = SUNDenseMatrix(Nspecies, Nspecies);
 		LSB = SUNLinSol_Dense(yB, AB);
@@ -204,7 +214,7 @@ public:
 		}
 
 		// Set the user-supplied Jacobian routine JacB
-		if (CVodeSetJacFnB(cvode_mem, indexB, NULL) < 0) {
+		if (CVodeSetJacFnB(cvode_mem, indexB, JacB) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetJacFnB in solver_setup."));
 		}
 
@@ -219,7 +229,7 @@ public:
 		}
 
 		// Specify the scalar relative and absolute tolerances for the backward problem
-		if (CVodeQuadSStolerancesB(cvode_mem, indexB, 1.0E-6, 1.0E-6) < 0) {
+		if (CVodeQuadSStolerancesB(cvode_mem, indexB, solveTol, solveTol) < 0) {
 			throw std::runtime_error(string("Error calling CVodeQuadSStolerancesB in solver_setup."));
 		}
 	}
@@ -249,6 +259,10 @@ public:
 		return ratesS<double>(params);
 	}
 
+	double getActivity() {
+		return std::inner_product(activities.begin(), activities.end(), NV_DATA_S(state), 0.0);
+	}
+
 	~solver() {
 		if (sensi) {
 			CVodeSensFree(cvode_mem);
@@ -270,8 +284,17 @@ public:
 // fQ routine. Compute fQ(t,y)
 static int fQ(double, N_Vector y, N_Vector qdot, void *ehdata) {
 	solver *sMem = static_cast<solver *>(ehdata);
+	ratesS<double> rattes = sMem->getRates();
 
-	NV_Ith_S(qdot, 0) = std::inner_product(sMem->activities.begin(), sMem->activities.end(), NV_DATA_S(y), 0.0);
+	N_Vector dxxdt = N_VNew_Serial(static_cast<long>(Nspecies));
+	N_VConst(0.0, dxxdt);
+
+	// Get the data in the right form
+	fullModel(NV_DATA_S(y), &rattes, NV_DATA_S(dxxdt));
+
+	NV_Ith_S(qdot, 0) = std::inner_product(sMem->activities.begin(), sMem->activities.end(), NV_DATA_S(dxxdt), 0.0);
+
+	N_VDestroy_Serial(dxxdt);
 
 	return 0;
 }
@@ -282,8 +305,6 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB)
 	solver *sMem = static_cast<solver *>(user_dataB);
 	ratesS<double> rattes = sMem->getRates();
 
-	std::copy(sMem->activities.begin(), sMem->activities.end(), NV_DATA_S(yBdot));
-
 	eigenVC yBv(NV_DATA_S(yB), Nspecies);
 	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
 
@@ -292,7 +313,7 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB)
 	// Actually get the Jacobian
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
 
-	yBdotv = -yBdotv - jac.transpose()*yBv;
+	yBdotv = -jac*yBv;
 
 	return 0;
 }
@@ -329,7 +350,7 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 
 	stack.jacobian(jac_M.data());
 
-	yBdotv = jac_M.transpose()*yBv;
+	yBdotv = -jac_M.transpose()*yBv;
 
 	return(0);
 }
@@ -359,22 +380,22 @@ static void errorHandler(int error_code, const char *module, const char *functio
 }
 
 
-int ewt(N_Vector y, N_Vector w, void *ehdata) {
-	solver *sMem = static_cast<solver *>(ehdata);
+static int JacB(double, N_Vector y, N_Vector yB, N_Vector fyB, SUNMatrix JB, void *user_dataB, N_Vector, N_Vector, N_Vector) {
+	solver *sMem = static_cast<solver *>(user_dataB);
+	ratesS<double> rattes = sMem->getRates();
 
-	double tolIn = 1E-7;
+	Eigen::Map<JacMat> jac(SM_DATA_D(JB));
 
-	if (sMem->sensi) tolIn = 1E-3;
+	// Actually get the Jacobian
+	fullJacobian(NV_DATA_S(y), &rattes, jac);
 
-	for (size_t i = 0; i < Nspecies; i++) {
-		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
-	}
+	jac = -jac;
 
 	return 0;
 }
 
 
-int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+int Jac(double, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	solver *sMem = static_cast<solver *>(user_data);
 	ratesS<double> rattes = sMem->getRates();
 
@@ -447,7 +468,7 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	solver sMem(v, actVv);
 
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
-		out[0] = std::inner_product(sMem.activities.begin(), sMem.activities.end(), NV_DATA_S(sMem.state), 0.0);
+		out[0] = sMem.getActivity();
 
 		itps = 1;
 	}
@@ -461,8 +482,7 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
 
 		// Copy out result
-		if (CVodeGetQuad(sMem.cvode_mem, &sMem.tret, sMem.q) < 0) return -100;
-		out[itps] = NV_Ith_S(sMem.q, 0);
+		out[itps] = sMem.getActivity();
 	}
 
 	if (sMem.CVodeRun(tps[ntps-1] + 10.0) < 0) return -1;
@@ -481,7 +501,7 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	}
 
 	if (CVodeB(sMem.cvode_mem, 0.0, CV_NORMAL) < 0) {
-			cout << "CVodeB error at 0." << std::endl;
+		cout << "CVodeB error at 0." << std::endl;
 	}
 
 	if (CVodeGetQuadB(sMem.cvode_mem, sMem.indexB, &sMem.tret, sMem.qB) < 0) {
