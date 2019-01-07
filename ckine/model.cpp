@@ -36,7 +36,6 @@ constexpr double solveTol = 1.0E-6;
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
 int fullModelCVode (const double, const N_Vector, N_Vector, void *);
-static int fQ(double, N_Vector y, N_Vector qdot, void *ehdata);
 static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB);
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB);
 static int JacB(double, N_Vector, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -69,7 +68,7 @@ class solver {
 public:
 	void *cvode_mem;
 	SUNLinearSolver LS, LSB;
-	N_Vector state, qB, q, yB;
+	N_Vector state, qB, yB;
 	SUNMatrix A, AB;
 	bool sensi;
 	int ncheck, indexB;
@@ -144,23 +143,6 @@ public:
 		sensi = true;
 		std::copy(actIn.begin(), actIn.end(), activities.begin());
 		commonSetup(paramsIn);
-
-		// CVodeQuadInit to allocate initernal memory and initialize quadrature integration
-		q = N_VNew_Serial(1);
-		fQ(0.0, state, q, static_cast<void *>(this));
-		if (CVodeQuadInit(cvode_mem, fQ, q) < 0) {
-			throw std::runtime_error(string("Error calling CVodeQuadInit in solver_setup."));
-		}
-
-		// Whether or not the quadrature variables are to be used in the step size control mechanism
-		if (CVodeSetQuadErrCon(cvode_mem, true) < 0) {
-			throw std::runtime_error(string("Error calling CVodeSetQuadErrCon in solver_setup."));
-		}
-
-		// Specify scalar relative and absolute tolerances
-		if (CVodeQuadSStolerances(cvode_mem, solveTol, solveTol) < 0) {
-			throw std::runtime_error(string("Error calling CVodeQuadSStolerances in solver_setup."));
-		}
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
 		constexpr int steps = 1; // no. of integration steps between two consecutive ckeckpoints
@@ -267,7 +249,6 @@ public:
 		if (sensi) {
 			CVodeSensFree(cvode_mem);
 			N_VDestroy_Serial(qB);
-			N_VDestroy_Serial(q);
 			N_VDestroy_Serial(yB);
 			SUNLinSolFree(LSB);
 			SUNMatDestroy(AB);
@@ -279,25 +260,6 @@ public:
 		SUNMatDestroy(A);
 	}
 };
-
-
-// fQ routine. Compute fQ(t,y)
-static int fQ(double, N_Vector y, N_Vector qdot, void *ehdata) {
-	solver *sMem = static_cast<solver *>(ehdata);
-	ratesS<double> rattes = sMem->getRates();
-
-	N_Vector dxxdt = N_VNew_Serial(static_cast<long>(Nspecies));
-	N_VConst(0.0, dxxdt);
-
-	// Get the data in the right form
-	fullModel(NV_DATA_S(y), &rattes, NV_DATA_S(dxxdt));
-
-	NV_Ith_S(qdot, 0) = std::inner_product(sMem->activities.begin(), sMem->activities.end(), NV_DATA_S(dxxdt), 0.0);
-
-	N_VDestroy_Serial(dxxdt);
-
-	return 0;
-}
 
 
 // fB routine. Compute fB(t,y,yB). 
