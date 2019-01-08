@@ -1,3 +1,5 @@
+#define ADEPT_STORAGE_THREAD_SAFE
+
 #include <algorithm>
 #include <cstdio>
 #include <numeric>
@@ -31,7 +33,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-8;
+constexpr double solveTol = 1.0E-7;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -145,7 +147,7 @@ public:
 		commonSetup(paramsIn);
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
-		constexpr int steps = 10; // no. of integration steps between two consecutive ckeckpoints
+		constexpr int steps = 100; // no. of integration steps between two consecutive ckeckpoints
 		if (CVodeAdjInit(cvode_mem, steps, CV_HERMITE) < 0) {
 			throw std::runtime_error(string("Error calling CVodeAdjInit in solver_setup."));
 		}
@@ -265,6 +267,8 @@ public:
 
 		CVodeGetB(cvode_mem, indexB, &tret, yB);
 		CVodeGetQuadB(cvode_mem, indexB, &tret, qB);
+
+		cout << Sqt0.transpose() << endl << endl;
 
 		SoutV = St0.transpose()*x0p + Sqt0.transpose(); // gradZV
 
@@ -524,6 +528,24 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
+
+	// Get the worst case to return
+	return retVal;
+}
+
+
+extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV) {
+	int retVal = 1000;
+	std::list<std::future<int>> results;
+
+	// Actually run the simulations
+	for (size_t ii = 0; ii < nDoses; ii++) {
+		//results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false));
+		runCkineS(&tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false);
+	}
+
+	// Synchronize all threads
+	//for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
 
 	// Get the worst case to return
 	return retVal;

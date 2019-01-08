@@ -33,13 +33,13 @@ class TestOp(unittest.TestCase):
         self.conditions = np.full((3, 6), 10.)
         self.ts = np.linspace(0., 1000.)
 
-    @unittest.skip("")
     def test_runCkinePreSOp(self):
         """ Verify the Jacobian for the pre-stimulation Op. """
         utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
                                        np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV],
                                        abs_tol=1.E-2, rel_tol=1.E-2)
 
+    @unittest.skip("")
     def test_runCkineKineticOp(self):
         """ Verify kinetic Op Jacobian. """
         utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
@@ -51,7 +51,6 @@ class TestOp(unittest.TestCase):
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=1.E-2, rel_tol=1.E-2)
 
-    @unittest.skip("")
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
         # Setup an Op for conditions with no ligand, looking at cytokine activity
@@ -62,6 +61,8 @@ class TestOp(unittest.TestCase):
 
         # There should be no activity
         self.assertAlmostEqual(np.max(f), 0.0)
+
+        print(Jac)
 
         # Assert that no other parameters matter when there is no ligand
         self.assertAlmostEqual(np.max(np.sum(Jac, axis=0)[6::]), 0.0)

@@ -4,7 +4,7 @@ Theano Op for using differencing for Jacobian calculation.
 import concurrent.futures
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT, runCkineS
+from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT, runCkineS, runCkineSP
 
 pool = concurrent.futures.ThreadPoolExecutor()
 
@@ -152,15 +152,15 @@ class runCkineOpDoseDiff(Op):
         rxntfr = np.reshape(np.tile(inputs[0], self.conditions.shape[0]), (self.conditions.shape[0], -1))
         rxntfr = np.concatenate((self.conditions, rxntfr), axis=1)
 
-        outt = runCkineUP(self.ts, rxntfr, sensi)
-        assert outt[0].shape == (self.conditions.shape[0], nSpecies())
+        outt = runCkineSP(self.ts, rxntfr, self.condense)
+        assert outt[0].shape == (self.conditions.shape[0], )
         assert outt[1] >= 0
 
         if sensi is True:
             # We override the ligands, so don't pass along their gradient
-            return np.dot(np.transpose(outt[2][:, 6::]), self.condense)
+            return outt[2][:, 6::]
 
-        return np.dot(outt[0], self.condense)
+        return outt[0]
 
     def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
