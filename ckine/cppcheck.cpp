@@ -90,7 +90,7 @@ protected:
 	}
 
 	void testrunCkineS() {
-		array<double, 10> tps = {{0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
+		array<double, 7> tps = {{0.0, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, tps.size()> output;
 		array<double, tps.size()> output2;
 		array<double, Nparams> rxnRatesIn;
@@ -98,7 +98,7 @@ protected:
 		array<double, Nparams*tps.size()> soutput2;
 		array<double, Nspecies> actV;
 		fill(actV.begin(), actV.end(), 0.0);
-		actV[1] = 1.0;
+		actV[2] = 1.0;
 
 		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
