@@ -27,7 +27,7 @@ csl: ./Manuscript/Templates/nature.csl
 
 # Introduction
 
-\gamma_{n}
+\gamma_c
 
 - The common gamma chain cytokine family is central to regulation of the immune system
     - Giving IL-15 doses to monkeys caused expansion of NK and T-eff cell lines, making it a potential therapy in cancers and immunodeficiencies. [@Sneller6845]
