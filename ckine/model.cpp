@@ -538,13 +538,3 @@ extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double 
 	// Get the worst case to return
 	return retVal;
 }
-
-
-extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
-	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS<double> r(v);
-
-	Eigen::Map<JacMat> out(dydt);
-
-	fullJacobian(y_in, &r, out);
-}
