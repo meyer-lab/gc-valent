@@ -2,11 +2,17 @@
 A file that includes the model and important helper functions.
 """
 import os
+import ctypes as ct
 import numpy as np
-import julia
 
-j = julia.Julia()
-j.include(os.path.join(os.path.dirname(os.path.abspath(__file__)), "./model.jl"))
+
+filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
+libb = ct.cdll.LoadLibrary(filename)
+libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double), ct.c_bool)
+libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+
 
 __nSpecies = 62
 def nSpecies():
@@ -42,9 +48,13 @@ def runCkinePreT (pret, tt, rxntfr, postLig):
 
     assert postLig.size == 6
 
-    out = j.runCkinePretreat(pret, tt, rxntfr, postLig)
+    yOut = np.zeros(__nSpecies, dtype=np.float64)
 
-    return out
+
+    retVal = libb.runCkinePretreat(pret, tt, yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                   rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), postLig.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+    return (yOut, retVal)
 
 
 def runCkineU (tps, rxntfr, sensi=False):
@@ -53,44 +63,46 @@ def runCkineU (tps, rxntfr, sensi=False):
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
-    yOut, sensV = j.runCkine(tps, rxntfr, sensi, False)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
     if sensi is True:
-        return (yOut, sensV)
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
 
-    return yOut
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           sensi, sensP, False)
 
+    if sensi is True:
+        return (yOut, retVal, sensV)
+
+    return (yOut, retVal)
 
 def runCkineU_IL2 (tps, rxntfr, sensi=False):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 10
 
-    yOut, sensV = j.runCkine(tps, rxntfr, sensi, True)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
     if sensi is True:
-        return (yOut, sensV)
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
 
-    return yOut
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           sensi, sensP, True)
 
+    if sensi is True:
+        return (yOut, retVal, sensV)
 
-def runIL2simple(input, IL, CD25=1.0):
-    """ Version to focus on IL2Ra/Rb affinity adjustment. """
-    # TODO: Update parameters based on distinct endosomal fitting.
-    tps = np.array([500.0])
-    
-    # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
-                       0.6*144*input[1], 8.6677, 0.1233,
-                       63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
-
-    yOut, retVal = runCkineU_IL2(tps, rxntfr)
-    
-    assert retVal == 0
-    
-    active = getTotalActiveCytokine(0, np.squeeze(yOut))
-    
-    return active
+    return (yOut, retVal)
 
 
 def runIL2simple(input, IL, CD25=1.0):
@@ -118,13 +130,31 @@ def runCkineUP (tp, rxntfr, sensi=False):
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
-    yOut, sensV = j.runCkineParallel(rxntfr, tp, sensi)
+    yOut = np.zeros((rxntfr.shape[0], __nSpecies), dtype=np.float64)
 
     if sensi is True:
-        return (yOut, sensV)
+        sensV = np.zeros((__nSpecies, __nParams, rxntfr.shape[0]), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
 
+    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0], sensi,
+                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)), sensP)
+
+    if sensi is True:
+        return (yOut, retVal, sensV)
+
+    return (yOut, retVal)
+
+
+def fullJacobian(y, t, rxntfR):
+    """ Calculates the Jacobian matrix for all species in our model. """
+    assert rxntfR.size == __nParams
+
+    yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
+
+    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
     return yOut
-
 
 def fullModel(y, t, rxntfr):
     """ Implement the full model based on dydt, trafficking, expression. """
@@ -132,8 +162,8 @@ def fullModel(y, t, rxntfr):
 
     yOut = np.zeros_like(y)
 
-    #libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-    #                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
