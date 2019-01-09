@@ -2,6 +2,7 @@ pipeline {
   agent any
   stages {
     stage('Clean')    { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Test C++') { steps { sh 'make testcpp' } }
     stage('Test')     { steps { sh 'make testcover' } }
     stage('Build Figures') {
       parallel {
@@ -30,6 +31,7 @@ pipeline {
         sh 'make doc'
         archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
         archiveArtifacts artifacts: 'graph_all.svg', onlyIfSuccessful: true
+        archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
         publishValgrind([
