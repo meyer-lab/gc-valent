@@ -90,7 +90,7 @@ protected:
 	}
 
 	void testrunCkineS() {
-		array<double, 7> tps = {{0.0, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
+		array<double, 9> tps = {{0.0, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, tps.size()> output;
 		array<double, tps.size()> output2;
 		array<double, Nparams> rxnRatesIn;
@@ -98,10 +98,14 @@ protected:
 		array<double, Nparams*tps.size()> soutput2;
 		array<double, Nspecies> actV;
 		fill(actV.begin(), actV.end(), 0.0);
-		actV[2] = 1.0;
+		actV[10] = 1.0;
+
+
 
 		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
+
+			std::fill(rxnRatesIn.begin(), rxnRatesIn.begin()+6, 0.0);
 
 			int retVal = runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false);
 
