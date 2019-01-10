@@ -6,7 +6,7 @@ import theano
 import theano.tensor as T
 from theano.tests import unittest_tools as utt
 import numpy as np
-from ..differencing_op import runCkineKineticOp, runCkineDoseOp, runCkinePreSOp
+from ..differencing_op import runCkineOp, runCkineKineticOp, runCkineDoseOp, runCkinePreSOp
 from ..model import nSpecies, nParams, getTotalActiveSpecies
 
 
@@ -33,18 +33,24 @@ class TestOp(unittest.TestCase):
         self.conditions = np.full((3, 6), 10.)
         self.ts = np.linspace(0., 1000.)
 
+    def test_runCkineOp_T0(self):
+        """ Verify the Jacobian for the core Op at t=0. """
+        utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
+
+    def test_runCkineOp(self):
+        """ Verify the Jacobian for the core Op. """
+        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
+
     def test_runCkinePreSOp(self):
         """ Verify the Jacobian for the pre-stimulation Op. """
         utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
                                        np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV],
                                        abs_tol=1.E-2, rel_tol=1.E-2)
 
-    @unittest.skip("")
     def test_runCkineKineticOp(self):
         """ Verify kinetic Op Jacobian. """
         utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
 
-    @unittest.skip("")
     def test_runCkineDoseOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
@@ -62,15 +68,12 @@ class TestOp(unittest.TestCase):
         # There should be no activity
         self.assertAlmostEqual(np.max(f), 0.0)
 
-        print(Jac)
-
         # Assert that no other parameters matter when there is no ligand
         self.assertAlmostEqual(np.max(np.sum(Jac, axis=0)[6::]), 0.0)
 
         # Assert that all the conditions are the same so the derivatives are the same
         self.assertAlmostEqual(np.std(np.sum(Jac, axis=1)), 0.0)
 
-    @unittest.skip("")
     def test_runCkinePreSOp_noPostTreat(self):
         """ Test that runCkineOp and runCkinePreSOp return the same Jacobian when there is pretreatment only for runCkinePreSOp. """
         # Setup an Op for conditions with cytokines present, sufficient pre-treat time, and no post-treat time
