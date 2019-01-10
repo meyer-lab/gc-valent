@@ -41,8 +41,6 @@ public:
 
 		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testrunCkine",
 			&interfaceTestCase::testrunCkine));
-		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testrunCkineS",
-			&interfaceTestCase::testrunCkineS));
 		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testrunCkinePretreat",
 			&interfaceTestCase::testrunCkinePretreat));
 		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testJacobian",
@@ -95,39 +93,7 @@ protected:
 		}
 	}
 
-	void testrunCkineS() {
-		array<double, 9> tps = {{0.0, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
-		array<double, tps.size()> output;
-		array<double, tps.size()> output2;
-		array<double, Nparams> rxnRatesIn;
-		array<double, Nparams*tps.size()> soutput;
-		array<double, Nparams*tps.size()> soutput2;
-		array<double, Nspecies> actV;
-		fill(actV.begin(), actV.end(), 0.0);
-		actV[10] = 1.0;
 
-
-
-		for (size_t ii = 0; ii < 3; ii++) {
-			rxnRatesIn = getParams();
-
-			std::fill(rxnRatesIn.begin(), rxnRatesIn.begin()+6, 0.0);
-
-			int retVal = runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false);
-
-			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false);
-
-			checkRetVal(retVal, rxnRatesIn);
-			checkRetVal(retVal2, rxnRatesIn);
-
-			CPPUNIT_ASSERT(retVal >= 0);
-			CPPUNIT_ASSERT(retVal2 >= 0);
-
-			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
-			//CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
-		}
-	}
 
 	void testrunCkinePretreat() {
 		lognormal_distribution<> dis(0.6, 0.25);
