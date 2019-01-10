@@ -8,6 +8,50 @@ from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT, runCk
 
 pool = concurrent.futures.ThreadPoolExecutor()
 
+class runCkineOp(Op):
+	    """ Runs model for a single time point and condition. """
+	    itypes, otypes = [dvector], [dvector]
+	
+	    def __init__(self, ts):
+	        self.dOp = runCkineOpDiff(ts)
+	
+	    def infer_shape(self, node, i0_shapes):
+	        assert len(i0_shapes) == 1
+	        return [(nSpecies(), )]
+	
+	    def perform(self, node, inputs, outputs, params=None):
+	        outputs[0][0] = self.dOp.runCkine(inputs, False)
+	
+	    def grad(self, inputs, g):
+	        """ Calculate the runCkineOp gradient. """
+	        return [dot(g[0], self.dOp(inputs[0]))]
+	
+	
+	class runCkineOpDiff(Op):
+	    """ Gradient for a single time point and condition. """
+	    itypes, otypes = [dvector], [dmatrix]
+	
+	    def __init__(self, ts):
+	        if ts.size > 1:
+	            raise NotImplementedError('This Op only works with a single time point.')
+	
+	        self.ts = ts
+	
+	    def runCkine(self, inputs, sensi):
+	        """ function for runCkine """
+	        outt = runCkineU(self.ts, inputs[0], sensi)
+	        assert outt[1] >= 0
+	        assert outt[0].size == nSpecies()
+	
+	        if sensi is True:
+	            return np.squeeze(outt[2])
+	
+	        return np.squeeze(outt[0])
+	
+	    def perform(self, node, inputs, outputs, params=None):
+	        outputs[0][0] = self.runCkine(inputs, True)
+	
+
 
 class runCkinePreSOp(Op):
     """ Op for pretreatment experiments. """
