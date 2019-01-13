@@ -519,16 +519,15 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV) {
 	int retVal = 1000;
-	//std::list<std::future<int>> results;
+	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++) {
-		//results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false));
-		retVal = std::min(retVal, runCkineS(&tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false));
+		results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false));
 	}
 
 	// Synchronize all threads
-	//for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
+	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
 
 	// Get the worst case to return
 	return retVal;
