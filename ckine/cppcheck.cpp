@@ -106,20 +106,15 @@ protected:
 		fill(actV.begin(), actV.end(), 0.0);
 		actV[10] = 1.0;
 
-
-
 		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
 
 			std::fill(rxnRatesIn.begin(), rxnRatesIn.begin()+6, 0.0);
 
-			int retVal = runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false);
+			checkRetVal(runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
 
 			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false);
-
-			checkRetVal(retVal, rxnRatesIn);
-			checkRetVal(retVal2, rxnRatesIn);
+			checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
 
 			CPPUNIT_ASSERT(retVal >= 0);
 			CPPUNIT_ASSERT(retVal2 >= 0);
