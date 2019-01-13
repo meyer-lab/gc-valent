@@ -225,7 +225,7 @@ std::array<T, Nspecies> solveAutocrine(const ratesS<T> * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s) {
+void solveAutocrineS (const ratesS<double> * const r, N_Vector *y0s) {
 	std::array<double, Nspecies> y0 = solveAutocrine(r);
 
 	for (size_t is = 0; is < Nparams; is++)
