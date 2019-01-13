@@ -150,15 +150,17 @@ class runCkineOpDoseDiff(Op):
         rxntfr = np.reshape(np.tile(inputs[0], self.conditions.shape[0]), (self.conditions.shape[0], -1))
         rxntfr = np.concatenate((self.conditions, rxntfr), axis=1)
 
+        if sensi is False:
+            outt = runCkineUP(self.ts, rxntfr)
+            assert outt[1] >= 0
+            return np.dot(outt[0], self.condense)
+
         outt = runCkineSP(self.ts, rxntfr, self.condense)
         assert outt[0].shape == (self.conditions.shape[0], )
         assert outt[1] >= 0
 
-        if sensi is True:
-            # We override the ligands, so don't pass along their gradient
-            return outt[2][:, 6::]
-
-        return outt[0]
+        # We override the ligands, so don't pass along their gradient
+        return outt[2][:, 6::]
 
     def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
