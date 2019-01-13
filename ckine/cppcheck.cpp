@@ -76,24 +76,26 @@ protected:
 		array<double, Nspecies*tps.size()> output;
 		array<double, Nspecies*tps.size()> output2;
 		array<double, Nparams> rxnRatesIn;
+		array<double, Nparams*Nspecies*tps.size()> soutput;
+		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
 		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
 
-			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), false);
+			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data(), false);
 
 			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), false);
+			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), true, soutput2.data(), false);
 
 			checkRetVal(retVal, rxnRatesIn);
 			checkRetVal(retVal2, rxnRatesIn);
 
 			CPPUNIT_ASSERT(retVal >= 0);
 			CPPUNIT_ASSERT(retVal2 >= 0);
+			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
+			CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 		}
 	}
-
-
 
 	void testrunCkinePretreat() {
 		lognormal_distribution<> dis(0.6, 0.25);
