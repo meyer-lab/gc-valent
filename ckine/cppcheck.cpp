@@ -108,15 +108,14 @@ protected:
 		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
 
-			std::fill(rxnRatesIn.begin(), rxnRatesIn.begin()+6, 0.0);
-
 			checkRetVal(runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
 
 			// Run a second time to make sure we get the same thing
 			checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
 
 			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
-			//CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
+			// The sensitivities are non-deterministic for some reason
+			// CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 		}
 	}
 
@@ -174,7 +173,7 @@ protected:
 
 		fullJacobian(yv.data(), &rattes, jac_Ana);
 
-		CPPUNIT_ASSERT((jac_Auto - jac_Ana).squaredNorm() < 0.000001);
+		CPPUNIT_ASSERT((jac_Auto - jac_Ana).squaredNorm() < 0.00000001);
 	}
 };
 
