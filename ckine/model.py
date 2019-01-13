@@ -82,7 +82,7 @@ def runCkineS (tps, rxntfr, condense):
     assert condense.size == __nSpecies
 
     yOut = np.zeros((tps.size), dtype=np.float64)
-    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order='F')
+    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order='C')
 
     retVal = libb.runCkineS(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                             yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
@@ -90,8 +90,6 @@ def runCkineS (tps, rxntfr, condense):
                             condense.ctypes.data_as(ct.POINTER(ct.c_double)),
                             rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
                             False)
-
-    print(sensV)
 
     return (yOut, retVal, sensV)
 

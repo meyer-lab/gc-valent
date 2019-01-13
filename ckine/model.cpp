@@ -33,7 +33,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-9;
+constexpr double solveTol = 1.0E-5;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -77,8 +77,10 @@ public:
 	double tret;
 	vector<double> params;
 	array<double, Nspecies> activities;
+	adept::Stack stack;
 
 	void commonSetup(vector<double> paramsIn) {
+		stack.deactivate();
 		tret = 0.0;
 		params = paramsIn;
 
@@ -108,7 +110,7 @@ public:
 		}
 		
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerances(cvode_mem, solveTol, solveTol) < 0) {
+		if (CVodeSStolerances(cvode_mem, 1.0E-9, 1.0E-9) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
@@ -145,7 +147,7 @@ public:
 		commonSetup(paramsIn);
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
-		constexpr int steps = 100; // no. of integration steps between two consecutive ckeckpoints
+		constexpr int steps = 10; // no. of integration steps between two consecutive ckeckpoints
 		if (CVodeAdjInit(cvode_mem, steps, CV_HERMITE) < 0) {
 			throw std::runtime_error(string("Error calling CVodeAdjInit in solver_setup."));
 		}
@@ -209,6 +211,11 @@ public:
 	int CVodeRun(const double endT) {
 		int returnVal;
 
+		if (endT < tret) {
+			cout << "Can't go backwards in forward pass." << std::endl;
+			return -1;
+		}
+
 		if (sensi) {
 			returnVal = CVodeF(cvode_mem, endT, state, &tret, CV_NORMAL, &ncheck);
 		} else {
@@ -256,7 +263,7 @@ public:
 			CVodeGetQuadB(cvode_mem, indexB, &tret, qB);
 		}
 
-		SoutV = St0.transpose()*x0p + Sqt0.transpose();
+		SoutV = St0.transpose()*x0p - Sqt0.transpose();
 
 		return 0;
 	}
@@ -279,7 +286,7 @@ public:
 
 
 // fB routine. Compute fB(t,y,yB). 
-static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) {
+static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) {
 	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
 
 	eigenVC yBv(NV_DATA_S(yB), Nspecies);
@@ -290,7 +297,7 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 	// Actually get the Jacobian
 	fullJacobian(NV_DATA_S(y), &rattes, jac);
 
-	yBdotv = -yBv.transpose()*jac.transpose();
+	yBdotv = -yBv.transpose()*jac;
 
 	return 0;
 }
@@ -302,16 +309,12 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 
 	size_t Np = sMem->params.size();
 
-	// Wrap the vectors we'll use
-	eigenV yBdotv(NV_DATA_S(qBdot), NV_LENGTH_S(qBdot));
-	eigenVC yBv(NV_DATA_S(yB), NV_LENGTH_S(yB));
-
-	adept::Stack stack;
+	sMem->stack.activate();
 
 	vector<adouble> X(Np);
 	adept::set_values(&X[0], Np, sMem->params.data());
 
-	stack.new_recording();
+	sMem->stack.new_recording();
 
 	array<adouble, Nspecies> dydt;
 
@@ -320,12 +323,16 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 	// Get the data in the right form
 	fullModel(NV_DATA_S(y), &rattes, dydt.data());
 
-	stack.independent(&X[0], Np);
-	stack.dependent(&dydt[0], Nspecies);
+	sMem->stack.independent(&X[0], Np);
+	sMem->stack.dependent(&dydt[0], Nspecies);
 
 	Eigen::Matrix<double, Nspecies, Eigen::Dynamic> jac_M(Nspecies, Np);
 
-	stack.jacobian(jac_M.data());
+	sMem->stack.jacobian(jac_M.data());
+
+	// Wrap the vectors we'll use
+	eigenV yBdotv(NV_DATA_S(qBdot), NV_LENGTH_S(qBdot));
+	eigenVC yBv(NV_DATA_S(yB), NV_LENGTH_S(yB));
 
 	yBdotv = yBv.transpose()*jac_M;
 
@@ -401,11 +408,6 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 	}
 
 	for (; itps < ntps; itps++) {
-		if (tps[itps] < sMem.tret) {
-			cout << "Can't go backwards." << std::endl;
-			return -1;
-		}
-		
 		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
 
 		// Copy out result
@@ -441,7 +443,7 @@ x0JacM xNotp (vector<double> &params) {
 
 
 
-extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, double * const actV, const double * const rxnRatesIn, bool IL2case) {
+extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case) {
 	size_t itps = 0;
 
 	std::vector<double> v;
@@ -459,11 +461,6 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	}
 
 	for (; itps < ntps; itps++) {
-		if (tps[itps] < sMem.tret) {
-			cout << "Can't go backwards." << std::endl;
-			return -1;
-		}
-		
 		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
 
 		// Copy out result
@@ -478,10 +475,6 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	for (int bitps = ntps - 1; bitps >= 0; bitps--) {
 		if (sMem.getAdjSens(tps[bitps], Sout + sMem.params.size()*bitps, x0p)) return -1;
 	}
-
-	//Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> ss(Sout, sMem.params.size(), ntps);
-
-	//cout << ss << endl << endl;
 
 	return 0;
 }

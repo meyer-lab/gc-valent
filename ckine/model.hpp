@@ -165,5 +165,5 @@ constexpr size_t halfL = 28; // number of complexes on surface alone
 
 extern "C" int runCkine (double *tps, size_t ntps, double *out, const double * const rxnRatesIn, bool);
 extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim);
-extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, double * const actV, const double * const rxnRatesIn, bool IL2case);
+extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case);
 extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV);

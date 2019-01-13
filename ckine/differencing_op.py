@@ -106,14 +106,12 @@ class runCkineOpKineticDiff(Op):
         assert outt[0].shape == (self.ts.size, nSpecies())
         assert outt[1] >= 0
 
-        if sensi is True:
-            outt = runCkineS(self.ts, inputs[0], self.condense)
-            return outt[2]
-
         return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs, params=None):
-        outputs[0][0] = self.runCkine(inputs, sensi=True)
+        outputs[0][0] = runCkineS(self.ts, inputs[0], self.condense)[2]
+        assert outputs[0][0].shape[0] == self.ts.size
+        assert outputs[0][0].shape[1] == inputs[0].size
 
 
 class runCkineDoseOp(Op):
