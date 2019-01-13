@@ -60,6 +60,8 @@ protected:
 
 			cout << std::endl;
 		}
+
+		CPPUNIT_ASSERT(retVal >= 0);
 	}
 
 	array<double, Nparams> getParams() {
@@ -89,9 +91,6 @@ protected:
 
 			checkRetVal(retVal, rxnRatesIn);
 			checkRetVal(retVal2, rxnRatesIn);
-
-			CPPUNIT_ASSERT(retVal >= 0);
-			CPPUNIT_ASSERT(retVal2 >= 0);
 		}
 	}
 
@@ -115,9 +114,6 @@ protected:
 
 			// Run a second time to make sure we get the same thing
 			checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
-
-			CPPUNIT_ASSERT(retVal >= 0);
-			CPPUNIT_ASSERT(retVal2 >= 0);
 
 			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 			//CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
@@ -143,8 +139,6 @@ protected:
 			checkRetVal(retVal, rxnRatesIn);
 			checkRetVal(retVal2, rxnRatesIn);
 
-			CPPUNIT_ASSERT(retVal >= 0);
-			CPPUNIT_ASSERT(retVal2 >= 0);
 			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 		}
 	}
