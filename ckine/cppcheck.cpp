@@ -122,6 +122,7 @@ protected:
 		}
 	}
 
+	// Compare the analytical to an autodiff jacobian
 	void testJacobian() {
 		using adept::adouble;
 
