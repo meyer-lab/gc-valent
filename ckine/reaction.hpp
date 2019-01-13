@@ -1,6 +1,8 @@
 #ifndef RXN_CODE_ONCE_
 #define RXN_CODE_ONCE_
 
+#include <nvector/nvector_serial.h>
+
 std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
@@ -100,27 +102,27 @@ T k20rev(const bindingRates<T> * const r) {
 }
 
 
-template <class T, class YT>
-void dy_dt(const double * const y, bindingRates<T> * r, T *dydt, YT *ILs) {
+template <class T, class YT, class RT, class LT>
+void dy_dt(const YT * const y, bindingRates<RT> * r, T *dydt, LT *ILs) {
 	// IL2 in nM
-	const double IL2Ra = y[0];
-	const double IL2Rb = y[1];
-	const double gc = y[2];
-	const double IL2_IL2Ra = y[3];
-	const double IL2_IL2Rb = y[4];
-	const double IL2_IL2Ra_IL2Rb = y[5];
-	const double IL2_IL2Ra_gc = y[6];
-	const double IL2_IL2Rb_gc = y[7];
-	const double IL2_IL2Ra_IL2Rb_gc = y[8];
+	const YT IL2Ra = y[0];
+	const YT IL2Rb = y[1];
+	const YT gc = y[2];
+	const YT IL2_IL2Ra = y[3];
+	const YT IL2_IL2Rb = y[4];
+	const YT IL2_IL2Ra_IL2Rb = y[5];
+	const YT IL2_IL2Ra_gc = y[6];
+	const YT IL2_IL2Rb_gc = y[7];
+	const YT IL2_IL2Ra_IL2Rb_gc = y[8];
 	
 	// IL15 in nM
-	const double IL15Ra = y[9];
-	const double IL15_IL15Ra = y[10];
-	const double IL15_IL2Rb = y[11];
-	const double IL15_IL15Ra_IL2Rb = y[12];
-	const double IL15_IL15Ra_gc = y[13];
-	const double IL15_IL2Rb_gc = y[14];
-	const double IL15_IL15Ra_IL2Rb_gc = y[15];
+	const YT IL15Ra = y[9];
+	const YT IL15_IL15Ra = y[10];
+	const YT IL15_IL2Rb = y[11];
+	const YT IL15_IL15Ra_IL2Rb = y[12];
+	const YT IL15_IL15Ra_gc = y[13];
+	const YT IL15_IL2Rb_gc = y[14];
+	const YT IL15_IL15Ra_IL2Rb_gc = y[15];
 		
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * ILs[0] + r->k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev(r) * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + k12rev(r) * IL2_IL2Ra_IL2Rb;
@@ -144,8 +146,8 @@ void dy_dt(const double * const y, bindingRates<T> * r, T *dydt, YT *ILs) {
 	
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * ILs[1] + r->k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev(r) * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
 	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
-	
-	auto simpleCkine = [&](const size_t ij, const T revOne, const T revTwo, const YT IL) {
+
+	auto simpleCkine = [&](const size_t ij, const T revOne, const T revTwo, const LT IL) {
 		dydt[2] += - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
 		dydt[ij] = -kfbnd * y[ij] * IL + revOne * y[ij+1];
 		dydt[ij+1] = kfbnd * y[ij] * IL - revOne * y[ij+1] - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
@@ -159,8 +161,8 @@ void dy_dt(const double * const y, bindingRates<T> * r, T *dydt, YT *ILs) {
 }
 
 
-template <class T>
-void fullModel(const double * const y, ratesS<T> * const r, T *dydt) {
+template <class T, class YT, class RT>
+void fullModel(const YT * const y, ratesS<RT> * const r, T *dydt) {
 	// Implement full model.
 	std::fill(dydt, dydt + Nspecies, 0.0);
 

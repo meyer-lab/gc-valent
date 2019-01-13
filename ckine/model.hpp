@@ -12,27 +12,10 @@ constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 
 template <class T>
 struct bindingRates {
-	T kfwd;
-	T k1rev;
-	T k2rev;
-	T k4rev;
-	T k5rev;
-	T k10rev;
-	T k11rev;
-	T k13rev;
-	T k14rev;
-	T k16rev;
-	T k17rev;
-	T k22rev;
-	T k23rev;
-	T k25rev;
-	T k27rev;
-	T k29rev;
-	T k31rev;
-	T k32rev;
-	T k33rev;
-	T k34rev;
-	T k35rev;
+	T kfwd, k1rev, k2rev, k4rev, k5rev, k10rev;
+	T k11rev, k13rev, k14rev, k16rev, k17rev;
+	T k22rev, k23rev, k25rev, k27rev, k29rev;
+	T k31rev, k32rev, k33rev, k34rev, k35rev;
 };
 
 
@@ -41,11 +24,8 @@ class ratesS {
 public:
 	std::array<T, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
 	bindingRates<T> surface, endosome;
-	T endo;
-	T activeEndo;
-	T sortF;
-	T kRec;
-	T kDeg;
+	T endo, activeEndo;
+	T sortF, kRec, kDeg;
 	std::array<T, 8> Rexpr; // Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 
 	void setTraffic(T * traf) {

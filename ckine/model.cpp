@@ -357,8 +357,9 @@ static void errorHandler(int error_code, const char *module, const char *functio
 }
 
 
-int Jac(double, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
+int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	solver *sMem = static_cast<solver *>(user_data);
+	ratesS<double> rattes = sMem->getRates();
 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
@@ -370,7 +371,8 @@ int Jac(double, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_
 
 
 int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
-	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
+	solver *sMem = static_cast<solver *>(user_data);
+	ratesS<double> rattes = sMem->getRates();
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(xx), &rattes, NV_DATA_S(dxxdt));
