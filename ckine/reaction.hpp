@@ -1,6 +1,8 @@
 #ifndef RXN_CODE_ONCE_
 #define RXN_CODE_ONCE_
 
+#include <nvector/nvector_serial.h>
+
 std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
