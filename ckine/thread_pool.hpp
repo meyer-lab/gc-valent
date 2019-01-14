@@ -15,7 +15,7 @@ class ThreadPool {
 public:
 	// the constructor just launches some amount of workers
 	inline ThreadPool() : stop(false) {
-		for(size_t i = 0; i < std::thread::hardware_concurrency(); ++i)
+		for(size_t i = 0; i < 1; ++i)
 			workers.emplace_back( [this] {
 					for(;;) {
 						std::function<void()> task;

@@ -388,7 +388,7 @@ int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_d
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case) {
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case, const double preT, const double * const preL) {
 	size_t itps = 0;
 
 	std::vector<double> v;
@@ -443,7 +443,7 @@ x0JacM xNotp (vector<double> &params) {
 
 
 
-extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case) {
+extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case, const double preT, const double * const preL) {
 	size_t itps = 0;
 
 	std::vector<double> v;
@@ -479,35 +479,15 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	return 0;
 }
 
-
-extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim) {
-	solver sMem(std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams));
-
-	if (sMem.CVodeRun(pret) < 0) return -1;
-
-	std::copy_n(postStim, Nlig, sMem.params.begin()); // Copy in stimulation ligands
-
-	CVodeReInit(sMem.cvode_mem, pret, sMem.state);
-    
-	if (tt > std::numeric_limits<double>::epsilon()) {
-		if (sMem.CVodeRun(pret + tt) < 0) return -1;
-	}
-
-	// Copy out result
-	std::copy_n(NV_DATA_S(sMem.state), Nspecies, out);
-
-	return 0;
-}
-
 ThreadPool pool;
 
-extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out) {
+extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out, const double preT, const double * const preL) {
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, false));
+		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, false, preT, preL));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
@@ -517,13 +497,13 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 }
 
 
-extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV) {
+extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++) {
-		results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false));
+		results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
 	}
 
 	// Synchronize all threads
@@ -531,14 +511,4 @@ extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double 
 
 	// Get the worst case to return
 	return retVal;
-}
-
-
-extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
-	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS<double> r(v);
-
-	Eigen::Map<JacMat> out(dydt);
-
-	fullJacobian(y_in, &r, out);
 }
