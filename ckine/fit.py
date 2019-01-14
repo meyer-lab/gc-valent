@@ -123,6 +123,12 @@ class build_model:
         """This is the sampling that actually runs the model."""
         self.trace = pm.sample(init='ADVI', model=self.M, cores=1, chains=1)
 
+    def fit_ADVI(self):
+        """ Running fit_advi instead of true sampling. """
+        with self.M:
+            approx = pm.fit(40000, method='fullrank_advi')
+            self.trace = approx.sample()
+
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
