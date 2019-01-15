@@ -4,8 +4,8 @@ This file includes the classes and functions necessary to fit the IL4 and IL7 mo
 from os.path import join
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies, getTotalActiveCytokine
-from .differencing_op import runCkineDoseOp, runCkinePreSOp
+from .model import getTotalActiveSpecies, getTotalActiveCytokine, nSpecies, getActiveSpecies, internalStrength, halfL
+from .differencing_op import runCkineDoseOp
 
 class IL4_7_activity:
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
@@ -67,19 +67,27 @@ class crosstalk:
 
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
-        unkVec2 = T.set_subtensor(unkVec[pre_cytokine], pre_conc)
+        unkVec2 = T.set_subtensor(unkVec[stim_cytokine], stim_conc)
 
         # create ligands array for stimulation at t=0
-        ligands = np.zeros((6))
-        ligands[stim_cytokine] = stim_conc
-        ligands[pre_cytokine] = pre_conc    # assume pretreatment ligand stays constant
+        ligands = np.zeros((1, 6))
+        ligands[0, stim_cytokine] = stim_conc
+        ligands[0, pre_cytokine] = pre_conc    # assume pretreatment ligand stays constant
 
-        Op = runCkinePreSOp(tpre=self.ts, ts=self.ts, postlig=ligands)
+        prelig = np.zeros(6)
+        prelig[pre_cytokine] = pre_conc
+
+        condvec = np.zeros(nSpecies())
+        condvec[np.where(getActiveSpecies())] = 1.0
+        condvec[np.array(np.where(getActiveSpecies())) + halfL()] = internalStrength()
+        # TODO: Need to set to ligands I want
+
+        Op = runCkineDoseOp(preT=self.ts, tt=self.ts, conditions=ligands, condense=condvec, prestim=prelig)
 
         # perform the experiment
         outt = Op(unkVec2)
 
-        return getTotalActiveCytokine(stim_cytokine, outt) # only look at active species associated with stimulation cytokine
+        return outt # only look at active species associated with stimulation cytokine
 
     def singleCalc_no_pre(self, unkVec):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -101,9 +109,6 @@ class crosstalk:
         # incorporate IC50
         IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
         IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
-
-        # add 6 zeros to front of unkVec to handle ligands within unkVec
-        unkVec = T.concatenate((T.zeros(6, dtype=np.float64), unkVec))
 
         # IL7 pretreatment with IL4 stimulation
         actVec_IL4stim = T.stack((list(self.singleCalc(unkVec, 2, x, 4, self.cytokM[0, 4]) for x in self.pre_IL7)))
