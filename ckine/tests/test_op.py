@@ -33,13 +33,6 @@ class TestOp(unittest.TestCase):
         self.conditions = np.full((3, 6), 10.)
         self.ts = np.logspace(-3, 3)
 
-    def test_runCkinePreSOp(self):
-        """ Verify the Jacobian for the pre-stimulation Op. """
-        theano.config.compute_test_value = 'ignore'
-        utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
-                                       np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV],
-                                       abs_tol=1.E-2, rel_tol=1.E-2)
-
     def test_runCkineKineticOp(self):
         """ Verify kinetic Op Jacobian. """
         theano.config.compute_test_value = 'ignore'
