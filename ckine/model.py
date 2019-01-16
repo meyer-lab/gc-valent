@@ -40,7 +40,7 @@ def nRxn():
     return __nRxn
 
 
-def runCkineU (tps, rxntfr):
+def runCkineU (tps, rxntfr, preT=0.0, prestim=None):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
@@ -48,9 +48,14 @@ def runCkineU (tps, rxntfr):
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
+    if preT != 0.0:
+        assert preT > 0.0
+        assert prestim.size == 6
+        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
+
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, 0.0, None)
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, preT, prestim)
 
     return (yOut, retVal)
 
