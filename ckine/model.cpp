@@ -416,14 +416,14 @@ extern "C" int runCkine (const double * const tps, const size_t ntps, double * c
 
 	solver sMem(v);
 
-	if (tps[0] < std::numeric_limits<double>::epsilon()) {
+	if (tps[0] + preT < std::numeric_limits<double>::epsilon()) {
 		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out);
 
 		itps = 1;
 	}
 
 	for (; itps < ntps; itps++) {
-		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
+		if (sMem.CVodeRun(tps[itps] + preT) < 0) return -1;
 
 		// Copy out result
 		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out + Nspecies*itps);
@@ -469,26 +469,26 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 
 	solver sMem(v, actVv);
 
-	if (tps[0] < std::numeric_limits<double>::epsilon()) {
+	if (tps[0] + preT < std::numeric_limits<double>::epsilon()) {
 		out[0] = sMem.getActivity();
 
 		itps = 1;
 	}
 
 	for (; itps < ntps; itps++) {
-		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
+		if (sMem.CVodeRun(tps[itps] + preT) < 0) return -1;
 
 		// Copy out result
 		out[itps] = sMem.getActivity();
 	}
 
-	sMem.backward(tps[ntps-1]);
+	sMem.backward(tps[ntps-1] + preT);
 
 	x0JacM x0p = xNotp(sMem.params);
 
 	// Get sensitivities
 	for (int bitps = ntps - 1; bitps >= 0; bitps--) {
-		if (sMem.getAdjSens(tps[bitps], Sout + sMem.params.size()*bitps, x0p)) return -1;
+		if (sMem.getAdjSens(tps[bitps] + preT, Sout + sMem.params.size()*bitps, x0p)) return -1;
 	}
 
 	return 0;
