@@ -2,7 +2,6 @@
 Test that the fitting code can at least build the likelihood model.
 """
 import unittest
-import pymc3 as pm
 
 
 class TestFit(unittest.TestCase):
@@ -13,7 +12,7 @@ class TestFit(unittest.TestCase):
         M.build()
 
     def test_fitIL4_7(self):
-        """ Test that the IL2/15 model can build. """
+        """ Test that the IL4/7 model can build. """
         from ..fit_others import build_model
         M = build_model()
         M.build()
