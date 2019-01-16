@@ -47,7 +47,7 @@ class TestOp(unittest.TestCase):
 
     def test_runCkineDosePrestimOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
-        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6)*0.01)
+        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6)*10.0)
 
         utt.verify_grad(Op, [self.doseUnkV])
 
