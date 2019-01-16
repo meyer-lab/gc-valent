@@ -403,7 +403,7 @@ int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_d
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case, const double preT, const double * const preL) {
+extern "C" int runCkine (const double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case, const double preT, const double * const preL) {
 	size_t itps = 0;
 
 	std::vector<double> v;
