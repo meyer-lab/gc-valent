@@ -226,7 +226,7 @@ def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
 
-def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
+def ligandDeg_IL2(yVec, sortF, kDeg):
     """ This function calculates rate of IL-2's total degradation. """
     # all indices are shifted by __halfL in order to get endosomal species
     sum_inactive = np.sum(yVec[np.arange(3+__halfL, 7+__halfL)]) # indexes 3,4,5,6 have IL2 bound but are inactive
