@@ -232,5 +232,5 @@ def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     # all indices are shifted by __halfL in order to get endosomal species
     sum_inactive = np.sum(yVec[np.arange(3+__halfL, 7+__halfL)]) # indexes 3,4,5,6 have IL2 bound but are inactive
     sum_active = np.sum(yVec[np.arange(7+__halfL, 9+__halfL)]) # indices 7,8 have IL2 bound and are active
-    return kDeg * ((sum_inactive*sortF)+ sum_active + yVec[__halfL*2])
+    return kDeg * ((sum_inactive*sortF)+ sum_active + yVec[__halfL*2]) # only inactive species deal with sortF, can assume all free ligand and active species are degraded at rate kDeg
                           
