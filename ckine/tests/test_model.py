@@ -266,3 +266,12 @@ class TestModel(unittest.TestCase):
         self.assertGreater(high_sortF, reg)
         self.assertGreater(high_kDeg, reg)
         self.assertGreater(reg, low_kDeg)
+
+    def test_noTraff(self):
+        """ Make sure no endosomal species are found when endo=0. """
+        rxntfR = self.rxntfR.copy()
+        rxntfR[17:19] = 0.0 # set endo and activeEndo to 0.0
+        yOut, retVal = runCkineU(self.ts, rxntfR)
+        tot_endo = np.sum(yOut[1, 28::])
+        self.assertEqual(tot_endo, 0.0)
+   
