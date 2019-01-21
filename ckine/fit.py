@@ -118,7 +118,3 @@ class build_model:
     def sampling(self):
         """This is the sampling that actually runs the model."""
         self.trace = pm.sample(init='ADVI', model=self.M)
-
-    def profile(self):
-        """ Profile the gradient calculation. """
-        self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
