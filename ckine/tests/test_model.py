@@ -259,6 +259,7 @@ class TestModel(unittest.TestCase):
         rxntfR = self.rxntfR.copy()
         rxntfR[17] = 0.0 # set endo to 0.0
         yOut, retVal = runCkineU(self.ts, rxntfR)
+        print(yOut[1, 28::])
         tot_endo = np.sum(yOut[1, 28::])
         print("total endo: " + str(tot_endo))
         self.assertEqual(tot_endo, 0.0)
