@@ -274,4 +274,3 @@ class TestModel(unittest.TestCase):
         yOut, retVal = runCkineU(self.ts, rxntfR)
         tot_endo = np.sum(yOut[1, 28::])
         self.assertEqual(tot_endo, 0.0)
-   
