@@ -233,4 +233,4 @@ def ligandDeg_IL2(yVec, sortF, kDeg):
     
     sum_inactive = np.sum(yVec[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
     sum_active = np.sum(yVec[7:9]) # indices 7,8 have IL2 bound and are active
-    return kDeg * (sum_inactive + sum_active + yVec[__halfL*2]) # can assume all free ligand and active species are degraded at rate kDeg
+    return kDeg * (sum_inactive + sum_active + yVec[__halfL]) # can assume all free ligand and active species are degraded at rate kDeg
