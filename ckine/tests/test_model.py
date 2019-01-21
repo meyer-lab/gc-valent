@@ -253,3 +253,12 @@ class TestModel(unittest.TestCase):
 
         self.assertLess(active_loose, active_reg) # lower dimerization rate leads to less active complex
         self.assertLess(active_gc, active_reg) # no gc expression leads to less/no active complex
+
+    def test_noTraff(self):
+        """ Make sure no endosomal species are found when endo=0. """
+        rxntfR = self.rxntfR.copy()
+        rxntfR[17] = 0.0 # set endo to 0.0
+        yOut, retVal = runCkineU(self.ts, rxntfR)
+        tot_endo = np.sum(yOut[1, 28::])
+        print("total endo: " + str(tot_endo))
+        self.assertEqual(tot_endo, 0.0)
