@@ -201,14 +201,17 @@ def getSurfaceGCSpecies():
     condense[np.array([2, 6, 7, 8, 13, 14, 15, 18, 21])] = 1
     return condense
 
+
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
     return ((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]]).sum()
+
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
+
 
 def surfaceReceptors(y):
     """This function takes in a vector y and returns the amounts of the 8 surface receptors"""
