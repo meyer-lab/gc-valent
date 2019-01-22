@@ -149,19 +149,18 @@ class build_model:
             Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
-            endo_activeEndo = T.ones(2, dtype=np.float64)
-            endo_activeEndo = T.set_subtensor(endo_activeEndo[0], 0.080189183)
-            endo_activeEndo = T.set_subtensor(endo_activeEndo[1], 1.463922832)
+            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
+            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
             sortF = T.ones(1, dtype=np.float64) * 0.179757424
             kRec_kDeg = T.ones(2, dtype=np.float64)
             kRec_kDeg = T.set_subtensor(kRec_kDeg[0], 0.154753853)
             kRec_kDeg = T.set_subtensor(kRec_kDeg[1], 0.017205254)
-            GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+            GCexpr = (328. * endo) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+            IL7Raexpr = (2591. * endo) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+            IL4Raexpr = (254. * endo) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             scales = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=2) # create scaling constants for activity measurements
 
-            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
+            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec_kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
@@ -182,14 +181,4 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000)
-
-    def fit_ADVI(self):
-        """ Running fit_advi instead of true sampling. """
-        with self.M:
-            approx = pm.fit(40000, method='fullrank_advi')
-            self.trace = approx.sample()
-
-    def profile(self):
-        """ Profile the gradient calculation. """
-        self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
+        self.trace = pm.sample(model=self.M, tune=1000)
