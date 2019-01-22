@@ -4,7 +4,7 @@ This file includes the classes and functions necessary to fit the IL4 and IL7 mo
 from os.path import join
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveSpecies, getTotalActiveCytokine, nSpecies, getActiveSpecies, internalStrength, halfL, getCytokineSpecies
+from .model import getTotalActiveSpecies, nSpecies, getActiveSpecies, internalStrength, halfL, getCytokineSpecies
 from .differencing_op import runCkineDoseOp
 
 class IL4_7_activity:
@@ -172,7 +172,7 @@ class build_model:
             if self.pretreat is True:
                 Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
-                pm.Normal('fitD_cross', sd=T.std(Y_cross), observed=Y_cross)
+                pm.Normal('fitD_cross', sd=T.minimum(T.std(Y_cross), 0.2), observed=Y_cross) # the stderr is definitely less than 0.2
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -181,4 +181,5 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(model=self.M, tune=1000)
+        approx = pm.fit(40000, method='fullrank_advi', model=self.M) # fullrank_advi, svgd
+        self.trace = approx.sample()
