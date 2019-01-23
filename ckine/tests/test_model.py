@@ -6,8 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from scipy.optimize.slsqp import approx_jacobian
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkineU_IL2
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg_IL2
 
 
 settings.register_profile("ci", max_examples=1000)
@@ -143,22 +142,6 @@ class TestModel(unittest.TestCase):
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
 
-    def test_fullJacobian(self):
-        """ Test that our analytical jacobian matches an approximate jacobian. """
-        analytical = fullJacobian(self.fully, 0.0, self.rxntfR)
-        approx = approx_jacobian(self.fully, lambda x: fullModel(x, 0.0, self.rxntfR), epsilon=1.0E-6)
-
-        self.assertTrue(analytical.shape == approx.shape)
-
-        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
-        if not np.all(closeness):
-            IDXdiff = np.where(np.logical_not(closeness))
-            print(IDXdiff)
-            print(analytical[IDXdiff])
-            print(approx[IDXdiff])
-
-        self.assertTrue(np.all(closeness))
-
 
     def test_initial(self):
         """ Test that there is at least 1 non-zero species at T=0. """
@@ -270,3 +253,24 @@ class TestModel(unittest.TestCase):
 
         self.assertLess(active_loose, active_reg) # lower dimerization rate leads to less active complex
         self.assertLess(active_gc, active_reg) # no gc expression leads to less/no active complex
+
+    def test_ligandDeg_IL2(self):
+        """ Verify that ligand degradation increases when sortF and kDeg increase. """
+        y, _ = runCkineU_IL2(self.ts, np.ones(10))
+        sortF, kDeg = 0.5, 1.0
+        reg = ligandDeg_IL2(y[1,:], sortF, kDeg)
+        high_sortF = ligandDeg_IL2(y[1,:], 0.9, kDeg)
+        high_kDeg = ligandDeg_IL2(y[1,:], sortF, kDeg*10)
+        low_kDeg = ligandDeg_IL2(y[1,:], sortF, kDeg*0.1)
+
+        self.assertGreater(high_sortF, reg)
+        self.assertGreater(high_kDeg, reg)
+        self.assertGreater(reg, low_kDeg)
+
+    def test_noTraff(self):
+        """ Make sure no endosomal species are found when endo=0. """
+        rxntfR = self.rxntfR.copy()
+        rxntfR[17:19] = 0.0 # set endo and activeEndo to 0.0
+        yOut, retVal = runCkineU(self.ts, rxntfR)
+        tot_endo = np.sum(yOut[1, 28::])
+        self.assertEqual(tot_endo, 0.0)

@@ -9,10 +9,10 @@ import numpy as np
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double), ct.c_bool)
-libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-
+libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineS.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineSParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
 
 __nSpecies = 62
 def nSpecies():
@@ -34,30 +34,18 @@ def internalStrength():
     """Returns the internalStrength of endosomal activity."""
     return __internalStrength
 
+__internalV = 623.0 # endosomal volume
+def internalV():
+    """ Returns __internalV. """
+    return __internalV
+
 __nRxn = 17
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
     return __nRxn
 
 
-def runCkinePreT (pret, tt, rxntfr, postLig):
-    """ Standard version of solver that returns species abundances given times and unknown rates. """
-    rxntfr = rxntfr.copy()
-    assert rxntfr.size == __nParams
-    assert rxntfr[19] < 1.0 # Check that sortF won't throw
-
-    assert postLig.size == 6
-
-    yOut = np.zeros(__nSpecies, dtype=np.float64)
-
-
-    retVal = libb.runCkinePretreat(pret, tt, yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), postLig.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return (yOut, retVal)
-
-
-def runCkineU (tps, rxntfr, sensi=False):
+def runCkineU (tps, rxntfr, preT=0.0, prestim=None):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
@@ -65,42 +53,49 @@ def runCkineU (tps, rxntfr, sensi=False):
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
-    if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
+    if preT != 0.0:
+        assert preT > 0.0
+        assert prestim.size == 6
+        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP, False)
-
-    if sensi is True:
-        return (yOut, retVal, sensV)
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, preT, prestim)
 
     return (yOut, retVal)
 
-def runCkineU_IL2 (tps, rxntfr, sensi=False):
+
+def runCkineS (tps, rxntfr, condense):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
+    rxntfr = rxntfr.copy()
+    assert rxntfr.size == __nParams
+    assert rxntfr[19] < 1.0 # Check that sortF won't throw
+
+    assert condense.size == __nSpecies
+
+    yOut = np.zeros((tps.size), dtype=np.float64)
+    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order='C')
+
+    retVal = libb.runCkineS(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                            sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+                            condense.ctypes.data_as(ct.POINTER(ct.c_double)),
+                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                            False, 0.0, None)
+
+    return (yOut, retVal, sensV)
+
+
+def runCkineU_IL2 (tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 10
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
-    if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
-
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP, True)
-
-    if sensi is True:
-        return (yOut, retVal, sensV)
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
     return (yOut, retVal)
 
@@ -124,7 +119,7 @@ def runIL2simple(input, IL, CD25=1.0):
     return active
 
 
-def runCkineUP (tp, rxntfr, sensi=False):
+def runCkineUP (tp, rxntfr, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
@@ -132,29 +127,39 @@ def runCkineUP (tp, rxntfr, sensi=False):
 
     yOut = np.zeros((rxntfr.shape[0], __nSpecies), dtype=np.float64)
 
-    if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams, rxntfr.shape[0]), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
+    if preT != 0.0:
+        assert preT > 0.0
+        assert prestim.size == 6
+        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0], sensi,
-                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)), sensP)
-
-    if sensi is True:
-        return (yOut, retVal, sensV)
+    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0],
+                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
 
     return (yOut, retVal)
 
 
-def fullJacobian(y, t, rxntfR):
-    """ Calculates the Jacobian matrix for all species in our model. """
-    assert rxntfR.size == __nParams
+def runCkineSP (tp, rxntfr, actV, preT=0.0, prestim=None):
+    """ Version of runCkine that runs in parallel. """
+    assert rxntfr.size % __nParams == 0
+    assert rxntfr.shape[1] == __nParams
+    assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
-    yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
+    yOut = np.zeros((rxntfr.shape[0]), dtype=np.float64)
 
-    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
-    return yOut
+    sensV = np.zeros((rxntfr.shape[0], __nParams), dtype=np.float64, order='C')
+
+    if preT != 0.0:
+        assert preT > 0.0
+        assert prestim.size == 6
+        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
+
+    retVal = libb.runCkineSParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0],
+                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                   sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                   actV.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
+
+    return (yOut, retVal, sensV)
+
 
 def fullModel(y, t, rxntfr):
     """ Implement the full model based on dydt, trafficking, expression. """
@@ -168,7 +173,7 @@ def fullModel(y, t, rxntfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(__halfL, dtype=np.float64)
+__active_species_IDX = np.zeros(__halfL, dtype=np.bool)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 
 
@@ -225,3 +230,11 @@ def surfaceReceptors(y):
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
+
+def ligandDeg_IL2(yVec, sortF, kDeg):
+    """ This function calculates rate of IL-2's total degradation. """
+    # all indices are shifted by __halfL in order to get endosomal species
+    yVec = yVec[__halfL::].copy()
+    sum_inactive = np.sum(yVec[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
+    sum_active = np.sum(yVec[7:9]) # indices 7,8 have IL2 bound and are active
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
