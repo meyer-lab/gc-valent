@@ -19,6 +19,8 @@ Since IL-2 and IL-15 lead to formation of analogous active complexes, with IL-2R
 
 ## Family model correctly captures both single and combination IL-4/IL-7 dose response
 
+![**A reaction model captures cytokine-cytokine interactions.** A) XXX. B) XXX. C) XXX. D) XXX. E) XXX.](./Figures/figure2.svg){#fig:cytokInt}
+
 While the active complexes of IL-2 and IL-15 involve the same signaling-competent receptors, preventing the activity contributions of each cytokine from being distinguished from one another, IL-4 and IL-7 activity can be distinguished when both cytokines were co-administered to cells as IL-4 and IL-7 produce pSTAT6 and pSTAT5 signaling, respectively [@Gonnordeaal1253]. Due to this phenomenon we fit data wherein IL-4 and IL-7 doses were administered to human PBMCs both independently and in combination [@Gonnordeaal1253].
 
 Unlike our data for IL-2 and IL-15 in YT-1 cells, the data for IL-4 and IL-7 in human PBMCs was accompanied by measurements of number of IL-4Rα, IL-7Rα, and γ~c~ receptors per cell. We used a steady state assumption in the absence of autocrine ligand to solve for  receptor expression rates. Despite having measurements of receptor expression, we needed to further constrain our model since only two trials were performed for each experiment and no data gave insight into the trafficking parameters. Therefore, we assumed that the trafficking parameters and $kfwd$ seen in YT-1 cells were the same as in human PBMCs. These assumptions were why certain parameters were represented as flat lines ([@Fig:cytokInt]E-G). Once these constraints were made, we fit our model to both single and dual cytokine dose-response data sets with high accuracy ([@Fig:cytokInt]B-C).
