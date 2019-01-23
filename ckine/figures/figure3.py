@@ -59,7 +59,6 @@ def makeFigure():
 
     plot_timepoints(ax[8], newfactors[0])
 
-
     for row in range(2,4):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
