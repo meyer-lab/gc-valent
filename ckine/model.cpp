@@ -516,9 +516,9 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	return 0;
 }
 
-ThreadPool pool;
 
 extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out, const double preT, const double * const preL) {
+	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
@@ -535,6 +535,7 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 
 extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
+	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
