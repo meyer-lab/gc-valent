@@ -60,7 +60,7 @@ class IL2_15_activity:
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, scale):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
         # We don't need the ligands in unkVec for this Op
         unkVec = unkVec[6::]
@@ -70,11 +70,14 @@ class IL2_15_activity:
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
 
-        # Normalize to the maximal activity, put together into one vector
+        # put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
 
-        # return the residual
-        return self.fit_data - (actCat / T.max(actCat))
+        # account for pSTAT5 saturation
+        actCat = actCat / (actCat + scale)
+
+        # normalize from 0 to 1 and return the residual
+        return self.fit_data - actCat
 
 
 class build_model:
@@ -97,12 +100,13 @@ class build_model:
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             sortF = pm.Beta('sortF', alpha=6, beta=40, testval=0.15, shape=1)
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
             ligands = T.zeros(6, dtype=np.float64)
 
             unkVec = T.concatenate((ligands, kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
 
-            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
             # Add bounds for the stderr to help force the fitting solution
