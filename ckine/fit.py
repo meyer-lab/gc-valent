@@ -89,14 +89,14 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.1, shape=1)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
             rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
-            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
-            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
+            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.5, shape=1)
+            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.5, shape=1)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=10, beta=40, testval=0.25, shape=1)
+            sortF = pm.Beta('sortF', alpha=6, beta=40, testval=0.15, shape=1)
 
             ligands = T.zeros(6, dtype=np.float64)
 
@@ -104,10 +104,10 @@ class build_model:
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
-            
+
             # Add bounds for the stderr to help force the fitting solution
-            sd_15 = T.minimum(T.std(Y_15), 0.2)
-            sd_int = T.minimum(T.std(Y_int), 0.2)
+            sd_15 = T.minimum(T.std(Y_15), 0.1)
+            sd_int = T.minimum(T.std(Y_int), 0.1)
 
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
