@@ -38,20 +38,20 @@ class TestOp(unittest.TestCase):
         theano.config.compute_test_value = 'ignore'
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
-        utt.verify_grad(Op, [self.doseUnkV])
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseTpsOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
         theano.config.compute_test_value = 'ignore'
         Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
 
-        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.001, rel_tol=0.001)
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDosePrestimOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6)*10.0)
 
-        utt.verify_grad(Op, [self.doseUnkV])
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
