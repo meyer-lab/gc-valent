@@ -103,12 +103,11 @@ def pstat_act(ax, unkVec):
     IL2_minus = IL2_plus.copy()
 
     # calculate activity for each unkVec for all conc.
-    for ii in range(0,500):
-        output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
-        IL2_plus[:, ii] = output[0:PTS]
-        IL2_minus[:, ii] = output[PTS:(PTS*2)]
-        IL15_plus[:, ii] = output[(PTS*2):(PTS*3)]
-        IL15_minus[:, ii] = output[(PTS*3):(PTS*4)]
+    output = pstat5.calc(unkVec, cytokC) * y_max
+    IL2_plus = output[0:PTS]
+    IL2_minus = output[PTS:(PTS*2)]
+    IL15_plus = output[(PTS*2):(PTS*3)]
+    IL15_minus = output[(PTS*3):(PTS*4)]
 
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL2")

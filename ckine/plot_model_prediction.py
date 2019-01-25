@@ -2,7 +2,7 @@
 This file is responsible for performing calculations that allow us to compare our fitting results with the Ring paper in figure1.py
 """
 import numpy as np
-from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
+from .model import getTotalActiveSpecies, runCkineU, runCkineUP, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
 
 
 class surf_IL2Rb:
@@ -16,7 +16,7 @@ class surf_IL2Rb:
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
 
-        returnn, retVal = runCkineU(t, unkVec)
+        returnn, retVal = runCkineUP(t, np.transpose(unkVec))
 
         assert retVal >= 0
 
@@ -57,9 +57,9 @@ class pstat:
     def singleCalc(self, unkVec, cytokine, conc):
         """ Calculates the surface IL2Rb over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
+        unkVec[cytokine, :] = conc
 
-        returnn, retVal = runCkineU(self.ts, unkVec)
+        returnn, retVal = runCkineUP(self.ts, np.transpose(unkVec))
 
         assert retVal >= 0
 
@@ -67,10 +67,10 @@ class pstat:
 
     def calc(self, unkVec, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
-        assert unkVec.size == nParams()
+        assert unkVec.shape[0] == nParams()
 
         unkVec_IL2Raminus = unkVec.copy()
-        unkVec_IL2Raminus[22] = 0.0 # set IL2Ra expression rate to 0
+        unkVec_IL2Raminus[22, :] = 0.0 # set IL2Ra expression rate to 0
 
         # Calculate activities
         actVec_IL2 = np.fromiter((self.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
@@ -92,9 +92,9 @@ class surf_gc:
     def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
+        unkVec[cytokine, :] = conc
 
-        returnn, retVal = runCkineU(t, unkVec)
+        returnn, retVal = runCkineUP(t, np.transpose(unkVec))
 
         assert retVal >= 0
 
@@ -105,11 +105,11 @@ class surf_gc:
     def calc(self, unkVec, t):
         '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
 
-        assert unkVec.size == nParams()
+        assert unkVec.shape[0] == nParams()
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22] = 0.
+        unkVecIL2RaMinus[22, :] = 0.
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)
