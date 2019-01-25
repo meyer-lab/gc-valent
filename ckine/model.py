@@ -48,7 +48,7 @@ def nRxn():
 def runCkineU (tps, rxntfr, preT=0.0, prestim=None):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
-    assert rxntfr.size == __nParams
+    assert rxntfr.shape[0] == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
