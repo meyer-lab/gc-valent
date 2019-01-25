@@ -68,7 +68,7 @@ class IL2_15_activity:
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
         Op = runCkineDoseOp(tt=np.array(500.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[16], 0.0) # Set IL2Ra to zero
 
         # put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
