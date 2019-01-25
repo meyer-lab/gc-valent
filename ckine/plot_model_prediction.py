@@ -14,7 +14,7 @@ class surf_IL2Rb:
     def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface IL2Rb over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
+        unkVec[cytokine, :] = conc
 
         returnn, retVal = runCkineU(t, unkVec)
 
@@ -27,11 +27,11 @@ class surf_IL2Rb:
     def calc(self, unkVec, t):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
-        assert unkVec.size == nParams()
+        assert unkVec.shape[0] == nParams()
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22] = 0.
+        unkVecIL2RaMinus[22, :] = 0.
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)

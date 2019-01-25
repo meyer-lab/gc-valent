@@ -58,16 +58,26 @@ def surf_perc(ax, species, unkVec):
     size = len(ts)
     results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
-    for ii in range(0,500):
-        output = surf.calc(unkVec[:, ii], ts) * y_max
-        results[:, ii, 2, 0] = output[0:(size)]
-        results[:, ii, 3, 0] = output[(size):(size*2)]
-        results[:, ii, 0, 0] = output[(size*2):(size*3)]
-        results[:, ii, 1, 0] = output[(size*3):(size*4)]
-        results[:, ii, 2, 1] = output[(size*4):(size*5)]
-        results[:, ii, 3, 1] = output[(size*5):(size*6)]
-        results[:, ii, 0, 1] = output[(size*6):(size*7)]
-        results[:, ii, 1, 1] = output[(size*7):(size*8)]
+    output = surf.calc(unkVec, ts) * y_max
+    results[:, :, 2, 0] = output[0:(size)]
+    results[:, :, 3, 0] = output[(size):(size*2)]
+    results[:, :, 0, 0] = output[(size*2):(size*3)]
+    results[:, :, 1, 0] = output[(size*3):(size*4)]
+    results[:, :, 2, 1] = output[(size*4):(size*5)]
+    results[:, :, 3, 1] = output[(size*5):(size*6)]
+    results[:, :, 0, 1] = output[(size*6):(size*7)]
+    results[:, :, 1, 1] = output[(size*7):(size*8)]
+
+    #for ii in range(0,500):
+    #    output = surf.calc(unkVec[:, ii], ts) * y_max
+    #    results[:, ii, 2, 0] = output[0:(size)]
+    #    results[:, ii, 3, 0] = output[(size):(size*2)]
+    #    results[:, ii, 0, 0] = output[(size*2):(size*3)]
+    #    results[:, ii, 1, 0] = output[(size*3):(size*4)]
+    #    results[:, ii, 2, 1] = output[(size*4):(size*5)]
+    #    results[:, ii, 3, 1] = output[(size*5):(size*6)]
+    #    results[:, ii, 0, 1] = output[(size*6):(size*7)]
+    #    results[:, ii, 1, 1] = output[(size*7):(size*8)]
 
     for n in range(4):
         # plot results within confidence intervals
