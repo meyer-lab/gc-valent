@@ -126,5 +126,5 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        approx = pm.fit(40000, method='fullrank_advi', model=self.M) # fullrank_advi, svgd
+        approx = pm.fit(60000, method='fullrank_advi', model=self.M) # fullrank_advi, svgd
         self.trace = approx.sample()
