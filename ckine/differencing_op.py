@@ -51,7 +51,7 @@ class runCkineOpDoseDiff(Op):
             return np.dot(outt[0], self.condense)
 
         outt = runCkineSP(self.ts, rxntfr, self.condense, self.preT, self.prestim)
-        assert outt[0].shape == (self.conditions.shape[0], )
+        assert outt[0].shape == (self.conditions.shape[0]*self.ts.size, )
         assert outt[1] >= 0
 
         # We override the ligands, so don't pass along their gradient
