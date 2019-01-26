@@ -102,8 +102,8 @@ class build_model:
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
             # Add bounds for the stderr to help force the fitting solution
-            sd_15 = T.minimum(T.std(Y_15), 0.1)
-            sd_int = T.minimum(T.std(Y_int), 0.1)
+            sd_15 = T.minimum(T.std(Y_15), 0.05)
+            sd_int = T.minimum(T.std(Y_int), 0.05)
 
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
@@ -118,5 +118,5 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        approx = pm.fit(60000, method='fullrank_advi', model=self.M) # fullrank_advi, svgd
-        self.trace = approx.sample()
+        #approx = pm.fit(60000, method='fullrank_advi', model=self.M) # fullrank_advi, svgd
+        self.trace = pm.sample(init="ADVI", model=self.M)
