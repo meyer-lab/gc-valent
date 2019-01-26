@@ -126,12 +126,12 @@ def violinPlots(ax, unkVec):
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set(title="Trafficking parameters", ylabel="log10 of 1/min")
+    b.set(title="Trafficking parameters", ylabel=r"$log_{10}$ of #/cell/min")
 
-    Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', 'g~c~', 'IL-15Rα']
+    Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set(title="Receptor expression rates", ylabel="log_{10} of #/cell/min")
+    c.set(title="Receptor expression rates", ylabel=r"$log_{10}$ of #/cell/min")
 
 
 def rateComp(ax, unkVec):
