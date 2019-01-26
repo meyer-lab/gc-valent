@@ -96,7 +96,7 @@ class build_model:
             sortF = pm.Beta('sortF', alpha=6, beta=40, testval=0.15, shape=1)
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo_activeEndo, sortF, kRec_kDeg, Rexpr, nullRates*0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec_kDeg, Rexpr, nullRates*0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
