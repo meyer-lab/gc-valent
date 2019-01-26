@@ -113,7 +113,7 @@ def pstat_act(ax, unkVec):
     ax.scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL-15, 2Rα-") # IL15 in 2Ra-
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+") # IL15 in 2Ra+
-    ax.set(ylabel='Percent of maximal p-STAT5 (%)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
+    ax.set(ylabel='Percent of maximal p-STAT5 (%)', xlabel=r'log$_{10}$ of cytokine concentration (nM)', title='YT-1 Cell Activity')
     ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
 
 def violinPlots(ax, unkVec):
@@ -126,12 +126,12 @@ def violinPlots(ax, unkVec):
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set(title="Trafficking parameters", ylabel=r"log$_{10}$ of #/cell/min")
+    b.set(title="Trafficking parameters", ylabel=r"log$_{10}$ of $\frac{#}{cell * min}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set(title="Receptor expression rates", ylabel=r"log$_{10}$ of #/cell/min")
+    c.set(title="Receptor expression rates", ylabel=r"log$_{10}$ of $\frac{#}{cell * min}$")
 
 
 def rateComp(ax, unkVec):
@@ -167,17 +167,17 @@ def rateComp(ax, unkVec):
     df.loc[500:1000, 'cytokine'] = 'IL-15'
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r'log$_{10}$ of 1/nM/min')
-    melted.loc[:, r'log$_{10}$ of 1/nM/min'] = np.log10(melted.loc[:, r'log$_{10}$ of 1/nM/min'])
+    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r'log$_{10}$ of $\frac{1}{nM * min}$')
+    melted.loc[:, r'log$_{10}$ of $\frac{1}{nM * min}$'] = np.log10(melted.loc[:, r'log$_{10}$ of $\frac{1}{nM * min}$'])
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y=r'log$_{10}$ of 1/nM/min', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
-    a.scatter(2.75, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
-    a.scatter(3.20, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
-    a.scatter(3.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
-    a.scatter(4.15, np.log10(kfbnd * 468), color='goldenrod') # overlay point for k14rev
+    a = sns.violinplot(x='rate', y=r'log$_{10}$ of $\frac{1}{nM * min}$', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
+    a.scatter(0, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
+    a.scatter(0.4, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
+    a.scatter(1., np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
+    a.scatter(1.4, np.log10(kfbnd * 468), color='goldenrod') # overlay point for k14rev
     a.set_title("Analogous reverse reaction rates")
