@@ -160,22 +160,22 @@ def rateComp(ax, unkVec):
     k20rev = k22rev * k24rev / k17rev
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'k1_k13': np.append(k1rev, k13rev), 'k2_k14': np.append(k2rev, k14rev), 'k4_k16': np.append(k4rev, k16rev), 'k5_k17': np.append(k5rev, k17rev), 'k8_k20': np.append(k8rev, k20rev), 'k9_k21': np.append(k9rev, k21rev), 'k10_k22': np.append(k10rev, k22rev), 'k11_k23': np.append(k11rev, k23rev), 'k12_k24': np.append(k12rev, k24rev)})
+    df = pd.DataFrame({r'$k_{1}, k_{13}$': np.append(k1rev, k13rev), r'$k_{2}, k_{14}$': np.append(k2rev, k14rev), r'$k_{4}, k_{16}$': np.append(k4rev, k16rev), r'$k_{5}, k_{17}$': np.append(k5rev, k17rev), r'$k_{8}, k_{20}$': np.append(k8rev, k20rev), r'$k_{9}, k_{21}$': np.append(k9rev, k21rev), r'$k_{10}, k_{22}$': np.append(k10rev, k22rev), r'$k_{11}, k_{23}$': np.append(k11rev, k23rev), r'$k_{12}, k_{24}$': np.append(k12rev, k24rev)})
 
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL-2'
     df.loc[500:1000, 'cytokine'] = 'IL-15'
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name='log10 of 1/nM/min')
-    melted.loc[:, 'log10 of 1/nM/min'] = np.log10(melted.loc[:, 'log10 of 1/nM/min'])
+    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r'log$_{10}$ of 1/nM/min')
+    melted.loc[:, r'log$_{10}$ of 1/nM/min'] = np.log10(melted.loc[:, r'log$_{10}$ of 1/nM/min'])
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y='log10 of 1/nM/min', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
+    a = sns.violinplot(x='rate', y=r'log$_{10}$ of 1/nM/min', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
     a.scatter(2.75, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(3.20, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
     a.scatter(3.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
