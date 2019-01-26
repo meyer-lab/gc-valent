@@ -16,7 +16,7 @@ class runCkineDoseOp(Op):
     def infer_shape(self, node, i0_shapes):
         """ infering shape """
         assert len(i0_shapes) == 1
-        return [(self.dOp.conditions.shape[0], )]
+        return [(self.dOp.conditions.shape[0]*self.dOp.ts.size, )]
 
     def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, sensi=False)
