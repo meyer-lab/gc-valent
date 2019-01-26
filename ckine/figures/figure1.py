@@ -58,6 +58,8 @@ def surf_perc(ax, species, unkVec):
     size = len(ts)
     results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
+    print("calling surf.calc")
+    print("unkVec.shape: " + str(unkVec.shape))
     output = surf.calc(unkVec, ts) * y_max
     results[:, :, 2, 0] = output[0:(size)]
     results[:, :, 3, 0] = output[(size):(size*2)]

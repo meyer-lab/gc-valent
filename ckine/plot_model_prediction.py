@@ -14,7 +14,7 @@ class surf_IL2Rb:
     def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface IL2Rb over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine, :] = conc
+        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
 
         returnn, retVal = runCkineUP(t, np.transpose(unkVec))
 
@@ -31,7 +31,9 @@ class surf_IL2Rb:
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22, :] = 0.
+        unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
+        print("about to call singleCalc for surfIL2Rb")
+        print("unkVec.shape: " + str(unkVec.shape))
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)
@@ -57,7 +59,7 @@ class pstat:
     def singleCalc(self, unkVec, cytokine, conc):
         """ Calculates the surface IL2Rb over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine, :] = conc
+        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
 
         returnn, retVal = runCkineUP(self.ts, np.transpose(unkVec))
 
@@ -70,7 +72,7 @@ class pstat:
         assert unkVec.shape[0] == nParams()
 
         unkVec_IL2Raminus = unkVec.copy()
-        unkVec_IL2Raminus[22, :] = 0.0 # set IL2Ra expression rate to 0
+        unkVec_IL2Raminus[22, :] = np.zeros((unkVec.shape[1])) # set IL2Ra expression rate to 0
 
         # Calculate activities
         actVec_IL2 = np.fromiter((self.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
@@ -92,7 +94,7 @@ class surf_gc:
     def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine, :] = conc
+        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
 
         returnn, retVal = runCkineUP(t, np.transpose(unkVec))
 
@@ -109,7 +111,7 @@ class surf_gc:
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22, :] = 0.
+        unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)
