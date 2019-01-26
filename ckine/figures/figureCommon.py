@@ -47,7 +47,7 @@ def subplotLabel(ax, letter, hstretch=1):
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return ['endo', 'activeEndo', 'sortF', 'kRec', 'kDeg']
+    return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
 
 def plot_conf_int(ax, x_axis, y_axis, color, label):
     """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """

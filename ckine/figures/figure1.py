@@ -23,7 +23,7 @@ def makeFigure():
 
     unkVec = import_samples_2_15()
     pstat_act(ax[1], unkVec)
-    surf_perc(ax[2:4], 'IL2Rb', unkVec)
+    surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
     violinPlots(ax[6:8], unkVec)
     rateComp(ax[8], unkVec)
 
@@ -35,7 +35,7 @@ def makeFigure():
 
 def surf_perc(ax, species, unkVec):
     """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
-    if species == 'IL2Rb':
+    if species == 'IL-2Rβ':
         surf = surf_IL2Rb() # load proper class
         # overlay experimental data
         path = os.path.dirname(os.path.abspath(__file__))
@@ -126,12 +126,12 @@ def violinPlots(ax, unkVec):
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set(title="Trafficking parameters", ylabel=r"$log_{10}$ of #/cell/min")
+    b.set(title="Trafficking parameters", ylabel=r"log$_{10}$ of #/cell/min")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set(title="Receptor expression rates", ylabel=r"$log_{10}$ of #/cell/min")
+    c.set(title="Receptor expression rates", ylabel=r"log$_{10}$ of #/cell/min")
 
 
 def rateComp(ax, unkVec):
