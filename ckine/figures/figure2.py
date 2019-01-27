@@ -211,7 +211,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     IL7vec = np.transpose(output[:, PTS:(PTS*2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue", "IL-4")
     plot_conf_int(ax, ts, IL7vec, "b", "IL-7")
-    ax.set(title=("Ligand conc: " + str(round(cytokC_pg, 0) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    ax.set(title=("Ligand conc: " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
     ax.legend()
 
 def calc_surf_gc(t, cytokC_pg, unkVec):
