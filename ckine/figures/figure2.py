@@ -68,8 +68,8 @@ def pstat_plot(ax, unkVec, scales):
     cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
     path = os.path.dirname(os.path.abspath(__file__))
-    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
-    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
+    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values * 100. # imports IL4 file into pandas array
+    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values * 100. # imports IL7 file into pandas array
     IL4_data_max = np.amax(np.concatenate((dataIL4[:,1], dataIL4[:,2])))
     IL7_data_max = np.amax(np.concatenate((dataIL7[:,1], dataIL7[:,2])))
 
@@ -81,22 +81,22 @@ def pstat_plot(ax, unkVec, scales):
         IL7_output[:, ii] = output[PTS:(PTS*2)]
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC_common), IL4_output, "powderblue", "IL4")
-    plot_conf_int(ax, np.log10(cytokC_common), IL7_output, "b", "IL7")
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue", "IL-4")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100., "b", "IL-7")
 
     # overlay experimental data
     ax.scatter(np.log10(cytokC_4), dataIL4[:,1] / IL4_data_max, color='powderblue', marker='^', edgecolors='k', zorder=100)
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2] / IL4_data_max, color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,1] / IL7_data_max, color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,2] / IL7_data_max, color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='Fraction of maximal p-STAT', xlabel='log10 of stimulation concentration (nM)', title="pSTAT activity")
+    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
     ax.legend()
 
 def violinPlots(ax, unkVec, scales):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
 
-    rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]]) # kfwd, k27rev, k33rev
+    rxn = np.array([unkVec[:, 13], unkVec[:, 15]]) #k27rev, k33rev
     rxn = rxn.transpose()
     rxn = pd.DataFrame(rxn)
     traf = pd.DataFrame(unkVec[:, 17:22])
@@ -105,22 +105,22 @@ def violinPlots(ax, unkVec, scales):
     Rexpr = pd.DataFrame(Rexpr)
     scales = pd.DataFrame(scales)
 
-    rxn.columns = ['kfwd', 'k27rev', 'k33rev']
+    rxn.columns = [r'$k_{27}$', r'$k_{33}$']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-    a.set_ylabel("log10 of rate")
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
     a.set_title("Reverse reaction rates")
 
     traf.columns = traf_names()
     b = sns.violinplot(data=traf, ax=ax[1])
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-    b.set_ylabel("Rate (1/min)")
+    b.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     b.set_title("Trafficking parameters")
 
-    Rexpr.columns = ['GCexpr', 'IL7Raexpr', 'IL4Raexpr']
+    Rexpr.columns = [r'$\gamma_{c}$', 'IL-7Rα', 'IL-4Rα']
     c = sns.violinplot(data=Rexpr, ax=ax[2])
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-    c.set_ylabel("Rate (#/cell/min)")
+    c.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     c.set_title("Receptor expression rates")
 
     scales.columns = ['IL4 scale', 'IL7 scale']
