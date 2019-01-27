@@ -176,8 +176,8 @@ def rateComp(ax, unkVec):
 
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y=r'log$_{10}$ of $\mathrm{\frac{1}{nM * min}}$', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
-    a.scatter(0, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
-    a.scatter(0.4, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
-    a.scatter(1., np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
-    a.scatter(1.4, np.log10(kfbnd * 468), color='goldenrod') # overlay point for k14rev
+    a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
+    a.scatter(0.3, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
+    a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
+    a.scatter(1.3, np.log10(kfbnd * 468), color='goldenrod') # overlay point for k14rev
     a.set_title("Analogous reverse reaction rates")
