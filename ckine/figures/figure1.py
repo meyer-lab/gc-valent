@@ -75,9 +75,9 @@ def surf_perc(ax, species, unkVec):
         plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod", "IL-15")
 
     # label axes and titles
-    ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 Cells and 500 nM")
+    ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 500 nM")
     ax[1].set_ylim(0,115)
-    ax[0].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 Cells and 1 nM")
+    ax[0].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 1 nM")
     ax[0].set_ylim(0,115)
 
 
@@ -113,7 +113,7 @@ def pstat_act(ax, unkVec):
     ax.scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL-15, 2Rα-") # IL15 in 2Ra-
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+") # IL15 in 2Ra+
-    ax.set(ylabel='Percent of maximal p-STAT5 (%)', xlabel=r'log$_{10}$ of cytokine concentration (nM)', title='YT-1 Cell Activity')
+    ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
     ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
 
 def violinPlots(ax, unkVec):
@@ -126,12 +126,12 @@ def violinPlots(ax, unkVec):
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set(title="Trafficking parameters", ylabel=r"log$_{10}$ of $\mathrm{\frac{1}{min}}$")
+    b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set(title="Receptor expression rates", ylabel=r"log$_{10}$ of $\mathrm{\frac{num}{cell * min}}$")
+    c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
 
 
 def rateComp(ax, unkVec):
@@ -173,7 +173,7 @@ def rateComp(ax, unkVec):
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
-
+r"$\mathrm{log_{10}(\frac{1}{})}$"
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y=r'log$_{10}$ of $\mathrm{\frac{1}{nM * min}}$', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
