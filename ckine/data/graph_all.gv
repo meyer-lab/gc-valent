@@ -11,17 +11,17 @@ digraph cgamma_cytok {
     subgraph species {
         node [margin=0.03];
 
-        "IL2"   [shape=circle, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
+        "IL-2"   [shape=circle, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
         "2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled   ];
         "2Rb" [shape=box, style=filled, fontname = "helvetica", fillcolor="goldenrod1:mediumorchid3", style=filled];
-        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
-        "2-2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
-        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
-        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
-        "2-2Ra-2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
-        "2-2Ra-gc" [shape=box, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled];
-        "2-2Rb-gc" [shape=box, color=red, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled, penwidth=2.5];
-        "2-2Ra-2Rb-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=mediumorchid2, style=filled , penwidth=2.5];
+        "2·2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2·2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2·2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2·2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2·2Ra·2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
+        "2·2Ra·gc" [shape=box, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled];
+        "2·2Rb·gc" [shape=box, color=red, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled, penwidth=2.5];
+        "2·2Ra·2Rb·gc" [shape=box, color=red, fontname = "helvetica", fillcolor=mediumorchid2, style=filled , penwidth=2.5];
 
         "IL15"  [shape=circle, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
         "15Ra"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
@@ -58,49 +58,49 @@ digraph cgamma_cytok {
         penwidth=0;
 
         "1" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "IL2" -> "1" [dir=none,weight=1];
+        "IL-2" -> "1" [dir=none,weight=1];
         "2Ra" -> "1" [dir=none,weight=1];
-        "1" -> "2-2Ra" [dir=none, weight=2];
+        "1" -> "2·2Ra" [dir=none, weight=2];
 
         "2" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "IL2" -> "2" [dir=none,weight=1];
+        "IL-2" -> "2" [dir=none,weight=1];
         "2Rb" -> "2" [dir=none,weight=1];
-        "2" -> "2-2Rb" [dir=none, weight=2];
+        "2" -> "2·2Rb" [dir=none, weight=2];
 
         "4" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "2-2Ra" -> "4" [dir=none,weight=1];
+        "2·2Ra" -> "4" [dir=none,weight=1];
         "gc" -> "4" [dir=none,weight=1];
-        "4" -> "2-2Ra-gc" [dir=none, weight=2];
+        "4" -> "2·2Ra·gc" [dir=none, weight=2];
 
         "5" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "2-2Rb" -> "5" [dir=none,weight=1];
+        "2·2Rb" -> "5" [dir=none,weight=1];
         "gc" -> "5" [dir=none,weight=1];
-        "5" -> "2-2Rb-gc" [dir=none, weight=2];
+        "5" -> "2·2Rb·gc" [dir=none, weight=2];
 
         "8" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "2-2Rb-gc" -> "8" [dir=none,weight=1];
+        "2·2Rb·gc" -> "8" [dir=none,weight=1];
         "2Ra" -> "8" [dir=none,weight=1];
-        "8" -> "2-2Ra-2Rb-gc" [dir=none, weight=2, fontname = "helvetica"];
+        "8" -> "2·2Ra·2Rb·gc" [dir=none, weight=2, fontname = "helvetica"];
 
         "9" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "2-2Ra-gc" -> "9" [dir=none,weight=1];
+        "2·2Ra·gc" -> "9" [dir=none,weight=1];
         "2Rb" -> "9" [dir=none,weight=1];
-        "9" -> "2-2Ra-2Rb-gc" [dir=none, weight=2];
+        "9" -> "2·2Ra·2Rb·gc" [dir=none, weight=2];
 
         "10" [shape=triangle,style=filled,height=.1,width=.04, fontname = "helvetica"];
-        "2-2Ra-2Rb" -> "10" [dir=none,weight=1];
+        "2·2Ra·2Rb" -> "10" [dir=none,weight=1];
         "gc" -> "10" [dir=none,weight=1];
-        "10" -> "2-2Ra-2Rb-gc" [dir=none, weight=2];
+        "10" -> "2·2Ra·2Rb·gc" [dir=none, weight=2];
 
         "11" [shape=triangle,style=filled,height=.1,width=.04, fontname = "helvetica"];
-        "2-2Ra" -> "11" [dir=none,weight=1];
+        "2·2Ra" -> "11" [dir=none,weight=1];
         "2Rb" -> "11" [dir=none,weight=1];
-        "11" -> "2-2Ra-2Rb" [dir=none, weight=2];
+        "11" -> "2·2Ra·2Rb" [dir=none, weight=2];
 
         "12" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "2-2Rb" -> "12" [dir=none,weight=1];
+        "2·2Rb" -> "12" [dir=none,weight=1];
         "2Ra" -> "12" [dir=none,weight=1];
-        "12" -> "2-2Ra-2Rb" [dir=none, weight=2];
+        "12" -> "2·2Ra·2Rb" [dir=none, weight=2];
     }
 
     subgraph cluster_IL15 {
