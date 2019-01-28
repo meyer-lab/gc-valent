@@ -89,7 +89,7 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_4), (dataIL4[:,2] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:,1] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:,2] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
+    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
     ax.legend()
 
 def violinPlots(ax, unkVec, scales):
@@ -107,7 +107,6 @@ def violinPlots(ax, unkVec, scales):
 
     rxn.columns = [r'$k_{27}$', r'$k_{33}$']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
     a.set_title("Reverse reaction rates")
 
@@ -190,7 +189,7 @@ def plot_pretreat(ax, unkVec, scales, title):
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim. (IL-4 pre.)")
-    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Cytokine concentration (log$_{10}$[nM])')
+    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment concentration (log$_{10}$[nM])')
 
     # add experimental data to plots
     ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
@@ -212,6 +211,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     plot_conf_int(ax, ts, IL4vec, "powderblue", "IL-4")
     plot_conf_int(ax, ts, IL7vec, "b", "IL-7")
     ax.set(title=("Ligand conc: " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    ax.set_ylim(0,115)
     ax.legend()
 
 def calc_surf_gc(t, cytokC_pg, unkVec):
