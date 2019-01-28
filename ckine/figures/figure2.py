@@ -124,6 +124,7 @@ def violinPlots(ax, unkVec, scales):
 
     scales.columns = [r'$C_{6}$', r'$C_{5}$']
     d = sns.violinplot(data=scales, ax=ax[3])
+    d.set_title("pSTAT scaling constants")
 
 def pretreat_calc(unkVec, scales, pre_conc):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
