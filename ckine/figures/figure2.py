@@ -122,10 +122,8 @@ def violinPlots(ax, unkVec, scales):
     c.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     c.set_title("Receptor expression rates")
 
-    scales.columns = ['IL4 scale', 'IL7 scale']
+    scales.columns = [r'C_{6}', r'C_{5}']
     d = sns.violinplot(data=scales, ax=ax[3])
-    d.set_xticklabels(d.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
-
 
 def pretreat_calc(unkVec, scales, pre_conc):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
