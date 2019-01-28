@@ -122,7 +122,7 @@ def violinPlots(ax, unkVec, scales):
     c.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     c.set_title("Receptor expression rates")
 
-    scales.columns = [r'C_{6}', r'C_{5}']
+    scales.columns = [r'$C_{6}$', r'$C_{5}$']
     d = sns.violinplot(data=scales, ax=ax[3])
 
 def pretreat_calc(unkVec, scales, pre_conc):
