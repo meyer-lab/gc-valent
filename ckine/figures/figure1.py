@@ -103,8 +103,8 @@ def pstat_act(ax, unkVec):
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL-2")
     plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL-15")
-    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid", "IL-2")
-    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod", "IL-15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
+    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
