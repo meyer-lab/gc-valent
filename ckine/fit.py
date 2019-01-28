@@ -86,29 +86,30 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1, shape=6) # 6 reverse rxn rates for IL2/IL15
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=1.0, shape=1)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1.0, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
             endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.5, shape=1)
-            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.5, shape=1)
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=6, beta=40, testval=0.15, shape=1)
+            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.5, testval=1.46, shape=1)
+            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.5, shape=1)
+            kDeg = pm.Lognormal('kDeg', mu=np.log(0.02), sd=0.5, shape=1)
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=1.0, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            sortF = pm.Beta('sortF', alpha=6, beta=40, shape=1)
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec_kDeg, Rexpr, nullRates*0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
 
-            #Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
             # Add bounds for the stderr to help force the fitting solution
-            #sd_15 = T.minimum(T.std(Y_15), 0.05)
+            sd_15 = T.minimum(T.std(Y_15), 0.05)
             sd_int = T.minimum(T.std(Y_int), 0.05)
 
-            #pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
+            pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            #pm.Normal('fitD_15', sd=sd_15, observed=Y_15) # experimental-derived stderr is used
+            pm.Normal('fitD_15', sd=sd_15, observed=Y_15) # experimental-derived stderr is used
             pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
 
             # Save likelihood
