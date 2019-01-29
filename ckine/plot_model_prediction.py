@@ -72,7 +72,7 @@ class pstat:
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
 
-        returnn, retVal = runCkineU(t, unkVec)
+        returnn, retVal = runCkineU(self.ts, unkVec)
 
         assert retVal >= 0
 
