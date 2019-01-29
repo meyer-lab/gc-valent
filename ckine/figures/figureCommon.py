@@ -62,7 +62,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
 
-    labelLigand = itertools.cycle(('Combined IL2-15 Activity', 'IL7 Activity', 'IL9 Activity', 'IL4 Activity', 'IL21 Activity'))
+    labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
             ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
