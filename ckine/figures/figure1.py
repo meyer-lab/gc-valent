@@ -70,17 +70,6 @@ def surf_perc(ax, species, unkVec):
     results[:, :, 0, 1] = output[(size*6):(size*7)]
     results[:, :, 1, 1] = output[(size*7):(size*8)]
 
-    #for ii in range(0,500):
-    #    output = surf.calc(unkVec[:, ii], ts) * y_max
-    #    results[:, ii, 2, 0] = output[0:(size)]
-    #    results[:, ii, 3, 0] = output[(size):(size*2)]
-    #    results[:, ii, 0, 0] = output[(size*2):(size*3)]
-    #    results[:, ii, 1, 0] = output[(size*3):(size*4)]
-    #    results[:, ii, 2, 1] = output[(size*4):(size*5)]
-    #    results[:, ii, 3, 1] = output[(size*5):(size*6)]
-    #    results[:, ii, 0, 1] = output[(size*6):(size*7)]
-    #    results[:, ii, 1, 1] = output[(size*7):(size*8)]
-
     for n in range(4):
         # plot results within confidence intervals
         plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid", "IL2")
@@ -104,6 +93,8 @@ def pstat_act(ax, unkVec):
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
+    print("calling pSTAT.calc")
+    print("unkVec.shape: " + str(unkVec.shape))
     # calculate activity for each unkVec for all conc.
     output = pstat5.calc(unkVec, cytokC) * y_max
     IL2_plus = output[0:PTS]

@@ -60,8 +60,10 @@ class pstat:
         """ Calculates the pSTAT activities in parallel for a 2-D array of unkVec. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        print("about to call runCkineUP")
 
         returnn, retVal = runCkineUP(self.ts, np.transpose(unkVec))
+        print("done with runCkineUP")
 
         assert retVal >= 0
 
@@ -86,6 +88,7 @@ class pstat:
         unkVec_IL2Raminus[22, :] = np.zeros((unkVec.shape[1])) # set IL2Ra expression rate to 0
 
         # Calculate activities
+        print("about to create actVec_IL2")
         actVec_IL2 = np.fromiter((self.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
         actVec_IL2_IL2Raminus = np.fromiter((self.parallelCalc(unkVec_IL2Raminus, 0, x) for x in cytokC), np.float64)
         actVec_IL15 = np.fromiter((self.parallelCalc(unkVec, 1, x) for x in cytokC), np.float64)
