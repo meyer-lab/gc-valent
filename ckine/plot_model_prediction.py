@@ -56,8 +56,8 @@ class pstat:
         self.activity = getTotalActiveSpecies().astype(np.float64)
         self.ts = np.array([500.]) # was 500. in literature
 
-    def singleCalc(self, unkVec, cytokine, conc):
-        """ Calculates the surface IL2Rb over time for one condition. """
+    def parallelCalc(self, unkVec, cytokine, conc):
+        """ Calculates the pSTAT activities in parallel for a 2-D array of unkVec. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
 
@@ -67,6 +67,17 @@ class pstat:
 
         return np.dot(returnn, self.activity)
 
+    def singleCalc(self, unkVec, cytokine, conc):
+        """ Calculates the pSTAT activity for one unkVec condition. """
+        unkVec = unkVec.copy()
+        unkVec[cytokine] = conc
+
+        returnn, retVal = runCkineU(t, unkVec)
+
+        assert retVal >= 0
+
+        return np.dot(returnn, self.activity)
+    
     def calc(self, unkVec, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
         assert unkVec.shape[0] == nParams()
@@ -75,10 +86,10 @@ class pstat:
         unkVec_IL2Raminus[22, :] = np.zeros((unkVec.shape[1])) # set IL2Ra expression rate to 0
 
         # Calculate activities
-        actVec_IL2 = np.fromiter((self.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
-        actVec_IL2_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 0, x) for x in cytokC), np.float64)
-        actVec_IL15 = np.fromiter((self.singleCalc(unkVec, 1, x) for x in cytokC), np.float64)
-        actVec_IL15_IL2Raminus = np.fromiter((self.singleCalc(unkVec_IL2Raminus, 1, x) for x in cytokC), np.float64)
+        actVec_IL2 = np.fromiter((self.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
+        actVec_IL2_IL2Raminus = np.fromiter((self.parallelCalc(unkVec_IL2Raminus, 0, x) for x in cytokC), np.float64)
+        actVec_IL15 = np.fromiter((self.parallelCalc(unkVec, 1, x) for x in cytokC), np.float64)
+        actVec_IL15_IL2Raminus = np.fromiter((self.parallelCalc(unkVec_IL2Raminus, 1, x) for x in cytokC), np.float64)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus))
