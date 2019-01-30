@@ -33,8 +33,6 @@ class surf_IL2Rb:
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
         unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
-        print("about to call singleCalc for surfIL2Rb")
-        print("unkVec.shape: " + str(unkVec.shape))
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t)
@@ -87,15 +85,21 @@ class pstat:
         unkVec_IL2Raminus = unkVec.copy()
         unkVec_IL2Raminus[22, :] = np.zeros((unkVec.shape[1])) # set IL2Ra expression rate to 0
 
+        actVec_IL2 = np.zeros((500, len(cytokC)))
+        actVec_IL2_IL2Raminus = actVec_IL2.copy()
+        actVec_IL15 = actVec_IL2.copy()
+        actVec_IL15_IL2Raminus = actVec_IL2.copy()
+        
         # Calculate activities
-        print("about to create actVec_IL2")
-        actVec_IL2 = np.fromiter((self.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
-        actVec_IL2_IL2Raminus = np.fromiter((self.parallelCalc(unkVec_IL2Raminus, 0, x) for x in cytokC), np.float64)
-        actVec_IL15 = np.fromiter((self.parallelCalc(unkVec, 1, x) for x in cytokC), np.float64)
-        actVec_IL15_IL2Raminus = np.fromiter((self.parallelCalc(unkVec_IL2Raminus, 1, x) for x in cytokC), np.float64)
+        for x in range(len(cytokC)):
+            actVec_IL2[:, x] = self.parallelCalc(unkVec, 0, cytokC[x])
+            actVec_IL2_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 0, cytokC[x])
+            actVec_IL15[:, x] = self.parallelCalc(unkVec, 1, cytokC[x])
+            actVec_IL15_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 1, cytokC[x])
 
         # Normalize to the maximal activity, put together into one vector
-        actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus))
+        actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
+        print("actVec.shape" + str(actVec.shape))
 
         return actVec / np.max(actVec)
 
