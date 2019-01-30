@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7
-from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, getTotalActiveCytokine
+from ..model import nParams, getTotalActiveSpecies, runCkineU, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -22,14 +22,14 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_4_7()
-    pstat_plot(ax[1], unkVec, scales)
-    plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
+    #pstat_plot(ax[1], unkVec, scales)
+    #plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
 
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
+    #plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
 
     f.tight_layout()
 
@@ -216,23 +216,28 @@ def surf_gc(ax, cytokC_pg, unkVec):
 def calc_surf_gc(t, cytokC_pg, unkVec):
     """ Calculates the percent of gc on the surface over time while under IL7 and IL4 stimulation. """
     gc_species_IDX = getSurfaceGCSpecies()
+    N = len(t)
+    K = unkVec.shape[1]
 
-    def singleCalc(unkVec, cytokine, conc, t):
+    def parallelCalc(unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
-        returnn, retVal = runCkineU(t, unkVec)
+        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
+
+        returnn, retVal = runCkineUP(t, unkVec)
         assert retVal >= 0
         a = np.dot(returnn, gc_species_IDX)
         return a
 
-    result = np.zeros((500,(t.size)*2))
-    for ii in range(500):
-        # calculate IL4 stimulation
-        a = singleCalc(unkVec[:, ii], 4, (cytokC_pg / 14900.), t)
-        # calculate IL7 stimulation
-        b = singleCalc(unkVec[:, ii], 2, (cytokC_pg / 17400.), t)
-        result[ii, :] = np.concatenate((a, b))
+    #result = np.zeros((500,(t.size)*2))
+    # calculate IL4 stimulation
+    a = parallelCalc(unkVec, 4, (cytokC_pg / 14900.), t).reshape((K,N))
+    print("a.shape: " + str(a.shape))
+    # calculate IL7 stimulation
+    b = parallelCalc(unkVec, 2, (cytokC_pg / 17400.), t).reshape((K,N))
+    result = np.concatenate((a, b), axis=1)
+    print(result.shape)
 
     return (result / np.max(result)) * 100.
 
