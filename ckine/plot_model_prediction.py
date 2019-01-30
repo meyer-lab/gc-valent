@@ -105,8 +105,12 @@ class pstat:
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
+        print(actVec.shape)
 
-        return actVec / np.max(actVec)
+        for ii in range(K):
+            actVec[ii] = actVec[ii] / np.max(actVec[ii]) # not sure if this normalization is correct
+
+        return actVec
 
 class surf_gc:
     """ This class is responsible for calculating the percent of gamma chain on the cell surface. The experimental conditions match those of the surface IL2Rb measurements in Ring et al. """
