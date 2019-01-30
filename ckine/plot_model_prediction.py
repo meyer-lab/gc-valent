@@ -105,10 +105,9 @@ class pstat:
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
-        print(actVec.shape)
 
         for ii in range(K):
-            actVec[ii] = actVec[ii] / np.max(actVec[ii]) # not sure if this normalization is correct
+            actVec[ii] = actVec[ii] / np.max(actVec[ii]) # normalize by the max value of each row
 
         return actVec
 
