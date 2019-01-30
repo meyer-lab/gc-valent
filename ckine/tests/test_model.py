@@ -141,7 +141,11 @@ class TestModel(unittest.TestCase):
         # test that all of the solutions returned are identical
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
-
+        
+        # test that the assert statement is caught when an array of 0's is passed in
+        zeros = np.zeros((5, 30)) # add 5 rows of 0's at the end
+        rxntfr = np.concatenate((rxntfr, zeros), axis=0)
+        outt, retVal = runCkineUP(self.ts[1], rxntfr) # this call should trigger an assert statement in runCkineUP
 
     def test_initial(self):
         """ Test that there is at least 1 non-zero species at T=0. """
