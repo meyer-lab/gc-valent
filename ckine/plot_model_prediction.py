@@ -35,7 +35,6 @@ class surf_IL2Rb:
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
         unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
-        
 
         # calculate IL2 stimulation
         a = self.singleCalc(unkVec, 0, 1., t).reshape((K, N))
@@ -49,7 +48,10 @@ class surf_IL2Rb:
         g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t).reshape((K, N))
         h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t).reshape((K, N))
 
-        return np.concatenate((a, b, c, d, e, f, g, h), axis=1) / a[0, 0] # this normalization might be wrong
+        catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)
+        for ii in range(K):
+            catVec[ii] = catVec[ii] / a[ii, 0] # normalize by a[0] for each row
+        return catVec
 
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
