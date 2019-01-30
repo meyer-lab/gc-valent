@@ -84,11 +84,12 @@ class pstat:
     def calc(self, unkVec, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
         assert unkVec.shape[0] == nParams()
+        K = unkVec.shape[1]
 
         unkVec_IL2Raminus = unkVec.copy()
         unkVec_IL2Raminus[22, :] = np.zeros((unkVec.shape[1])) # set IL2Ra expression rate to 0
 
-        actVec_IL2 = np.zeros((500, len(cytokC)))
+        actVec_IL2 = np.zeros((K, len(cytokC)))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
         actVec_IL15 = actVec_IL2.copy()
         actVec_IL15_IL2Raminus = actVec_IL2.copy()
