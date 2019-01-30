@@ -22,7 +22,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_4_7()
-    #pstat_plot(ax[1], unkVec, scales)
+    pstat_plot(ax[1], unkVec, scales)
     #plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
@@ -39,31 +39,39 @@ def pstat_calc(unkVec, scales, cytokC):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.]) # was 10. in literature
-
-    def singleCalc(unkVec, cytokine, conc):
-        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+    assert unkVec.shape[0] == nParams()
+    K = unkVec.shape[1] # should be 500
+    
+    def parallelCalc(unkVec, cytokine, conc):
+        ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
-        returnn, retVal = runCkineU(ts, unkVec)
+        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
+        returnn, retVal = runCkineUP(ts, unkVec)
         assert retVal >= 0
         return np.dot(returnn, activity)
 
-    assert unkVec.size == nParams()
-    actVecIL7 = np.fromiter((singleCalc(unkVec, 2, x) for x in cytokC), np.float64)
-    actVecIL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC), np.float64)
+    actVecIL7 = np.zeros((K, len(cytokC)))
+    actVecIL4 = actVecIL7.copy()
+    for x in range(len(cytokC)):
+        actVecIL7[:, x] = parallelCalc(unkVec, 2, cytokC[x])
+        actVecIL4[:, x] = parallelCalc(unkVec, 4, cytokC[x])
 
-    # incorporate IC50 scale
-    actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
-    actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
+    for ii in range(K):
+        # incorporate IC50 scale
+        actVecIL4[ii] = actVecIL4[ii]  / (actVecIL4[ii] + scales[ii, 0])
+        actVecIL7[ii] = actVecIL7[ii] / (actVecIL7[ii] + scales[ii, 1])
 
-    # normalize each actVec by its maximum... do I need to be doing this?
-    actVecIL4 = actVecIL4 / np.max(actVecIL4)
-    actVecIL7 = actVecIL7 / np.max(actVecIL7)
+        # normalize each actVec by its maximum... do I need to be doing this?
+        actVecIL4[ii] = actVecIL4[ii] / np.max(actVecIL4[ii])
+        actVecIL7[ii] = actVecIL7[ii] / np.max(actVecIL7[ii])
+
     return np.concatenate((actVecIL4, actVecIL7))
 
 def pstat_plot(ax, unkVec, scales):
     ''' This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. '''
     PTS = 30
+    K = unkVec.shape[1] # should be 500
     cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
     cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
@@ -73,12 +81,9 @@ def pstat_plot(ax, unkVec, scales):
     IL4_data_max = np.amax(np.concatenate((dataIL4[:,1], dataIL4[:,2])))
     IL7_data_max = np.amax(np.concatenate((dataIL7[:,1], dataIL7[:,2])))
 
-    IL4_output = np.zeros((PTS, 500))
-    IL7_output = IL4_output.copy()
-    for ii in range(0,500):
-        output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
-        IL4_output[:, ii] = output[0:PTS]
-        IL7_output[:, ii] = output[PTS:(PTS*2)]
+    output = pstat_calc(unkVec, scales, cytokC_common)
+    IL4_output = output[0:K].T
+    IL7_output = output[K:(K*2)].T
 
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue", "IL-4")
@@ -224,20 +229,16 @@ def calc_surf_gc(t, cytokC_pg, unkVec):
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
-
         returnn, retVal = runCkineUP(t, unkVec)
         assert retVal >= 0
         a = np.dot(returnn, gc_species_IDX)
         return a
 
-    #result = np.zeros((500,(t.size)*2))
     # calculate IL4 stimulation
     a = parallelCalc(unkVec, 4, (cytokC_pg / 14900.), t).reshape((K,N))
-    print("a.shape: " + str(a.shape))
     # calculate IL7 stimulation
     b = parallelCalc(unkVec, 2, (cytokC_pg / 17400.), t).reshape((K,N))
     result = np.concatenate((a, b), axis=1)
-    print(result.shape)
 
     return (result / np.max(result)) * 100.
 
