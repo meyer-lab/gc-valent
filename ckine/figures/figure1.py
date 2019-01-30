@@ -58,17 +58,15 @@ def surf_perc(ax, species, unkVec):
     size = len(ts)
     results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
-    print("calling surf.calc")
-    print("unkVec.shape: " + str(unkVec.shape))
     output = surf.calc(unkVec, ts) * y_max
-    results[:, :, 2, 0] = output[0:(size)]
-    results[:, :, 3, 0] = output[(size):(size*2)]
-    results[:, :, 0, 0] = output[(size*2):(size*3)]
-    results[:, :, 1, 0] = output[(size*3):(size*4)]
-    results[:, :, 2, 1] = output[(size*4):(size*5)]
-    results[:, :, 3, 1] = output[(size*5):(size*6)]
-    results[:, :, 0, 1] = output[(size*6):(size*7)]
-    results[:, :, 1, 1] = output[(size*7):(size*8)]
+    results[:, :, 2, 0] = output[:, 0:(size)].T
+    results[:, :, 3, 0] = output[:, (size):(size*2)].T
+    results[:, :, 0, 0] = output[:, (size*2):(size*3)].T
+    results[:, :, 1, 0] = output[:, (size*3):(size*4)].T
+    results[:, :, 2, 1] = output[:, (size*4):(size*5)].T
+    results[:, :, 3, 1] = output[:, (size*5):(size*6)].T
+    results[:, :, 0, 1] = output[:, (size*6):(size*7)].T
+    results[:, :, 1, 1] = output[:, (size*7):(size*8)].T
 
     for n in range(4):
         # plot results within confidence intervals
@@ -88,25 +86,23 @@ def pstat_act(ax, unkVec):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-    IL2_plus = np.zeros((PTS, 500))
+    IL2_plus = np.zeros((500, PTS))
     IL15_minus = IL2_plus.copy()
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
     # calculate activity for each unkVec for all conc.
     output = pstat5.calc(unkVec, cytokC) * y_max
-    print("output.shape: " + str(output.shape))
-    IL2_plus = output[0:PTS]
-    IL2_minus = output[PTS:(PTS*2)]
-    IL15_plus = output[(PTS*2):(PTS*3)]
-    IL15_minus = output[(PTS*3):(PTS*4)]
-    print("IL2_minus.shape: " + str(IL2_minus.shape))
+    IL2_plus = output[:, 0:PTS]
+    IL2_minus = output[:, PTS:(PTS*2)]
+    IL15_plus = output[:, (PTS*2):(PTS*3)]
+    IL15_minus = output[:, (PTS*3):(PTS*4)]
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL-2")
-    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL-15")
-    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
-    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
+    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL2_minus).copy(), "darkorchid", "IL-2")
+    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL15_minus).copy(), "goldenrod", "IL-15")
+    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL2_plus).copy(), "darkorchid")
+    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL15_plus).copy(), "goldenrod")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))

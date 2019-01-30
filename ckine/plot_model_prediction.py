@@ -35,18 +35,18 @@ class surf_IL2Rb:
         unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
 
         # calculate IL2 stimulation
-        a = self.singleCalc(unkVec, 0, 1., t)
-        b = self.singleCalc(unkVec, 0, 500., t)
-        c = self.singleCalc(unkVecIL2RaMinus, 0, 1., t)
-        d = self.singleCalc(unkVecIL2RaMinus, 0, 500., t)
+        a = self.singleCalc(unkVec, 0, 1., t).reshape((500, 7))
+        b = self.singleCalc(unkVec, 0, 500., t).reshape((500, 7))
+        c = self.singleCalc(unkVecIL2RaMinus, 0, 1., t).reshape((500, 7))
+        d = self.singleCalc(unkVecIL2RaMinus, 0, 500., t).reshape((500, 7))
 
         # calculate IL15 stimulation
-        e = self.singleCalc(unkVec, 1, 1., t)
-        f = self.singleCalc(unkVec, 1, 500., t)
-        g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t)
-        h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t)
+        e = self.singleCalc(unkVec, 1, 1., t).reshape((500, 7))
+        f = self.singleCalc(unkVec, 1, 500., t).reshape((500, 7))
+        g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t).reshape((500, 7))
+        h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t).reshape((500, 7))
 
-        return np.concatenate((a, b, c, d, e, f, g, h)) / a[0]
+        return np.concatenate((a, b, c, d, e, f, g, h), axis=1) / a[0, 0] # this normalization might be wrong
 
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
@@ -99,7 +99,6 @@ class pstat:
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
-        print("actVec.shape" + str(actVec.shape))
 
         return actVec / np.max(actVec)
 
