@@ -15,8 +15,9 @@ class surf_IL2Rb:
         """ Calculates the surface IL2Rb over time for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
 
-        returnn, retVal = runCkineUP(t, np.transpose(unkVec))
+        returnn, retVal = runCkineUP(t, unkVec)
 
         assert retVal >= 0
 
@@ -60,10 +61,9 @@ class pstat:
         """ Calculates the pSTAT activities in parallel for a 2-D array of unkVec. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
-        print("about to call runCkineUP")
+        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
 
-        returnn, retVal = runCkineUP(self.ts, np.transpose(unkVec))
-        print("done with runCkineUP")
+        returnn, retVal = runCkineUP(self.ts, unkVec)
 
         assert retVal >= 0
 
@@ -109,8 +109,9 @@ class surf_gc:
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
 
-        returnn, retVal = runCkineUP(t, np.transpose(unkVec))
+        returnn, retVal = runCkineUP(t, unkVec)
 
         assert retVal >= 0
 
