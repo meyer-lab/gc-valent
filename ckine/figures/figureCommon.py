@@ -6,7 +6,7 @@ from os.path import join
 import string
 import pickle
 import itertools
-import pymc3 as pm, os
+import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -87,8 +87,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    
-    if legend: 
+
+    if legend:
         if ax_pos == 5 and factors.shape[1] <= 10:
             ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
 
