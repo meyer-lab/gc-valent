@@ -29,22 +29,25 @@ class surf_IL2Rb:
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
 
         assert unkVec.shape[0] == nParams()
+        N = len(t)
+        K = unkVec.shape[1]
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
         unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
+        
 
         # calculate IL2 stimulation
-        a = self.singleCalc(unkVec, 0, 1., t).reshape((500, 7))
-        b = self.singleCalc(unkVec, 0, 500., t).reshape((500, 7))
-        c = self.singleCalc(unkVecIL2RaMinus, 0, 1., t).reshape((500, 7))
-        d = self.singleCalc(unkVecIL2RaMinus, 0, 500., t).reshape((500, 7))
+        a = self.singleCalc(unkVec, 0, 1., t).reshape((K, N))
+        b = self.singleCalc(unkVec, 0, 500., t).reshape((K, N))
+        c = self.singleCalc(unkVecIL2RaMinus, 0, 1., t).reshape((K, N))
+        d = self.singleCalc(unkVecIL2RaMinus, 0, 500., t).reshape((K, N))
 
         # calculate IL15 stimulation
-        e = self.singleCalc(unkVec, 1, 1., t).reshape((500, 7))
-        f = self.singleCalc(unkVec, 1, 500., t).reshape((500, 7))
-        g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t).reshape((500, 7))
-        h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t).reshape((500, 7))
+        e = self.singleCalc(unkVec, 1, 1., t).reshape((K, N))
+        f = self.singleCalc(unkVec, 1, 500., t).reshape((K, N))
+        g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t).reshape((K, N))
+        h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t).reshape((K, N))
 
         return np.concatenate((a, b, c, d, e, f, g, h), axis=1) / a[0, 0] # this normalization might be wrong
 
