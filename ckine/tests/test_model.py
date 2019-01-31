@@ -142,6 +142,7 @@ class TestModel(unittest.TestCase):
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
 
+
     def test_initial(self):
         """ Test that there is at least 1 non-zero species at T=0. """
         temp, retVal = runCkineU(self.ts, self.rxntfR)
