@@ -58,7 +58,8 @@ def surf_perc(ax, species, unkVec):
     size = len(ts)
     results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
-    output = surf.calc(unkVec, ts) * y_max
+    output = surf.calc(unkVec, ts) * y_max # run the simulation
+    # split according to experimental conditions
     results[:, :, 2, 0] = output[:, 0:(size)].T
     results[:, :, 3, 0] = output[:, (size):(size*2)].T
     results[:, :, 0, 0] = output[:, (size*2):(size*3)].T
@@ -91,8 +92,8 @@ def pstat_act(ax, unkVec):
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
-    # calculate activity for each unkVec for all conc.
-    output = pstat5.calc(unkVec, cytokC) * y_max
+    output = pstat5.calc(unkVec, cytokC) * y_max # calculate activity for all unkVecs and concs
+    # split according to experimental condition
     IL2_plus = output[:, 0:PTS]
     IL2_minus = output[:, PTS:(PTS*2)]
     IL15_plus = output[:, (PTS*2):(PTS*3)]
@@ -131,10 +132,8 @@ def violinPlots(ax, unkVec):
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
 
-
 def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
-
     # assign values from unkVec
     k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
 

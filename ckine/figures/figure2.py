@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7
-from ..model import nParams, getTotalActiveSpecies, runCkineU, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
+from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -190,7 +190,6 @@ def pretreat_calc(unkVec, scales, pre_conc):
         ret2[ii] = 1 - (actVec_IL7stim[ii] / IL7stim_no_pre[ii])
 
     return np.concatenate((ret1, ret2))
-
 
 def plot_pretreat(ax, unkVec, scales, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """

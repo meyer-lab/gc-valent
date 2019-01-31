@@ -16,14 +16,9 @@ class surf_IL2Rb:
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
-
         returnn, retVal = runCkineUP(t, unkVec)
-
         assert retVal >= 0
-
-        a = np.dot(returnn, self.IL2Rb_species_IDX)
-
-        return a
+        return np.dot(returnn, self.IL2Rb_species_IDX)
 
     def calc(self, unkVec, t):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
@@ -64,22 +59,16 @@ class pstat:
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
-
         returnn, retVal = runCkineUP(self.ts, unkVec)
-
         assert retVal >= 0
-
         return np.dot(returnn, self.activity)
 
     def singleCalc(self, unkVec, cytokine, conc):
         """ Calculates the pSTAT activity for one unkVec condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine] = conc
-
         returnn, retVal = runCkineU(self.ts, unkVec)
-
         assert retVal >= 0
-
         return np.dot(returnn, self.activity)
     
     def calc(self, unkVec, cytokC):
@@ -121,14 +110,9 @@ class surf_gc:
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
-
         returnn, retVal = runCkineUP(t, unkVec)
-
         assert retVal >= 0
-
-        a = np.dot(returnn, self.gc_species_IDX)
-
-        return a
+        return np.dot(returnn, self.gc_species_IDX)
 
     def calc(self, unkVec, t):
         '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
