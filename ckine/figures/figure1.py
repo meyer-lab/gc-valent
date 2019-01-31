@@ -94,16 +94,16 @@ def pstat_act(ax, unkVec):
 
     output = pstat5.calc(unkVec, cytokC) * y_max # calculate activity for all unkVecs and concs
     # split according to experimental condition
-    IL2_plus = output[:, 0:PTS]
-    IL2_minus = output[:, PTS:(PTS*2)]
-    IL15_plus = output[:, (PTS*2):(PTS*3)]
-    IL15_minus = output[:, (PTS*3):(PTS*4)]
+    IL2_plus = output[:, 0:PTS].T
+    IL2_minus = output[:, PTS:(PTS*2)].T
+    IL15_plus = output[:, (PTS*2):(PTS*3)].T
+    IL15_minus = output[:, (PTS*3):(PTS*4)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL2_minus).copy(), "darkorchid", "IL-2")
-    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL15_minus).copy(), "goldenrod", "IL-15")
-    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL2_plus).copy(), "darkorchid")
-    plot_conf_int(ax, np.log10(cytokC), np.transpose(IL15_plus).copy(), "goldenrod")
+    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL-2")
+    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL-15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
+    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
