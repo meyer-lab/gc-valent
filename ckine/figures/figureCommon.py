@@ -61,7 +61,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
     # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
-    #Set Active to color red. Set Surface to color blue. Set Total to color black
+    #Set Active to color red. Set Surface to color blue. Set Total to color black.
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
 
     labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
