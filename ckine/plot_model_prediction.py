@@ -70,7 +70,7 @@ class pstat:
         returnn, retVal = runCkineU(self.ts, unkVec)
         assert retVal >= 0
         return np.dot(returnn, self.activity)
-    
+
     def calc(self, unkVec, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
         assert unkVec.shape[0] == nParams()
@@ -85,11 +85,11 @@ class pstat:
         actVec_IL15_IL2Raminus = actVec_IL2.copy()
 
         # Calculate activities
-        for x in range(len(cytokC)):
-            actVec_IL2[:, x] = self.parallelCalc(unkVec, 0, cytokC[x])
-            actVec_IL2_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 0, cytokC[x])
-            actVec_IL15[:, x] = self.parallelCalc(unkVec, 1, cytokC[x])
-            actVec_IL15_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 1, cytokC[x])
+        for x, conc in enumerate(cytokC):
+            actVec_IL2[:, x] = self.parallelCalc(unkVec, 0, conc)
+            actVec_IL2_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 0, conc)
+            actVec_IL15[:, x] = self.parallelCalc(unkVec, 1, conc)
+            actVec_IL15_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 1, conc)
 
         # put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
