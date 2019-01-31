@@ -54,9 +54,9 @@ def pstat_calc(unkVec, scales, cytokC):
     # find cytokine activity under various stimulation concentrations
     actVecIL7 = np.zeros((K, len(cytokC)))
     actVecIL4 = actVecIL7.copy()
-    for x in range(len(cytokC)):
-        actVecIL7[:, x] = parallelCalc(unkVec, 2, cytokC[x])
-        actVecIL4[:, x] = parallelCalc(unkVec, 4, cytokC[x])
+    for x, conc in enumerate(cytokC):
+        actVecIL7[:, x] = parallelCalc(unkVec, 2, conc)
+        actVecIL4[:, x] = parallelCalc(unkVec, 4, conc)
 
     for ii in range(K):
         # incorporate IC50 (sigmoidal) scale
@@ -163,7 +163,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     actVec_IL7stim = actVec_IL4stim.copy()
     for x in range(N):
         actVec_IL4stim[:, x] = parallelCalc(unkVec, 2, pre_conc[x], 4, IL4_stim_conc)
-        actVec_IL7stim[:, x] = parallelCalc(unkVec, 4, pre_conc[x], 2, IL7_stim_conc)    
+        actVec_IL7stim[:, x] = parallelCalc(unkVec, 4, pre_conc[x], 2, IL7_stim_conc)
 
     def parallelCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
