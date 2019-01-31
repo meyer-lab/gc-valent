@@ -5,7 +5,7 @@ import unittest
 
 
 class TestFit(unittest.TestCase):
-    """ Make sure the two pymc3 model can build. """
+    """Class to test fitting."""
     def test_fitIL2_15(self):
         """ Test that the IL2/15 model can build. """
         from ..fit import build_model
