@@ -22,14 +22,14 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_4_7()
-    #pstat_plot(ax[1], unkVec, scales)
+    pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
-    #surf_gc(ax[3], 100., unkVec)
+    surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
 
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    #plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
+    plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
 
     f.tight_layout()
 
@@ -41,7 +41,7 @@ def pstat_calc(unkVec, scales, cytokC):
     ts = np.array([10.]) # was 10. in literature
     assert unkVec.shape[0] == nParams()
     K = unkVec.shape[1] # should be 500
-    
+
     def parallelCalc(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
@@ -51,6 +51,7 @@ def pstat_calc(unkVec, scales, cytokC):
         assert retVal >= 0
         return np.dot(returnn, activity)
 
+    # find cytokine activity under various stimulation concentrations
     actVecIL7 = np.zeros((K, len(cytokC)))
     actVecIL4 = actVecIL7.copy()
     for x in range(len(cytokC)):
@@ -58,11 +59,10 @@ def pstat_calc(unkVec, scales, cytokC):
         actVecIL4[:, x] = parallelCalc(unkVec, 4, cytokC[x])
 
     for ii in range(K):
-        # incorporate IC50 scale
+        # incorporate IC50 (sigmoidal) scale
         actVecIL4[ii] = actVecIL4[ii]  / (actVecIL4[ii] + scales[ii, 0])
         actVecIL7[ii] = actVecIL7[ii] / (actVecIL7[ii] + scales[ii, 1])
-
-        # normalize each actVec by its maximum... do I need to be doing this?
+        # normalize from 0-1
         actVecIL4[ii] = actVecIL4[ii] / np.max(actVecIL4[ii])
         actVecIL7[ii] = actVecIL7[ii] / np.max(actVecIL7[ii])
 
@@ -81,7 +81,8 @@ def pstat_plot(ax, unkVec, scales):
     IL4_data_max = np.amax(np.concatenate((dataIL4[:,1], dataIL4[:,2])))
     IL7_data_max = np.amax(np.concatenate((dataIL7[:,1], dataIL7[:,2])))
 
-    output = pstat_calc(unkVec, scales, cytokC_common)
+    output = pstat_calc(unkVec, scales, cytokC_common) # run simulation
+    # split according to cytokine and transpose for input into plot_conf_int
     IL4_output = output[0:K].T
     IL7_output = output[K:(K*2)].T
 
@@ -142,7 +143,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     N = len(pre_conc)
 
     def parallelCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
-        """ Calculate for single case pretreatment case in parallel. """
+        """ Calculate pSTAT activity for single case pretreatment case. Simulation run in parallel. """
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine, :] = np.ones((unkVec.shape[1])) * pre_conc
         unkVec2[stim_cytokine, :] = np.ones((unkVec.shape[1])) * stim_conc
@@ -157,6 +158,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
             ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii])) # only look at active species associated with the active cytokine
         return ret
 
+    # run two-cytokine simulation for varying pretreatment concnetrations
     actVec_IL4stim = np.zeros((K, N))
     actVec_IL7stim = actVec_IL4stim.copy()
     for x in range(N):
@@ -172,10 +174,11 @@ def pretreat_calc(unkVec, scales, pre_conc):
         assert retVal >= 0
         return np.dot(returnn, activity)
 
+    # run simulation with just one cytokine
     IL4stim_no_pre = parallelCalc_no_pre(unkVec, 4, IL4_stim_conc)
     IL7stim_no_pre = parallelCalc_no_pre(unkVec, 2, IL7_stim_conc)
 
-    ret1 = np.zeros((K, N))
+    ret1 = np.zeros((K, N)) # arrays to hold inhibition calculation
     ret2 = ret1.copy()
     # incorporate IC50 and find inhibition
     for ii in range(K):
@@ -199,8 +202,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     K = unkVec.shape[1] # should be 500
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
 
-    output = pretreat_calc(unkVec, scales, pre_conc)
-    print("output.shape: " + str(output.shape))
+    output = pretreat_calc(unkVec, scales, pre_conc) # run simulation
+    # split according to cytokine and transpose so it works with plot_conf_int
     IL4_stim = output[0:K].T
     IL7_stim = output[K:(K*2)].T
 
@@ -234,7 +237,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
 def calc_surf_gc(t, cytokC_pg, unkVec):
     """ Calculates the percent of gc on the surface over time while under IL7 and IL4 stimulation. """
     gc_species_IDX = getSurfaceGCSpecies()
-    N = len(t)
+    PTS = len(t)
     K = unkVec.shape[1]
 
     def parallelCalc(unkVec, cytokine, conc, t):
@@ -244,15 +247,14 @@ def calc_surf_gc(t, cytokC_pg, unkVec):
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(t, unkVec)
         assert retVal >= 0
-        a = np.dot(returnn, gc_species_IDX)
-        return a
+        return np.dot(returnn, gc_species_IDX)
 
     # calculate IL4 stimulation
-    a = parallelCalc(unkVec, 4, (cytokC_pg / 14900.), t).reshape((K,N))
+    a = parallelCalc(unkVec, 4, (cytokC_pg / 14900.), t).reshape((K,PTS))
     # calculate IL7 stimulation
-    b = parallelCalc(unkVec, 2, (cytokC_pg / 17400.), t).reshape((K,N))
+    b = parallelCalc(unkVec, 2, (cytokC_pg / 17400.), t).reshape((K,PTS))
+    # concatenate results and normalize to 100%
     result = np.concatenate((a, b), axis=1)
-
     return (result / np.max(result)) * 100.
 
 def data_path():
