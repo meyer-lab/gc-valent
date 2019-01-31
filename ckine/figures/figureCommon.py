@@ -3,10 +3,8 @@ This file contains functions that are used in multiple figures.
 """
 import os
 from os.path import join
-import string
-import pickle
 import itertools
-import pymc3 as pm, os
+import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -16,7 +14,7 @@ from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
 
-def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
+def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
             font_scale=0.7,
@@ -24,6 +22,10 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
             palette="colorblind",
             rc={'grid.linestyle':'dotted',
                 'axes.linewidth':0.6})
+
+    # create empty list if empts isn't specified
+    if empts is None:
+        empts = []
 
     # Setup plotting space
     f = plt.figure(figsize=figsize)
@@ -65,7 +67,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
-            ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
+        ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
     if legend:
         if ax_pos == 3:
             ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
@@ -87,8 +89,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    
-    if legend: 
+
+    if legend:
         if ax_pos == 5 and factors.shape[1] <= 10:
             ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
 
