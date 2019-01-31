@@ -22,9 +22,9 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_4_7()
-    pstat_plot(ax[1], unkVec, scales)
-    #plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
-    surf_gc(ax[3], 100., unkVec)
+    #pstat_plot(ax[1], unkVec, scales)
+    plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
+    #surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
 
     unkVec_noActiveEndo = unkVec.copy()
@@ -137,42 +137,57 @@ def pretreat_calc(unkVec, scales, pre_conc):
     ts = np.array([10.]) # was 10. in literature
     IL4_stim_conc = 100. / 14900. # concentration used for IL4 stimulation
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
+    assert unkVec.shape[0] == nParams()
+    K = unkVec.shape[1] # should be 500
+    N = len(pre_conc)
 
-    def singleCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
-        """ Calculate for single case. """
+    def parallelCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ Calculate for single case pretreatment case in parallel. """
         unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine] = pre_conc
-        unkVec2[stim_cytokine] = stim_conc
+        unkVec2[pre_cytokine, :] = np.ones((unkVec.shape[1])) * pre_conc
+        unkVec2[stim_cytokine, :] = np.ones((unkVec.shape[1])) * stim_conc
         ligands = np.zeros(6)
         ligands[pre_cytokine] = pre_conc # pretreatment ligand stays in system
-        returnn, retVal = runCkineU(ts, unkVec2, preT=ts, prestim=ligands)
+        unkVec2 = np.transpose(unkVec2).copy() # transpose the matrix (save view as a new copy)
+
+        returnn, retVal = runCkineUP(ts, unkVec2, preT=ts, prestim=ligands)
         assert retVal >= 0
-        return getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn)) # only look at active species associated with IL4
+        ret = np.zeros((returnn.shape[0]))
+        for ii in range(returnn.shape[0]):
+            ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii])) # only look at active species associated with the active cytokine
 
-    assert unkVec.size == nParams()
-    actVec_IL4stim = np.fromiter((singleCalc(unkVec, 2, x, 4, IL4_stim_conc) for x in pre_conc), np.float64)
-    actVec_IL7stim = np.fromiter((singleCalc(unkVec, 4, x, 2, IL7_stim_conc) for x in pre_conc), np.float64)
+        return ret
 
-    # incorporate IC50
-    actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
-    actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
+    actVec_IL4stim = np.zeros((K, N))
+    actVec_IL7stim = actVec_IL4stim.copy()
+    for x in range(N):
+        actVec_IL4stim[:, x] = parallelCalc(unkVec, 2, pre_conc[x], 4, IL4_stim_conc)
+        actVec_IL7stim[:, x] = parallelCalc(unkVec, 4, pre_conc[x], 2, IL7_stim_conc)    
 
-    def singleCalc_no_pre(unkVec, cytokine, conc):
-        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+    def parallelCalc_no_pre(unkVec, cytokine, conc):
+        ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
-        returnn, retVal = runCkineU(ts, unkVec)
+        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
+        returnn, retVal = runCkineUP(ts, unkVec)
         assert retVal >= 0
         return np.dot(returnn, activity)
 
-    IL4stim_no_pre = singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
-    IL7stim_no_pre = singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
+    IL4stim_no_pre = parallelCalc_no_pre(unkVec, 4, IL4_stim_conc)
+    IL7stim_no_pre = parallelCalc_no_pre(unkVec, 2, IL7_stim_conc)
 
-    # incorporate IC50
-    IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
-    IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
+    ret1 = np.zeros((K, N))
+    ret2 = ret1.copy()
+    # incorporate IC50 and find inhibition
+    for ii in range(K):
+        actVec_IL4stim[ii] = actVec_IL4stim[ii] / (actVec_IL4stim[ii] + scales[ii, 0])
+        actVec_IL7stim[ii] = actVec_IL7stim[ii] / (actVec_IL7stim[ii] + scales[ii, 1])
+        IL4stim_no_pre = IL4stim_no_pre / (IL4stim_no_pre + scales[ii, 0])
+        IL7stim_no_pre = IL7stim_no_pre / (IL7stim_no_pre + scales[ii, 1])
+        ret1[ii] = 1 - (actVec_IL4stim[ii] / IL4stim_no_pre)
+        ret2[ii] = 1 - (actVec_IL7stim[ii] / IL7stim_no_pre)
 
-    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre))))
+    return np.concatenate((ret1, ret2))
 
 
 def plot_pretreat(ax, unkVec, scales, title):
@@ -182,14 +197,13 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation
     PTS = 30
+    K = unkVec.shape[1] # should be 500
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
-    IL4_stim = np.zeros((PTS, 500))
-    IL7_stim = IL4_stim.copy()
 
-    for ii in range(500):
-        output = pretreat_calc(unkVec[:, ii], scales[ii, :], pre_conc)
-        IL4_stim[:, ii] = output[0:PTS]
-        IL7_stim[:, ii] = output[PTS:(PTS*2)]
+    output = pretreat_calc(unkVec, scales, pre_conc)
+    print("output.shape: " + str(output.shape))
+    IL4_stim = output[0:K]
+    IL7_stim = output[K:(K*2)]
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim. (IL-4 pre.)")
