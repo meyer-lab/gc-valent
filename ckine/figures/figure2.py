@@ -45,7 +45,7 @@ def pstat_calc(unkVec, scales, cytokC):
     def parallelCalc(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
-        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(ts, unkVec)
         assert retVal >= 0
@@ -145,8 +145,8 @@ def pretreat_calc(unkVec, scales, pre_conc):
     def parallelCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ Calculate pSTAT activity for single case pretreatment case. Simulation run in parallel. """
         unkVec2 = unkVec.copy()
-        unkVec2[pre_cytokine, :] = np.ones((unkVec.shape[1])) * pre_conc
-        unkVec2[stim_cytokine, :] = np.ones((unkVec.shape[1])) * stim_conc
+        unkVec2[pre_cytokine, :] = pre_conc
+        unkVec2[stim_cytokine, :] = stim_conc
         ligands = np.zeros(6)
         ligands[pre_cytokine] = pre_conc # pretreatment ligand stays in system
         unkVec2 = np.transpose(unkVec2).copy() # transpose the matrix (save view as a new copy)
@@ -168,7 +168,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     def parallelCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
         unkVec = unkVec.copy()
-        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(ts, unkVec)
         assert retVal >= 0
@@ -243,7 +243,7 @@ def calc_surf_gc(t, cytokC_pg, unkVec):
     def parallelCalc(unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
-        unkVec[cytokine, :] = np.ones((unkVec.shape[1])) * conc
+        unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(t, unkVec)
         assert retVal >= 0
