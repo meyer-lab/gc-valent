@@ -155,7 +155,6 @@ def pretreat_calc(unkVec, scales, pre_conc):
         ret = np.zeros((returnn.shape[0]))
         for ii in range(returnn.shape[0]):
             ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii])) # only look at active species associated with the active cytokine
-
         return ret
 
     actVec_IL4stim = np.zeros((K, N))
@@ -182,10 +181,10 @@ def pretreat_calc(unkVec, scales, pre_conc):
     for ii in range(K):
         actVec_IL4stim[ii] = actVec_IL4stim[ii] / (actVec_IL4stim[ii] + scales[ii, 0])
         actVec_IL7stim[ii] = actVec_IL7stim[ii] / (actVec_IL7stim[ii] + scales[ii, 1])
-        IL4stim_no_pre = IL4stim_no_pre / (IL4stim_no_pre + scales[ii, 0])
-        IL7stim_no_pre = IL7stim_no_pre / (IL7stim_no_pre + scales[ii, 1])
-        ret1[ii] = 1 - (actVec_IL4stim[ii] / IL4stim_no_pre)
-        ret2[ii] = 1 - (actVec_IL7stim[ii] / IL7stim_no_pre)
+        IL4stim_no_pre[ii] = IL4stim_no_pre[ii] / (IL4stim_no_pre[ii] + scales[ii, 0])
+        IL7stim_no_pre[ii] = IL7stim_no_pre[ii] / (IL7stim_no_pre[ii] + scales[ii, 1])
+        ret1[ii] = 1 - (actVec_IL4stim[ii] / IL4stim_no_pre[ii])
+        ret2[ii] = 1 - (actVec_IL7stim[ii] / IL7stim_no_pre[ii])
 
     return np.concatenate((ret1, ret2))
 
@@ -202,8 +201,8 @@ def plot_pretreat(ax, unkVec, scales, title):
 
     output = pretreat_calc(unkVec, scales, pre_conc)
     print("output.shape: " + str(output.shape))
-    IL4_stim = output[0:K]
-    IL7_stim = output[K:(K*2)]
+    IL4_stim = output[0:K].T
+    IL7_stim = output[K:(K*2)].T
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim. (IL-4 pre.)")
