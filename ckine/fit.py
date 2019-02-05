@@ -20,6 +20,7 @@ def sampling(M):
 
 
 def commonTraf():
+    """ Set the common trafficking parameter priors. """
     kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
     endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
     activeEndo = pm.Lognormal('activeEndo', sd=0.1, shape=1)
