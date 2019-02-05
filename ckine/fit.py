@@ -16,13 +16,7 @@ def load_data(filename):
 
 def sampling(M):
     """ This is the sampling that actually runs the model. """
-    nstep = int(1E6)
-    callback = [pm.callbacks.CheckParametersConvergence()]
-
-    with M:
-        approx = pm.fit(nstep, method='fullrank_advi', callbacks=callback)
-        self.trace = pm.sample()
-    return trace
+    return pm.sample(init="ADVI", chains=2, model=M)
 
 
 def commonTraf():
