@@ -133,7 +133,7 @@ class crosstalk:
 
 class build_model:
     """ Build a model that minimizes residuals in above classes by using MCMC to find optimal rate parameters. """
-    def __init__(self, pretreat=False):
+    def __init__(self, pretreat=True):
         self.act = IL4_7_activity()
         self.cross = crosstalk()
         self.pretreat = pretreat
