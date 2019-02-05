@@ -3,10 +3,8 @@ This file contains functions that are used in multiple figures.
 """
 import os
 from os.path import join
-import string
-import pickle
 import itertools
-import pymc3 as pm, os
+import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -16,7 +14,7 @@ from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
 
-def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
+def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
             font_scale=0.7,
@@ -24,6 +22,10 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
             palette="colorblind",
             rc={'grid.linestyle':'dotted',
                 'axes.linewidth':0.6})
+
+    # create empty list if empts isn't specified
+    if empts is None:
+        empts = []
 
     # Setup plotting space
     f = plt.figure(figsize=figsize)
@@ -47,9 +49,9 @@ def subplotLabel(ax, letter, hstretch=1):
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return ['endo', 'activeEndo', 'sortF', 'kRec', 'kDeg']
+    return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
 
-def plot_conf_int(ax, x_axis, y_axis, color, label):
+def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 97.5, axis=1)
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
@@ -59,13 +61,13 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
     # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
-    #Set Active to color red. Set Surface to color blue. Set Total to color black
+    #Set Active to color red. Set Surface to color blue. Set Total to color black.
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
 
-    labelLigand = itertools.cycle(('Combined IL2-15 Activity', 'IL7 Activity', 'IL9 Activity', 'IL4 Activity', 'IL21 Activity'))
+    labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
-            ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
+        ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
     if legend:
         if ax_pos == 3:
             ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
@@ -87,8 +89,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    
-    if legend: 
+
+    if legend:
         if ax_pos == 5 and factors.shape[1] <= 10:
             ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
 

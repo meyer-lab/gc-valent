@@ -3,16 +3,15 @@ This creates Figure 3.
 """
 import os
 import pickle
-import itertools
+import string
 import tensorly
 import numpy as np, pandas as pds, cupy as cp
-import string
 from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
 from tensorly.decomposition import tucker
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from ..Tensor_analysis import find_R2X, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
 tensorly.set_backend('cupy')
 
 def makeFigure():
@@ -91,7 +90,7 @@ def plot_reduction_ligand(ax, values, factors):
     for ii in range(5):
         percent_reduction[ii,:] = 1 - new_R2X[ii, :] / old_R2X[ii]
 
-    labels = ['Combined IL2 and IL15', 'IL7', 'IL9', 'IL4', 'IL21']
+    labels = ['IL-2 & IL-15', 'IL-7', 'IL-9', 'IL-4', 'IL-21']
     colorsMarker = ['bo', 'ro', 'ko', 'mo', 'yo']
     for kk in range(5):
         ax.plot(range(1,factors[0].shape[1]+1), percent_reduction[kk,:], colorsMarker[kk], label = labels[kk])
@@ -110,7 +109,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     colors = cm.rainbow(np.linspace(0, 1, 34))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
     markersReceptors = ['^', '4', 'P', '*', 'D', 's', 'X' ,'o']
-    labelReceptors = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra', 'IL21Ra']
+    labelReceptors = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα', 'IL-7Rα', 'IL-9R', 'IL-4Rα', 'IL-21Rα']
 
     for ii in range(scores.shape[0]):
         ax1.scatter(scores[ii,0], scores[ii,1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
