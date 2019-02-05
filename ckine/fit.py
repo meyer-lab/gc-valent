@@ -26,7 +26,7 @@ class IL2Rb_trafficking:
         slicingg = (1, 5, 2, 6)
 
         # Concatted data
-        self.data = np.concatenate((numpy_data[:, slicingg], numpy_data2[:, slicingg])).flatten(order='F')/10.
+        self.data = np.concatenate((numpy_data[:, slicingg].flatten(order='F'), numpy_data2[:, slicingg].flatten(order='F')))/10.
 
         self.cytokM = np.zeros((4, 6), dtype=np.float64)
         self.cytokM[0, 0] = 1.
@@ -86,16 +86,15 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Bound(pm.Lognormal, 1.0E-4, 0.1)('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
-            rxnrates = pm.Bound(pm.Lognormal, 0.001, 10.0)('rxn', mu=np.log(0.01), sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
-            endo = pm.Bound(pm.Lognormal, 0.01, 1.0)('endo', mu=np.log(0.1), sd=0.1, shape=1)
-            activeEndo = pm.Bound(pm.Lognormal, 0.01, 10.0)('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
-            kRec = pm.Bound(pm.Lognormal, 0.01, 0.3)('kRec', mu=np.log(0.1), sd=0.5, shape=1)
-            kDeg = pm.Bound(pm.Lognormal, 0.01, 0.5)('kDeg', mu=np.log(0.02), sd=0.5, shape=1)
-            Rexpr = pm.Bound(pm.Lognormal, 0.0, 1000.0)('IL2Raexpr', mu=np.log(0.1), sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-
-            sortF = pm.Deterministic('sortF', T.ones(1)*0.18) # pm.Bound(pm.Beta, 0.02, 0.5)('sortF', alpha=12, beta=80, shape=1)
+            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
+            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
+            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.5, shape=1)
+            kDeg = pm.Lognormal('kDeg', mu=np.log(0.02), sd=0.5, shape=1)
+            Rexpr = pm.Lognormal('IL2Raexpr', mu=np.log(0.1), sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
@@ -122,13 +121,7 @@ class build_model:
         """This is the sampling that actually runs the model."""
         nstep = int(1E6)
         callback = [pm.callbacks.CheckParametersConvergence()]
-        logp = -np.inf
 
         with self.M:
-            while logp < -2000:
-                pt = pm.find_MAP()
-                print(pt)
-                logp = pt['logp']
-
-            approx = pm.fit(nstep, method='fullrank_advi', callbacks=callback, start=pt)
+            approx = pm.fit(nstep, method='fullrank_advi', callbacks=callback)
             self.trace = approx.sample()

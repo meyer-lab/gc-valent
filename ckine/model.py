@@ -124,6 +124,7 @@ def runCkineUP (tps, rxntfr, preT=0.0, prestim=None):
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
+
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
     yOut = np.zeros((rxntfr.shape[0]*tps.size, __nSpecies), dtype=np.float64)
