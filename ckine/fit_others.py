@@ -6,6 +6,7 @@ from os.path import join
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, nSpecies, getActiveSpecies, internalStrength, halfL, getCytokineSpecies
 from .differencing_op import runCkineDoseOp
+from .fit import commonTraf
 
 class IL4_7_activity:
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
@@ -143,24 +144,19 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = T.ones(1, dtype=np.float64) * 0.00448600766505774 # 0.09932580369085173
+            kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
-            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
-            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
-            sortF = T.ones(1, dtype=np.float64) * 0.179757424
-            kRec_kDeg = T.ones(2, dtype=np.float64)
-            kRec_kDeg = T.set_subtensor(kRec_kDeg[0], 0.154753853)
-            kRec_kDeg = T.set_subtensor(kRec_kDeg[1], 0.017205254)
-            GCexpr = (328. * endo) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            IL7Raexpr = (2591. * endo) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            IL4Raexpr = (254. * endo) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+
+            GCexpr = (328. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
+            IL7Raexpr = (2591. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
+            IL4Raexpr = (254. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
             scales = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=2) # create scaling constants for activity measurements
 
-            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec_kDeg))
+            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
@@ -178,8 +174,3 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
-
-    def sampling(self):
-        """This is the sampling that actually runs the model."""
-        approx = pm.fit(40000, method='fullrank_advi', model=self.M) # fullrank_advi, svgd
-        self.trace = approx.sample()
