@@ -161,14 +161,15 @@ class build_model:
 
             Y_int = self.act.calc(unkVec, scales) # fitting the data based on act.calc for the given parameters
 
+            sd_int = T.minimum(T.std(Y_int), 0.1)
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
-
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
 
             if self.pretreat is True:
                 Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
-                pm.Normal('fitD_cross', sd=T.minimum(T.std(Y_cross), 0.2), observed=Y_cross) # the stderr is definitely less than 0.2
+                sd_cross = T.minimum(T.std(Y_cross), 0.1)
+                pm.Normal('fitD_cross', sd=sd_cross, observed=Y_cross) # the stderr is definitely less than 0.2
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
