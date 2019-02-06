@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from ckine.fit import sampling
 import pymc3 as pm
 
