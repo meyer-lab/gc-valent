@@ -58,10 +58,10 @@ def cell_act(unkVec, cytokC, scale):
     act = np.zeros((K, cytokC.shape[0]))
     for x, conc in enumerate(cytokC):
             act[:, x] = pstat5.parallelCalc(unkVec.T, 0, conc)
-    act = act / (act + scale) # incorporate scaling constant
 
-    # normalize to maximal activity for each row
+    # normalize to scaling constant and maximal activity for each row
     for num in range(act.shape[0]):
+        act[num] = act[num] / (act[num] + scale[num])
         act[num] = act[num] / np.max(act[num])
 
     return act
@@ -77,8 +77,9 @@ def all_cells(ax, cell_data, cell_names, unkVec, scale):
 
     newVec = np.tile(unkVec, (numCells, 1)) # copy unkVec numCells times to create a 2D array
     newVec[:, 22:30] = cell_data[:, 1:].T # place cell data into newVec
+    scaleVec = np.repeat(scale, numCells) # create an array of scale to match size of newVec
 
-    act = cell_act(newVec, cytokC, scale) # run simulations
+    act = cell_act(newVec, cytokC, scaleVec) # run simulations
 
     # plot results
     for ii in range(act.shape[0]):
@@ -107,16 +108,22 @@ def IL2_receptor_activity(ax, unkVec, scales):
         newVec[22+r, (4*split):(5*split)] *= factors[4]
         print("newVec.shape: " + str(newVec.shape))
 
-        output = cell_act(newVec.T, cytokC, newScales)
+        output = cell_act(newVec.T, cytokC, newScales).T
         print("output.shape:::: " + str(output.shape))
-        for n in range(factors.size):
-            unkVec2 = unkVec.copy()
-            unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
-            output = cell_act(unkVec2[:, 0:50].T, cytokC, scales[0:50])
-            print("output.shape: " + str(output.shape))
-            for ii in range(0,50):
-                output = rec_act_calc(unkVec2[:, ii], cytokC) * y_max
-                activity[:, ii, n, r] = output[0:PTS]
+        activity[:, :, 0, r] = output[:, 0:split]
+        activity[:, :, 1, r] = output[:, split:(2*split)]
+        activity[:, :, 2, r] = output[:, (2*split):(3*split)]
+        activity[:, :, 3, r] = output[:, (3*split):(4*split)]
+        activity[:, :, 4, r] = output[:, (4*split):(5*split)]
+
+        # for n in range(factors.size):
+            #unkVec2 = unkVec.copy()
+            #unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
+            #output = cell_act(unkVec2[:, 0:50].T, cytokC, scales[0:50])
+            # print("output.shape: " + str(output.shape))
+            #for ii in range(0,50):
+            #    output = rec_act_calc(unkVec2[:, ii], cytokC) * y_max
+            #    activity[:, ii, n, r] = output[0:PTS]
 
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "royalblue", "0.01x")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1,r], "navy", "0.1x")
