@@ -28,7 +28,6 @@ def makeFigure():
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
-
     return f
 
 
@@ -52,13 +51,12 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
 
-def single_cell_act(unkVec, cytokC):
+def cell_act(unkVec, cytokC):
     """ Cytokine activity for all IL2 doses for single cell line. """
     pstat5 = pstat()
     act = np.zeros((cytokC.shape[0]))
-    act = np.fromiter((pstat5.singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
+    act = np.fromiter((pstat5.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
     return act / np.max(act)    # normalize to maximal activity
-
 
 def all_cells(ax, cell_data, cell_names, unkVec):
     """ Loops through all cell types and calculates activities. """
@@ -69,10 +67,11 @@ def all_cells(ax, cell_data, cell_names, unkVec):
 
     colors = cm.rainbow(np.linspace(0, 1, numCells))
 
-    for ii in range(0, numCells):       # for all cell types
-        unkVec[22:30] = cell_data[:, ii+1]  # place cell data into unkVec
-        act = single_cell_act(unkVec, cytokC)
-        ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
+    newVec = np.tile(unkVec, (numCells, 1)) # copy unkVec numCells times to create a 2D array
+    newVec[:, 22:30] = cell_data[:, 1:].T # place cell data into newVec
+
+    act = cell_act(newVec, cytokC)
+    ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
 
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="pSTAT5 (% of max)", xlabel=r'IL-2 concentration (log$_{10}$[nM])')
