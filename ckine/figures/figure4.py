@@ -54,9 +54,15 @@ def relativeGC(ax, unkVec2, unkVec4):
 def cell_act(unkVec, cytokC):
     """ Cytokine activity for all IL2 doses for single cell line. """
     pstat5 = pstat()
-    act = np.zeros((cytokC.shape[0]))
-    act = np.fromiter((pstat5.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
-    return act / np.max(act)    # normalize to maximal activity
+    K = unkVec.shape[0]
+    act = np.zeros((K, cytokC.shape[0]))
+    for x, conc in enumerate(cytokC):
+            act[:, x] = pstat5.parallelCalc(unkVec.T, 0, conc)
+    print("act.shape: " + str(act.shape))
+    for num in range(act.shape[0]):
+        act[num] = act[num] / np.max(act[num]) # normalize to maximal activity for each row
+    #act = np.fromiter((pstat5.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
+    return act
 
 def all_cells(ax, cell_data, cell_names, unkVec):
     """ Loops through all cell types and calculates activities. """
@@ -71,7 +77,9 @@ def all_cells(ax, cell_data, cell_names, unkVec):
     newVec[:, 22:30] = cell_data[:, 1:].T # place cell data into newVec
 
     act = cell_act(newVec, cytokC)
-    ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
+    print("act.shape: " + str(act.shape))
+    for ii in range(act.shape[0]):
+        ax.plot(np.log10(cytokC), act[ii], label=cell_names[ii], c=colors[ii])
 
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="pSTAT5 (% of max)", xlabel=r'IL-2 concentration (log$_{10}$[nM])')
