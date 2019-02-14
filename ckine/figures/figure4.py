@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
 from ..plot_model_prediction import pstat
-from ..model import getTotalActiveSpecies, runCkineU
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -89,16 +88,16 @@ def all_cells(ax, cell_data, cell_names, unkVec, scale):
 
 def IL2_receptor_activity(ax, unkVec, scales):
     """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
-    PTS = 30
-    split = 50
+    PTS = 30 # number of cytokine concentrations
+    split = 50 # number of rows used from unkVec
     cytokC = np.logspace(-3.3, 2.7, PTS)
     factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
     y_max = 100.
-    activity = np.zeros((PTS, split, len(factors), 3))
+
+    # create separate plot for each receptor
     for r in range(0,3):
         newVec = np.tile(unkVec[:, 0:split], (1, len(factors))) # copy the first 50 rows of unkVec 5 times (corresponds with factors)
         newScales = np.squeeze(np.tile(scales[0:split], (len(factors), 1))) # copy the first 50 rows of scales 5 times
-        print(newScales.shape)
 
         # multiply receptor expression rate for each section of newVec
         newVec[22+r, 0:split] *= factors[0]
@@ -106,50 +105,18 @@ def IL2_receptor_activity(ax, unkVec, scales):
         newVec[22+r, (2*split):(3*split)] *= factors[2]
         newVec[22+r, (3*split):(4*split)] *= factors[3]
         newVec[22+r, (4*split):(5*split)] *= factors[4]
-        print("newVec.shape: " + str(newVec.shape))
 
-        output = cell_act(newVec.T, cytokC, newScales).T
-        print("output.shape:::: " + str(output.shape))
-        activity[:, :, 0, r] = output[:, 0:split]
-        activity[:, :, 1, r] = output[:, split:(2*split)]
-        activity[:, :, 2, r] = output[:, (2*split):(3*split)]
-        activity[:, :, 3, r] = output[:, (3*split):(4*split)]
-        activity[:, :, 4, r] = output[:, (4*split):(5*split)]
+        # calculate activities in parallel
+        output = cell_act(newVec.T, cytokC, newScales).T * y_max
 
-        # for n in range(factors.size):
-            #unkVec2 = unkVec.copy()
-            #unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
-            #output = cell_act(unkVec2[:, 0:50].T, cytokC, scales[0:50])
-            # print("output.shape: " + str(output.shape))
-            #for ii in range(0,50):
-            #    output = rec_act_calc(unkVec2[:, ii], cytokC) * y_max
-            #    activity[:, ii, n, r] = output[0:PTS]
-
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,0,r], "royalblue", "0.01x")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,1,r], "navy", "0.1x")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1x")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10x")
-        plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, 0:split], "royalblue", "0.01x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, split:(2*split)], "navy", "0.1x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, (2*split):(3*split)], "darkviolet", "1x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, (3*split):(4*split)], "deeppink", "10x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, (4*split):(5*split)], "red", "100x")
         ax[r].set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel="Total pSTAT")
 
     ax[0].set_title("IL-2Rα")
     ax[1].set_title("IL-2Rβ")
     ax[2].set_title(r'$\gamma_{c}$')
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
-
-def rec_act_singleCalc(unkVec, cytokine, conc):
-    """ Calculates pSTAT activity over time for one condition. """
-    unkVec = unkVec.copy()
-    unkVec[cytokine] = conc
-    ts = np.array([500.])
-    returnn, retVal = runCkineU(ts, unkVec)
-
-    assert retVal >= 0
-    activity = getTotalActiveSpecies().astype(np.float64)
-    return np.dot(returnn, activity)
-
-def rec_act_calc(unkVec, cytokC):
-    ''' Finds pSTAT activity for all cytokine concentrations given. '''
-    actVec = np.fromiter((rec_act_singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
-
-    return actVec
