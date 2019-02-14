@@ -8,7 +8,7 @@ if __name__ == "__main__": #only go into this loop if you're running fit.py dire
     if sys.argv[1] == '1':
         print('Running IL2/15 model')
         from ckine.fit import build_model
-        filename = "IL2_model_results"
+        filename = "IL2_15_no_traf"
     else:
         print('Running IL4/7 model')
         from ckine.fit_others import build_model

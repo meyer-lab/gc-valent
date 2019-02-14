@@ -109,7 +109,7 @@ class build_model:
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
-            if traf is False:
+            if self.traf is False:
                 endo = T.zeros(1, dtype = np.float64) #Assigning trafficking to zero to fit without trafficking
 
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
