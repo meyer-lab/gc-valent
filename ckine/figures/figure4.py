@@ -24,7 +24,7 @@ def makeFigure():
     unkVec_4_7, scales_4_7 = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0], scales_2_15[0])
-    IL2_receptor_activity(ax[2:5], unkVec_2_15)
+    IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
@@ -86,17 +86,34 @@ def all_cells(ax, cell_data, cell_names, unkVec, scale):
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="pSTAT5 (% of max)", xlabel=r'IL-2 concentration (log$_{10}$[nM])')
 
-def IL2_receptor_activity(ax, unkVec):
+def IL2_receptor_activity(ax, unkVec, scales):
     """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
     PTS = 30
+    split = 50
     cytokC = np.logspace(-3.3, 2.7, PTS)
-    y_max = 100.
-    activity = np.zeros((PTS, 50, 5, 3))
     factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
+    y_max = 100.
+    activity = np.zeros((PTS, split, len(factors), 3))
     for r in range(0,3):
+        newVec = np.tile(unkVec[:, 0:split], (1, len(factors))) # copy the first 50 rows of unkVec 5 times (corresponds with factors)
+        newScales = np.squeeze(np.tile(scales[0:split], (len(factors), 1))) # copy the first 50 rows of scales 5 times
+        print(newScales.shape)
+
+        # multiply receptor expression rate for each section of newVec
+        newVec[22+r, 0:split] *= factors[0]
+        newVec[22+r, split:(2*split)] *= factors[1]
+        newVec[22+r, (2*split):(3*split)] *= factors[2]
+        newVec[22+r, (3*split):(4*split)] *= factors[3]
+        newVec[22+r, (4*split):(5*split)] *= factors[4]
+        print("newVec.shape: " + str(newVec.shape))
+
+        output = cell_act(newVec.T, cytokC, newScales)
+        print("output.shape:::: " + str(output.shape))
         for n in range(factors.size):
             unkVec2 = unkVec.copy()
             unkVec2[22+r] *= factors[n]  # multiply receptor expression rate by factor
+            output = cell_act(unkVec2[:, 0:50].T, cytokC, scales[0:50])
+            print("output.shape: " + str(output.shape))
             for ii in range(0,50):
                 output = rec_act_calc(unkVec2[:, ii], cytokC) * y_max
                 activity[:, ii, n, r] = output[0:PTS]
