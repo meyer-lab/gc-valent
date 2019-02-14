@@ -20,10 +20,10 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     data, cell_names = load_cells()
-    unkVec_2_15, _ = import_samples_2_15()
-    unkVec_4_7, scales = import_samples_4_7()
+    unkVec_2_15, scales_2_15 = import_samples_2_15()
+    unkVec_4_7, scales_4_7 = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])
+    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0], scales_2_15[0])
     IL2_receptor_activity(ax[2:5], unkVec_2_15)
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
@@ -51,20 +51,22 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
 
-def cell_act(unkVec, cytokC):
+def cell_act(unkVec, cytokC, scale):
     """ Cytokine activity for all IL2 doses for single cell line. """
     pstat5 = pstat()
     K = unkVec.shape[0]
     act = np.zeros((K, cytokC.shape[0]))
     for x, conc in enumerate(cytokC):
             act[:, x] = pstat5.parallelCalc(unkVec.T, 0, conc)
-    print("act.shape: " + str(act.shape))
+    act = act / (act + scale) # incorporate scaling constant
+
+    # normalize to maximal activity for each row
     for num in range(act.shape[0]):
-        act[num] = act[num] / np.max(act[num]) # normalize to maximal activity for each row
-    #act = np.fromiter((pstat5.parallelCalc(unkVec, 0, x) for x in cytokC), np.float64)
+        act[num] = act[num] / np.max(act[num])
+
     return act
 
-def all_cells(ax, cell_data, cell_names, unkVec):
+def all_cells(ax, cell_data, cell_names, unkVec, scale):
     """ Loops through all cell types and calculates activities. """
     cell_data = cell_data.values    # convert to numpy array
     PTS = 60    # number of cytokine concentrations that are used
@@ -76,11 +78,11 @@ def all_cells(ax, cell_data, cell_names, unkVec):
     newVec = np.tile(unkVec, (numCells, 1)) # copy unkVec numCells times to create a 2D array
     newVec[:, 22:30] = cell_data[:, 1:].T # place cell data into newVec
 
-    act = cell_act(newVec, cytokC)
-    print("act.shape: " + str(act.shape))
+    act = cell_act(newVec, cytokC, scale) # run simulations
+
+    # plot results
     for ii in range(act.shape[0]):
         ax.plot(np.log10(cytokC), act[ii], label=cell_names[ii], c=colors[ii])
-
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="pSTAT5 (% of max)", xlabel=r'IL-2 concentration (log$_{10}$[nM])')
 
