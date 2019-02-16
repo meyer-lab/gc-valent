@@ -133,18 +133,19 @@ def import_samples_2_15():
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    rxn = trace.get_values('rxn', chains=[0])
-    endo = trace.get_values('endo', chains=[0])
-    activeEndo = trace.get_values('activeEndo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec = trace.get_values('kRec', chains=[0])
-    kDeg = trace.get_values('kDeg', chains=[0])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0])
-    scales = trace.get_values('scales', chains=[0])
+    kfwd = trace.get_values('kfwd')
+    rxn = trace.get_values('rxn')
+    endo = trace.get_values('endo')
+    activeEndo = trace.get_values('activeEndo')
+    sortF = trace.get_values('sortF')
+    kRec = trace.get_values('kRec')
+    kDeg = trace.get_values('kDeg')
+    exprRates = trace.get_values('IL2Raexpr')
+    scales = trace.get_values('scales')
+    num = scales.size
 
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
+    unkVec = np.zeros((n_params, num))
+    for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
 
     return unkVec, scales
