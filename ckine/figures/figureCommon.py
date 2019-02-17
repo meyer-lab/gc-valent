@@ -152,7 +152,6 @@ def import_samples_2_15():
 
 def import_samples_4_7():
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
-    print("starting to import samples")
     bmodel = build_model_4_7()
     n_params = nParams()
 
@@ -171,13 +170,10 @@ def import_samples_4_7():
     IL7Raexpr = (2591. * endo[0]) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
     IL4Raexpr = (254. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
     num = scales.shape[0]
-    print("num:" + str(num))
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
-        #print("iter: " +str(ii))
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
-    print("done importing samples")
 
     return unkVec, scales
 
