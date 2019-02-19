@@ -3,10 +3,8 @@ This file contains functions that are used in multiple figures.
 """
 import os
 from os.path import join
-import string
-import pickle
 import itertools
-import pymc3 as pm, os
+import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -16,7 +14,7 @@ from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
 
-def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
+def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
             font_scale=0.7,
@@ -24,6 +22,10 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
             palette="colorblind",
             rc={'grid.linestyle':'dotted',
                 'axes.linewidth':0.6})
+
+    # create empty list if empts isn't specified
+    if empts is None:
+        empts = []
 
     # Setup plotting space
     f = plt.figure(figsize=figsize)
@@ -47,9 +49,9 @@ def subplotLabel(ax, letter, hstretch=1):
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return ['endo', 'activeEndo', 'sortF', 'kRec', 'kDeg']
+    return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
 
-def plot_conf_int(ax, x_axis, y_axis, color, label):
+def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 97.5, axis=1)
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
@@ -59,13 +61,13 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
     # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
-    #Set Active to color red. Set Surface to color blue. Set Total to color black
+    #Set Active to color red. Set Surface to color blue. Set Total to color black.
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
 
-    labelLigand = itertools.cycle(('Combined IL2-15 Activity', 'IL7 Activity', 'IL9 Activity', 'IL4 Activity', 'IL21 Activity'))
+    labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
-            ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
+        ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
     if legend:
         if ax_pos == 3:
             ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
@@ -87,8 +89,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    
-    if legend: 
+
+    if legend:
         if ax_pos == 5 and factors.shape[1] <= 10:
             ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
 
@@ -133,16 +135,19 @@ def import_samples_2_15():
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     kfwd = trace.get_values('kfwd', chains=[0])
     rxn = trace.get_values('rxn', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
+    endo = trace.get_values('endo', chains=[0])
+    activeEndo = trace.get_values('activeEndo', chains=[0])
     sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
+    kRec = trace.get_values('kRec', chains=[0])
+    kDeg = trace.get_values('kDeg', chains=[0])
     exprRates = trace.get_values('IL2Raexpr', chains=[0])
+    scales = trace.get_values('scales', chains=[0])
 
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
 
-    return unkVec
+    return unkVec, scales
 
 def import_samples_4_7():
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
@@ -150,7 +155,7 @@ def import_samples_4_7():
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL4-7_fitADVI_results'), bmodel.M)
+    trace = pm.backends.text.load(join(path, '../../IL4-7_model_results'), bmodel.M)
     kfwd = 0.00448600766505774
     k27rev = trace.get_values('k27rev', chains=[0])
     k33rev = trace.get_values('k33rev', chains=[0])
