@@ -237,7 +237,26 @@ def totalReceptors(yVec):
 def ligandDeg_IL2(yVec, sortF, kDeg):
     """ This function calculates rate of IL-2's total degradation. """
     # all indices are shifted by __halfL in order to get endosomal species
-    yVec = yVec[__halfL::].copy()
-    sum_inactive = np.sum(yVec[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
-    sum_active = np.sum(yVec[7:9]) # indices 7,8 have IL2 bound and are active
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
+    yVec2 = yVec[__halfL::].copy()
+    sum_inactive = np.sum(yVec2[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
+    sum_active = np.sum(yVec2[7:9]) # indices 7,8 have IL2 bound and are active
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec2[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
+
+def runIL2simpleLD(input, IL, CD25=1.0):
+    """ Version to focus on IL2Ra/Rb affinity adjustment. """
+    # TODO: Update parameters based on distinct endosomal fitting.
+    tps = np.array([500.0])
+    
+    # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
+    rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
+                       0.6*144*input[1], 8.6677, 0.1233,
+                       63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
+
+    yOut, retVal = runCkineU_IL2(tps, rxntfr)
+    
+    assert retVal == 0
+    
+    
+    ligDeg = ligandDeg_IL2(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333)
+    
+    return ligDeg
