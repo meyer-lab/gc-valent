@@ -184,3 +184,9 @@ def load_cells():
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
     return data, cell_names
+
+def kfwd_info(unkVec):
+    """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
+    mean = np.mean(unkVec[6])
+    std = np.std(unkVec[6])
+    return mean, std
