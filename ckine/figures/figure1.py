@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15, kfwd_info
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 
 def makeFigure():
@@ -22,6 +22,8 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_2_15()
+    kfwd_avg, kfwd_std = kfwd_info(unkVec)
+    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
     surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
     violinPlots(ax[6:8], unkVec)
