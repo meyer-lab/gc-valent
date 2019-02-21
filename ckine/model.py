@@ -104,7 +104,7 @@ def runIL2simple(input, IL, CD25=1.0, ligandDeg=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
-    
+
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
                        0.6*144*input[1], 8.6677, 0.1233,
@@ -127,7 +127,9 @@ def runCkineUP (tps, rxntfr, preT=0.0, prestim=None):
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
+
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
+    assert np.all(np.any(rxntfr > 0.0, axis=1)) # make sure at least one element is >0 for all rows
 
     yOut = np.zeros((rxntfr.shape[0]*tps.size, __nSpecies), dtype=np.float64)
 
