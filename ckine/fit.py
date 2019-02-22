@@ -103,7 +103,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            if self.traf is True:
+            if self.traf:
                 kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
             else:
                 kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
