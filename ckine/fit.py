@@ -103,7 +103,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            if self.traf is True:
+            if self.traf:
                 kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
             else:
                 kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
@@ -113,13 +113,11 @@ class build_model:
                 kRec = T.zeros(1, dtype=np.float64)
                 kDeg = T.zeros(1, dtype=np.float64)
                 sortF = T.ones(1, dtype=np.float64) * 0.5
-                
+
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
-
-
 
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
 
