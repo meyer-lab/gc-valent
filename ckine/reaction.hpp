@@ -180,26 +180,24 @@ void fullModel(const YT * const y, ratesS<RT> * const r, T *dydt) {
 	dydt[60] = -std::accumulate(dydti+23, dydti+25, (T) 0.0) / internalV;
 	dydt[61] = -std::accumulate(dydti+26, dydti+28, (T) 0.0) / internalV;
 
-	// Actually calculate the trafficking if it's not a no-trafficking model
-    for (size_t ii = 0; ii < halfL; ii++) {
-        if (activeV[ii]) {
-            dydt[ii] += -y[ii]*(r->endo + r->activeEndo); // Endocytosis
-            dydt[ii+halfL] += y[ii]*(r->endo + r->activeEndo)/internalFrac - r->kDeg*y[ii+halfL]; // Endocytosis, degradation
-        } else {
-            dydt[ii] += -y[ii]*r->endo + r->kRec*(1.0-r->sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
-            dydt[ii+halfL] += y[ii]*r->endo/internalFrac - r->kRec*(1.0-r->sortF)*y[ii+halfL] - (r->kDeg*r->sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
-        }
-    }
-
+	// Actually calculate the trafficking
+	for (size_t ii = 0; ii < halfL; ii++) {
+		if (activeV[ii]) {
+			dydt[ii] += -y[ii]*(r->endo + r->activeEndo); // Endocytosis
+			dydt[ii+halfL] += y[ii]*(r->endo + r->activeEndo)/internalFrac - r->kDeg*y[ii+halfL]; // Endocytosis, degradation
+		} else {
+			dydt[ii] += -y[ii]*r->endo + r->kRec*(1.0-r->sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
+			dydt[ii+halfL] += y[ii]*r->endo/internalFrac - r->kRec*(1.0-r->sortF)*y[ii+halfL] - (r->kDeg*r->sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
+		}
+	}
 
 	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 	for (size_t ii = 0; ii < recIDX.size(); ii++)
 		dydt[recIDX[ii]] += r->Rexpr[ii];
 
 	// Degradation does lead to some clearance of ligand in the endosome
-    for (size_t ii = 0; ii < 6; ii++)
-        dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
-
+	for (size_t ii = 0; ii < 6; ii++)
+		dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
 }
 
 
