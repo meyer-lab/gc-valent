@@ -258,8 +258,8 @@ class TestModel(unittest.TestCase):
         """ Verify that ligand degradation increases when sortF and kDeg increase. """
         y, _ = runCkineU_IL2(self.ts, np.ones(10))
         sortF, kDeg = 0.5, 1.0
-        reg = ligandDeg(y[1,:], sortF, kDeg)
-        high_sortF = ligandDeg_All(y[1,:], 0.9, kDeg, 0)
+        reg = ligandDeg(y[1,:], sortF, kDeg, 0)
+        high_sortF = ligandDeg(y[1,:], 0.9, kDeg, 0)
         high_kDeg = ligandDeg(y[1,:], sortF, kDeg*10, 0)
         low_kDeg = ligandDeg(y[1,:], sortF, kDeg*0.1, 0)
 

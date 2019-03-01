@@ -241,8 +241,11 @@ def totalReceptors(yVec):
 
 def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     """ This function calculates rate of total ligand degradation. """
-    cytokineIDX = int(cytokineIDX)
-    yVec2 = yVec[__halfL::].copy() # all indices are shifted by __halfL in order to get endosomal species
-    sum_active = np.sum(getActiveCytokine(yVec2,cytokineIDX))
-    sum_inactive = (np.sum(getCytokineSpecies()[cytokineIDX]) - sum_active) * sortF
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec2[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
+    yVec_endo_species = yVec[__halfL:(__halfL*2)].copy() # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL*2)::].copy() # get all endosomal ligands
+    sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
+    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool) # create array of size halfL
+    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1 # assign 1's for species corresponding to the cytokineIDX
+    sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
+    sum_inactive = (sum_total - sum_active) * sortF # scale the inactive species by sortF
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
