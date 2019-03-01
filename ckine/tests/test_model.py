@@ -267,14 +267,12 @@ class TestModel(unittest.TestCase):
         self.assertGreater(high_sortF, reg)
         self.assertGreater(high_kDeg, reg)
         self.assertGreater(reg, low_kDeg)
-        
+
         # case for IL15
         y, _ = runCkineU(self.ts, self.rxntfR)
         reg = ligandDeg(y[1,:], sortF, kDeg, 1)
         high_kDeg = ligandDeg(y[1,:], sortF, kDeg*10, 1)
         self.assertGreater(high_kDeg, reg)
-
-
 
     def test_noTraff(self):
         """ Make sure no endosomal species are found when endo=0. """
