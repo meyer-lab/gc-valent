@@ -19,7 +19,7 @@ factors_activity = []
 for jj in range(6):
     tic = time.clock()
     print(jj)
-    factors = perform_decomposition(tl.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), jj+1, subt = False)
+    factors = perform_decomposition(values, jj+1, subt = False)
     factors_activity.append(factors)
 toc = time.clock()
 print(toc - tic)
