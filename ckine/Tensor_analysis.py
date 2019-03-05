@@ -15,7 +15,7 @@ def tensorly_backend(bknd = backend):
     elif bknd == 1:
         tl.set_backend('cupy')
 
-backend = 0 #Only place to choose what the backend should be. 0 = numpy. 1 = cupy. 2 = other backends we desire. 
+backend = 1 #Only place to choose what the backend should be. 0 = numpy. 1 = cupy. 2 = other backends we desire. 
 tensorly_backend(bknd = backend) #Set the backend within every file that imports from Tensor_analysis.py
 
 def tl_var(matrix):
@@ -152,7 +152,6 @@ def percent_reduction_by_ligand(values, factors):
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
             new_factors.append(tl.tensor(np.delete(tl.to_numpy(factors[jj], ii, 1))))
 
-        overall_reconstructed = tl.kruskal_to_tensor(new_factors)
         AllLigandReconstructed = split_values_by_ligand(overall_reconstructed)
         for jj in range(5):
             R2X_ligand_mx[jj,ii] = 1 - tl_var(AllLigandReconstructed[jj] - AllLigandTensors[jj]) / tl_var(AllLigandTensors[jj])
