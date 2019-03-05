@@ -8,7 +8,7 @@ import tensorly as tl
 from tensorly.decomposition import parafac
 from tensorly.decomposition import tucker
 
-def tensorly_backend(bknd = backend):
+def tensorly_backend(bknd):
     '''Function to convert back and forth between numpy and cupy backends. Always works with numpy unless set as False which switches to cupy.'''
     if bknd == 0:
         tl.set_backend('numpy')
