@@ -26,8 +26,8 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
-    surf_gc(ax[3], 100., unkVec)
-    violinPlots(ax[4:8], unkVec, scales)
+    surf_gc(ax[7], 100., unkVec)
+    violinPlots(ax[3:7], unkVec, scales)
 
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
