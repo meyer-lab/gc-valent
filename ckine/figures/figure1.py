@@ -120,12 +120,12 @@ def pstat_act(ax, unkVec, scales, Fig1 = True):
     else:
         ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
-def violinPlots(ax, unkVec, Fig1=True):
+def violinPlots(ax, unkVec, scales, Fig1=True):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
-
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
+    scales = pd.DataFrame(scales)
 
     if Fig1:
         traf.columns = traf_names()
@@ -143,7 +143,7 @@ def violinPlots(ax, unkVec, Fig1=True):
 
     sc_ax = 1 # subplot number for the scaling constant
     if Fig1:
-      sc_ax = 2
+        sc_ax = 2
     scales.columns = [r'$C_{5}$']
     d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5)
     d.set_title("pSTAT5 scaling constant")
