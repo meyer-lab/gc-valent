@@ -80,7 +80,9 @@ def reorient_factors(factors):
 def find_R2X(values, factors, subt = True):
     '''Compute R2X. Note that the inputs values and factors are in numpy.'''
     z_values = z_score_values(values, subtract = subt)
+    print(z_values.shape)
     values_reconstructed = tl.kruskal_to_tensor(factors)
+    print(values_reconstructed.shape)
     return 1 - tl_var(values_reconstructed - z_values) / tl_var(z_values)
 
 def R2X_remove_one(values, factors, n_comps):
