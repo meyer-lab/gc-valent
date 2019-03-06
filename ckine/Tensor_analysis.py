@@ -78,7 +78,7 @@ def reorient_factors(factors):
     return factors
 
 def find_R2X(values, factors, subt = True):
-    '''Compute R2X. Note that the inputs values and factors are in numpy. But since tensorly backend is cupy, need to convert to cupy.'''
+    '''Compute R2X. Note that the inputs values and factors are in numpy.'''
     z_values = z_score_values(values, subtract = subt)
     values_reconstructed = tl.kruskal_to_tensor(factors)
     return 1 - tl_var(values_reconstructed - z_values) / tl_var(z_values)
