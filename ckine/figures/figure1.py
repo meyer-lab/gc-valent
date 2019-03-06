@@ -83,7 +83,7 @@ def surf_perc(ax, species, unkVec):
     ax[0].set_ylim(0,115)
 
 
-def pstat_act(ax, unkVec, scales, Fig1 = True):
+def pstat_act(ax, unkVec, scales, Fig1=True):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -118,7 +118,7 @@ def pstat_act(ax, unkVec, scales, Fig1 = True):
     if Fig1:
         ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
     else:
-        ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        ax.legend(loc='upper left', bbox_to_anchor=(0.25, -0.5))
 
 def violinPlots(ax, unkVec, scales, Fig1=True):
     """ Create violin plots of model posterior. """
