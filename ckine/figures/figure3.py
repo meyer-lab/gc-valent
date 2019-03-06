@@ -41,7 +41,6 @@ def makeFigure():
     factors = reorient_factors(factors)
 
     values = tl.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
-    values = np.concatenate((cp.asnumpy(values), cp.asnumpy(values)), axis = 3)
     n_comps = 5
     factors_activ = factors_activity[n_comps]
     newfactors_activ = reorient_factors(factors_activ)
