@@ -126,17 +126,17 @@ def violinPlots(ax, unkVec, scales):
     scales = pd.DataFrame(scales)
 
     traf.columns = traf_names()
-    b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0)
+    b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
-    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0)
+    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     
     scales.columns = [r'$C_{5}$']
-    d = sns.violinplot(data=scales, ax=ax[2])
+    d = sns.violinplot(data=scales, ax=ax[2], linewidth=0.5)
     d.set_title("pSTAT5 scaling constant")
 
 def rateComp(ax, unkVec):
@@ -179,7 +179,7 @@ def rateComp(ax, unkVec):
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
+    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0.5, scale='width')
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
