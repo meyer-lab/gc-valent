@@ -115,7 +115,7 @@ def violinPlots(ax, unkVec, scales):
 
     rxn.columns = [r'$k_{27}$', r'$k_{33}$']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
-    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Reverse reaction rates")
 
     traf.columns = traf_names()

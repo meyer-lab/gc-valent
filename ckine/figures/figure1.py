@@ -166,15 +166,15 @@ def rateComp(ax, unkVec):
     df.loc[split:(split*2), 'cytokine'] = 'IL-15'
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
-    melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{nM * min})}$"] = np.log10(melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{nM * min})}$"])
+    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r"$\mathrm{log_{10}(\frac{1}{min})}$")
+    melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{min})}$"] = np.log10(melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{min})}$"])
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
+    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
