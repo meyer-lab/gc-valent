@@ -12,7 +12,6 @@ import matplotlib.cm as cm
 from tensorly.decomposition import tucker
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import find_R2X, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
-tensorly.set_backend('cupy')
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
