@@ -10,7 +10,7 @@ from ckine.Tensor_analysis import perform_decomposition, perform_tucker, find_R2
 
 n_ligands = 4
 values, _, _, _, _ = prepare_tensor(n_ligands)
-values = tl.tensor(values) #Convert work to cupy
+values = tl.tensor(values)
 rank_list = [5,15,25,5]
 out_tucker = perform_tucker(values[:,:,:,[0,1,2,3,4]], rank_list) #This contains the core tensor and the factors matrices to help in storing. 
 print(find_R2X_tucker(values[:,:,:,[0,1,2,3,4]], out_tucker, subt = True))
@@ -19,7 +19,7 @@ factors_activity = []
 for jj in range(6):
     tic = time.clock()
     print(jj)
-    factors = perform_decomposition(values, jj+1, subt = False)
+    factors = perform_decomposition(values[:,:,:,[0,1,2,3,4]], jj+1, subt = False)
     factors_activity.append(factors)
 toc = time.clock()
 print(toc - tic)
