@@ -13,7 +13,7 @@ from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[3])
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 6], multz={0: 2, 6: 2}, empts=[3])
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
@@ -26,8 +26,8 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
     surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
-    violinPlots(ax[6:8], unkVec)
-    rateComp(ax[8], unkVec)
+    violinPlots(ax[5:8], unkVec, scales)
+    rateComp(ax[4], unkVec)
 
 
     f.tight_layout()
@@ -117,12 +117,13 @@ def pstat_act(ax, unkVec, scales):
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
     ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
 
-def violinPlots(ax, unkVec):
+def violinPlots(ax, unkVec, scales):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
 
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
+    scales = pd.DataFrame(scales)
 
     traf.columns = traf_names()
     b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
@@ -133,6 +134,10 @@ def violinPlots(ax, unkVec):
     c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    
+    scales.columns = [r'$C_{5}$']
+    d = sns.violinplot(data=scales, ax=ax[2], linewidth=0, bw=10)
+    d.set_title("pSTAT5 scaling constant")
 
 def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
