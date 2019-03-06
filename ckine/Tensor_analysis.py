@@ -80,9 +80,7 @@ def reorient_factors(factors):
 def find_R2X(values, factors, subt = True):
     '''Compute R2X. Note that the inputs values and factors are in numpy.'''
     z_values = z_score_values(values, subtract = subt)
-    print(z_values.shape)
     values_reconstructed = tl.kruskal_to_tensor(factors)
-    print(values_reconstructed.shape)
     return 1 - tl_var(values_reconstructed - z_values) / tl_var(z_values)
 
 def R2X_remove_one(values, factors, n_comps):
@@ -151,8 +149,9 @@ def percent_reduction_by_ligand(values, factors):
     for ii in range(factors[0].shape[1]):
         new_factors = list()
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
-            new_factors.append(tl.tensor(np.delete(tl.to_numpy(factors[jj], ii, 1))))
+            new_factors.append(tl.tensor(np.delete(tl.to_numpy(factors[jj]), ii, 1)))
 
+        overall_reconstructed = tl.kruskal_to_tensor(new_factors)
         AllLigandReconstructed = split_values_by_ligand(overall_reconstructed)
         for jj in range(5):
             R2X_ligand_mx[jj,ii] = 1 - tl_var(AllLigandReconstructed[jj] - AllLigandTensors[jj]) / tl_var(AllLigandTensors[jj])
