@@ -2,7 +2,7 @@
 #include <string>
 
 constexpr size_t Nparams = 30; // number of unknowns for the full model
-constexpr size_t NIL2params = 10; // number of unknowns for the IL2 model
+constexpr size_t NIL2params = 28; // number of unknowns for the IL2 model including all endosomal binding affinities
 
 constexpr size_t Nlig = 6; // Number of ligands
 

@@ -89,7 +89,7 @@ def runCkineS (tps, rxntfr, condense):
 def runCkineU_IL2 (tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
-    assert rxntfr.size == 10
+    assert rxntfr.size == 28
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -108,7 +108,7 @@ def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
                        0.6*144*input[1], 8.6677, 0.1233,
-                       63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
+                       63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147]) # TODO: expand rxntfR to include all endosomal binding affinities (134-151 of model.hpp)
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
