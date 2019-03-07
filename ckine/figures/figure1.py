@@ -146,6 +146,7 @@ def violinPlots(ax, unkVec, scales, Fig1=True):
         sc_ax = 2
     scales.columns = [r'$C_{5}$']
     d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5)
+    d.set_title("value")
     d.set_title("pSTAT5 scaling constant")
 
 def rateComp(ax, unkVec):
