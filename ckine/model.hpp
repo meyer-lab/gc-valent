@@ -131,8 +131,24 @@ public:
 			Rexpr[2] = rxntfR[9];
 
 			endosome = surface;
-			endosomeAdjust(&endosome);
-		}
+            endosome.k1rev = rxntfR[10];
+            endosome.k2rev = rxntfR[11];
+            endosome.k4rev = rxntfR[12];
+            endosome.k5rev = rxntfR[13];
+            endosome.k10rev = rxntfR[14];
+            endosome.k11rev = rxntfR[15];
+            endosome.k16rev = rxntfR[16];
+            endosome.k17rev = rxntfR[17];
+            endosome.k22rev = rxntfR[18];
+            endosome.k23rev = rxntfR[19];
+            endosome.k25rev = rxntfR[20];
+            endosome.k27rev = rxntfR[21];
+            endosome.k29rev = rxntfR[22];
+            endosome.k31rev = rxntfR[23];
+            endosome.k32rev = rxntfR[24];
+            endosome.k33rev = rxntfR[25];
+            endosome.k34rev = rxntfR[26];
+            endosome.k35rev = rxntfR[27];		}
 	}
 
 	void print() {
