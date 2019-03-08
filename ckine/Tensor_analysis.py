@@ -22,13 +22,12 @@ def tl_var(matrix):
 
 def z_score_values(A, subtract = True):
     ''' Function that takes in the values tensor and z-scores it. '''
-    B = A.copy()
+    B = tl.zeros_like(A)
     for i in range(A.shape[3]):
         slice_face = A[:,:,:,i]
-        mu = tl.mean(slice_face)
         sigma = tl.sqrt(tl_var(slice_face))
         if subtract is True:
-            z_scored_slice = (slice_face - mu) / sigma
+            z_scored_slice = (slice_face - tl.mean(slice_face)) / sigma
         elif subtract is False:
             z_scored_slice = slice_face / sigma
         B[:,:,:,i] = z_scored_slice
