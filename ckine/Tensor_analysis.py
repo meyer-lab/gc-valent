@@ -5,6 +5,7 @@ import numpy as np
 import tensorly as tl
 from tensorly.decomposition import parafac
 from tensorly.decomposition import tucker
+from tensorly.metrics.regression import variance as tl_var, standard_deviation as tl_std
 
 def tensorly_backend(bknd):
     '''Function to convert back and forth between numpy and cupy backends. Always works with numpy unless set as False which switches to cupy.'''
@@ -16,16 +17,12 @@ def tensorly_backend(bknd):
 backend = 1 # Only place to choose what the backend should be.
 tensorly_backend(bknd = backend) # Set the backend within every file that imports from Tensor_analysis.py
 
-def tl_var(matrix):
-    '''Function to compute the variance of a matrix using the basic wrapper functions within tensorly. Tensotly does not have variance formula.'''
-    return tl.norm(matrix - tl.mean(matrix)) / np.sum(tl.shape(matrix), dtype=np.float32)
-
 def z_score_values(A, subtract = True):
     ''' Function that takes in the values tensor and z-scores it. '''
     B = tl.zeros_like(A)
     for i in range(A.shape[3]):
         slice_face = A[:,:,:,i]
-        sigma = tl.sqrt(tl_var(slice_face))
+        sigma = tl_std(slice_face)
         if subtract is True:
             z_scored_slice = (slice_face - tl.mean(slice_face)) / sigma
         elif subtract is False:
