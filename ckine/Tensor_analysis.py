@@ -22,7 +22,7 @@ def tl_var(matrix):
 
 def z_score_values(A, subtract = True):
     '''Function that takes in the values tensor and z-scores it.'''
-    B = tl.zeros_like(A)
+    B = tl.zeros_like(A, dtype=A.dtype)
     for i in range(A.shape[3]):
         slice_face = A[:,:,:,i]
         mu = tl.mean(slice_face)
