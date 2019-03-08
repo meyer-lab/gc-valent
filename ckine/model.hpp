@@ -2,7 +2,7 @@
 #include <string>
 
 constexpr size_t Nparams = 30; // number of unknowns for the full model
-constexpr size_t NIL2params = 16; // number of unknowns for the IL2 model including IL2's endosomal binding affinities
+constexpr size_t NIL2params = 15; // number of unknowns for the IL2 model including IL2's endosomal binding affinities
 
 constexpr size_t Nlig = 6; // Number of ligands
 
@@ -137,8 +137,7 @@ public:
             endosome.k2rev = rxntfR[11];
             endosome.k4rev = rxntfR[12];
             endosome.k5rev = rxntfR[13];
-            endosome.k10rev = rxntfR[14];
-            endosome.k11rev = rxntfR[15];
+            endosome.k11rev = rxntfR[14];
 			endosome.k10rev = 12.0 * endosome.k5rev / 1.5; } // doi:10.1016/j.jmb.2004.04.038
 	}
 
