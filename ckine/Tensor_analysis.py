@@ -17,18 +17,18 @@ def tensorly_backend(bknd):
 backend = 1 # Only place to choose what the backend should be.
 tensorly_backend(bknd = backend) # Set the backend within every file that imports from Tensor_analysis.py
 
-def z_score_values(A, subtract = True):
+def z_score_values(A, subtract=True):
     ''' Function that takes in the values tensor and z-scores it. '''
-    B = tl.zeros_like(A)
+    B = tl.to_numpy(A)
     for i in range(A.shape[3]):
-        slice_face = A[:,:,:,i]
-        sigma = tl_std(slice_face)
+        slice_face = B[:,:,:,i]
+        sigma = np.std(slice_face)
         if subtract is True:
-            z_scored_slice = (slice_face - tl.mean(slice_face)) / sigma
+            z_scored_slice = (slice_face - np.mean(slice_face)) / sigma
         elif subtract is False:
             z_scored_slice = slice_face / sigma
         B[:,:,:,i] = z_scored_slice
-    return B
+    return tl.tensor(B)
 
 def perform_decomposition(tensor, r, subt = True):
     '''Apply z scoring and perform PARAFAC decomposition'''
