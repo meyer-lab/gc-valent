@@ -18,11 +18,11 @@ tensorly_backend(bknd = backend) # Set the backend within every file that import
 
 def tl_var(matrix):
     '''Function to compute the variance of a matrix using the basic wrapper functions within tensorly. Tensotly does not have variance formula.'''
-    return tl.norm(matrix - tl.mean(matrix)) / np.sum(tl.shape(matrix))
+    return tl.norm(matrix - tl.mean(matrix)) / np.sum(tl.shape(matrix), dtype=matrix.dtype)
 
 def z_score_values(A, subtract = True):
-    '''Function that takes in the values tensor and z-scores it.'''
-    B = tl.zeros_like(A, dtype=A.dtype)
+    ''' Function that takes in the values tensor and z-scores it. '''
+    B = A.copy()
     for i in range(A.shape[3]):
         slice_face = A[:,:,:,i]
         mu = tl.mean(slice_face)
