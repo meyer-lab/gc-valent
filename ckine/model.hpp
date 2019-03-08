@@ -139,9 +139,7 @@ public:
             endosome.k5rev = rxntfR[13];
             endosome.k10rev = rxntfR[14];
             endosome.k11rev = rxntfR[15];
-
-            // These are probably measured in the literature
-			endosome.k10rev = 12.0 * endosome.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038}
+			endosome.k10rev = 12.0 * endosome.k5rev / 1.5; } // doi:10.1016/j.jmb.2004.04.038
 	}
 
 	void print() {

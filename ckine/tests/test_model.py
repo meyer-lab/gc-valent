@@ -235,7 +235,7 @@ class TestModel(unittest.TestCase):
 
     def test_runCkineU_IL2(self):
         """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
-        rxntfr_reg = np.ones(10)
+        rxntfr_reg = np.ones(16)
         rxntfr_loose = rxntfr_reg.copy()
         rxntfr_gc = rxntfr_reg.copy()
         rxntfr_gc[9] = 0.0 # set gc expression to 0
@@ -257,7 +257,7 @@ class TestModel(unittest.TestCase):
     def test_ligandDeg_All(self):
         """ Verify that ligand degradation increases when sortF and kDeg increase. """
         # case for IL2
-        y, _ = runCkineU_IL2(self.ts, np.ones(10))
+        y, _ = runCkineU_IL2(self.ts, np.ones(16))
         sortF, kDeg = 0.5, 1.0
         reg = ligandDeg(y[1,:], sortF, kDeg, 0)
         high_sortF = ligandDeg(y[1,:], 0.9, kDeg, 0)
