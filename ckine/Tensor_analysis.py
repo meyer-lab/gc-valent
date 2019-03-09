@@ -27,20 +27,20 @@ def z_score_values(A, subtract=True):
 
     return (A - mu[None, None, None, :]) / sigma[None, None, None, :]
 
-def R2X(reconstructed, original)
+def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
 
-def perform_decomposition(tensor, r, subt = True):
+def perform_decomposition(tensor, r, subt=True):
     '''Apply z scoring and perform PARAFAC decomposition'''
     values_z = z_score_values(tensor, subtract = subt)
-    factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
+    factors = parafac(values_z, rank = r) # can do verbose and tolerance (tol)
     return factors
 
-def perform_tucker(tensor, rank_list, subt = True):
+def perform_tucker(tensor, rank_list, subt=True):
     '''Function to peform tucker decomposition.'''
-    values_z = z_score_values(tensor, subtract = subt)
-    out = tucker(values_z, ranks = rank_list, init = 'random') #index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
+    values_z = z_score_values(tensor, subtract=subt)
+    out = tucker(values_z, ranks=rank_list) # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
     return out
 
 def find_R2X_tucker(values, out, subt = True):
