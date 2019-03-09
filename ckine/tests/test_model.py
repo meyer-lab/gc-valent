@@ -283,13 +283,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(tot_endo, 0.0)
 
     def test_IL2_endo_binding(self):
-        """ Make sure that the runIL2simple works and that increasing the endosomal reverse reaction rates causes tighter binding (more ligand degradation). """
+        """ Make sure that the runIL2simple works and that increasing the endosomal reverse reaction rates causes tighter binding (less ligand degradation). """
         inp_normal = np.array([1.0, 1.0, 5.0])
         inp_tight = np.array([1.0, 1.0, 1.0]) # lower reverse rates in the endosome
 
         out_norm = runIL2simple(inp_normal, 1.0, ligandDegradation=True)
         out_tight = runIL2simple(inp_tight, 1.0, ligandDegradation=True)
 
-        print("out_norm:", out_norm)
-        print("out_tight:", out_tight)
-        self.assertGreater(out_tight, out_norm) # tighter binding will have a greater rate of ligand degradation
+        self.assertLess(out_tight, out_norm) # tighter binding will have a lower rate of ligand degradation since all free ligand is degraded
