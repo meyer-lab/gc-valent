@@ -5,7 +5,7 @@ import numpy as np
 import tensorly as tl
 from tensorly.decomposition import parafac
 from tensorly.decomposition import tucker
-from tensorly.metrics.regression import variance as tl_var, standard_deviation as tl_std
+from tensorly.metrics.regression import variance as tl_var, standard_deviation
 
 def tensorly_backend(bknd):
     '''Function to convert back and forth between numpy and cupy backends. Always works with numpy unless set as False which switches to cupy.'''
@@ -19,16 +19,13 @@ tensorly_backend(bknd = backend) # Set the backend within every file that import
 
 def z_score_values(A, subtract=True):
     ''' Function that takes in the values tensor and z-scores it. '''
-    B = tl.zeros_like(A)
-    for i in range(A.shape[3]):
-        slice_face = B[:,:,:,i]
-        sigma = tl_std(slice_face)
-        if subtract is True:
-            z_scored_slice = (slice_face - tl.mean(slice_face)) / sigma
-        elif subtract is False:
-            z_scored_slice = slice_face / sigma
-        B[:,:,:,i] = z_scored_slice
-    return B
+    sigma = standard_deviation(A, axis=3)
+    mu = tl.mean(A, axis=3)
+
+    if subtract is False:
+        mu[:] = 0.0
+
+    return (A - mu[None, None, None, :]) / sigma[None, None, None, :]
 
 def perform_decomposition(tensor, r, subt = True):
     '''Apply z scoring and perform PARAFAC decomposition'''
