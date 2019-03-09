@@ -19,7 +19,7 @@ tensorly_backend(bknd = backend) # Set the backend within every file that import
 
 def z_score_values(A, subtract=True):
     ''' Function that takes in the values tensor and z-scores it. '''
-    sigma = standard_deviation(A, axis=(0, 1, 2))
+    sigma = np.std(A, axis=(0, 1, 2))
     mu = tl.mean(A, axis=(0, 1, 2))
 
     if subtract is False:
