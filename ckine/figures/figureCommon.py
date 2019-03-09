@@ -57,6 +57,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
+'''
 def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
@@ -74,7 +75,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     else:
         if ax_pos == 11:
             ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
-
+'''
 
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
@@ -85,7 +86,7 @@ def plot_timepoint(ax, factors, component_x, component_y):
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H'] # 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])

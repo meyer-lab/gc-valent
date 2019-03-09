@@ -1,5 +1,5 @@
 """
-This creates Figure S1.
+This creates Figure S3.
 """
 import string
 import os

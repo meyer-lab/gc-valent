@@ -25,15 +25,15 @@ def tl_var(matrix):
 def z_score_values(A, subtract = True):
     '''Function that takes in the values tensor and z-scores it.'''
     B = tl.zeros_like(A)
-    for i in range(A.shape[3]):
-        slice_face = A[:,:,:,i]
+    for i in range(len(A.shape)):
+        slice_face = A[:,:,i]
         mu = tl.mean(slice_face)
         sigma = tl.sqrt(tl_var(slice_face))
         if subtract is True:
             z_scored_slice = (slice_face - mu) / sigma
         elif subtract is False:
             z_scored_slice = slice_face / sigma
-        B[:,:,:,i] = z_scored_slice
+        B[:,:,i] = z_scored_slice
     return B
 
 def perform_decomposition(tensor, r, subt = True):
@@ -56,15 +56,15 @@ def find_R2X_tucker(values, out, subt = True):
 
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
-    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index], factors[3][:,component_index]]
-    component_means = tl.tensor([tl.mean(factors_idx[0]**3), tl.mean(factors_idx[1]**3), tl.mean(factors_idx[2]**3), tl.mean(factors_idx[3]**3)])
-    if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
+    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index]]
+    component_means = tl.tensor([tl.mean(factors_idx[0]**3), tl.mean(factors_idx[1]**3), tl.mean(factors_idx[2]**3)])
+    if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) < 3: #if at least 2 are negative, then flip the negative component and keep others unchanged
         count = 1
         for index, factor_idx in enumerate(factors_idx):
             if component_means[index] < 0 and count < 3:
                 factors[index][:, component_index] = factor_idx * -1
                 count += 1
-    elif tl.sum(tl.tensor(component_means) < 0) == 4:
+    elif tl.sum(tl.tensor(component_means) < 0) == 3:
         for index, factor_idx in enumerate(factors_idx):
             factors[index][:,component_index] = factor_idx * -1
     return factors
@@ -84,16 +84,16 @@ def find_R2X(values, factors, subt = True):
 def R2X_remove_one(values, factors, n_comps):
     """Generate additional R2X plot for removing single components from final factorization."""
     z_values = z_score_values(values)
-    LigandTensor = z_values[:,:,:, 0:5]
+    LigandTensor = z_values[:,:,:]
 
     R2X_singles_arr = tl.zeros((2, n_comps)) #0 is ligand; 1 is overall
     for ii in range(n_comps):
         new_factors = list()
-        for jj in range(4): #4 because decomposed tensor into 4 factor matrices
+        for jj in range(3): #3 because decomposed tensor into 3 factor matrices
             new_factors.append(tl.tensor(np.delete(tl.to_numpy(factors[jj], ii, 1))))
 
         overall_reconstructed = tl.kruskal_to_tensor(new_factors)
-        Ligand_reconstructed = overall_reconstructed[:,:,:,0:5]
+        Ligand_reconstructed = overall_reconstructed[:,:,:]
 
         R2X_singles_arr[0,ii] = 1 - tl_var(Ligand_reconstructed - LigandTensor) / tl_var(LigandTensor)
         R2X_singles_arr[1,ii] = 1 - tl_var(overall_reconstructed - z_values) / tl_var(z_values)
@@ -104,18 +104,19 @@ def split_one_comp(values, factors):
     """Decompose and reconstruct with just one designated component, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)
     R2X_array = tl.zeros((2)) # An array of to store the R2X values for each split tensor and the overall one [index 3].
-    LigandTensor = z_values[:,:,:, 0:5]
+    LigandTensor = z_values[:,:,:]
 
     values_reconstructed = tl.kruskal_to_tensor(factors)
     R2X_array[1] = 1 - tl_var(values_reconstructed -z_values) / tl_var(z_values) #overall
 
-    Ligand_reconstructed = values_reconstructed[:,:,:,0:5]
+    Ligand_reconstructed = values_reconstructed[:,:,:]
     R2X_array[0] = 1 - tl_var(Ligand_reconstructed - LigandTensor) / tl_var(LigandTensor) #ligand
     return R2X_array
 
+'''
 def split_types_R2X(values, factors_list, n_comp):
     """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X. n_comp here is the number of components."""
-    R2X_matrix = tl.zeros((n_comp,2)) # A 4 by n_comp matrix to store the R2X values for each split tensor.
+    R2X_matrix = tl.zeros((n_comp,2)) # An n_comp matrix to store the R2X values for each split tensor.
 
     for ii in range(n_comp):
         array = split_one_comp(values, factors_list[ii])
@@ -154,11 +155,12 @@ def percent_reduction_by_ligand(values, factors):
         for jj in range(5):
             R2X_ligand_mx[jj,ii] = 1 - tl_var(AllLigandReconstructed[jj] - AllLigandTensors[jj]) / tl_var(AllLigandTensors[jj])
     return R2X_ligand_mx
+'''
 
 def scale_time_factors(factors, component_index):
     """Scale the timepoint factor component by dividing the mean and then in the values plot multiply the values by that same number."""
     scale_factor = tl.mean(factors[0][:, component_index])
-    factors[3][:, component_index] *= scale_factor
+    factors[2][:, component_index] *= scale_factor
     factors[0][:, component_index] /= scale_factor
     return factors
 

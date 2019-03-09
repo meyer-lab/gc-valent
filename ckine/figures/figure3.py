@@ -2,6 +2,7 @@
 This creates Figure 3.
 """
 import os
+from os.path import join
 import pickle
 import string
 import tensorly as tl
@@ -9,8 +10,8 @@ import numpy as np, pandas as pds
 from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
-from ..Tensor_analysis import find_R2X, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
+from ..Tensor_analysis import find_R2X, reorient_factors, scale_all
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -21,16 +22,18 @@ def makeFigure():
     ax[0].axis('off')
     ax[12].axis('off')
 
-    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    fileDir = os.path.dirname(os.path.realpath(__file__))
 
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
-
-    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
-    data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
-    cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
-    numpy_data = data.values
-    Receptor_data = np.delete(numpy_data, 0, 1)
+    
+    expr_filename = os.path.join(fileDir, './ckine/data/Preliminary receptor levels.csv')
+    data = pds.read_csv(expr_filename) # Every row in the data represents a specific cell
+    
+    
+    numpy_data = data.values[:,1:] # returns data values in a numpy array
+    cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
+    #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
@@ -40,7 +43,6 @@ def makeFigure():
     factors = reorient_factors(factors)
 
     values = tl.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
-    values = tl.concatenate((values,values),axis = 3)
     n_comps = 5
     factors_activ = factors_activity[n_comps]
     newfactors_activ = reorient_factors(factors_activ)
@@ -48,7 +50,6 @@ def makeFigure():
 
     PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
     plot_R2X(ax[3], values, factors_activity, n_comps = 6)
-    plot_reduction_ligand(ax[4], values, newfactors_activ)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -61,7 +62,6 @@ def makeFigure():
         compNum = 2*(row-1) + 1
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = (row-1)*y + 1, legend=False)
         plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
-        plot_values(ax[row*y + 3] , newfactors[3], compNum, compNum+1, ax_pos = (row-1)*y + 3, legend = False)
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
@@ -78,6 +78,7 @@ def makeFigure():
 
     return f
 
+'''
 def plot_reduction_ligand(ax, values, factors):
     """Function to plot the percent by reduction in R2X for each ligand type."""
     old_R2X = R2X_split_ligand(values, factors) #array of 6 old values for R2X
@@ -95,6 +96,7 @@ def plot_reduction_ligand(ax, values, factors):
     ax.set_xlabel('Component Index')
     ax.set_ylabel('Percent Reduction in R2X')
     ax.legend()
+'''
 
 def PCA_receptor(ax1, ax2, cell_names, data):
     """Plot PCA scores and loadings for Receptor Expression Data. """
@@ -104,8 +106,8 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     loadings = pca.components_ #n_comp by 8 receptors
     expVar = pca.explained_variance_ratio_
 
-    colors = cm.rainbow(np.linspace(0, 1, 34))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
+    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H']
     markersReceptors = ['^', '4', 'P', '*', 'D', 's', 'X' ,'o']
     labelReceptors = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα', 'IL-7Rα', 'IL-9R', 'IL-4Rα', 'IL-21Rα']
 
