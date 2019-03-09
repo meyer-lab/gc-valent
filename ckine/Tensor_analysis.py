@@ -27,6 +27,10 @@ def z_score_values(A, subtract=True):
 
     return (A - mu[None, None, None, :]) / sigma[None, None, None, :]
 
+def R2X(reconstructed, original)
+    ''' Calculates R2X of two tensors. '''
+    return 1.0 - tl_var(reconstructed - original) / tl_var(original)
+
 def perform_decomposition(tensor, r, subt = True):
     '''Apply z scoring and perform PARAFAC decomposition'''
     values_z = z_score_values(tensor, subtract = subt)
@@ -43,7 +47,7 @@ def find_R2X_tucker(values, out, subt = True):
     '''Compute R2X for the tucker decomposition.'''
     z_values = z_score_values(values, subtract = subt)
     values_reconstructed = tl.tucker_to_tensor(out[0], out[1])        
-    return 1 - tl_var(values_reconstructed - z_values) / tl_var(z_values)
+    return R2X(values_reconstructed, z_values)
 
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
@@ -70,7 +74,7 @@ def find_R2X(values, factors, subt = True):
     '''Compute R2X. Note that the inputs values and factors are in numpy.'''
     z_values = z_score_values(values, subtract = subt)
     values_reconstructed = tl.kruskal_to_tensor(factors)
-    return 1 - tl_var(values_reconstructed - z_values) / tl_var(z_values)
+    return R2X(values_reconstructed, z_values)
 
 def R2X_remove_one(values, factors, n_comps):
     """Generate additional R2X plot for removing single components from final factorization."""
