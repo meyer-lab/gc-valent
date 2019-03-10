@@ -34,8 +34,8 @@ def R2X(reconstructed, original):
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
 
 def perform_decomposition(tensor, r):
-    '''Apply z scoring and perform PARAFAC decomposition'''
-    return parafac(z_score_values(tensor), rank=r) # can do verbose and tolerance (tol)
+    ''' Apply z scoring and perform PARAFAC decomposition. '''
+    return parafac(z_score_values(tensor), rank=r, tol=1.0E-9, n_iter_max=1000)
 
 def perform_tucker(tensor, rank_list):
     '''Function to peform tucker decomposition.'''
