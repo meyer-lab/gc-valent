@@ -7,8 +7,6 @@ import tensorly as tl
 from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_all
 from ..tensor_generation import findy
 
-#warnings.filterwarnings("ignore", "CuPy solver failed", UserWarning, "tensorly")
-
 class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
     def test_R2X(self):
@@ -16,7 +14,7 @@ class TestModel(unittest.TestCase):
         tensor = tl.tensor(np.random.rand(12, 10, 15, 14))
         arr = []
         for i in range(1, 8):
-            factors = perform_decomposition(tensor, i)
+            factors = perform_decomposition(tensor, i, subt = True)
             R2X = find_R2X(tensor, factors)
             arr.append(R2X)
         for j in range(len(arr)-1):
@@ -33,7 +31,7 @@ class TestModel(unittest.TestCase):
     def test_reorientation(self, n_comp = 20):
         """Test if reorienting the factors matrices changes anything about the original tensor itself."""
         tensor = tl.tensor(np.random.rand(20, 35, 100, n_comp))
-        factors = perform_decomposition(tensor, n_comp-1)
+        factors = perform_decomposition(tensor, n_comp-1, subt = True)
         reconstruct_old = tl.kruskal_to_tensor(factors)
         new_factors = reorient_factors(factors)
         reconstruct_new = tl.kruskal_to_tensor(new_factors)
@@ -42,7 +40,7 @@ class TestModel(unittest.TestCase):
     def test_rescale_all(self, n_comp = 20):
         """Test if rescaling every component keeps the tensor the same."""
         tensor = tl.tensor(np.random.rand(20, 35, 100, n_comp))
-        factors = perform_decomposition(tensor, n_comp-1)
+        factors = perform_decomposition(tensor, n_comp-1, subt = True)
         reconstruct_old = tl.kruskal_to_tensor(factors)
         newfactors = scale_all(factors)
         reconstruct_new = tl.kruskal_to_tensor(newfactors)
