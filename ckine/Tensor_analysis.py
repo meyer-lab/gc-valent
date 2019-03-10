@@ -17,16 +17,14 @@ def tensorly_backend(bknd):
 backend = 0 #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
 tensorly_backend(bknd = backend) #Set the backend within every file that imports from Tensor_analysis.py
 
-
 def z_score_values(A, subtract):
     ''' Function that takes in the values tensor and z-scores it. '''
     sigma = np.std(A, axis=(0, 1))
     mu = tl.mean(A, axis=(0, 1))
-
     if subtract is False:
         mu[:] = 0.0
-
     return (A - mu[None, None, :]) / sigma[None, None, :]
+
 
 def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
@@ -35,13 +33,13 @@ def R2X(reconstructed, original):
 def perform_decomposition(tensor, r, subt):
     '''Apply z scoring and perform PARAFAC decomposition'''
     values_z = z_score_values(tensor, subtract = subt)
-    factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
+    factors = parafac(values_z, rank = r) # can do verbose and tolerance (tol)
     return factors
 
 def perform_tucker(tensor, rank_list, subt):
     '''Function to peform tucker decomposition.'''
-    values_z = z_score_values(tensor, subtract = subt)
-    out = tucker(values_z, ranks = rank_list, init = 'random') #index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
+    values_z = z_score_values(tensor, subtract=subt)
+    out = tucker(values_z, ranks=rank_list) # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
     return out
 
 def find_R2X_tucker(values, out, subt):
