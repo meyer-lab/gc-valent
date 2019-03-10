@@ -16,7 +16,7 @@ from ..Tensor_analysis import find_R2X, reorient_factors, scale_all, perform_dec
 from ..tensor_generation import data, prepare_tensor
 
 subt = True #Controls all figures as to whether z-scoring should subtract the mean or not. 
-n_ligands = 5
+n_ligands = 4
 values, _, mat, _, _ = prepare_tensor(n_ligands)
 values = tl.tensor(values)
 
