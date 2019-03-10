@@ -3,7 +3,7 @@ Analyze tensor from tensor_generation and plotting.
 """
 import numpy as np
 import tensorly as tl
-from tensorly.decomposition import parafac
+from tensorly.decomposition import parafac, non_negative_parafac
 from tensorly.decomposition import tucker
 from tensorly.metrics.regression import variance as tl_var, standard_deviation
 
@@ -35,7 +35,7 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r):
     ''' Apply z scoring and perform PARAFAC decomposition. '''
-    return parafac(z_score_values(tensor), rank=r, tol=1.0E-9, n_iter_max=1000)
+    return non_negative_parafac(z_score_values(tensor), r, tol=1.0E-9, n_iter_max=1000)
 
 def perform_tucker(tensor, rank_list):
     '''Function to peform tucker decomposition.'''
