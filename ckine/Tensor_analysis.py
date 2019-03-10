@@ -17,7 +17,10 @@ def tensorly_backend(bknd):
 backend = 0 #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
 tensorly_backend(bknd = backend) #Set the backend within every file that imports from Tensor_analysis.py
 
-def z_score_values(A, subtract):
+# Set whether or not we subtract in one place so we're consistent
+subtract = False
+
+def z_score_values(A):
     ''' Function that takes in the values tensor and z-scores it. '''
     sigma = np.std(A, axis=(0, 1))
     mu = tl.mean(A, axis=(0, 1))
@@ -30,23 +33,18 @@ def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
 
-def perform_decomposition(tensor, r, subt):
+def perform_decomposition(tensor, r):
     '''Apply z scoring and perform PARAFAC decomposition'''
-    values_z = z_score_values(tensor, subtract = subt)
-    factors = parafac(values_z, rank = r) # can do verbose and tolerance (tol)
-    return factors
+    return parafac(z_score_values(tensor), rank=r) # can do verbose and tolerance (tol)
 
-def perform_tucker(tensor, rank_list, subt):
+def perform_tucker(tensor, rank_list):
     '''Function to peform tucker decomposition.'''
-    values_z = z_score_values(tensor, subtract=subt)
-    out = tucker(values_z, ranks=rank_list) # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
+    out = tucker(z_score_values(tensor), ranks=rank_list) # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
     return out
 
-def find_R2X_tucker(values, out, subt):
-    '''Compute R2X for the tucker decomposition.'''
-    z_values = z_score_values(values, subtract = subt)
-    values_reconstructed = tl.tucker_to_tensor(out[0], out[1])        
-    return R2X(values_reconstructed, z_values)
+def find_R2X_tucker(values, out):
+    '''Compute R2X for the tucker decomposition.'''     
+    return R2X(tl.tucker_to_tensor(out[0], out[1]) , z_score_values(values))
 
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
@@ -66,11 +64,9 @@ def reorient_factors(factors):
         factors = reorient_one(factors, jj)
     return factors
 
-def find_R2X(values, factors, subt):
+def find_R2X(values, factors):
     '''Compute R2X. Note that the inputs values and factors are in numpy.'''
-    z_values = z_score_values(values, subtract = subt)
-    values_reconstructed = tl.kruskal_to_tensor(factors)
-    return R2X(values_reconstructed, z_values)
+    return R2X(tl.kruskal_to_tensor(factors), z_score_values(values))
 
 def R2X_remove_one(values, factors, n_comps):
     """Generate additional R2X plot for removing single components from final factorization."""
