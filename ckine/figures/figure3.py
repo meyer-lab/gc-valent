@@ -48,7 +48,7 @@ def makeFigure():
     newfactors = scale_all(newfactors_activ)
 
     PCA_receptor(ax[1], ax[2], cell_names, numpy_data.T)
-    plot_R2X(ax[3], values, factors_activity, n_comps = 14, subt = subt)
+    plot_R2X(ax[3], values, factors_activity, n_comps = 14)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
