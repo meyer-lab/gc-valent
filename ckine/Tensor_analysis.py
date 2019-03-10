@@ -6,15 +6,8 @@ import tensorly as tl
 from tensorly.decomposition import parafac, tucker
 from tensorly.metrics.regression import variance as tl_var, standard_deviation
 
-def tensorly_backend(bknd):
-    '''Function to convert back and forth between numpy and cupy backends. Always works with numpy unless set as False which switches to cupy.'''
-    if bknd == 0:
-        tl.set_backend('numpy')
-    elif bknd == 1:
-        tl.set_backend('cupy')
-
-backend = 0 #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
-tensorly_backend(bknd = backend) #Set the backend within every file that imports from Tensor_analysis.py
+backend = 'numpy' # Make backend setting accessible if needed
+tl.set_backend(backend) # Set the backend within every file that imports this file
 
 
 def R2X(reconstructed, original):

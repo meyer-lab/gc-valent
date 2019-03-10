@@ -5,14 +5,13 @@ Important Notes:
     values is also a multidimensional matrix of size (length mesh x 1000 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
 """
 import os
-from os.path import join
 import numpy as np, pandas as pds
 from tqdm import trange
 from .model import runCkineU, nParams, nSpecies, internalStrength, halfL
 
 #Load the data from csv file
 path = os.path.dirname(os.path.abspath(__file__))
-data = pds.read_csv(join(path, 'data/Preliminary receptor levels.csv')) # Every row in the data represents a specific cell
+data = pds.read_csv(os.path.join(path, 'data/Preliminary receptor levels.csv')) # Every row represents a specific cell
 numpy_data = data.values[:,1:] # returns data values in a numpy array
 cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
 #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215

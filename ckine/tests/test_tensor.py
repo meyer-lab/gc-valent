@@ -14,8 +14,8 @@ class TestModel(unittest.TestCase):
         tensor = tl.tensor(np.random.rand(12, 10, 15))
         arr = []
         for i in range(1, 8):
-            factors = perform_decomposition(tensor, i, subt = True)
-            R2X = find_R2X(tensor, factors, subt = True)
+            factors = perform_decomposition(tensor, i)
+            R2X = find_R2X(tensor, factors)
             arr.append(R2X)
         for j in range(len(arr)-1):
             self.assertTrue(arr[j] < arr[j+1])
@@ -31,7 +31,7 @@ class TestModel(unittest.TestCase):
     def test_reorientation(self, n_comp = 20):
         """Test if reorienting the factors matrices changes anything about the original tensor itself."""
         tensor = tl.tensor(np.random.rand(20, 35, n_comp))
-        factors = perform_decomposition(tensor, n_comp-1, subt = True)
+        factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tl.kruskal_to_tensor(factors)
         new_factors = reorient_factors(factors)
         reconstruct_new = tl.kruskal_to_tensor(new_factors)
@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
     def test_rescale_all(self, n_comp = 20):
         """Test if rescaling every component keeps the tensor the same."""
         tensor = tl.tensor(np.random.rand(20, 35, n_comp))
-        factors = perform_decomposition(tensor, n_comp-1, subt = True)
+        factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tl.kruskal_to_tensor(factors)
         newfactors = scale_all(factors)
         reconstruct_new = tl.kruskal_to_tensor(newfactors)
