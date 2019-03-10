@@ -7,26 +7,19 @@ from tensorly.decomposition import parafac, non_negative_parafac
 from tensorly.decomposition import tucker
 from tensorly.metrics.regression import variance as tl_var, standard_deviation
 
-def tensorly_backend(bknd):
-    '''Function to convert back and forth between numpy and cupy backends. Always works with numpy unless set as False which switches to cupy.'''
-    if bknd == 0:
-        tl.set_backend('numpy')
-    elif bknd == 1:
-        tl.set_backend('cupy')
-
-backend = 0 #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
-tensorly_backend(bknd = backend) #Set the backend within every file that imports from Tensor_analysis.py
+backend = 'numpy' #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
+tl.set_backend(backend) #Set the backend within every file that imports from Tensor_analysis.py
 
 # Set whether or not we subtract in one place so we're consistent
 subtract = False
 
 def z_score_values(A):
     ''' Function that takes in the values tensor and z-scores it. '''
-    sigma = np.std(A, axis=(0, 1))
-    mu = tl.mean(A, axis=(0, 1))
+    sigma = np.std(A, axis=(0, 2))
+    mu = tl.mean(A, axis=(0, 2))
     if subtract is False:
         mu[:] = 0.0
-    return (A - mu[None, None, :]) / sigma[None, None, :]
+    return (A - mu[None, :, None]) / sigma[None, :, None]
 
 
 def R2X(reconstructed, original):
