@@ -12,10 +12,9 @@ from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from ..Tensor_analysis import find_R2X, reorient_factors, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
+from ..Tensor_analysis import find_R2X_parafac, reorient_factors, scale_all, perform_parafac, perform_tucker, find_R2X_tucker
 from ..tensor_generation import data, prepare_tensor
 
-subt = True #Controls all figures as to whether z-scoring should subtract the mean or not. 
 n_ligands = 4
 values, _, mat, _, _ = prepare_tensor(n_ligands)
 values = tl.tensor(values)
@@ -33,7 +32,7 @@ def makeFigure():
     for jj in range(len(mat) - 1):
         tic = time.clock()
         print(jj)
-        factors = perform_decomposition(values , jj+1, subt = subt)
+        factors = perform_parafac(values , jj+1)
         factors_activity.append(factors)
     toc = time.clock()
     print(toc - tic)
@@ -49,7 +48,7 @@ def makeFigure():
     newfactors = scale_all(newfactors_activ)
 
     PCA_receptor(ax[1], ax[2], cell_names, numpy_data.T)
-    plot_R2X(ax[3], values, factors_activity, n_comps = 14, subt = subt)
+    plot_R2X(ax[3], values, factors_activity, n_comps = 14)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
