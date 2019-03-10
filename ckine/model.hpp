@@ -132,13 +132,14 @@ public:
 
 			endosome = surface;
 
-            // manually reassign all of IL2's endosomal binding affinities
-            endosome.k1rev = rxntfR[10];
-            endosome.k2rev = rxntfR[11];
-            endosome.k4rev = rxntfR[12];
-            endosome.k5rev = rxntfR[13];
-            endosome.k11rev = rxntfR[14];
-			endosome.k10rev = 12.0 * endosome.k5rev / 1.5; } // doi:10.1016/j.jmb.2004.04.038
+			// manually reassign all of IL2's endosomal binding affinities
+			endosome.k1rev = rxntfR[10];
+			endosome.k2rev = rxntfR[11];
+			endosome.k4rev = rxntfR[12];
+			endosome.k5rev = rxntfR[13];
+			endosome.k11rev = rxntfR[14];
+			endosome.k10rev = 12.0 * endosome.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+		}
 	}
 
 	void print() {
