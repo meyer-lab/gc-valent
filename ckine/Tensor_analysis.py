@@ -54,15 +54,12 @@ def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
     factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index]]
     component_means = tl.tensor([tl.mean(factors_idx[0]**3), tl.mean(factors_idx[1]**3), tl.mean(factors_idx[2]**3)])
-    if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) < 3: #if at least 2 are negative, then flip the negative component and keep others unchanged
+    if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) <= 3: #if at least 2 are negative, then flip the negative component and keep others unchanged
         count = 1
         for index, factor_idx in enumerate(factors_idx):
             if component_means[index] < 0 and count < 3:
                 factors[index][:, component_index] = factor_idx * -1
                 count += 1
-    elif tl.sum(tl.tensor(component_means) < 0) == 3:
-        for index, factor_idx in enumerate(factors_idx):
-            factors[index][:,component_index] = factor_idx * -1
     return factors
 
 def reorient_factors(factors):
