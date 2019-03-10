@@ -15,7 +15,7 @@ class TestModel(unittest.TestCase):
         arr = []
         for i in range(1, 8):
             factors = perform_decomposition(tensor, i, subt = True)
-            R2X = find_R2X(tensor, factors)
+            R2X = find_R2X(tensor, factors, subt = True)
             arr.append(R2X)
         for j in range(len(arr)-1):
             self.assertTrue(arr[j] < arr[j+1])
