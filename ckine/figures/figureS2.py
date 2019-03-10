@@ -10,7 +10,7 @@ import tensorly as tl
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 from ..tensor_generation import data
-from .figure3 import subt, n_ligands, values
+from .figure3 import n_ligands, values
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -23,8 +23,8 @@ def makeFigure():
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     rank_list = [4,6,6]
-    out = perform_tucker(values, rank_list, subt = subt)
-    print(find_R2X_tucker(values, out, subt = subt))
+    out = perform_tucker(values, rank_list)
+    print(find_R2X_tucker(values, out))
 
     factors = out[1]
     plot_timepoints(ax[0], tl.to_numpy(factors[0]))
