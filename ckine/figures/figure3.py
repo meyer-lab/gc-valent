@@ -15,7 +15,6 @@ from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot
 from ..Tensor_analysis import find_R2X, reorient_factors, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
 from ..tensor_generation import data, prepare_tensor
 
-subt = True #Controls all figures as to whether z-scoring should subtract the mean or not. 
 n_ligands = 4
 values, _, mat, _, _ = prepare_tensor(n_ligands)
 values = tl.tensor(values)
@@ -33,7 +32,7 @@ def makeFigure():
     for jj in range(len(mat) - 1):
         tic = time.clock()
         print(jj)
-        factors = perform_decomposition(values , jj+1, subt = subt)
+        factors = perform_decomposition(values , jj+1)
         factors_activity.append(factors)
     toc = time.clock()
     print(toc - tic)
@@ -117,12 +116,12 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     ax2.set_title('Loadings')
     ax2.legend()
 
-def plot_R2X(ax, tensor, factors_list, n_comps, subt):
+def plot_R2X(ax, tensor, factors_list, n_comps):
     """Function to plot R2X bar graph."""
     R2X_array = list()
     for n in range(n_comps):
         factors = factors_list[n]
-        R2X = find_R2X(tensor, factors, subt)
+        R2X = find_R2X(tensor, factors)
         R2X_array.append(R2X)
     ax.plot(range(1,n_comps+1), R2X_array, 'ko', label = 'Overall R2X')
     ax.set_ylabel('R2X')
