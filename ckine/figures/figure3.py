@@ -12,7 +12,7 @@ from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from ..Tensor_analysis import find_R2X, reorient_factors, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
+from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
 from ..tensor_generation import data, prepare_tensor
 
 n_ligands = 4
@@ -44,7 +44,7 @@ def makeFigure():
 
     n_comps = 4
     factors_activ = factors_activity[n_comps-1]
-    newfactors_activ = reorient_factors(factors_activ)
+    newfactors_activ = factors_activ
     newfactors = scale_all(newfactors_activ)
 
     PCA_receptor(ax[1], ax[2], cell_names, numpy_data.T)
