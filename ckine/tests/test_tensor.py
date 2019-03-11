@@ -23,11 +23,6 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(tl.min(arr), 0)
         self.assertLessEqual(tl.max(arr), 1)
 
-    def test_tensor_parameters(self, r=1):
-        '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
-        y_combos, new_mat = findy(r,50)[0:2]
-        self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
-
     def test_rescale_all(self, n_comp = 20):
         """Test if rescaling every component keeps the tensor the same."""
         tensor = tl.tensor(np.random.rand(20, 35, n_comp))
