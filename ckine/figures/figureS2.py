@@ -22,7 +22,7 @@ def makeFigure():
     cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
-    rank_list = [2, 6, 6]
+    rank_list = [3, 6, 6]
     out = perform_tucker(values, rank_list)
     print(find_R2X_tucker(values, out))
 
