@@ -69,7 +69,7 @@ def makeFigure():
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
 
-    #f.tight_layout()
+    f.tight_layout()
 
     return f
 
@@ -103,7 +103,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     ax1.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
     ax1.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
     ax1.set_title('Scores')
-    ax1.legend(loc='upper left', bbox_to_anchor=(3.5, 1.0))
+    ax1.legend()
 
     ax2.set_xlim(-x_max2, x_max2)
     ax2.set_ylim(-y_max2, y_max2)
