@@ -11,13 +11,9 @@ import numpy as np, pandas as pds
 from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
-from ..tensor_generation import data, prepare_tensor
-
-n_ligands = 4
-values, _, mat, _, _ = prepare_tensor(n_ligands)
-values = tl.tensor(values)
+from ..tensor_generation import data
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -59,8 +55,8 @@ def makeFigure():
     for row in range(1,3):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
-        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1, legend=True)
-        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
+        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
+        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
