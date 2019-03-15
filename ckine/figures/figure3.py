@@ -35,7 +35,7 @@ def makeFigure():
 
 
     numpy_data = data.values[:,1:] # returns data values in a numpy array
-    cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
+    cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     n_comps = 4
@@ -103,7 +103,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     ax1.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
     ax1.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
     ax1.set_title('Scores')
-    ax1.legend()
+    ax1.legend(fontsize = 6, labelspacing = 0, handlelength = 0)
 
     ax2.set_xlim(-x_max2, x_max2)
     ax2.set_ylim(-y_max2, y_max2)

@@ -98,7 +98,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
         ax.legend()
 
     elif ax_pos == 5:
-        ax.legend()
+        ax.legend(fontsize = 8, labelspacing = 0, handlelength = 0)
     ax.set_title('Cells')
 
 

@@ -18,7 +18,7 @@ def makeFigure():
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
     numpy_data = data.values[:,1:] # returns data values in a numpy array
-    cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
+    cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     rank_list = [3, 6, 6]
