@@ -120,3 +120,21 @@ def IL2_receptor_activity(ax, unkVec, scales):
     ax[1].set_title("IL-2Rβ")
     ax[2].set_title(r'$\gamma_{c}$')
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
+
+def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
+    rec_ex = (receptor_abundance. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
+    return rec_ex
+
+def IL2_dose_response(ax, IL2, IL2Ra, IL2Rb, gc):
+    tps = np.array([15, 30, 60, 240])
+    unkVec, scales = import_samples_2_15()
+    rxntfr = unkVec.copy()
+    for i in unkVec.shape[0]:
+        rxntfr[i, 0] = Il2
+        rxntfr[i, 22] = receptor_expression(IL2Ra, unkVec[i, 17], unkVec[i, 20], unkVec[i, 19], unkVec[i, 21])
+        rxntfr[i, 23] = receptor_expression(IL2Rb, unkVec[i, 17], unkVec[i, 20], unkVec[i, 19], unkVec[i, 21])
+        rxntfr[i, 24] = receptor_expression(gc, unkVec[i, 17], unkVec[i, 20], unkVec[i, 19], unkVec[i, 21])  
+    yOut, retVal = runCkineUP(tps, rxntfr)
+    activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
+    plot_conf_int(ax, tps, activity, "royalblue")
+    ax.set(xlabel='time [min]', ylabel='Activity')
