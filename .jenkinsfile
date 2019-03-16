@@ -57,17 +57,8 @@ pipeline {
           reportFiles: 'index.html',
           reportName: 'Manuscript',
           reportTitles: ''])
-        step([
-          $class: 'CoberturaPublisher',
-          autoUpdateHealth: true,
-          autoUpdateStability: true,
-          coberturaReportFile: 'coverage.xml',
-          failNoReports: true,
-          failUnhealthy: true,
-          failUnstable: true,
-          sourceEncoding: 'UTF_8',
-          zoomCoverageChart: true])
-        step([$class:'TasksPublisher', canComputeNew:false, defaultEncoding:'', excludePattern:'',
+        publishCoverage adapters: [coberturaAdapter('coverage.xml')], failNoReports: true, sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+		step([$class:'TasksPublisher', canComputeNew:false, defaultEncoding:'', excludePattern:'',
           healthy:'', high:'TODO,FIXME,XXX', low:'', normal:'CITE', pattern:'**/*.py, **/*.md', unHealthy:''])
         step([$class:'WarningsPublisher', parserConfigurations: [[parserName:'PYLint', pattern:'pylint.log']],
           unstableTotalAll:'75', usePreviousBuildAsReference:true])
