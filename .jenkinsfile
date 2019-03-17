@@ -36,19 +36,6 @@ pipeline {
         archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
-        publishValgrind([
-          pattern: 'valgrind.xml',
-          failThresholdInvalidReadWrite: '1',
-          failThresholdDefinitelyLost: '100',
-          failThresholdTotal: '1000',
-          unstableThresholdInvalidReadWrite: '1',
-          unstableThresholdDefinitelyLost: '100',
-          unstableThresholdTotal: '1000',
-          sourceSubstitutionPaths: '',
-          publishResultsForAbortedBuilds: false,
-          publishResultsForFailedBuilds: true,
-          failBuildOnMissingReports: true,
-          failBuildOnInvalidReports: true])
         publishHTML([
           allowMissing: false,
           alwaysLinkToLastBuild: false,
