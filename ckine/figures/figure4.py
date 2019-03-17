@@ -99,7 +99,7 @@ def IL2_receptor_activity(ax, unkVec, scales):
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
 
 def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
-    rec_ex = (receptor_abundance. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
+    rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
     return rec_ex
 
 def IL2_dose_response(ax, IL2, IL2Ra, IL2Rb, gc):
