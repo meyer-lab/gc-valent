@@ -44,7 +44,7 @@ pipeline {
           reportFiles: 'index.html',
           reportName: 'Manuscript',
           reportTitles: ''])
-		cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+        cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
         recordIssues minimumSeverity: 'HIGH', tools: [pyLint(pattern: 'pylint.log')], unhealthy: 10
         publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true,
           reportDir:'html', reportFiles:'index.html', reportName:'Documentation', reportTitles:''])
