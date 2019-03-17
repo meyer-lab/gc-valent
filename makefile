@@ -67,10 +67,7 @@ test: ckine/ckine.so
 	pytest
 
 testcover: ckine/ckine.so
-	pytest --workers auto --junitxml=junit.xml --cov=ckine --cov-report xml:coverage.xml
-
-testprofile: ckine/ckine.so
-	pytest --profile-svg
+	pytest -n 8 --junitxml=junit.xml --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
 	valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck
