@@ -89,7 +89,7 @@ def runCkineS (tps, rxntfr, condense):
 def runCkineU_IL2 (tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
-    assert rxntfr.size == 10
+    assert rxntfr.size == 15
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -100,22 +100,31 @@ def runCkineU_IL2 (tps, rxntfr):
     return (yOut, retVal)
 
 
-def runIL2simple(input, IL, CD25=1.0, ligandDeg=False):
+def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
 
+    kfwd = 0.00449
+    k1rev = 0.6*10*input[0]
+    k2rev = 0.6*144*input[1]
+    k4rev = 8.6677
+    k5rev = 0.1233
+    k11rev = 63.0 * k5rev / 1.5 * input[1]
+    IL2Ra = 3.8704*CD25
+    IL2Rb = 0.734
+    gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
-                       0.6*144*input[1], 8.6677, 0.1233,
-                       63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
+    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
+                      IL2Ra, IL2Rb, gc,
+                      k1rev*input[2], k2rev*input[2], k4rev*input[2], k5rev*input[2], k11rev*input[2]]) # input[2] represents endosomal binding affinity relative to surface affinity
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
     assert retVal == 0
 
-    if ligandDeg == True:
-        ligDeg = ligandDeg_IL2(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333)
+    if ligandDegradation == True:
+        ligDeg = ligandDeg(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333, cytokineIDX=0)
         return ligDeg # rate of ligand degradation
     else:
         active = getTotalActiveCytokine(0, np.squeeze(yOut))
@@ -239,10 +248,13 @@ def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
 
-def ligandDeg_IL2(yVec, sortF, kDeg):
-    """ This function calculates rate of IL-2's total degradation. """
-    # all indices are shifted by __halfL in order to get endosomal species
-    yVec2 = yVec[__halfL::].copy()
-    sum_inactive = np.sum(yVec2[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
-    sum_active = np.sum(yVec2[7:9]) # indices 7,8 have IL2 bound and are active
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec2[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
+def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
+    """ This function calculates rate of total ligand degradation. """
+    yVec_endo_species = yVec[__halfL:(__halfL*2)].copy() # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL*2)::].copy() # get all endosomal ligands
+    sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
+    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool) # create array of size halfL
+    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1 # assign 1's for species corresponding to the cytokineIDX
+    sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
+    sum_inactive = (sum_total - sum_active) * sortF # scale the inactive species by sortF
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg

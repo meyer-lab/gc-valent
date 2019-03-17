@@ -27,7 +27,7 @@ $(fdir)/figure%eps: $(fdir)/figure%svg
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf $(fdir)/figureS3.pdf
+Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
@@ -64,16 +64,13 @@ clean:
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg
 
 test: ckine/ckine.so
-	nosetests3 -s --with-timer --timer-top-n 20
+	pytest
 
 testcover: ckine/ckine.so
-	nosetests3 --with-xunit --with-xcoverage --cover-inclusive --cover-package=ckine -s --with-timer --timer-top-n 5
+	pytest --workers auto --junitxml=junit.xml --cov=ckine --cov-report xml:coverage.xml
 
-stats.dat: ckine/ckine.so
-	nosetests3 -s --with-cprofile
-
-testprofile: stats.dat
-	pyprof2calltree -i stats.dat -k
+testprofile: ckine/ckine.so
+	pytest --profile-svg
 
 testcpp: ckine/cppcheck
 	valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck
