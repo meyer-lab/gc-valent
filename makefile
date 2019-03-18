@@ -53,7 +53,7 @@ ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp ckine
 Manuscript/index.html: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.svg, $(flist))
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
 
-Manuscript/Manuscript.docx: Manuscript/Text/*.md
+Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))
 	mkdir -p ./Manuscript/Figures
 	cp -R $(fdir) ./
 	pandoc -s $(pan_common) -o $@
