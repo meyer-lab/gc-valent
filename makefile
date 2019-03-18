@@ -3,6 +3,8 @@ tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
+flist = 1 2 3 4 5 S1 S2 S3 S4
+
 .PHONY: clean test all testprofile testcover doc testcpp
 
 all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
@@ -27,7 +29,7 @@ $(fdir)/figure%eps: $(fdir)/figure%svg
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf
+Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(patsubst %, $(fdir)/figure%.pdf, $(flist))
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
@@ -40,7 +42,7 @@ ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp ckine/jacobian.hpp ckin
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp ckine/jacobian.hpp ckine/reaction.hpp
 	clang++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
 
-Manuscript/index.html: Manuscript/Text/*.md
+Manuscript/index.html: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.svg, $(flist))
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
 
 Manuscript/Manuscript.docx: Manuscript/Text/*.md
