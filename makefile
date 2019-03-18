@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
@@ -16,9 +17,16 @@ endif
 
 CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
 
+venv: venv/bin/activate
+
+venv/bin/activate: requirements.txt
+	test -d venv || virtualenv venv
+	. venv/bin/activate; pip install -Ur requirements.txt
+	touch venv/bin/activate
+
 $(fdir)/figure%.svg: genFigures.py ckine/ckine.so graph_all.svg
 	mkdir -p ./Manuscript/Figures
-	python3 genFigures.py $*
+	. venv/bin/activate; ./genFigures.py $*
 
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert -f pdf $< -o $@
@@ -63,13 +71,14 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg
+	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
+	find -iname "*.pyc" -delete
 
-test: ckine/ckine.so
-	pytest
+test: venv ckine/ckine.so
+	. venv/bin/activate; pytest
 
 testcover: ckine/ckine.so
-	pytest -n 8 --junitxml=junit.xml --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate; pytest -n 8 --junitxml=junit.xml --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
 	valgrind --tool=callgrind ckine/cppcheck
