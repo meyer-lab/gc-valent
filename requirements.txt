@@ -12,3 +12,4 @@ pymc3
 parameterized
 pytest-xdist
 pytest-cov
+scikit-learn
