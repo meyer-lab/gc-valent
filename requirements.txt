@@ -13,3 +13,4 @@ parameterized
 pytest-xdist
 pytest-cov
 scikit-learn
+svgutils
