@@ -41,7 +41,7 @@ def makeFigure():
             ax[row*y + col].set_xlim(-0.05, x_max)
             ax[row*y + col].set_ylim(-0.05, y_max)
 
-    subplotLabel(ax[3], string.ascii_uppercase[3])
+    subplotLabel(ax[3], string.ascii_uppercase[2])
     ax[3].set_title('Core Tensor')
         
     f.tight_layout()
