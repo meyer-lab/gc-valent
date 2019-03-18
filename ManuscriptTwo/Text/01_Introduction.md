@@ -14,7 +14,7 @@ affiliation:
 - name: Visterra
   key: b
 - name: Contact info
-  key: b
+  key: c
 bibliography: ./Manuscript/References.bib
 abstract: Temp
 link-citations: true
