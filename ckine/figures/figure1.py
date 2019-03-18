@@ -29,7 +29,6 @@ def makeFigure():
     violinPlots(ax[5:8], unkVec, scales)
     rateComp(ax[4], unkVec)
 
-
     f.tight_layout()
 
     return f
@@ -83,7 +82,7 @@ def surf_perc(ax, species, unkVec):
     ax[0].set_ylim(0,115)
 
 
-def pstat_act(ax, unkVec, scales, Fig1=True):
+def pstat_act(ax, unkVec, scales):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -115,10 +114,8 @@ def pstat_act(ax, unkVec, scales, Fig1=True):
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+") # IL15 in 2Ra+
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
-    if Fig1:
-        ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
-    else:
-        ax.legend(loc='upper left', bbox_to_anchor=(0.25, -0.5))
+
+    ax.legend()
 
 def violinPlots(ax, unkVec, scales, Fig1=True):
     """ Create violin plots of model posterior. """
