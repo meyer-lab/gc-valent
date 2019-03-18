@@ -186,7 +186,7 @@ def rateComp(ax, unkVec):
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
-    cmap = sns.set_palette(col_list_palette)
+    sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, scale='width')
