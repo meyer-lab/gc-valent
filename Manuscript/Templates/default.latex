@@ -1,9 +1,10 @@
 \documentclass[11pt]{article}
 
-\usepackage{amssymb, amsmath, mathtools, color, helvet}
+\usepackage{amssymb, amsmath, mathtools, color, fontspec}
 \usepackage{ifxetex, ifluatex, microtype}
 
-\renewcommand{\familydefault}{\sfdefault}
+\setsansfont{Roboto}
+\setmainfont{Roboto}
 
 \usepackage[affil-it]{authblk}
 

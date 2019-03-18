@@ -29,7 +29,7 @@ def makeFigure():
     violinPlots(ax[5:8], unkVec, scales)
     rateComp(ax[4], unkVec)
 
-    f.tight_layout(w_pad=0.1, h_pad=1.0)
+    f.tight_layout(w_pad=1.3)
 
     return f
 
