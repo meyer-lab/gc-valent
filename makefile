@@ -24,7 +24,7 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate; pip install -Ur requirements.txt
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: genFigures.py ckine/ckine.so graph_all.svg
+$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate; ./genFigures.py $*
 
@@ -77,7 +77,7 @@ clean:
 test: venv ckine/ckine.so
 	. venv/bin/activate; pytest
 
-testcover: ckine/ckine.so
+testcover: venv ckine/ckine.so
 	. venv/bin/activate; pytest -n 8 --junitxml=junit.xml --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
