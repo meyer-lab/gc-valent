@@ -1,13 +1,10 @@
 """
-This creates Figure S2.
+This creates Figure S2, which covers the Tucker factorization form.
 """
 import string
-import os
-import pickle
 import numpy as np
-import pandas as pds
 import tensorly as tl
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, n_ligands, values
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 from ..tensor_generation import data
 
@@ -17,7 +14,6 @@ def makeFigure():
     ssize = 4
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
-    numpy_data = data.values[:,1:] # returns data values in a numpy array
     cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
@@ -48,4 +44,7 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
+
+    f.tight_layout()
+
     return f
