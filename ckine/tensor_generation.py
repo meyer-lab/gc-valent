@@ -65,12 +65,8 @@ def ySolver_IL2(matIn, ts):
     k1rev = 0.6*10.0*0.01
     k2rev = 0.6*144.0
     k11rev = 63.0 * k5rev / 1.5
-    IL2Ra = matIn[6]
-    IL2Rb = matIn[7]
-    gc = matIn[8]
-    # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
-                      IL2Ra, IL2Rb, gc,
+                      matIn[6], matIn[7], matIn[8], # IL2Ra, IL2Rb, gc
                       k1rev*5.0, k2rev*5.0, k4rev*5.0, k5rev*5.0, k11rev*5.0])
 
     yOut, retVal = runCkineU_IL2(ts, rxntfr)
@@ -117,23 +113,18 @@ def findy(lig, n_timepoints):
 
     return y_of_combos, new_mat, mat, mats, cell_names
 
-def reduce_values(y_of_combos):
-    """Reduce y_of_combinations into necessary values."""
-    values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
-
-    values[:, :, 0] = np.tensordot(y_of_combos, getTotalActiveSpecies(), (2, 0))
-
-    return values
 
 def prepare_tensor(lig, n_timepoints = 100):
     """Function to generate the 4D values tensor."""
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints) #mat here is basically the 2^lig cytokine stimulation; mats
 
-    values = reduce_values(y_of_combos)
+    values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
+
+    values[:, :, 0] = np.tensordot(y_of_combos, getTotalActiveSpecies(), (2, 0))
 
     tensor3D = np.zeros((values.shape[1], len(cell_names), len(mat)))
 
     for ii in range(tensor3D.shape[0]):
         tensor3D[ii] = values[:, ii, 0].reshape(tensor3D.shape[1:3])
-    print(tensor3D.shape)
+
     return tensor3D, new_mat, mat, mats, cell_names
