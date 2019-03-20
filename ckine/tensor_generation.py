@@ -7,7 +7,7 @@ Important Notes:
 import os
 from os.path import join
 import numpy as np, pandas as pds
-from .model import runCkineU, nParams, nSpecies, internalStrength, halfL, runCkineU_IL2, getTotalActiveSpecies
+from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
 
 #Load the data from csv file
 path = os.path.dirname(os.path.abspath(__file__))
