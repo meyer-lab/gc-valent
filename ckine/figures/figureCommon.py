@@ -3,7 +3,6 @@ This file contains functions that are used in multiple figures.
 """
 import os
 from os.path import join
-import itertools
 import tensorly as tl
 import pymc3 as pm
 import seaborn as sns
