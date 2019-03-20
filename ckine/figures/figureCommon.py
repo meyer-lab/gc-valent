@@ -54,10 +54,8 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos):
     markers = ['^', '*', 'x']
     
     cmap = sns.color_palette("hls", n_ligands)
-    
-    print(factors)
 
-    for ii in range(2):
+    for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100)
 
@@ -126,7 +124,7 @@ def plot_timepoints(ax, factors):
     ax.set_title('Time')
     ax.legend()
 
-def import_samples_2_15(Fig1=True):
+def import_samples_2_15(Fig1=True, subset=True):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     bmodel = build_model_2_15()
     n_params = nParams()
@@ -160,6 +158,9 @@ def import_samples_2_15(Fig1=True):
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+        
+    if subset and num > 200:
+        unkVec = unkVec[:, np.random.choice(unkVec.shape[1], 200, replace=False)]
 
     return unkVec, scales
 

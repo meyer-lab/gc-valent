@@ -28,7 +28,7 @@ def makeFigure():
     cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
-    n_comps = 2
+    n_comps = 4
     factors_activ = factors_activity[n_comps-1]
     newfactors_activ = factors_activ
     newfactors = scale_all(newfactors_activ)
@@ -42,7 +42,7 @@ def makeFigure():
 
     plot_timepoints(ax[4], newfactors[0]) #Change final input value depending on need
 
-    for row in range(1, 2):
+    for row in range(1, 3):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
