@@ -100,7 +100,7 @@ def runCkineU_IL2 (tps, rxntfr):
     return (yOut, retVal)
 
 
-def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False, yOuttt=False):
+def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
@@ -122,9 +122,6 @@ def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False, yOuttt=False):
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
     assert retVal == 0
-    
-    if yOuttt:
-        return yOut
 
     if ligandDegradation == True:
         ligDeg = ligandDeg(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333, cytokineIDX=0)
