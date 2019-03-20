@@ -160,7 +160,10 @@ def import_samples_2_15(Fig1=True, subset=True):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
         
     if subset and num > 200:
-        unkVec = unkVec[:, np.random.choice(unkVec.shape[1], 200, replace=False)]
+        idxx = np.random.choice(unkVec.shape[1], 200, replace=False)
+
+        unkVec = unkVec[:, idxx]
+        scales = scales[idxx]
 
     return unkVec, scales
 
