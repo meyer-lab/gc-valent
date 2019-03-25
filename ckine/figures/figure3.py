@@ -68,7 +68,7 @@ def makeFigure():
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
-    data.plot.bar(x = "Cell Type", logy = True, rot = 30, ax = ax)
+    data.plot.bar(x="Cell Type", rot=30, ax=ax)
     ax.legend(fontsize = 7, labelspacing = 0, loc = 1)
     ax.set_ylabel("Receptor Level")
 
