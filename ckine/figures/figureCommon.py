@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
+from matplotlib.lines import Line2D
 from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
@@ -51,19 +52,22 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 def plot_ligands(ax, factors, component_x, component_y, ax_pos):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
-    
     cmap = sns.color_palette("hls", n_ligands)
+
+    legend_elements = [Line2D([0], [0], color='k', marker = markers[0], label='IL2', linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL15',marker=markers[1], linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL2 mut',marker=markers[2], linestyle = '')]
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100)
+        if ii == 0 and ax_pos == 6:
+            legend = "full"
+            ax[1].legend(handles=legend_elements, frameon=True, loc= 2)
+        else:
+            legend = False
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax[0], palette=cmap, s=100, legend = legend)
+    ax[0].set_title('Ligands')
 
-    ax.set_title('Ligands')
-    if ax_pos == 2:
-        ax.legend()
-    
-    if ax_pos == 6:
-        ax.legend()
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
