@@ -49,7 +49,7 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
-def plot_ligands(ax, factors, component_x, component_y, ax_pos):
+def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
     cmap = sns.color_palette("hls", n_ligands)
@@ -60,7 +60,10 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos):
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
-        if ii == 0 and ax_pos == 6:
+        if ii == 0 and ax_pos == 6 and fig3:
+            legend = "full"
+            ax[1].legend(handles=legend_elements, frameon=True, loc= 2)
+        elif ii == 0 and ax_pos == 2 and fig3 is False:
             legend = "full"
             ax[1].legend(handles=legend_elements, frameon=True, loc= 2)
         else:
