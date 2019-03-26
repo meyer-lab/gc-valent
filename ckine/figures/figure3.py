@@ -8,7 +8,7 @@ import seaborn as sns
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition
-from ..tensor_generation import data
+from ..tensor_generation import data, cell_names
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -28,7 +28,6 @@ def makeFigure():
         factors_activity.append(factors)
 
     numpy_data = data.values[:,1:] # returns data values in a numpy array
-    cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     n_comps = 4
@@ -49,7 +48,7 @@ def makeFigure():
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
-        plot_ligands(ax[row*y + 2: row*y + 4], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
+        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
@@ -68,9 +67,9 @@ def makeFigure():
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
-    data.plot.bar(x = "Cell Type", logy = True, rot = 30, ax = ax)
-    ax.legend(fontsize = 7, labelspacing = 0, loc = 1)
-    ax.set_ylabel("Receptor Level")
+    data.plot.bar(x = "Cell Type", rot = 30, ax = ax)
+    ax.legend(loc = 1)
+    ax.set_ylabel("Surface Receptor [# / cell]")
 
 def plot_R2X(ax, tensor, factors_list, n_comps):
     """Function to plot R2X bar graph."""

@@ -1,4 +1,4 @@
-Cell Type,CD25,CD122,CD132,CD215
+Cell Type,IL-2R$\alpha$,IL-2R$\beta$,$\gamma_{c}$,IL-15R$\alpha$
 Naive Th,1280,46,1156,400
 Mem Th,2411,210,1694,400
 Naive Treg,13734,293,934,400

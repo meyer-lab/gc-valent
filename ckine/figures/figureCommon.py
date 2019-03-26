@@ -54,22 +54,32 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     markers = ['^', '*', 'x']
     cmap = sns.color_palette("hls", n_ligands)
 
-    legend_elements = [Line2D([0], [0], color='k', marker = markers[0], label='IL2', linestyle = ''),
-                   Line2D([0], [0], color='k', label='IL15',marker=markers[1], linestyle = ''),
-                   Line2D([0], [0], color='k', label='IL2 mut',marker=markers[2], linestyle = '')]
+    legend_shape = [Line2D([0], [0], color='k', marker = markers[0], label='IL-2', linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-15',marker=markers[1], linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-2 mut',marker=markers[2], linestyle = '')]
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
         if ii == 0 and ax_pos == 6 and fig3:
             legend = "full"
-            ax[1].legend(handles=legend_elements, frameon=True, loc= 2)
         elif ii == 0 and ax_pos == 2 and fig3 is False:
             legend = "full"
-            ax[1].legend(handles=legend_elements, frameon=True, loc= 2)
         else:
             legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax[0], palette=cmap, s=100, legend = legend)
-    ax[0].set_title('Ligands')
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100, legend = legend)
+        if ax_pos==6:
+            h, l = ax.get_legend_handles_labels()
+            legend1 = ax.legend(handles=h, loc=2)
+            ax.add_artist(legend1)
+            legend2 = ax.legend(handles=legend_shape, loc=3)
+            ax.add_artist(legend2)
+        elif ax_pos==2:
+            h, l = ax.get_legend_handles_labels()
+            legend1 = ax.legend(handles=h, loc=2)
+            ax.add_artist(legend1)
+            legend2 = ax.legend(handles=legend_shape, loc=9)
+            ax.add_artist(legend2)
+    ax.set_title('Ligands')
 
 
 def subplotLabel(ax, letter, hstretch=1):
@@ -99,7 +109,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
         ax.legend()
 
     elif ax_pos == 5:
-        ax.legend(fontsize = 8, labelspacing = 0, handlelength = 0)
+        ax.legend()
     ax.set_title('Cells')
 
 
