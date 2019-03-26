@@ -67,15 +67,9 @@ def makeFigure():
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
-<<<<<<< HEAD
     data.plot.bar(x = "Cell Type", rot = 30, ax = ax)
     ax.legend(loc = 1)
     ax.set_ylabel("Surface Receptor [# / cell]")
-=======
-    data.plot.bar(x="Cell Type", rot=30, ax=ax)
-    ax.legend(fontsize = 7, labelspacing = 0, loc = 1)
-    ax.set_ylabel("Receptor Level")
->>>>>>> 4a6191d6d25434d8fa3ce8e11f7f0fb25a2b4813
 
 def plot_R2X(ax, tensor, factors_list, n_comps):
     """Function to plot R2X bar graph."""
