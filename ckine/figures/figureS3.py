@@ -4,7 +4,7 @@ This creates Figure S2, which covers the Tucker factorization form.
 import string
 import numpy as np
 import tensorly as tl
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, set_bounds
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 from ..tensor_generation import data, cell_names
 
@@ -29,16 +29,9 @@ def makeFigure():
         if compNum < rank_list[2]:
             plot_ligands(ax[row*y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos = row*y + 2, fig3 = False)
 
-        # Set axes to center on the origin, and add labels
-        for col in range(1, y):
-            ax[row*y + col].set_xlabel('Component ' + str(compNum))
-            ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
-            
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
+        # Add labels and bounds
+        set_bounds(row, y, ax, compNum)
 
-            ax[row*y + col].set_xlim(-x_max, x_max)
-            ax[row*y + col].set_ylim(-y_max, y_max)
 
     subplotLabel(ax[3], string.ascii_uppercase[2])        
     f.tight_layout()
