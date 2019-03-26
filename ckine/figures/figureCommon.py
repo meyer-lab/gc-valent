@@ -71,10 +71,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
             h, l = ax.get_legend_handles_labels()
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)
-            if ax_pos==6:
-                legend2 = ax.legend(handles=legend_shape, loc=3)
-            elif ax_pos==2:
-                legend2 = ax.legend(handles=legend_shape, loc=9)
+            legend2 = ax.legend(handles=legend_shape, loc=3)
             ax.add_artist(legend2)
     ax.set_title('Ligands')
 

@@ -11,7 +11,7 @@ from ..tensor_generation import data, cell_names
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
-    ax, f = getSetup((9, 5), (x, y))
+    ax, f = getSetup((7.5, 5), (x, y))
     ax[3].axis('off')
 
     rank_list = [3, 2*x, 2*x]
@@ -33,12 +33,12 @@ def makeFigure():
         for col in range(1, y):
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
-
+            
             x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
             y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
 
-            ax[row*y + col].set_xlim(-0.05, x_max)
-            ax[row*y + col].set_ylim(-0.05, y_max)
+            ax[row*y + col].set_xlim(-x_max, x_max)
+            ax[row*y + col].set_ylim(-y_max, y_max)
 
     subplotLabel(ax[3], string.ascii_uppercase[2])        
     f.tight_layout()
