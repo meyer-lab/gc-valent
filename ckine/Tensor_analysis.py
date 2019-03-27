@@ -21,7 +21,6 @@ def z_score_values(A):
         mu[:] = 0.0
     return (A - mu[None, :, None]) / sigma[None, :, None]
 
-
 def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
@@ -29,7 +28,9 @@ def R2X(reconstructed, original):
 def perform_decomposition(tensor, r):
     ''' Apply z scoring and perform PARAFAC decomposition. '''
     factors = non_negative_parafac(z_score_values(tensor), r, tol=1.0E-9, n_iter_max=1000)
-    return normalize_factors(factors)[0] #Position 0 is factors. 1 is weights. 
+    normalized = normalize_factors(factors) #Position 0 is factors. 1 is weights.
+    factors[2] = factors[2] * normalized[1][np.newaxis,:] #Multiply Ligands
+    return factors 
 
 def perform_tucker(tensor, rank_list):
     '''Function to peform tucker decomposition.'''
@@ -43,7 +44,6 @@ def find_R2X_tucker(values, out):
 def find_R2X(values, factors):
     '''Compute R2X from parafac. Note that the inputs values and factors are in numpy.'''
     return R2X(tl.kruskal_to_tensor(factors), z_score_values(values))
-
 
 def scale_time_factors(factors, component_index):
     """Scale the timepoint factor component by dividing the mean and then in the values plot multiply the values by that same number."""
