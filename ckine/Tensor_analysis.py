@@ -44,16 +44,3 @@ def find_R2X_tucker(values, out):
 def find_R2X(values, factors):
     '''Compute R2X from parafac. Note that the inputs values and factors are in numpy.'''
     return R2X(tl.kruskal_to_tensor(factors), z_score_values(values))
-
-def scale_time_factors(factors, component_index):
-    """Scale the timepoint factor component by dividing the mean and then in the values plot multiply the values by that same number."""
-    scale_factor = tl.mean(factors[0][:, component_index])
-    factors[2][:, component_index] *= scale_factor
-    factors[0][:, component_index] /= scale_factor
-    return factors
-
-def scale_all(factors):
-    """Function to rescale all components. Timepoint factor matrix and values factor matrix."""
-    for ii in range(factors[0].shape[1]):
-        factors = scale_time_factors(factors, ii)
-    return factors
