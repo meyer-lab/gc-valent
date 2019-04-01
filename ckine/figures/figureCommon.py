@@ -103,7 +103,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
+def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3 = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H'] # 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
@@ -114,7 +114,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
     if ax_pos == 1:
         ax.legend()
 
-    elif ax_pos == 4:
+    elif ax_pos == 4 and fig3:
         ax.legend()
     ax.set_title('Cells')
     
