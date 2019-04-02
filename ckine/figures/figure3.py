@@ -4,20 +4,19 @@ This creates Figure 3.
 import string
 import numpy as np
 from scipy import stats
-from sklearn.decomposition.pca import PCA
+import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
-from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition
-from ..tensor_generation import data
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat, set_bounds
+from ..Tensor_analysis import find_R2X, perform_decomposition
+from ..tensor_generation import data, cell_names
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((10, 7), (x, y))
+    ax, f = getSetup((12, 9), (x, y), mults=[0], multz={0:2}, empts=[7,8,11])
     # Blank out for the cartoon
     ax[0].axis('off')
-    ax[8].axis('off')
 
     factors_activity = []
     for jj in range(len(mat) - 1):
@@ -25,82 +24,34 @@ def makeFigure():
         factors_activity.append(factors)
 
     numpy_data = data.values[:,1:] # returns data values in a numpy array
-    cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     n_comps = 4
     factors_activ = factors_activity[n_comps-1]
-    newfactors_activ = factors_activ
-    newfactors = scale_all(newfactors_activ)
 
-    PCA_receptor(ax[1], ax[2], cell_names, numpy_data.T)
-    plot_R2X(ax[3], values, factors_activity, n_comps = 14)
+    bar_receptors(ax[1], data)
+    plot_R2X(ax[2], values, factors_activity, n_comps=5)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        subplotLabel(item, string.ascii_uppercase[ii]) # Add subplot labels
 
-    plot_timepoints(ax[4], newfactors[0]) #Change final input value depending on need
+    plot_timepoints(ax[3], factors_activ[0]) #Change final input value depending on need
 
-    for row in range(1,3):
-        subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
+    for row in range(1, 3):
         compNum = 2*(row-1) + 1
-        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
-        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
-
-        # Set axes to center on the origin, and add labels
-        for col in range(1,y):
-            ax[row*y + col].set_xlabel('Component ' + str(compNum))
-            ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
-
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
-
-            ax[row*y + col].set_xlim(-x_max, x_max)
-            ax[row*y + col].set_ylim(-y_max, y_max)
+        plot_cells(ax[row*2 + 2], factors_activ[1], compNum, compNum+1, cell_names, ax_pos = row*2 + 2)
+        plot_ligands(ax[row*2 +3], factors_activ[2], compNum, compNum+1, ax_pos = row*2 +3)
 
     f.tight_layout()
 
     return f
 
-def PCA_receptor(ax1, ax2, cell_names, data):
-    """Plot PCA scores and loadings for Receptor Expression Data. """
-    pca = PCA(n_components = 2)
-    data = stats.zscore(data.astype(float), axis = 0)
-    scores = pca.fit(data.T).transform(data.T) #34 cells by n_comp
-    loadings = pca.components_ #n_comp by 8 receptors
-    expVar = pca.explained_variance_ratio_
-
-    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H']
-    markersReceptors = ['^', '4', 'P', '*', 'D', 's', 'X' ,'o']
-    labelReceptors = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα', 'IL-7Rα', 'IL-9R', 'IL-4Rα', 'IL-21Rα']
-
-    for ii in range(scores.shape[0]):
-        ax1.scatter(scores[ii,0], scores[ii,1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-
-    for jj in range(loadings.shape[1]):
-        ax2.scatter(loadings[0,jj], loadings[1,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
-
-    x_max1 = np.max(np.absolute(np.asarray(ax1.get_xlim())))*1.1
-    y_max1 = np.max(np.absolute(np.asarray(ax1.get_ylim())))*1.1
-
-    x_max2 = np.max(np.absolute(np.asarray(ax2.get_xlim())))*1.1
-    y_max2 = np.max(np.absolute(np.asarray(ax2.get_ylim())))*1.1
-
-    ax1.set_xlim(-x_max1, x_max1)
-    ax1.set_ylim(-y_max1, y_max1)
-    ax1.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
-    ax1.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
-    ax1.set_title('Scores')
-    ax1.legend(loc = 9, fontsize = 7, labelspacing = 0, handlelength = 0)
-
-    ax2.set_xlim(-x_max2, x_max2)
-    ax2.set_ylim(-y_max2, y_max2)
-    ax2.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
-    ax2.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
-    ax2.set_title('Loadings')
-    ax2.legend()
+def bar_receptors(ax, data):
+    """Plot Bar graph for Receptor Expression Data. """
+    data.plot.bar(x = "Cell Type", rot = 30, ax = ax)
+    ax.legend(loc = 1)
+    ax.set_ylabel("Surface Receptor [# / cell]")
 
 def plot_R2X(ax, tensor, factors_list, n_comps):
     """Function to plot R2X bar graph."""

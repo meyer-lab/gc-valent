@@ -3,7 +3,6 @@ This file contains functions that are used in multiple figures.
 """
 import os
 from os.path import join
-import itertools
 import tensorly as tl
 import pymc3 as pm
 import seaborn as sns
@@ -11,6 +10,7 @@ import numpy as np
 import pandas as pds
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
+from matplotlib.lines import Line2D
 from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
@@ -49,27 +49,44 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
-def plot_ligands(ax, factors, component_x, component_y, ax_pos):
+def set_bounds(ax, compNum):
+    """Add labels and bounds"""
+    ax.set_xlabel('Component ' + str(compNum))
+    ax.set_ylabel('Component ' + str(compNum+1))
+
+    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
+    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
+
+    ax.set_xlim(-x_max, x_max)
+    ax.set_ylim(-y_max, y_max)    
+
+def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     "This function is to plot the ligand combination dimension of the values tensor."
-    markers = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
-    markers = markers[0:n_ligands]
-    colors = cm.rainbow(np.linspace(0, 1, n_ligands))
-    labels2 = [("%1.2e " + "nM IL2") % ii for ii in mat[0:n_ligands,1]]
-    labels15 = [("%1.2e " + "nM IL15") % ii for ii in mat[0:n_ligands,1]]
-    for ii in range(n_ligands):
-        start = ii*n_ligands
-        end = start + n_ligands
-        for idx, pos in enumerate(range(start,end)): #First two columns to plot IL2 and IL15 based on concentration.
-            if ii < 1:
-                ax.scatter(factors[pos,component_x - 1], factors[pos,component_y - 1], marker = markers[idx], c = colors[ii], label = labels15[idx])
-            else:
-                ax.scatter(factors[pos,component_x - 1], factors[pos,component_y - 1], marker = markers[idx], c = colors[ii])
+    markers = ['^', '*', 'x']
+    cmap = sns.color_palette("hls", n_ligands)
+
+    legend_shape = [Line2D([0], [0], color='k', marker = markers[0], label='IL-2', linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-15',marker=markers[1], linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-2 mut',marker=markers[2], linestyle = '')]
+
+    for ii in range(int(factors.shape[0] / n_ligands)):
+        idx = range(ii*n_ligands, (ii+1)*n_ligands)
+        if ii == 0 and ax_pos == 5 and fig3:
+            legend = "full"
+        elif ii == 0 and ax_pos == 2 and fig3 is False:
+            legend = "full"
+        else:
+            legend = False
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100, legend = legend)
+        if ax_pos==6 or ax_pos==2:
+            h, l = ax.get_legend_handles_labels()
+            legend1 = ax.legend(handles=h, loc=2)
+            ax.add_artist(legend1)
+            legend2 = ax.legend(handles=legend_shape, loc=3)
+            ax.add_artist(legend2)
     ax.set_title('Ligands')
-    if ax_pos == 2:
-        ax.legend()
-    
-    if ax_pos == 6:
-        ax.legend()
+    set_bounds(ax, component_x)
+
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
@@ -86,7 +103,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
+def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3 = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H'] # 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
@@ -97,9 +114,11 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
     if ax_pos == 1:
         ax.legend()
 
-    elif ax_pos == 5:
-        ax.legend(fontsize = 8, labelspacing = 0, handlelength = 0)
+    elif ax_pos == 4 and fig3:
+        ax.legend()
     ax.set_title('Cells')
+    
+    set_bounds(ax, component_x)
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
