@@ -18,10 +18,17 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
+<<<<<<< Updated upstream
+=======
+    data, cell_names = load_cells()
+    data_Visterra, cell_names_Visterra = import_Rexpr()
+>>>>>>> Stashed changes
     unkVec_2_15, scales_2_15 = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
+    for i in range(data_Visterra.shape[0]):
+        IL2_dose_response(ax[5+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
@@ -102,16 +109,27 @@ def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
     return rec_ex
 
-def IL2_dose_response(ax, IL2, IL2Ra, IL2Rb, gc):
+def IL2_dose_response(ax, unkVec, cell_type, cell_data):
+    """ Shows activity for a given cell type at various IL2 concentrations """
     tps = np.array([15, 30, 60, 240])
-    unkVec, scales = import_samples_2_15()
+    PTS = 6 # number of cytokine concentrations
+    cytokC = np.logspace(-12.0, -7.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
+    colors = cm.rainbow(np.linspace(0, 1, PTS))
+    
     rxntfr = unkVec.copy()
-    for i in unkVec.shape[0]:
-        rxntfr[i, 0] = Il2
-        rxntfr[i, 22] = receptor_expression(IL2Ra, unkVec[i, 17], unkVec[i, 20], unkVec[i, 19], unkVec[i, 21])
-        rxntfr[i, 23] = receptor_expression(IL2Rb, unkVec[i, 17], unkVec[i, 20], unkVec[i, 19], unkVec[i, 21])
-        rxntfr[i, 24] = receptor_expression(gc, unkVec[i, 17], unkVec[i, 20], unkVec[i, 19], unkVec[i, 21])  
-    yOut, retVal = runCkineUP(tps, rxntfr)
-    activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-    plot_conf_int(ax, tps, activity, "royalblue")
-    ax.set(xlabel='time [min]', ylabel='Activity')
+    
+    # loop for each IL2 concentration
+    for i in range(PTS):    
+        for ii in unkVec.shape[0]:
+            rxntfr[ii, 0] = cytokC[i]
+            # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+            rxntfr[ii, 22] = receptor_expression(cell_data[0], unkVec[ii, 17], unkVec[ii, 20], unkVec[ii, 19], unkVec[ii, 21])
+            rxntfr[ii, 23] = receptor_expression(cell_data[1], unkVec[ii, 17], unkVec[ii, 20], unkVec[ii, 19], unkVec[ii, 21])
+            rxntfr[ii, 24] = receptor_expression(cell_data[2], unkVec[ii, 17], unkVec[ii, 20], unkVec[ii, 19], unkVec[ii, 21])  
+        yOut, retVal = runCkineUP(tps, rxntfr)
+        activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
+        plot_conf_int(ax, tps, activity, colors[i], (np.log10(cytokC[i])).astype(str))
+    
+    # plots for input cell type
+    ax.set(xlabel='time [min]', ylabel='Activity', title=cell_type)
+    ax.legend(title=r'IL-2 concentration (log$_{10}$[nM])')

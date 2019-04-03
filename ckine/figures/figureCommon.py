@@ -225,3 +225,11 @@ def kfwd_info(unkVec):
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
+
+def import_Rexpr():
+    """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
+    path = os.path.dirname(os.path.abspath(__file__))
+    data = pds.read_csv(join(path, 'data/Preliminary receptor levels.csv')) # Every row in the data represents a specific cell
+    data = data.values[:, 1:] # numpy array
+    cell_names = list(data.values[:, 0])
+    return data, cell_names
