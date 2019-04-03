@@ -6,8 +6,9 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int, import_Rexpr
 from ..plot_model_prediction import pstat
+from ..model import runCkineUP
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -18,7 +19,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    data, cell_names = load_cells()
+    #data, cell_names = load_cells()
     data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, scales_2_15 = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
@@ -113,16 +114,16 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
     cytokC = np.logspace(-12.0, -7.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
     colors = cm.rainbow(np.linspace(0, 1, PTS))
     
-    rxntfr = unkVec.copy()
+    rxntfr = unkVec.copy().T
     
     # loop for each IL2 concentration
     for i in range(PTS):    
-        for ii in unkVec.shape[0]:
+        for ii in range(unkVec.shape[0]):
             rxntfr[ii, 0] = cytokC[i]
             # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-            rxntfr[ii, 22] = receptor_expression(cell_data[0], unkVec[ii, 17], unkVec[ii, 20], unkVec[ii, 19], unkVec[ii, 21])
-            rxntfr[ii, 23] = receptor_expression(cell_data[1], unkVec[ii, 17], unkVec[ii, 20], unkVec[ii, 19], unkVec[ii, 21])
-            rxntfr[ii, 24] = receptor_expression(cell_data[2], unkVec[ii, 17], unkVec[ii, 20], unkVec[ii, 19], unkVec[ii, 21])  
+            rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
         yOut, retVal = runCkineUP(tps, rxntfr)
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
         plot_conf_int(ax, tps, activity, colors[i], (np.log10(cytokC[i])).astype(str))
