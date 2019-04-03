@@ -12,26 +12,20 @@ from ..plot_model_prediction import pstat
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7])
+    ax, f = getSetup((7, 6), (3, 4), mults=[0], multz={0: 2})
 
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-<<<<<<< Updated upstream
-=======
     data, cell_names = load_cells()
     data_Visterra, cell_names_Visterra = import_Rexpr()
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     unkVec_2_15, scales_2_15 = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
+    #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
-        IL2_dose_response(ax[5+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
+        IL2_dose_response(ax[2+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
