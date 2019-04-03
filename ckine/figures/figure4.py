@@ -22,6 +22,9 @@ def makeFigure():
 =======
     data, cell_names = load_cells()
     data_Visterra, cell_names_Visterra = import_Rexpr()
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     unkVec_2_15, scales_2_15 = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
