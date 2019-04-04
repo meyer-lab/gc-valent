@@ -19,12 +19,12 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    #data, cell_names = load_cells()
+    data, cell_names = load_cells()
     data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, scales_2_15 = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
+    IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
         IL2_dose_response(ax[2+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
@@ -54,7 +54,7 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 def cell_act(unkVec, cytokC, scale):
-    """ Cytokine activity for all IL2 doses for single cell line. """
+    ___ Cytokine activity for all IL2 doses for single cell line. ___
     pstat5 = pstat()
     K = unkVec.shape[0]
     act = np.zeros((K, cytokC.shape[0]))
@@ -118,7 +118,7 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
     
     # loop for each IL2 concentration
     for i in range(PTS):    
-        for ii in range(unkVec.shape[0]):
+        for ii in range(rxntfr.shape[0]):
             rxntfr[ii, 0] = cytokC[i]
             # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
             rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
