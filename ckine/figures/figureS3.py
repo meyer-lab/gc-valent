@@ -1,12 +1,11 @@
 """
-This creates Figure S2, which covers the Tucker factorization form.
+This creates Figure S3, which covers the Tucker factorization form.
 """
 import string
-import numpy as np
 import tensorly as tl
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, set_bounds
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
-from ..tensor_generation import data, cell_names
+from ..tensor_generation import cell_names
 
 
 def makeFigure():

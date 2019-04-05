@@ -2,7 +2,7 @@
 This file is responsible for performing calculations that allow us to compare our fitting results with the Ring paper in figure1.py
 """
 import numpy as np
-from .model import getTotalActiveSpecies, runCkineU, runCkineUP, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
+from .model import getTotalActiveSpecies, runCkineUP, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
 
 
 class surf_IL2Rb:

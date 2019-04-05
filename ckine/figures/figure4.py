@@ -3,10 +3,9 @@ This creates Figure 4.
 """
 import string
 import pandas as pd
-import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, plot_conf_int
 from ..plot_model_prediction import pstat
 
 

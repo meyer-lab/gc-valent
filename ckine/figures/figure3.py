@@ -3,9 +3,6 @@ This creates Figure 3.
 """
 import string
 import numpy as np
-from scipy import stats
-import seaborn as sns
-import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat, set_bounds
 from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import data, cell_names
