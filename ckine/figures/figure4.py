@@ -4,6 +4,7 @@ This creates Figure 4.
 import string
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, plot_conf_int
 from ..plot_model_prediction import pstat
@@ -32,8 +33,8 @@ def relativeGC(ax, unkVec2, unkVec4):
     """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev, k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
 
     # assign values from unkVec
-    kfwd_2, kfwd_4, k4rev, k5rev, k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7,
-                                                                                                                 :], unkVec2[8, :], unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
+    kfwd_2, kfwd_4, k4rev, k5rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :]
+    k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
 
     # back-out k10 with ratio
     k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
