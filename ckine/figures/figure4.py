@@ -9,6 +9,7 @@ import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int
 from ..plot_model_prediction import pstat
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -35,7 +36,7 @@ def relativeGC(ax, unkVec2, unkVec4):
     kfwd_2, kfwd_4, k4rev, k5rev, k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :], unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
 
     # back-out k10 with ratio
-    k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
 
     # add each rate duo as separate column in dataframe
     df = pd.DataFrame({'2·2Rα': kfwd_2/k4rev, '2·2Rβ': kfwd_2/k5rev, '2·2Rα·2Rβ': kfwd_2/k10rev, '15·15Rα': kfwd_2/k16rev, '15·2Rβ': kfwd_2/k17rev, '15·15Rα·2Rβ': kfwd_2/k22rev, '7·7Rα': kfwd_4/k27rev, '4·4Rα': kfwd_4/k33rev})
@@ -48,13 +49,14 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
+
 def cell_act(unkVec, cytokC, scale):
     """ Cytokine activity for all IL2 doses for single cell line. """
     pstat5 = pstat()
     K = unkVec.shape[0]
     act = np.zeros((K, cytokC.shape[0]))
     for x, conc in enumerate(cytokC):
-            act[:, x] = pstat5.parallelCalc(unkVec.T, 0, conc)
+        act[:, x] = pstat5.parallelCalc(unkVec.T, 0, conc)
 
     # normalize to scaling constant and maximal activity for each row
     for num in range(act.shape[0]):
@@ -63,18 +65,19 @@ def cell_act(unkVec, cytokC, scale):
 
     return act
 
+
 def IL2_receptor_activity(ax, unkVec, scales):
     """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
-    PTS = 30 # number of cytokine concentrations
-    split = 50 # number of rows used from unkVec
+    PTS = 30  # number of cytokine concentrations
+    split = 50  # number of rows used from unkVec
     cytokC = np.logspace(-3.3, 2.7, PTS)
-    factors = np.array([0.01, 0.1, 1, 10, 100]) # factors that we multiply the receptor expression rates by
+    factors = np.array([0.01, 0.1, 1, 10, 100])  # factors that we multiply the receptor expression rates by
     y_max = 100.
 
     # create separate plot for each receptor
-    for r in range(0,3):
-        newVec = np.tile(unkVec[:, 0:split], (1, len(factors))) # copy the first 50 rows of unkVec 5 times (corresponds with factors)
-        newScales = np.squeeze(np.tile(scales[0:split], (len(factors), 1))) # copy the first 50 rows of scales 5 times
+    for r in range(0, 3):
+        newVec = np.tile(unkVec[:, 0:split], (1, len(factors)))  # copy the first 50 rows of unkVec 5 times (corresponds with factors)
+        newScales = np.squeeze(np.tile(scales[0:split], (len(factors), 1)))  # copy the first 50 rows of scales 5 times
 
         # multiply receptor expression rate for each section of newVec
         newVec[22+r, 0:split] *= factors[0]
