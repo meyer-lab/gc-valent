@@ -55,7 +55,11 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 def cell_act(unkVec, cytokC, scale):
+<<<<<<< HEAD
     ++ Cytokine activity for all IL2 doses for single cell line. ++
+=======
+    """ Cytokine activity for all IL2 doses for single cell line. """
+>>>>>>> 2319da810c5f83fb413717bc10e6ab8607db2237
     pstat5 = pstat()
     K = unkVec.shape[0]
     act = np.zeros((K, cytokC.shape[0]))
