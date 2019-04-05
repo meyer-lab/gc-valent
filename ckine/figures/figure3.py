@@ -12,7 +12,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((12, 9), (x, y), mults=[0], multz={0:2}, empts=[7,8,11])
+    ax, f = getSetup((12, 9), (x, y), mults=[0], multz={0: 2}, empts=[7, 8, 11])
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -32,14 +32,14 @@ def makeFigure():
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii]) # Add subplot labels
+        subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    plot_timepoints(ax[3], factors_activ[0]) # Change final input value depending on need
+    plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
 
     for row in range(1, 3):
         compNum = 2*(row-1) + 1
-        plot_cells(ax[row*2 + 2], factors_activ[1], compNum, compNum+1, cell_names, ax_pos = row*2 + 2)
-        plot_ligands(ax[row*2 +3], factors_activ[2], compNum, compNum+1, ax_pos = row*2 +3)
+        plot_cells(ax[row*2 + 2], factors_activ[1], compNum, compNum+1, cell_names, ax_pos=row*2 + 2)
+        plot_ligands(ax[row*2 + 3], factors_activ[2], compNum, compNum+1, ax_pos=row*2 + 3)
 
     f.tight_layout()
 

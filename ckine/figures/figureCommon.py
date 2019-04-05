@@ -59,7 +59,7 @@ def set_bounds(ax, compNum):
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
 
     ax.set_xlim(-x_max, x_max)
-    ax.set_ylim(-y_max, y_max)    
+    ax.set_ylim(-y_max, y_max)
 
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
@@ -122,7 +122,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     elif ax_pos == 4 and fig3:
         ax.legend()
     ax.set_title('Cells')
-    
+
     set_bounds(ax, component_x)
 
 
