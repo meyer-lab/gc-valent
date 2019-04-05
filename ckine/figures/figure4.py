@@ -7,8 +7,8 @@ import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int, import_Rexpr
-from ..plot_model_prediction import pstat
-from ..model import runCkineUP
+#from ..plot_model_prediction import pstat
+from ..model import runCkineUP, getTotalActiveSpecies
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -19,12 +19,12 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    data, cell_names = load_cells()
     data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, scales_2_15 = import_samples_2_15()
-    unkVec_4_7, scales_4_7 = import_samples_4_7()
-    relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
+    #unkVec_4_7, scales_4_7 = import_samples_4_7()
+    
+    #relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
+    #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
         IL2_dose_response(ax[2+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
@@ -32,9 +32,10 @@ def makeFigure():
 
     return f
 
+"""
 
 def relativeGC(ax, unkVec2, unkVec4):
-    """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev, k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
+    ++ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev, k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. ++
 
     # assign values from unkVec
     kfwd_2, kfwd_4, k4rev, k5rev, k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :], unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
@@ -54,7 +55,7 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 def cell_act(unkVec, cytokC, scale):
-    ___ Cytokine activity for all IL2 doses for single cell line. ___
+    ++ Cytokine activity for all IL2 doses for single cell line. ++
     pstat5 = pstat()
     K = unkVec.shape[0]
     act = np.zeros((K, cytokC.shape[0]))
@@ -69,7 +70,7 @@ def cell_act(unkVec, cytokC, scale):
     return act
 
 def IL2_receptor_activity(ax, unkVec, scales):
-    """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
+    ++ Shows how IL2-pSTAT dose response curves change with receptor expression rates. ++
     PTS = 30 # number of cytokine concentrations
     split = 50 # number of rows used from unkVec
     cytokC = np.logspace(-3.3, 2.7, PTS)
@@ -102,6 +103,8 @@ def IL2_receptor_activity(ax, unkVec, scales):
     ax[1].set_title("IL-2Rβ")
     ax[2].set_title(r'$\gamma_{c}$')
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
+    
+"""
 
 def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
@@ -114,7 +117,9 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
     cytokC = np.logspace(-12.0, -7.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
     colors = cm.rainbow(np.linspace(0, 1, PTS))
     
-    rxntfr = unkVec.copy().T
+    rxntfr = unkVec.T.copy()
+    
+    split = 1000
     
     # loop for each IL2 concentration
     for i in range(PTS):    
@@ -124,10 +129,17 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
             rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+        #print(rxntfr)
         yOut, retVal = runCkineUP(tps, rxntfr)
+        print(yOut)
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-        plot_conf_int(ax, tps, activity, colors[i], (np.log10(cytokC[i])).astype(str))
+        #print(activity[0])
+        activity_new = np.zeros((4,1000))
+        for j in range(4):
+            activity_new[j,:] = activity[(j*split):((j+1)*split)] #reshapes: one row per time point
+        #print(activity_new[0])
+        plot_conf_int(ax, tps, activity_new, colors[i], (np.log10(cytokC[i])).astype(str))
     
     # plots for input cell type
     ax.set(xlabel='time [min]', ylabel='Activity', title=cell_type)
-    ax.legend(title=r'IL-2 concentration (log$_{10}$[nM])')
+    #ax.legend(title=r'IL-2 concentration (log$_{10}$[nM])')
