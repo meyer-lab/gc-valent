@@ -36,8 +36,8 @@ class runCkineOpDoseDiff(Op):
         if preT > 0.0:
             assert prestim.size == 6
 
-        assert condense.size == nSpecies() # Check that we're condensing a species vector
-        assert conditions.shape[1] == 6 # Check that this is a matrix of ligands
+        assert condense.size == nSpecies()  # Check that we're condensing a species vector
+        assert conditions.shape[1] == 6  # Check that this is a matrix of ligands
 
     def runCkine(self, inputs, sensi):
         """ function for runCkine """
