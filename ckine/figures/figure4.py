@@ -40,8 +40,8 @@ def relativeGC(ax, unkVec2, unkVec4):
     k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'2·2Rα': kfwd_2/k4rev, '2·2Rβ': kfwd_2/k5rev, '2·2Rα·2Rβ': kfwd_2/k10rev, '15·15Rα': kfwd_2/k16rev,
-                       '15·2Rβ': kfwd_2/k17rev, '15·15Rα·2Rβ': kfwd_2/k22rev, '7·7Rα': kfwd_4/k27rev, '4·4Rα': kfwd_4/k33rev})
+    df = pd.DataFrame({'2·2Rα': kfwd_2 / k4rev, '2·2Rβ': kfwd_2 / k5rev, '2·2Rα·2Rβ': kfwd_2 / k10rev, '15·15Rα': kfwd_2 / k16rev,
+                       '15·2Rβ': kfwd_2 / k17rev, '15·15Rα·2Rβ': kfwd_2 / k22rev, '7·7Rα': kfwd_4 / k27rev, '4·4Rα': kfwd_4 / k33rev})
 
     col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
@@ -82,20 +82,20 @@ def IL2_receptor_activity(ax, unkVec, scales):
         newScales = np.squeeze(np.tile(scales[0:split], (len(factors), 1)))  # copy the first 50 rows of scales 5 times
 
         # multiply receptor expression rate for each section of newVec
-        newVec[22+r, 0:split] *= factors[0]
-        newVec[22+r, split:(2*split)] *= factors[1]
-        newVec[22+r, (2*split):(3*split)] *= factors[2]
-        newVec[22+r, (3*split):(4*split)] *= factors[3]
-        newVec[22+r, (4*split):(5*split)] *= factors[4]
+        newVec[22 + r, 0:split] *= factors[0]
+        newVec[22 + r, split:(2 * split)] *= factors[1]
+        newVec[22 + r, (2 * split):(3 * split)] *= factors[2]
+        newVec[22 + r, (3 * split):(4 * split)] *= factors[3]
+        newVec[22 + r, (4 * split):(5 * split)] *= factors[4]
 
         # calculate activities in parallel
         output = cell_act(newVec.T, cytokC, newScales).T * y_max
 
         plot_conf_int(ax[r], np.log10(cytokC), output[:, 0:split], "royalblue", "0.01x")
-        plot_conf_int(ax[r], np.log10(cytokC), output[:, split:(2*split)], "navy", "0.1x")
-        plot_conf_int(ax[r], np.log10(cytokC), output[:, (2*split):(3*split)], "darkviolet", "1x")
-        plot_conf_int(ax[r], np.log10(cytokC), output[:, (3*split):(4*split)], "deeppink", "10x")
-        plot_conf_int(ax[r], np.log10(cytokC), output[:, (4*split):(5*split)], "red", "100x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, split:(2 * split)], "navy", "0.1x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, (2 * split):(3 * split)], "darkviolet", "1x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, (3 * split):(4 * split)], "deeppink", "10x")
+        plot_conf_int(ax[r], np.log10(cytokC), output[:, (4 * split):(5 * split)], "red", "100x")
         ax[r].set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel="Total pSTAT")
 
     ax[0].set_title("IL-2Rα")

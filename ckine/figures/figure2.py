@@ -89,7 +89,7 @@ def pstat_plot(ax, unkVec, scales):
     output = pstat_calc(unkVec, scales, cytokC_common)  # run simulation
     # split according to cytokine and transpose for input into plot_conf_int
     IL4_output = output[0:K].T
-    IL7_output = output[K:(K*2)].T
+    IL7_output = output[K:(K * 2)].T
 
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue", "IL-4")
@@ -213,7 +213,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     output = pretreat_calc(unkVec, scales, pre_conc)  # run simulation
     # split according to cytokine and transpose so it works with plot_conf_int
     IL4_stim = output[0:K].T
-    IL7_stim = output[K:(K*2)].T
+    IL7_stim = output[K:(K * 2)].T
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim. (IL-4 pre.)")
@@ -235,7 +235,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     ts = np.linspace(0., 100., num=PTS)
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
-    IL7vec = np.transpose(output[:, PTS:(PTS*2)])
+    IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue", "IL-4")
     plot_conf_int(ax, ts, IL7vec, "b", "IL-7")
     ax.set(title=("Ligand conc: " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")

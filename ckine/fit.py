@@ -45,7 +45,7 @@ class IL2Rb_trafficking:
         slicingg = (1, 5, 2, 6)
 
         # Concatted data
-        self.data = np.concatenate((numpy_data[:, slicingg].flatten(order='F'), numpy_data2[:, slicingg].flatten(order='F')))/10.
+        self.data = np.concatenate((numpy_data[:, slicingg].flatten(order='F'), numpy_data2[:, slicingg].flatten(order='F'))) / 10.
 
         self.cytokM = np.zeros((4, 6), dtype=np.float64)
         self.cytokM[0, 0] = 1.
@@ -72,7 +72,7 @@ class IL2_15_activity:
         data = load_data('./data/IL2_IL15_extracted_data.csv')
         self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100.  # the IL15_IL2Ra- data is within the 4th column (index 3)
         self.cytokC = np.logspace(-3.3, 2.7, 8)  # 8 log-spaced values between our two endpoints
-        self.cytokM = np.zeros((self.cytokC.size*2, 6), dtype=np.float64)
+        self.cytokM = np.zeros((self.cytokC.size * 2, 6), dtype=np.float64)
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
@@ -125,7 +125,7 @@ class build_model:
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates * 0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution

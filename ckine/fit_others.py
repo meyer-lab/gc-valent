@@ -24,7 +24,7 @@ class IL4_7_activity:
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900.  # 14.9 kDa according to sigma aldrich
         self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400.  # 17.4 kDa according to prospec bio
 
-        self.cytokM = np.zeros((self.cytokC_4.size*2, 6), dtype=np.float64)
+        self.cytokM = np.zeros((self.cytokC_4.size * 2, 6), dtype=np.float64)
         self.cytokM[0:self.cytokC_4.size, 4] = self.cytokC_4
         self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
 
@@ -41,7 +41,7 @@ class IL4_7_activity:
         outt = Op(unkVec)
 
         actVecIL4 = outt[0:self.cytokC_4.size]
-        actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
+        actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size * 2]
 
         # incorporate IC50 scale
         actVecIL4 = actVecIL4 / (actVecIL4 + scales[0])
@@ -131,8 +131,8 @@ class crosstalk:
         actVec_IL4stim = actVec_IL4stim / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim / (actVec_IL7stim + scales[1])
 
-        case1 = (1-(actVec_IL4stim/IL4stim_no_pre))    # % inhibition of IL4 act. after IL7 pre.
-        case2 = (1-(actVec_IL7stim/IL7stim_no_pre))    # % inhibition of IL7 act. after IL4 pre.
+        case1 = (1 - (actVec_IL4stim / IL4stim_no_pre))    # % inhibition of IL4 act. after IL7 pre.
+        case2 = (1 - (actVec_IL7stim / IL7stim_no_pre))    # % inhibition of IL7 act. after IL4 pre.
         inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
@@ -159,9 +159,9 @@ class build_model:
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1)  # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1)  # associated with IL4
 
-            GCexpr = (328. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
-            IL7Raexpr = (2591. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
-            IL4Raexpr = (254. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
+            GCexpr = (328. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+            IL7Raexpr = (2591. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+            IL4Raexpr = (254. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
             scales = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=2)  # create scaling constants for activity measurements
 
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg))

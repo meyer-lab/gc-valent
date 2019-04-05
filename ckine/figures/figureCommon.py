@@ -53,10 +53,10 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 def set_bounds(ax, compNum):
     """Add labels and bounds"""
     ax.set_xlabel('Component ' + str(compNum))
-    ax.set_ylabel('Component ' + str(compNum+1))
+    ax.set_ylabel('Component ' + str(compNum + 1))
 
-    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
-    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
+    x_max = np.max(np.absolute(np.asarray(ax.get_xlim()))) * 1.1
+    y_max = np.max(np.absolute(np.asarray(ax.get_ylim()))) * 1.1
 
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
@@ -72,7 +72,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
                     Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[2], linestyle='')]
 
     for ii in range(int(factors.shape[0] / n_ligands)):
-        idx = range(ii*n_ligands, (ii+1)*n_ligands)
+        idx = range(ii * n_ligands, (ii + 1) * n_ligands)
         if ii == 0 and ax_pos == 5 and fig3:
             legend = "full"
         elif ii == 0 and ax_pos == 2 and fig3 is False:
@@ -146,7 +146,7 @@ def plot_timepoints(ax, factors):
     ts = np.insert(ts, 0, 0.0)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
-        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii+1))
+        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
         ax.scatter(ts[-1], factors[-1, ii], s=12, color='k')
 
     ax.set_xlabel('Time (min)')
@@ -210,9 +210,9 @@ def import_samples_4_7():
     kRec = trace.get_values('kRec')
     kDeg = trace.get_values('kDeg')
     scales = trace.get_values('scales')
-    GCexpr = (328. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
-    IL7Raexpr = (2591. * endo[0]) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
-    IL4Raexpr = (254. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
+    GCexpr = (328. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+    IL7Raexpr = (2591. * endo[0]) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+    IL4Raexpr = (254. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
     num = scales.shape[0]
 
     unkVec = np.zeros((n_params, num))

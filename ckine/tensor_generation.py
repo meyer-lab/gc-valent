@@ -64,12 +64,12 @@ def ySolver_IL2(matIn, ts):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
 
-    k1rev = 0.6*10.0*0.01
-    k2rev = 0.6*144.0
+    k1rev = 0.6 * 10.0 * 0.01
+    k2rev = 0.6 * 144.0
     k11rev = 63.0 * k5rev / 1.5
     rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
                        matIn[6], matIn[7], matIn[8],  # IL2Ra, IL2Rb, gc
-                       k1rev*5.0, k2rev*5.0, k4rev*5.0, k5rev*5.0, k11rev*5.0])
+                       k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])
 
     yOut, retVal = runCkineU_IL2(ts, rxntfr)
 
@@ -94,7 +94,7 @@ def findy(lig, n_timepoints):
     # Set receptor levels for IL7Ra, IL9R, IL4Ra, IL21Ra to one. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra measured.
     no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0
     # need to convert numbers to expression values
-    numpy_data[:, :] = (numpy_data[:, :] * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
+    numpy_data[:, :] = (numpy_data[:, :] * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
     all_receptors = np.concatenate((numpy_data, no_expression), axis=1)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
     receptor_repeats = np.repeat(all_receptors, len(mat), 0)  # Create an array that repeats the receptor expression levels 'len(mat)' times
 

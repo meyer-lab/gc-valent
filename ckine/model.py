@@ -125,18 +125,18 @@ def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     tps = np.array([500.0])
 
     kfwd = 0.00449
-    k1rev = 0.6*10*input[0]
-    k2rev = 0.6*144*input[1]
+    k1rev = 0.6 * 10 * input[0]
+    k2rev = 0.6 * 144 * input[1]
     k4rev = 8.6677
     k5rev = 0.1233
     k11rev = 63.0 * k5rev / 1.5 * input[1]
-    IL2Ra = 3.8704*CD25
+    IL2Ra = 3.8704 * CD25
     IL2Rb = 0.734
     gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
                        IL2Ra, IL2Rb, gc,
-                       k1rev*input[2], k2rev*input[2], k4rev*input[2], k5rev*input[2], k11rev*input[2]])  # input[2] represents endosomal binding affinity relative to surface affinity
+                       k1rev * input[2], k2rev * input[2], k4rev * input[2], k5rev * input[2], k11rev * input[2]])  # input[2] represents endosomal binding affinity relative to surface affinity
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
@@ -159,7 +159,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
-    yOut = np.zeros((rxntfr.shape[0]*tps.size, __nSpecies), dtype=np.float64)
+    yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
     if preT != 0.0:
         assert preT > 0.0
@@ -180,8 +180,8 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
-    yOut = np.zeros((rxntfr.shape[0]*tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0]*tps.size, __nParams), dtype=np.float64, order='C')
+    yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order='C')
 
     if preT != 0.0:
         assert preT > 0.0
@@ -251,7 +251,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL * 2])
 
 
 def surfaceReceptors(y):
@@ -269,13 +269,13 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL * 2])
 
 
 def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     """ This function calculates rate of total ligand degradation. """
-    yVec_endo_species = yVec[__halfL:(__halfL*2)].copy()  # get all endosomal complexes
-    yVec_endo_lig = yVec[(__halfL*2)::].copy()  # get all endosomal ligands
+    yVec_endo_species = yVec[__halfL:(__halfL * 2)].copy()  # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL * 2)::].copy()  # get all endosomal ligands
     sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
     __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool)  # create array of size halfL
     __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX

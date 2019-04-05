@@ -18,14 +18,14 @@ def makeFigure():
 
     factors_activity = []
     for jj in range(len(mat) - 1):
-        factors = perform_decomposition(values, jj+1)
+        factors = perform_decomposition(values, jj + 1)
         factors_activity.append(factors)
 
     numpy_data = data.values[:, 1:]  # returns data values in a numpy array
     # ['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     n_comps = 4
-    factors_activ = factors_activity[n_comps-1]
+    factors_activ = factors_activity[n_comps - 1]
 
     bar_receptors(ax[1], data)
     plot_R2X(ax[2], values, factors_activity, n_comps=5)
@@ -37,9 +37,9 @@ def makeFigure():
     plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
 
     for row in range(1, 3):
-        compNum = 2*(row-1) + 1
-        plot_cells(ax[row*2 + 2], factors_activ[1], compNum, compNum+1, cell_names, ax_pos=row*2 + 2)
-        plot_ligands(ax[row*2 + 3], factors_activ[2], compNum, compNum+1, ax_pos=row*2 + 3)
+        compNum = 2 * (row - 1) + 1
+        plot_cells(ax[row * 2 + 2], factors_activ[1], compNum, compNum + 1, cell_names, ax_pos=row * 2 + 2)
+        plot_ligands(ax[row * 2 + 3], factors_activ[2], compNum, compNum + 1, ax_pos=row * 2 + 3)
 
     f.tight_layout()
 
@@ -60,9 +60,9 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
         factors = factors_list[n]
         R2X = find_R2X(tensor, factors)
         R2X_array.append(R2X)
-    ax.plot(range(1, n_comps+1), R2X_array, 'ko', label='Overall R2X')
+    ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
     ax.set_ylim(0, 1)
-    ax.set_xticks(np.arange(1, n_comps+1))
-    ax.set_xticklabels(np.arange(1, n_comps+1))
+    ax.set_xticks(np.arange(1, n_comps + 1))
+    ax.set_xticklabels(np.arange(1, n_comps + 1))
