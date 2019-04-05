@@ -30,7 +30,8 @@ class IL4_7_activity:
 
         IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
         IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
-        self.fit_data = np.concatenate((dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max))  # measurements ARE normalized to max of own species
+        self.fit_data = np.concatenate((dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max,
+                                        dataIL7[:, 2] / IL7_data_max))  # measurements ARE normalized to max of own species
 
     def calc(self, unkVec, scales):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """

@@ -91,7 +91,8 @@ def findy(lig, n_timepoints):
 
     mats = np.tile(mat, (len(cell_names), 1))  # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (8)
 
-    no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0  # Set receptor levels for IL7Ra, IL9R, IL4Ra, IL21Ra to one. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra measured.
+    # Set receptor levels for IL7Ra, IL9R, IL4Ra, IL21Ra to one. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra measured.
+    no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0
     # need to convert numbers to expression values
     numpy_data[:, :] = (numpy_data[:, :] * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF)))  # constant according to measured number per cell
     all_receptors = np.concatenate((numpy_data, no_expression), axis=1)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
