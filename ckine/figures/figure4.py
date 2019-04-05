@@ -133,11 +133,11 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
         yOut, retVal = runCkineUP(tps, rxntfr)
         print(yOut)
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-        #print(activity[0])
+        #print(activity)
         activity_new = np.zeros((4,1000))
         for j in range(4):
             activity_new[j,:] = activity[(j*split):((j+1)*split)] #reshapes: one row per time point
-        #print(activity_new[0])
+        #print(activity_new)
         plot_conf_int(ax, tps, activity_new, colors[i], (np.log10(cytokC[i])).astype(str))
     
     # plots for input cell type
