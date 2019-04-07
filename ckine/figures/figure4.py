@@ -27,7 +27,10 @@ def makeFigure():
     #relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
-        IL2_dose_response(ax[2+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
+        if i == (data_Visterra.shape[0] - 1): # only plot the legend for the last entry
+            IL2_dose_response(ax[2+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
+        else:
+            IL2_dose_response(ax[2+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
@@ -109,7 +112,7 @@ def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
     return rec_ex
 
-def IL2_dose_response(ax, unkVec, cell_type, cell_data):
+def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     """ Shows activity for a given cell type at various IL2 concentrations """
     tps = np.array([15., 30., 60., 240.])
     PTS = 6 # number of cytokine concentrations
@@ -131,20 +134,15 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
         #print(rxntfr)
         yOut, retVal = runCkineUP(tps, rxntfr)
         assert retVal >= 0 # make sure solver is working
-        valid_ind = []
-        for ii in range(yOut.shape[0]):
-            if not math.isnan(yOut[ii, 0]):
-                valid_ind.append(ii)
-        print("number of valid rows of yOut:", len(valid_ind))
-        #print(yOut.shape)
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-        #print(activity)
+        max_act = np.max(activity)
         activity_new = np.zeros((tps.size,split))
         for j in range(4):
-            activity_new[j,:] = activity[(j*split):((j+1)*split)] #reshapes: one row per time point
-        #print(activity_new)
+            activity_new[j,:] = activity[(j*split):((j+1)*split)] / max_act # reshapes to one row per time point and normalizes by max
+
         plot_conf_int(ax, tps, activity_new, colors[i], (np.log10(cytokC[i])).astype(str))
     
     # plots for input cell type
-    ax.set(xlabel='time [min]', ylabel='Activity', title=cell_type)
-    #ax.legend(title=r'IL-2 concentration (log$_{10}$[nM])')
+    ax.set(xlabel='time (min)', ylabel='Activity', title=cell_type)
+    if legend is True:
+        ax.legend(title=r'IL-2 concentration (log$_{10}$[nM])')
