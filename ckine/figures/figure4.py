@@ -111,7 +111,7 @@ def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
 
 def IL2_dose_response(ax, unkVec, cell_type, cell_data):
     """ Shows activity for a given cell type at various IL2 concentrations """
-    tps = np.array([15, 30, 60, 240])
+    tps = np.array([15., 30., 60., 240.])
     PTS = 6 # number of cytokine concentrations
     cytokC = np.logspace(-12.0, -7.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
     colors = cm.rainbow(np.linspace(0, 1, PTS))
