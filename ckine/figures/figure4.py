@@ -2,7 +2,6 @@
 This creates Figure 4.
 """
 import string
-import math
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -22,9 +21,9 @@ def makeFigure():
 
     data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, scales_2_15 = import_samples_2_15()
-    #unkVec_4_7, scales_4_7 = import_samples_4_7()
+    unkVec_4_7, scales_4_7 = import_samples_4_7()
     
-    #relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
+    relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
         if i == (data_Visterra.shape[0] - 1): # only plot the legend for the last entry
@@ -118,11 +117,11 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     PTS = 6 # number of cytokine concentrations
     cytokC = np.logspace(-12.0, -7.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
     colors = cm.rainbow(np.linspace(0, 1, PTS))
-    
+
     rxntfr = unkVec.T.copy()
-    
-    split = 1000
-    
+
+    split = rxntfr.shape[0] # number of parameter sets used (& thus the number of yOut replicates)
+
     # loop for each IL2 concentration
     for i in range(PTS):    
         for ii in range(rxntfr.shape[0]):
@@ -131,7 +130,6 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
             rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-        #print(rxntfr)
         yOut, retVal = runCkineUP(tps, rxntfr)
         assert retVal >= 0 # make sure solver is working
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
@@ -141,7 +139,7 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
             activity_new[j,:] = activity[(j*split):((j+1)*split)] / max_act # reshapes to one row per time point and normalizes by max
 
         plot_conf_int(ax, tps, activity_new, colors[i], (np.log10(cytokC[i])).astype(str))
-    
+
     # plots for input cell type
     ax.set(xlabel='time (min)', ylabel='Activity', title=cell_type)
     if legend is True:
