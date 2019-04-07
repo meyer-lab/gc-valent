@@ -115,32 +115,32 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     """ Shows activity for a given cell type at various IL2 concentrations """
     tps = np.array([15., 30., 60., 240.])
     PTS = 6 # number of cytokine concentrations
-    cytokC = np.logspace(-12.0, -7.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
-    colors = cm.rainbow(np.linspace(0, 1, PTS))
+    cytokC = np.logspace(-4.0, 2.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
+    colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
     rxntfr = unkVec.T.copy()
 
     split = rxntfr.shape[0] # number of parameter sets used (& thus the number of yOut replicates)
 
     # loop for each IL2 concentration
-    for i in range(PTS):    
-        for ii in range(rxntfr.shape[0]):
-            rxntfr[ii, 0] = cytokC[i]
-            # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-            rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-        yOut, retVal = runCkineUP(tps, rxntfr)
-        assert retVal >= 0 # make sure solver is working
-        activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-        max_act = np.max(activity)
-        activity_new = np.zeros((tps.size,split))
-        for j in range(4):
-            activity_new[j,:] = activity[(j*split):((j+1)*split)] / max_act # reshapes to one row per time point and normalizes by max
+    for tt in range(tps.size):
+        activity_new = np.zeros((PTS, split))
+        for i in range(PTS):    
+            for ii in range(rxntfr.shape[0]):
+                rxntfr[ii, 0] = cytokC[i]
+                # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+                rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+                rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+                rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            print(tps[tt])
+            yOut, retVal = runCkineUP(tps[tt], rxntfr)
+            assert retVal >= 0 # make sure solver is working
+            activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
+            activity_new[i] = activity # assign values for this concentration & time point
 
-        plot_conf_int(ax, tps, activity_new, colors[i], (np.log10(cytokC[i])).astype(str))
+        plot_conf_int(ax, np.log10(cytokC), activity_new, colors[tt], (tps[tt]).astype(str))
 
     # plots for input cell type
-    ax.set(xlabel='time (min)', ylabel='Activity', title=cell_type)
+    ax.set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
     if legend is True:
-        ax.legend(title=r'IL-2 concentration (log$_{10}$[nM])')
+        ax.legend(title='time (min)')
