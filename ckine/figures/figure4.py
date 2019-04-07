@@ -2,6 +2,7 @@
 This creates Figure 4.
 """
 import string
+import math
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -32,10 +33,9 @@ def makeFigure():
 
     return f
 
-"""
 
 def relativeGC(ax, unkVec2, unkVec4):
-    ++ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev, k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. ++
+    """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev, k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
 
     # assign values from unkVec
     kfwd_2, kfwd_4, k4rev, k5rev, k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :], unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
@@ -55,11 +55,7 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 def cell_act(unkVec, cytokC, scale):
-<<<<<<< HEAD
-    ++ Cytokine activity for all IL2 doses for single cell line. ++
-=======
     """ Cytokine activity for all IL2 doses for single cell line. """
->>>>>>> 2319da810c5f83fb413717bc10e6ab8607db2237
     pstat5 = pstat()
     K = unkVec.shape[0]
     act = np.zeros((K, cytokC.shape[0]))
@@ -74,7 +70,7 @@ def cell_act(unkVec, cytokC, scale):
     return act
 
 def IL2_receptor_activity(ax, unkVec, scales):
-    ++ Shows how IL2-pSTAT dose response curves change with receptor expression rates. ++
+    """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
     PTS = 30 # number of cytokine concentrations
     split = 50 # number of rows used from unkVec
     cytokC = np.logspace(-3.3, 2.7, PTS)
@@ -108,7 +104,6 @@ def IL2_receptor_activity(ax, unkVec, scales):
     ax[2].set_title(r'$\gamma_{c}$')
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
     
-"""
 
 def receptor_expression(receptor_abundance,endo,kRec,sortF,kDeg):
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
@@ -135,7 +130,11 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
             rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
         #print(rxntfr)
         yOut, retVal = runCkineUP(tps, rxntfr)
-        print(yOut)
+        assert retVal >= 0 # make sure solver is working
+        #for ii in range(10):
+            #if math.isnan(yOut[ii, 0]):
+                #print(ii)
+        #print(yOut.shape)
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
         #print(activity)
         activity_new = np.zeros((4,1000))
