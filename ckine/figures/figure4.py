@@ -131,13 +131,15 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data):
         #print(rxntfr)
         yOut, retVal = runCkineUP(tps, rxntfr)
         assert retVal >= 0 # make sure solver is working
-        #for ii in range(10):
-            #if math.isnan(yOut[ii, 0]):
-                #print(ii)
+        valid_ind = []
+        for ii in range(yOut.shape[0]):
+            if not math.isnan(yOut[ii, 0]):
+                valid_ind.append(ii)
+        print("number of valid rows of yOut:", len(valid_ind))
         #print(yOut.shape)
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
         #print(activity)
-        activity_new = np.zeros((4,1000))
+        activity_new = np.zeros((tps.size,split))
         for j in range(4):
             activity_new[j,:] = activity[(j*split):((j+1)*split)] #reshapes: one row per time point
         #print(activity_new)
