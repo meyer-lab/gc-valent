@@ -132,7 +132,6 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
                 rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
                 rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
                 rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            print(tps[tt])
             yOut, retVal = runCkineUP(tps[tt], rxntfr)
             assert retVal >= 0 # make sure solver is working
             activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
