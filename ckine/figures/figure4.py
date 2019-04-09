@@ -13,7 +13,7 @@ from ..model import runCkineUP, getTotalActiveSpecies
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4), mults=[0], multz={0: 2})
+    ax, f = getSetup((7, 6), (3, 4), mults=[0], multz={0: 2}, empts=[11])
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -143,4 +143,4 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     # plots for input cell type
     ax.set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
     if legend is True:
-        ax.legend(title='time (min)')
+        ax.legend(title='time (min)', loc='center left', borderaxespad=10.)
