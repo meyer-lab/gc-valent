@@ -122,22 +122,23 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
 
     split = rxntfr.shape[0] # number of parameter sets used (& thus the number of yOut replicates)
 
-    # loop for each IL2 concentration
-    for tt in range(tps.size):
-        activity_new = np.zeros((PTS, split))
-        for i in range(PTS):    
-            for ii in range(rxntfr.shape[0]):
-                rxntfr[ii, 0] = cytokC[i]
-                # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-                rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-                rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-                rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            yOut, retVal = runCkineUP(tps[tt], rxntfr)
-            assert retVal >= 0 # make sure solver is working
-            activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-            activity_new[i] = activity # assign values for this concentration & time point
-
-        plot_conf_int(ax, np.log10(cytokC), activity_new, colors[tt], (tps[tt]).astype(str))
+    total_activity = np.zeros((PTS, split, tps.size))
+     # loop for each IL2 concentration
+    for i in range(PTS):    
+        for ii in range(rxntfr.shape[0]):
+            rxntfr[ii, 0] = cytokC[i]
+            # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+            rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+        yOut, retVal = runCkineUP(tps, rxntfr)
+        activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
+        for j in range(tps.size):
+            total_activity[i, :, j] = activity[(j*split):((j+1)*split)] #reshapes: one row per time point
+    
+    # plot dose-response for each time-point
+    for j in range(tps.size):
+        plot_conf_int(ax, np.log10(cytokC), total_activity[:,:,j], colors[j], (tps[j]).astype(str))
 
     # plots for input cell type
     ax.set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
