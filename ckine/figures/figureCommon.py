@@ -65,9 +65,9 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     markers = ['^', '*', 'x']
     cmap = sns.color_palette("hls", n_ligands)
 
-    legend_shape = [Line2D([0], [0], color=['k'], marker = markers[0], label='IL-2', linestyle = ''),
-                   Line2D([0], [0], color=['k'], label='IL-15',marker=markers[1], linestyle = ''),
-                   Line2D([0], [0], color=['k'], label='IL-2 mut',marker=markers[2], linestyle = '')]
+    legend_shape = [Line2D([0], [0], color='k', marker = markers[0], label='IL-2', linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-15',marker=markers[1], linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-2 mut',marker=markers[2], linestyle = '')]
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
