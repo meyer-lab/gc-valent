@@ -65,9 +65,9 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     markers = ['^', '*', 'x']
     cmap = sns.color_palette("hls", n_ligands)
 
-    legend_shape = [Line2D([0], [0], color='k', marker = markers[0], label='IL-2', linestyle = ''),
-                   Line2D([0], [0], color='k', label='IL-15',marker=markers[1], linestyle = ''),
-                   Line2D([0], [0], color='k', label='IL-2 mut',marker=markers[2], linestyle = '')]
+    legend_shape = [Line2D([0], [0], color=['k'], marker = markers[0], label='IL-2', linestyle = ''),
+                   Line2D([0], [0], color=['k'], label='IL-15',marker=markers[1], linestyle = ''),
+                   Line2D([0], [0], color=['k'], label='IL-2 mut',marker=markers[2], linestyle = '')]
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
@@ -106,7 +106,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3 = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H'] # 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X'] #'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = [colors[ii]], marker = markersCells[ii], label = cell_names[ii])

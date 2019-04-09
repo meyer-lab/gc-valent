@@ -11,7 +11,7 @@ from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSp
 
 #Load the data from csv file
 path = os.path.dirname(os.path.abspath(__file__))
-data = pds.read_csv(join(path, 'data/Preliminary receptor levels.csv')) # Every row in the data represents a specific cell
+data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv')) # Every row in the data represents a specific cell
 numpy_data = data.values[:, 1:] # returns data values in a numpy array
 cell_names = list(data.values[:, 0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
 #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
@@ -79,7 +79,7 @@ def ySolver_IL2(matIn, ts):
 def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
 
-    ILs = np.logspace(-2., 1., num=lig) # Cytokine stimulation concentrations
+    ILs = np.logspace(-2., 1., num=lig) # Cytokine stimulation concentrations in nM
 
     # Goal is to make one cell expression levels by len(mat) for every cell
     # Make mesh grid of all combinations of ligand
