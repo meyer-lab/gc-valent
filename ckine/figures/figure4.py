@@ -7,6 +7,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, load_cells, plot_conf_int, import_Rexpr
+from ..plot_model_prediction import pstat
 from ..model import runCkineUP, getTotalActiveSpecies
 
 def makeFigure():
