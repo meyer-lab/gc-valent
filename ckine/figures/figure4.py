@@ -119,30 +119,9 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
     rxntfr = unkVec.T.copy()
-
     split = rxntfr.shape[0] # number of parameter sets used (& thus the number of yOut replicates)
-
-    '''
-    # loop for each IL2 concentration
-    for tt in range(tps.size):
-        activity_new = np.zeros((PTS, split))
-        for i in range(PTS):    
-            for ii in range(rxntfr.shape[0]):
-                rxntfr[ii, 0] = cytokC[i]
-                # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-                rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-                rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-                rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            yOut, retVal = runCkineUP(tps[tt], rxntfr)
-            assert retVal >= 0 # make sure solver is working
-            activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-            activity_new[i] = activity # assign values for this concentration & time point
-
-        print(activity_new)
-        print(activity_new.shape)
-        plot_conf_int(ax, np.log10(cytokC), activity_new, colors[tt], (tps[tt]).astype(str))
-    '''
     total_activity = np.zeros((PTS, split, tps.size))
+
      # loop for each IL2 concentration
     for i in range(PTS):    
         for ii in range(rxntfr.shape[0]):
@@ -154,20 +133,12 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
         yOut, retVal = runCkineUP(tps, rxntfr)
         assert retVal >= 0 # make sure solver is working
         activity = np.dot(yOut,getTotalActiveSpecies().astype(np.float))
-        #print("activity.shape:", activity.shape)
-        #print("activity[0:4]", activity[0:4])
-        #print("activity[1000:1004]", activity[1000:1004])
-        #print("activity[2000:2004]", activity[2000:2004])
-        #print("activity[3000:3004]", activity[3000:3004])
-        for j in range(tps.size):
-            total_activity[i, :, j] = activity[(j*split):((j+1)*split)] #reshapes: one row per time point
+        for j in range(split):
+            total_activity[i, j, :] = activity[(4*j):((j+1)*4)] # save the activity from this concentration for all 4 tps
     
-    # plot_conf_int(ax, tps, activity_new, colors[i], (np.log10(cytokC[i])).astype(str))
-    for j in range(1):
-        temp_activity = total_activity[:,:,j]
-        print(temp_activity)
-        print(temp_activity.shape)
-        plot_conf_int(ax, np.log10(cytokC), temp_activity, colors[j], (tps[j]).astype(str))
+    # plot the values with each time as a separate color
+    for tt in range(tps.size):
+        plot_conf_int(ax, np.log10(cytokC), total_activity[:,:,tt], colors[tt], (tps[tt]).astype(str))
 
     # plots for input cell type
     ax.set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
