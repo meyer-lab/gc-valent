@@ -2,12 +2,12 @@
 This creates Figure S3, which covers the Tucker factorization form.
 """
 import string
+import seaborn  as sns
 import tensorly as tl
 from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, set_bounds
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 from ..tensor_generation import cell_names
-import seaborn  as sns
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -37,6 +37,7 @@ def makeFigure():
     return f
 
 def plot_core(ax, core):
+    """Generate heatmaps for the core tensor."""
     #Begin by unfolding the core tensor on its 3 faces.
     X1, X2, X3 = unfold(core, 0), unfold(core, 1), unfold(core, 2)
     sns.heatmap(X1,cmap="YlGnBu",cbar=True,ax=ax[0])
