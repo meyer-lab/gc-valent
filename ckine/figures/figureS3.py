@@ -28,8 +28,7 @@ def makeFigure():
         compNum = 2 * row + 1
 
         plot_cells(ax[row * y + 1], tl.to_numpy(factors[1]), compNum, compNum + 1, cell_names, ax_pos=row * y + 1, fig3=False)
-        if compNum < rank_list[2]:
-            plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos=row * y + 2, fig3=False)
+        plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos= row * y + 2, fig3=False)
 
     f.tight_layout()
 
