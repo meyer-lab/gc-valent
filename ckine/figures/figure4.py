@@ -112,7 +112,7 @@ def IL2_receptor_activity(ax, unkVec, scales):
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
 
 
-def receptor_expression(receptor_abundance, endo,kRec, sortF, kDeg):
+def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
     return rec_ex
