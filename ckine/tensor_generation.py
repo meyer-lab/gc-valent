@@ -1,5 +1,6 @@
 """
-Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions. The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines.
+Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions. 
+The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines.
 Important Notes:
     y_of_combos is a multidimensional matrix of size (length mesh x 1000 timeponts x 56 values of y)
     values is also a multidimensional matrix of size (length mesh x 1000 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
@@ -14,7 +15,7 @@ from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSp
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv')) # Every row in the data represents a specific cell
 numpy_data = data.values[:, 1:] # returns data values in a numpy array
-cell_names = list(data.values[:, 0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
+cell_names = list(data.values[:, 0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells.
 #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
 # Set the following variables for multiple functions to use
@@ -25,7 +26,6 @@ kDeg = 0.017
 kfwd = 0.004475761
 k4rev = 8.543317686
 k5rev = 0.12321939
-
 
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
