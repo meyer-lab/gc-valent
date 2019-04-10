@@ -42,7 +42,9 @@ def plot_core(ax, core):
     X1, X2, X3 = unfold(core, 0), unfold(core, 1), unfold(core, 2)
     sns.heatmap(X1,cmap="YlGnBu",cbar=True,ax=ax[0])
     ax[0].set_title("Time Dimension")
+    '''
     sns.heatmap(X2,cmap="YlGnBu",cbar=True,ax=ax[1])
     ax[1].set_title("Cell Dimension")
     sns.heatmap(X3,cmap="YlGnBu",cbar=True,ax=ax[2])
     ax[2].set_title("Ligand Dimension")
+    '''
