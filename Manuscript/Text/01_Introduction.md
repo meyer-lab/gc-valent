@@ -9,7 +9,7 @@ author:
   affilnum: b
 - name: Aaron S. Meyer
   affilnum: a,c
-keywords: [IL2, IL15, IL21, IL4, IL7, IL9, common gamma chain, cytokines, receptors, immunology, T cells, NK cells]
+keywords: [IL-2, IL-15, IL-21, IL-4, IL-7, IL-9, common gamma chain, cytokines, receptors, immunology, T cells, NK cells]
 affiliation:
 - name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles
   key: a
