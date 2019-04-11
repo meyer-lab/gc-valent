@@ -30,7 +30,7 @@ def makeFigure():
 
 def plot_geweke(ax, traf):
     """ Uses geweke criterion to evaluate model convergence during fitting. """
-    bmodel = build_model_2_15() # access pymc3 object from IL2_IL15 fitting
+    bmodel = build_model_2_15(traf=traf) # access pymc3 object from IL2_IL15 fitting
     path = os.path.dirname(os.path.abspath(__file__))
     if traf:
         trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
@@ -50,7 +50,10 @@ def plot_geweke(ax, traf):
     ax[0].axhline(1., c='r')
     ax[0].set_ylim(-1.25,1.25)
     ax[0].set_xlim(0-10,.5*trace['rxn'].shape[0]/2+10)
-    ax[0].set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean krev Z scores')
+    if traf:
+        ax[0].set_title('Trafficking Model: Reverse Reaction Rates')
+    else:
+        ax[0].set_title('No-Trafficking Model: Reverse Reaction Rates')
     ax[0].legend()
     ax[0].set_xlabel("Position in Chain")
     ax[0].set_ylabel("Geweke Score")
@@ -65,7 +68,10 @@ def plot_geweke(ax, traf):
     ax[1].axhline(1., c='r')
     ax[1].set_ylim(-1.25,1.25)
     ax[1].set_xlim(0-10,.5*trace['IL2Raexpr'].shape[0]/2+10)
-    ax[1].set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean Rexpr Z scores')
+    if traf:
+        ax[1].set_title('Trafficking Model: Receptor Expression Rates')
+    else:
+        ax[1].set_title('No-Trafficking Model: Receptor Expression Rates')
     ax[1].legend()
     ax[1].set_xlabel("Position in Chain")
     ax[1].set_ylabel("Geweke Score")
@@ -77,7 +83,10 @@ def plot_geweke(ax, traf):
     ax[2].axhline(1., c='r')
     ax[2].set_ylim(-1.25,1.25)
     ax[2].set_xlim(0-10,.5*trace['IL2Raexpr'].shape[0]/2+10)
-    ax[2].set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean Z scores')
+    if traf:
+        ax[2].set_title('Trafficking Model: Activity Constant and Forward Dimerization Rate')
+    else:
+        ax[2].set_title('No-Trafficking Model: Activity Constant and Forward Dimerization Rate')    
     ax[2].legend()
     ax[2].set_xlabel("Position in Chain")
     ax[2].set_ylabel("Geweke Score")
@@ -94,7 +103,7 @@ def plot_geweke(ax, traf):
         ax[3].axhline(1., c='r')
         ax[3].set_ylim(-1.25,1.25)
         ax[3].set_xlim(0-10,.5*trace['kDeg'].shape[0]/2+10)
-        ax[3].set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean Trafficking Z scores')
+        ax[3].set_title('Trafficking Model: Trafficking Rates')
         ax[3].legend()
         ax[3].set_xlabel("Position in Chain")
         ax[3].set_ylabel("Geweke Score")
