@@ -57,3 +57,5 @@ def plot_geweke(ax, traf):
     ax.set_xlim(0-10,.5*trace['rxn'].shape[0]/2+10)
     ax.set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean krev Z scores')
     ax.legend()
+    ax.set_xlabel("Position in Chain")
+    ax.set_ylabel("Geweke Score")
