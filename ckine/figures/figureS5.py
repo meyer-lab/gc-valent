@@ -22,7 +22,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     plot_geweke(ax[0:4], True)
-    # plot_geweke(ax[4:7], False)
+    plot_geweke(ax[4:7], False)
 
     f.tight_layout()
 
