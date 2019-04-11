@@ -22,14 +22,14 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    '''unkVec, scales = import_samples_2_15(Fig1=False)
+    unkVec, scales = import_samples_2_15(Fig1=False)
     kfwd_avg, kfwd_std = kfwd_info(unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[0], unkVec, scales)
     rateComp(ax[1], unkVec)
     violinPlots(ax[2:4], unkVec, scales, Fig1=False)
-    '''
-    plot_geweke(ax[1], True)
+
+    # plot_geweke(ax[5], True)
 
     f.tight_layout()
 
@@ -44,8 +44,10 @@ def plot_geweke(ax, traf):
     else:
         trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
 
-    # use use trace to calculate geweke z-scores ... TODO: figure out proper arguments for first, last, intervals
+    # use use trace to calculate geweke z-scores
     score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
+    
+    # plot the scores for rxn rates
     rxn_len = len(score[0]['rxn'])
     rxn_names = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev']
     colors = cm.rainbow(np.linspace(0, 1, rxn_len))
