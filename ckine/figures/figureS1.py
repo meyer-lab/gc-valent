@@ -4,6 +4,8 @@ This creates Figure S1.
 import string
 import os
 import pymc3 as pm
+import matplotlib.cm as cm
+import numpy as np
 import os
 from os.path import join
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, kfwd_info
@@ -44,9 +46,14 @@ def plot_geweke(ax, traf):
 
     # use use trace to calculate geweke z-scores ... TODO: figure out proper arguments for first, last, intervals
     score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
-    ax.scatter(score[0]['rxn'][0][:,0], score[0]['rxn'][0][:,1], marker = 'o', s=50) # currently only plotting rxn[0]
+    rxn_len = len(score[0]['rxn'])
+    rxn_names = ['k4rev', 'k5rev', 'k16rev', 'k17rev', 'k22rev', 'k23rev']
+    colors = cm.rainbow(np.linspace(0, 1, rxn_len))
+    for ii in range(rxn_len):
+        ax.scatter(score[0]['rxn'][ii][:,0], score[0]['rxn'][ii][:,1], marker='o', s=25, color=colors[ii], label=rxn_names[ii]) # currently only plotting rxn[0]
     ax.axhline(-1., c='r')
     ax.axhline(1., c='r')
     ax.set_ylim(-1.25,1.25)
     ax.set_xlim(0-10,.5*trace['rxn'].shape[0]/2+10)
-    ax.set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean k4rev Z score')
+    ax.set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean krev Z scores')
+    ax.legend()
