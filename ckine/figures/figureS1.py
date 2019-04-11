@@ -27,7 +27,7 @@ def makeFigure():
     rateComp(ax[1], unkVec)
     violinPlots(ax[2:4], unkVec, scales, Fig1=False)
     '''
-    plot_geweke(ax[0], True)
+    plot_geweke(ax[1], True)
 
     f.tight_layout()
 
@@ -43,5 +43,10 @@ def plot_geweke(ax, traf):
         trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
 
     # use use trace to calculate geweke z-scores ... TODO: figure out proper arguments for first, last, intervals
-    out = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
-    print(len(out[0]))
+    score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
+    ax.scatter(score[0]['rxn'][0][:,0], score[0]['rxn'][0][:,1], marker = 'o', s=50) # currently only plotting rxn[0]
+    ax.axhline(-1., c='r')
+    ax.axhline(1., c='r')
+    ax.set_ylim(-1.25,1.25)
+    ax.set_xlim(0-10,.5*trace['rxn'].shape[0]/2+10)
+    ax.set_title('Geweke Plot Comparing first 10% and Slices of the Last 50% of Chain\nDifference in Mean k4rev Z score')
