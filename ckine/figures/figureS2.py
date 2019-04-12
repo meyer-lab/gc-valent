@@ -47,15 +47,13 @@ def plot_geweke(ax, traf):
         ax[0].scatter(score[0]['rxn'][ii][:, 0], score[0]['rxn'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rxn_names[ii]) # plot all rates within rxn
     ax[0].axhline(-1., c='r')
     ax[0].axhline(1., c='r')
-    ax[0].set_ylim(-1.25, 1.25)
-    ax[0].set_xlim(0-10, .5*trace['rxn'].shape[0]/2+10)
+    ax[0].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['rxn'].shape[0]/2+10),
+             xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[0].set_title('Trafficking Model: Reverse Reaction Rates')
     else:
         ax[0].set_title('No-Trafficking Model: Reverse Reaction Rates')
     ax[0].legend()
-    ax[0].set_xlabel("Position in Chain")
-    ax[0].set_ylabel("Geweke Score")
 
     # plot the scores for receptor expression rates
     rexpr_len = len(score[0]['IL2Raexpr'])
@@ -65,30 +63,26 @@ def plot_geweke(ax, traf):
         ax[1].scatter(score[0]['IL2Raexpr'][ii][:, 0], score[0]['IL2Raexpr'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rexpr_names[ii])
     ax[1].axhline(-1., c='r')
     ax[1].axhline(1., c='r')
-    ax[1].set_ylim(-1.25, 1.25)
-    ax[1].set_xlim(0-10, .5*trace['IL2Raexpr'].shape[0]/2+10)
+    ax[1].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['IL2Raexpr'].shape[0]/2+10),
+             xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[1].set_title('Trafficking Model: Receptor Expression Rates')
     else:
         ax[1].set_title('No-Trafficking Model: Receptor Expression Rates')
     ax[1].legend()
-    ax[1].set_xlabel("Position in Chain")
-    ax[1].set_ylabel("Geweke Score")
 
     # plot the scores for scaling constant and kfwd
     ax[2].scatter(score[0]['scales'][:, 0], score[0]['scales'][:, 1], marker='o', s=25, color='g', label=r'$C_{5}$')
     ax[2].scatter(score[0]['kfwd'][:, 0], score[0]['kfwd'][:, 1], marker='o', s=25, color='b', label=r'$k_{fwd}$')
     ax[2].axhline(-1., c='r')
     ax[2].axhline(1., c='r')
-    ax[2].set_ylim(-1.25, 1.25)
-    ax[2].set_xlim(0-10, .5*trace['IL2Raexpr'].shape[0]/2+10)
+    ax[2].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['kfwd'].shape[0]/2+10),
+             xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[2].set_title('Trafficking Model: Activity Constant and Forward Dimerization Rate')
     else:
         ax[2].set_title('No-Trafficking Model: Activity Constant and Forward Dimerization Rate')
     ax[2].legend()
-    ax[2].set_xlabel("Position in Chain")
-    ax[2].set_ylabel("Geweke Score")
 
     if traf is True:
         colors = cm.rainbow(np.linspace(0, 1, 5))
@@ -100,9 +94,6 @@ def plot_geweke(ax, traf):
         ax[3].scatter(score[0]['kDeg'][:, 0], score[0]['kDeg'][:, 1], marker='o', s=25, color=colors[4], label=tr_names[4])
         ax[3].axhline(-1., c='r')
         ax[3].axhline(1., c='r')
-        ax[3].set_ylim(-1.25, 1.25)
-        ax[3].set_xlim(0-10, .5*trace['kDeg'].shape[0]/2+10)
-        ax[3].set_title('Trafficking Model: Trafficking Rates')
+        ax[3].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['endo'].shape[0]/2+10),
+                 xlabel="Position in Chain", ylabel="Geweke Score", title="Trafficking Model: Trafficking Rates")
         ax[3].legend()
-        ax[3].set_xlabel("Position in Chain")
-        ax[3].set_ylabel("Geweke Score")
