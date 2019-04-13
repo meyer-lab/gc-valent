@@ -48,7 +48,7 @@ def plot_geweke(ax, traf):
     ax[0].axhline(-1., c='r')
     ax[0].axhline(1., c='r')
     ax[0].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['rxn'].shape[0]/2+10),
-             xlabel="Position in Chain", ylabel="Geweke Score")
+              xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[0].set_title('Trafficking Model: Reverse Reaction Rates')
     else:
@@ -64,7 +64,7 @@ def plot_geweke(ax, traf):
     ax[1].axhline(-1., c='r')
     ax[1].axhline(1., c='r')
     ax[1].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['IL2Raexpr'].shape[0]/2+10),
-             xlabel="Position in Chain", ylabel="Geweke Score")
+              xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[1].set_title('Trafficking Model: Receptor Expression Rates')
     else:
@@ -77,7 +77,7 @@ def plot_geweke(ax, traf):
     ax[2].axhline(-1., c='r')
     ax[2].axhline(1., c='r')
     ax[2].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['kfwd'].shape[0]/2+10),
-             xlabel="Position in Chain", ylabel="Geweke Score")
+              xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[2].set_title('Trafficking Model: Activity Constant and Forward Dimerization Rate')
     else:
@@ -95,5 +95,5 @@ def plot_geweke(ax, traf):
         ax[3].axhline(-1., c='r')
         ax[3].axhline(1., c='r')
         ax[3].set(ylim=(-1.25, 1.25), xlim=(0-10, .5*trace['endo'].shape[0]/2+10),
-                 xlabel="Position in Chain", ylabel="Geweke Score", title="Trafficking Model: Trafficking Rates")
+                  xlabel="Position in Chain", ylabel="Geweke Score", title="Trafficking Model: Trafficking Rates")
         ax[3].legend()
