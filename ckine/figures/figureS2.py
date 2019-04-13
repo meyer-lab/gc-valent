@@ -7,7 +7,7 @@ from os.path import join
 import pymc3 as pm
 import matplotlib.cm as cm
 import numpy as np
-from .figureCommon import subplotLabel, getSetup, traf_names
+from .figureCommon import subplotLabel, getSetup, traf_names, import_samples_2_15
 from ..fit import build_model as build_model_2_15
 
 
@@ -29,12 +29,7 @@ def makeFigure():
 
 def plot_geweke(ax, traf):
     """ Uses geweke criterion to evaluate model convergence during fitting. """
-    bmodel = build_model_2_15(traf=traf) # access pymc3 object from IL2_IL15 fitting
-    path = os.path.dirname(os.path.abspath(__file__))
-    if traf:
-        trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    else:
-        trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
+    trace = import_samples_2_15(Traf=traf, ret_trace=True) # return the trace
 
     # use use trace to calculate geweke z-scores
     score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
