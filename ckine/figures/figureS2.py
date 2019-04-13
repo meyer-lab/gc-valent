@@ -2,14 +2,10 @@
 This creates Figure S5. Full panel of Geweke convergence tests.
 """
 import string
-import os
-from os.path import join
 import pymc3 as pm
 import matplotlib.cm as cm
 import numpy as np
 from .figureCommon import subplotLabel, getSetup, traf_names, import_samples_2_15
-from ..fit import build_model as build_model_2_15
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
