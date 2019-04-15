@@ -86,7 +86,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
             ax.add_artist(legend1)
             legend2 = ax.legend(handles=legend_shape, loc=3)
             ax.add_artist(legend2)
-        elif ax_pos == 2 and fig3 is False:
+        elif ax_pos == 2 and not fig3:
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)
             legend2 = ax.legend(handles=legend_shape, loc=3)
