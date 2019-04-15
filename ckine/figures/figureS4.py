@@ -12,7 +12,7 @@ from ..tensor_generation import cell_names
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
-    ax, f = getSetup((9, 7), (x, y), empts=[3])
+    ax, f = getSetup((7.5, 5), (x, y), empts=[3])
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
@@ -41,4 +41,3 @@ def plot_core(ax, core):
     #Begin by unfolding the core tensor on its 3 faces.
     X3 = unfold(core, 2)
     sns.heatmap(X3,cmap="YlGnBu",cbar=True,ax=ax)
-    ax.set_title("Ligand Dimension")
