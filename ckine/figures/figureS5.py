@@ -1,5 +1,5 @@
 """
-This creates Figure S4. Full panel of measured vs simulated.
+This creates Figure S5. Full panel of measured vs simulated.
 """
 from .figureCommon import subplotLabel, getSetup
 
