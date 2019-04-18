@@ -1,5 +1,5 @@
 """
-This creates Figure S5. Full panel of Geweke convergence tests.
+This creates Figure S2. Full panel of Geweke convergence tests.
 """
 import string
 import pymc3 as pm

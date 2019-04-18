@@ -122,7 +122,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = [colors[ii]], marker = markersCells[ii], label = cell_names[ii])
 
-    if ax_pos == 1:
+    if ax_pos == 1 or ax_pos == 1:
         ax.legend()
 
     elif ax_pos == 4 and fig3:
@@ -232,16 +232,6 @@ def import_samples_4_7():
 
     return unkVec, scales
 
-
-def load_cells():
-    """ Loads CSV file that gives Rexpr levels for different cell types. """
-    fileDir = os.path.dirname(os.path.realpath('__file__'))
-    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
-    data = pds.read_csv(expr_filename)  # Every column in the data represents a specific cell
-    cell_names = data.columns.values.tolist()[1::]  # returns the cell names from the pandas dataframe (which came from csv)
-    return data, cell_names
-
-
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
@@ -255,3 +245,18 @@ def import_Rexpr():
     numpy_data = data.values[:, 1:] # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
     return numpy_data, cell_names
+
+def import_pstat():
+    """ Loads CSV file containing pSTAT5 levels from Visterra data. """
+    path = os.path.dirname(os.path.dirname(__file__))
+    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'),encoding ='latin1'))
+    ckineConc = data[1,2:14]
+    # 4 time points, 11 cell types, 12 concentrations
+    IL2_data = np.zeros((44,12))
+    IL15_data = np.zeros((44,12))
+    cell_names = list()
+    for i in range(11):
+        cell_names.append(data[12*i,1])
+        IL2_data[4*i:4*(i+1),:] = data[3+(12*i):7+(12*i),2:14]
+        IL15_data[4*i:4*(i+1),:] = data[7+(12*i):11+(12*i),2:14]
+    return ckineConc, cell_names, IL2_data, IL15_data

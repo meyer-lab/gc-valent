@@ -87,7 +87,7 @@ def findy(lig, n_timepoints):
     # Make mesh grid of all combinations of ligand
     mat = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                      np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
-                     np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))  # Set interleukins other than IL2&15 to zero
+                     np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))  # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2 IL15,mutIL2)*(num=lig) by 6 (6 for all ILs)
 
     mats = np.tile(mat, (len(cell_names), 1))  # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (8)
 
