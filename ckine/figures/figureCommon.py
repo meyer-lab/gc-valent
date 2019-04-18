@@ -80,7 +80,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
         else:
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
-        h, l = ax.get_legend_handles_labels()
+        h, _ = ax.get_legend_handles_labels()
         if ax_pos == 5 and fig3:
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)

@@ -30,7 +30,7 @@ def makeFigure():
 
     for row in range(2):
         compNum = 2 * row + 1
-        plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos= row * y + 2, fig3=False)
+        plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum+1, ax_pos=row*y+2, fig3=False)
 
     f.tight_layout()
 
@@ -40,4 +40,4 @@ def plot_core(ax, core):
     """Generate heatmaps for the core tensor."""
     #Begin by unfolding the core tensor on its 3 faces.
     X3 = unfold(core, 2)
-    sns.heatmap(X3,cmap="YlGnBu",cbar=True,ax=ax)
+    sns.heatmap(X3, cmap="YlGnBu", cbar=True, ax=ax)

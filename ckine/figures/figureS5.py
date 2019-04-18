@@ -19,11 +19,11 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
     ckineConc, _, IL2_data, IL15_data = import_pstat()
-    ckineConc = np.round(np.flip(ckineConc).astype(np.double),5)
-    IL2 = np.flip(IL2_data, axis = (0,1)) #Makes them in both chronological order and ascending stimulation concentration
-    IL15 = np.flip(IL15_data, axis = (0,1)) #Makes them in both chronological order and ascending stimulation concentration
-    concat = np.concatenate((IL2,IL15), axis = 1) #Prepare for tensor reshaping
-    measured_tensor = np.reshape(concat, (11,4,24))
+    ckineConc = np.round(np.flip(ckineConc).astype(np.double), 5)
+    IL2 = np.flip(IL2_data, axis = (0, 1)) #Makes them in both chronological order and ascending stimulation concentration
+    IL15 = np.flip(IL15_data, axis = (0, 1)) #Makes them in both chronological order and ascending stimulation concentration
+    concat = np.concatenate((IL2, IL15), axis=1) #Prepare for tensor reshaping
+    measured_tensor = np.reshape(concat, (11, 4, 24))
     cell_names = ['Mem Th', 'Naive Th', 'T helper', 'Mem Treg', 'Naive Treg','Tregs', 'Mem CD8+','Naive CD8+','CD3+CD8+','NKT', 'NK']
 
     factors_activity = []
@@ -66,14 +66,14 @@ def plot_ligands(ax, factors, component_x, component_y, IL_treat):
     legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')] #only have IL2 and IL15 in the measured pSTAT data
 
-    for ii in range(int(factors.shape[0] / n_ligands)):
-        idx = range(ii * n_ligands, (ii + 1) * n_ligands)
+    for ii in range(int(factors.shape[0]/n_ligands)):
+        idx = range(ii*n_ligands, (ii + 1)*n_ligands)
         if ii == 0:
             legend = "full"
         else:
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=IL_treat, ax=ax, palette=cmap, s=100, legend=legend)
-        h, l = ax.get_legend_handles_labels()
+        h, _ = ax.get_legend_handles_labels()
         legend1 = ax.legend(handles=h, loc=2)
         ax.add_artist(legend1)
         legend2 = ax.legend(handles=legend_shape, loc=3)
