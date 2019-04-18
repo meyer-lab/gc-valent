@@ -117,10 +117,10 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X'] #'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']  # 'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
     for ii in range(len(factors[:, component_x - 1])):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = [colors[ii]], marker = markersCells[ii], label = cell_names[ii])
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
     if ax_pos == 1 or ax_pos == 1:
         ax.legend()
@@ -232,31 +232,34 @@ def import_samples_4_7():
 
     return unkVec, scales
 
+
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
 
+
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv')) # Every row in the data represents a specific cell
-    numpy_data = data.values[:, 1:] # returns data values in a numpy array
+    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv'))  # Every row in the data represents a specific cell
+    numpy_data = data.values[:, 1:]  # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
     return numpy_data, cell_names
+
 
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'),encoding ='latin1'))
-    ckineConc = data[1,2:14]
+    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'), encoding='latin1'))
+    ckineConc = data[1, 2:14]
     # 4 time points, 11 cell types, 12 concentrations
-    IL2_data = np.zeros((44,12))
-    IL15_data = np.zeros((44,12))
+    IL2_data = np.zeros((44, 12))
+    IL15_data = np.zeros((44, 12))
     cell_names = list()
     for i in range(11):
-        cell_names.append(data[12*i,1])
-        IL2_data[4*i:4*(i+1),:] = data[3+(12*i):7+(12*i),2:14]
-        IL15_data[4*i:4*(i+1),:] = data[7+(12*i):11+(12*i),2:14]
+        cell_names.append(data[12 * i, 1])
+        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14]
+        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14]
     return ckineConc, cell_names, IL2_data, IL15_data
