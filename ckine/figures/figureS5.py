@@ -2,13 +2,9 @@
 This creates Figure S5. CP decomposition of measured pSTAT data.
 """
 import string
-import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.lines import Line2D
-import os
-from os.path import join
 import numpy as np
-import pandas as pds
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, set_bounds, import_pstat
 from .figure3 import plot_R2X
@@ -42,7 +38,7 @@ def makeFigure():
 
     plot_cells(ax[2], factors_activ[0], 1, 2, cell_names, ax_pos=1)
 
-    plot_ligands(ax[3], factors_activ[2], 1, 2, ckineConc, ax_pos=2)
+    plot_ligands(ax[3], factors_activ[2], 1, 2, ckineConc)
     f.tight_layout()
 
     return f
@@ -61,7 +57,7 @@ def plot_timepoints(ax, factors):
     ax.set_title('Time')
     ax.legend()
 
-def plot_ligands(ax, factors, component_x, component_y, IL_treat, ax_pos):
+def plot_ligands(ax, factors, component_x, component_y, IL_treat):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*']
     n_ligands = len(IL_treat)
