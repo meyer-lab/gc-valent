@@ -17,7 +17,7 @@ def makeFigure():
     ax, f = getSetup((10, 7), (3, 3), mults=[3], multz={3: 2})
 
     # Blank out for the cartoon
-    ax[0].axis('off')
+    # ax[0].axis('off')
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
