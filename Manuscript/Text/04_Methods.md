@@ -14,11 +14,11 @@ The rate of change for free receptors and complexes were modeled through ordinar
 
 $$\delta C/\delta t=(k_{f}*L*R)-(k_{r}*C)$$ 
 
-In this example, $\delta C/\delta t$ is in units of number / cell * min, $L$ is in units of molarity, $R$ is in number / cell, $C$ is in number / cell, $k_f$ is in 1 / nM * min, and $k_r$ is in 1 / min. For our model, all of the free receptors and complexes were measured in units of number per cell and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of 1 / nM * min, rate constants for the forward dimerization of free receptor to complex had units of 1 / min * number per cell, and the dissociation of a complex into another complex and free receptor had units of 1 / min.
+In this example, $\delta C/\delta t$ is in units of $\mathrm{\frac{number}{cell * min}}$, $L$ is in units of concentration (nM), $R$ is in $\mathrm{\frac{number}{cell}}$, $C$ is in $\mathrm{\frac{number}{cell}}$, $k_f$ is in $\mathrm{\frac{1}{nM * min}}$, and $k_r$ is in $\mathrm{\frac{1}{min}}$. For our model, all of the free receptors and complexes were measured in units of $\mathrm{\frac{number}{cell}}$ and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of $\mathrm{\frac{1}{nM * min}}$, rate constants for the forward dimerization of free receptor to complex had units of $\mathrm{\frac{cell}{min * number}}$, and the dissociation of a complex into another complex and free receptor had units of $\mathrm{\frac{1}{min}}$.
 
 Type I cytokine signaling follows the JAK-STAT signaling pathway which is initiated when two JAK subunits come in contact with one another. JAK proteins are found on the intracellular regions of the γ~c~, IL-2Rβ, IL-4Rα, IL-7Rα, IL-9R, and IL-21Rα receptors; therefore all complexes which contained at least two of those receptors were deemed to be active species.
 
-We used CVODE to numerically solve our stiff system of ODEs [@hindmarsh2005sundials]. The inputs for our solver were the initial values of each receptor and complex, time, and all unknown rate parameters. To determine the initial values of each receptor and complex, we ran the model for a long time with no cytokine present, allowing the system to reach steady state. An tolerance of 1.5E-6 was used in solving our ODEs.
+We used CVODE to numerically solve our stiff system of ODEs [@hindmarsh2005sundials]. The inputs for our solver were the initial values of each receptor and complex, time, and all unknown rate parameters. To determine the initial values of each receptor and complex, we ran the model for a long time with no cytokine present, allowing the system to reach steady state. An tolerance of $1.5 * 10^{-6}$ 1.5E-6 was used in solving our ODEs.
 
 We wrote conservation of species and equilibrium unit tests to ensure that all species in our model behaved in a manner consistent with biological intuition. We also wrote unit tests to ensure the functionality and reproducibility of components in the full model.
 
@@ -29,7 +29,7 @@ All ligand-receptor binding processes had a forward rate constant of $k_{bnd}$ w
 
 
 +--------------------+------------------+--------------------------------------+
-| $K_D$              | Value            | Reference                            |
+| $K_d$              | Value            | Reference                            |
 +====================+==================+======================================+
 | IL-2                                                                         |
 +--------------------+------------------+--------------------------------------+
