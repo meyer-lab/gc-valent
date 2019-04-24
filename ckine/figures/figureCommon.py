@@ -39,7 +39,7 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     # Make grid
     gs1 = gridspec.GridSpec(*gridd)
-    
+
     # ax = []
 
     # Get list of axis objects

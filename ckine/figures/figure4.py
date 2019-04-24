@@ -32,6 +32,7 @@ def makeFigure():
 
     return f
 
+
 def cell_act(unkVec, cytokC, scale):
     """ Cytokine activity for all IL2 doses for single cell line. """
     pstat5 = pstat()
