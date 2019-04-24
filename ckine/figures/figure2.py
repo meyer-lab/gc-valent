@@ -22,10 +22,9 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec, scales = import_samples_4_7()
-    unkVec_2_15, scales_2_15 = import_samples_2_15()
+    unkVec_2_15, _ = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
-    
+
     kfwd_avg, kfwd_std = kfwd_info(unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
@@ -34,9 +33,9 @@ def makeFigure():
     rexpr_violin(ax[5], unkVec_4_7)
     scales_violin(ax[6], scales_4_7)
     surf_gc(ax[7], 100., unkVec_4_7)
-    unkVec_noActiveEndo = unkVec.copy()
+    unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
+    plot_pretreat(ax[8], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
 
     relativeGC(ax[3], unkVec_2_15, unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
@@ -86,9 +85,9 @@ def pstat_plot(ax, unkVec, scales):
     cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900.  # 14.9 kDa according to sigma aldrich
     cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400.  # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
-    path = os.path.dirname(os.path.abspath(__file__))
-    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
-    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
+    # path = os.path.dirname(os.path.abspath(__file__))
+    dataIL4 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
+    dataIL7 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
     IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
     IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
 
@@ -109,6 +108,7 @@ def pstat_plot(ax, unkVec, scales):
     ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
     ax.legend()
 
+
 def traf_violin(ax, unkVec):
     """ Create violin plot of trafficking parameters. """
     unkVec = unkVec.transpose()
@@ -119,6 +119,7 @@ def traf_violin(ax, unkVec):
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Trafficking parameters")
+
 
 def rexpr_violin(ax, unkVec):
     """ Create violin plot of receptor expression rates. """
@@ -133,6 +134,7 @@ def rexpr_violin(ax, unkVec):
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     a.set_title("Receptor expression rates")
 
+
 def scales_violin(ax, scales):
     """ Create violin plot of activity scaling constants. """
     scales = pd.DataFrame(scales)
@@ -141,6 +143,7 @@ def scales_violin(ax, scales):
     a = sns.violinplot(data=scales, ax=ax, linewidth=0.5)
     a.set_ylabel("value")
     a.set_title("pSTAT scaling constants")
+
 
 def pretreat_calc(unkVec, scales, pre_conc):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
@@ -277,6 +280,7 @@ def data_path():
     data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
     return (dataIL4, dataIL7, data_pretreat)
 
+
 def relativeGC(ax, unkVec2, unkVec4):
     """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev,
     k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
@@ -299,4 +303,3 @@ def relativeGC(ax, unkVec2, unkVec4):
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
-

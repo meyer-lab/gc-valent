@@ -2,11 +2,9 @@
 This creates Figure 4.
 """
 import string
-import pandas as pd
 import numpy as np
-import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, plot_conf_int, import_Rexpr
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int, import_Rexpr
 from ..plot_model_prediction import pstat
 from ..model import runCkineUP, getTotalActiveSpecies
 
@@ -21,10 +19,9 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     data_Visterra, cell_names_Visterra = import_Rexpr()
-    unkVec_2_15, scales_2_15 = import_samples_2_15()
-    unkVec_4_7, scales_4_7 = import_samples_4_7()
+    unkVec_2_15, _ = import_samples_2_15()
 
-    #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
+    # IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
         if i == (data_Visterra.shape[0] - 1):  # only plot the legend for the last entry
             IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
