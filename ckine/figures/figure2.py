@@ -14,10 +14,10 @@ from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpec
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 3), mults=[3], multz={3: 2})
+    ax, f = getSetup((10, 7), (3, 3))
 
     # Blank out for the cartoon
-    # ax[0].axis('off')
+    ax[0].axis('off')
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -28,15 +28,15 @@ def makeFigure():
     
     kfwd_avg, kfwd_std = kfwd_info(unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_plot(ax[0], unkVec_4_7, scales_4_7)
-    plot_pretreat(ax[1], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
-    traf_violin(ax[2], unkVec_4_7)
-    rexpr_violin(ax[4], unkVec_4_7)
-    scales_violin(ax[5], scales_4_7)
-    surf_gc(ax[6], 100., unkVec_4_7)
+    pstat_plot(ax[1], unkVec_4_7, scales_4_7)
+    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
+    traf_violin(ax[4], unkVec_4_7)
+    rexpr_violin(ax[5], unkVec_4_7)
+    scales_violin(ax[6], scales_4_7)
+    surf_gc(ax[7], 100., unkVec_4_7)
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[7], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
+    plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
 
     relativeGC(ax[3], unkVec_2_15, unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
