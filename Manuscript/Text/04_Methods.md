@@ -12,7 +12,7 @@ Our model accounted for endosomal trafficking, allowing all species to be endocy
 
 The rate of change for free receptors and complexes were modeled through ordinary differential equations (ODEs). There were 28 ODEs that represented the rate of change for free receptors and complexes on the cell surface, 28 ODEs that represented the rate of change for free receptors and complexes in the endosome, and 6 ODEs that represented the rate of change of ligand concentration. For a complex ($C$) that forms through the binding of ligand ($L$) to free receptor ($R$) with a forward reaction rate ($k_f$) and a reverse reaction rate ($k_r$), the ODE would be:
 
-$$dC/dt=(k_{f}*L*R)-(k_{r}*C)$$ 
+$$\delta C/\delta t=(k_{f}*L*R)-(k_{r}*C)$$ 
 
 In this example, $\delta C/\delta t$ is in units of number / cell * min, $L$ is in units of molarity, $R$ is in number / cell, $C$ is in number / cell, $k_f$ is in 1 / nM * min, and $k_r$ is in 1 / min. For our model, all of the free receptors and complexes were measured in units of number per cell and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of 1 / nM * min, rate constants for the forward dimerization of free receptor to complex had units of 1 / min * number per cell, and the dissociation of a complex into another complex and free receptor had units of 1 / min.
 
