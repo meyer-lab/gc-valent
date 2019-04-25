@@ -48,13 +48,6 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     else:
         ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
             gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]
-        """ax = []
-        for x in range(gridd[0] * gridd[1]):
-            if x not in empts:
-                if x not in mults:
-                    f.add_subplot(gs1[x])
-                else:
-                    f.add_subplot(gs1[x:x + multz[x]])"""
 
     return (ax, f)
 
