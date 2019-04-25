@@ -33,8 +33,8 @@ def commonTraf():
 
 def find_gc(endo, kRec, sortF, kDeg):
     """ Calculates gc expression rate for YT-1 cells using data file and receptor_expression function. """
-    data = load_data("data/YT_1_receptor_levels.csv")  # data[2] represents the gc level
-    return receptor_expression(data[2], endo, kRec, sortF, kDeg)
+    data = load_data("data/YT_1_receptor_levels.csv")  # data = [['YT-1', -1, -1, gc, -1]] where data[0, 3] represents the gc level
+    return receptor_expression(data[0, 3], endo, kRec, sortF, kDeg)
 
 
 class IL2Rb_trafficking:
@@ -131,11 +131,10 @@ class build_model:
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
             Rexpr_2Ra_2Rb = pm.Lognormal('Rexpr_2Ra_2Rb', sd=0.5, shape=2)  # Expression: IL2Ra, IL2Rb, gc
-            Rexpr_gc = T.ones(1, dtype=np.float64)
             Rexpr_15Ra = pm.Lognormal('Rexpr_15Ra', sd=0.5, shape=1)  # Expression: IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates * 0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution

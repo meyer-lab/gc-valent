@@ -14,6 +14,6 @@ if __name__ == "__main__":  # only go into this loop if you're running fit.py di
         from ckine.fit_others import build_model
         filename = "IL4-7_model_results"
 
-    M = build_model(traf=False)
+    M = build_model(traf=True)
     trace = sampling(M.M)
     pm.backends.text.dump(filename, trace)  # instead of pickling data we dump it into file that can be accessed by read_fit_data.py
