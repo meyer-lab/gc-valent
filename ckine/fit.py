@@ -31,10 +31,13 @@ def commonTraf():
     sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
     return kfwd, endo, activeEndo, kRec, kDeg, sortF
 
-def find_gc(endo, kRec, sortF, kDeg):
-    """ Calculates gc expression rate for YT-1 cells using data file and receptor_expression function. """
+def find_gc(traf=True, endo=0, kRec=0, sortF=0, kDeg=0):
+    """ Calculates gc expression rate for YT-1 cells using data file and receptor_expression function. If 'traf' is false then we just return the receptor abundance level. """
     data = load_data("data/YT_1_receptor_levels.csv")  # data = [['YT-1', -1, -1, gc, -1]] where data[0, 3] represents the gc level
-    return receptor_expression(data[0, 3], endo, kRec, sortF, kDeg)
+    if traf:
+        return receptor_expression(data[0, 3], endo, kRec, sortF, kDeg)
+    else:
+        return data[0, 3]
 
 
 class IL2Rb_trafficking:
@@ -116,8 +119,6 @@ class build_model:
         with M:
             if self.traf:
                 kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
-                gc_rate = find_gc(endo, kRec, sortF, kDeg)
-                Rexpr_gc = T.ones(1, dtype=np.float64) * gc_rate
             else:
                 kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
                 # Assigning trafficking to zero to fit without trafficking
@@ -126,8 +127,9 @@ class build_model:
                 kRec = T.zeros(1, dtype=np.float64)
                 kDeg = T.zeros(1, dtype=np.float64)
                 sortF = T.ones(1, dtype=np.float64) * 0.5
-                Rexpr_gc = pm.Lognormal('GCexpr', sd=0.5, shape=1)
 
+            gc_value = find_gc(self.traf, endo, kRec, sortF, kDeg)  # find rate of gc expression or gc abundance (depending on traf)
+            Rexpr_gc = T.ones(1, dtype=np.float64) * gc_value
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
             Rexpr_2Ra_2Rb = pm.Lognormal('Rexpr_2Ra_2Rb', sd=0.5, shape=2)  # Expression: IL2Ra, IL2Rb, gc

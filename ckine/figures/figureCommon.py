@@ -173,12 +173,14 @@ def import_samples_2_15(Traf=True, ret_trace=False):
     if Traf:
         trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     else:
+        print("obtaining trace from IL2_15_no_traf")
         trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:
         return trace
 
+    print("trace", trace)
     scales = trace.get_values('scales')
     num = scales.size
     kfwd = trace.get_values('kfwd')
