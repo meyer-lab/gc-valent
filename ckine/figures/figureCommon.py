@@ -173,18 +173,18 @@ def import_samples_2_15(Traf=True, ret_trace=False):
     if Traf:
         trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     else:
-        print("obtaining trace from IL2_15_no_traf")
         trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:
         return trace
 
-    print("trace", trace)
     scales = trace.get_values('scales')
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
+    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
+    Rexpr_15 = trace.get_values('Rexpr_15Ra')
 
     if Traf:
         endo = trace.get_values('endo')
@@ -192,23 +192,19 @@ def import_samples_2_15(Traf=True, ret_trace=False):
         sortF = trace.get_values('sortF')
         kRec = trace.get_values('kRec')
         kDeg = trace.get_values('kDeg')
-        Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
-        Rexpr_gc = find_gc(endo, kRec, sortF, kDeg)
-        Rexpr_15 = trace.get_values('Rexpr_15Ra')
-        exprRates = np.concatenate((Rexpr_2, Rexpr_gc, Rexpr_15), axis=1)
+        Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
     else:
         endo = np.zeros((num))
         activeEndo = np.zeros((num))
         sortF = np.zeros((num))
         kRec = np.zeros((num))
         kDeg = np.zeros((num))
-        exprRates = trace.get_values('IL2Raexpr')
-
+        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
     return unkVec, scales
 
