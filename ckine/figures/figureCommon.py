@@ -12,7 +12,7 @@ import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from ..model import nParams
-from ..fit import build_model as build_model_2_15, find_gc
+from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
 from ..tensor_generation import prepare_tensor
 
@@ -40,11 +40,9 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     # Make grid
     gs1 = gridspec.GridSpec(*gridd)
 
-    # ax = []
-
     # Get list of axis objects
     if mults is None:
-        ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1]) if x not in empts]
+        ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1])]
     else:
         ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
             gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]
@@ -82,18 +80,12 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
         else:
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
-        h, _ = ax.get_legend_handles_labels()
-        if ax_pos == 5 and fig3:
+        if ax_pos in (5, 2):
+            h, l = ax.get_legend_handles_labels()
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)
             legend2 = ax.legend(handles=legend_shape, loc=3)
             ax.add_artist(legend2)
-        elif ax_pos == 2 and not fig3:
-            legend1 = ax.legend(handles=h, loc=2)
-            ax.add_artist(legend1)
-            legend2 = ax.legend(handles=legend_shape, loc=3)
-            ax.add_artist(legend2)
-
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 
@@ -119,12 +111,12 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']  # 'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X'] #'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
     for ii in range(len(factors[:, component_x - 1])):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = [colors[ii]], marker = markersCells[ii], label = cell_names[ii])
 
-    if ax_pos == 1 or ax_pos == 2:
+    if ax_pos == 1:
         ax.legend()
 
     elif ax_pos == 4 and fig3:
@@ -163,48 +155,42 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def import_samples_2_15(Traf=True, ret_trace=False):
+def import_samples_2_15(Fig1=True):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    bmodel = build_model_2_15(traf=Traf)
+    bmodel = build_model_2_15()
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
 
-    if Traf:
+    if Fig1:
         trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     else:
         trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
 
     scales = trace.get_values('scales')
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
-    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
-    Rexpr_15 = trace.get_values('Rexpr_15Ra')
+    exprRates = trace.get_values('IL2Raexpr')
 
-    if Traf:
+    if Fig1:
         endo = trace.get_values('endo')
         activeEndo = trace.get_values('activeEndo')
         sortF = trace.get_values('sortF')
         kRec = trace.get_values('kRec')
         kDeg = trace.get_values('kDeg')
-        Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
     else:
         endo = np.zeros((num))
         activeEndo = np.zeros((num))
         sortF = np.zeros((num))
         kRec = np.zeros((num))
         kDeg = np.zeros((num))
-        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1.,
+                                  1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1],
+                                  exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
 
     return unkVec, scales
 
@@ -238,33 +224,59 @@ def import_samples_4_7():
     return unkVec, scales
 
 
+def load_cells():
+    """ Loads CSV file that gives Rexpr levels for different cell types. """
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
+    data = pds.read_csv(expr_filename)  # Every column in the data represents a specific cell
+    cell_names = data.columns.values.tolist()[1::]  # returns the cell names from the pandas dataframe (which came from csv)
+    return data, cell_names
+
+
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
 
-
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv'))  # Every row in the data represents a specific cell
-    numpy_data = data.values[:, 1:]  # returns data values in a numpy array
+    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv')) # Every row in the data represents a specific cell
+    numpy_data = data.values[:, 1:] # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
     return numpy_data, cell_names
 
+def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
+    """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
+    rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
+    return rec_ex
 
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'), encoding='latin1'))
-    ckineConc = data[1, 2:14]
+    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'),encoding ='latin1'))
+    ckineConc = data[1,2:14]
     # 4 time points, 11 cell types, 12 concentrations
-    IL2_data = np.zeros((44, 12))
-    IL15_data = np.zeros((44, 12))
+    IL2_data = np.zeros((44,12))
+    IL15_data = np.zeros((44,12))
     cell_names = list()
     for i in range(11):
-        cell_names.append(data[12 * i, 1])
-        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14]
-        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14]
+        cell_names.append(data[12*i,1])
+        if i <= 4:
+            zero_treatment = data[9+(12*i),13]
+        else:
+            zero_treatment = data[5+(12*i),13]
+        IL2_data[4*i:4*(i+1),:] = data[3+(12*i):7+(12*i),2:14] - zero_treatment
+        IL15_data[4*i:4*(i+1),:] = data[7+(12*i):11+(12*i),2:14] - zero_treatment
+
     return ckineConc, cell_names, IL2_data, IL15_data
+
+def plot_scaled_pstat(ax, cytokC, pstat):
+    tps = np.array([0.5, 1., 2., 4.])
+    avg_activity = np.sum(pstat)/tps.size
+    # plot pstat5 data for each time point
+    ax.scatter(cytokC, pstat[3,:]/avg_activity, c="indigo", s=2) #0.5 hr
+    ax.scatter(cytokC, pstat[2,:]/avg_activity, c="teal", s=2) #1 hr
+    ax.scatter(cytokC, pstat[1,:]/avg_activity, c="forestgreen", s=2) #2 hr
+    ax.scatter(cytokC, pstat[0,:]/avg_activity, c="darkred", s=2) #4 hr
