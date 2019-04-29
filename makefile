@@ -84,8 +84,7 @@ testcover: venv ckine/ckine.so
 	. venv/bin/activate; pytest -n 8 --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
-	valgrind --tool=callgrind ckine/cppcheck
-	gprof2dot -f callgrind -n 2.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
+	valgrind ckine/cppcheck
 
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
