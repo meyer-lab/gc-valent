@@ -36,7 +36,7 @@ def makeFigure():
     surf_gc(ax[7], 100., unkVec_4_7[:, subsample])
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
+    plot_pretreat(ax[8], unkVec_noActiveEndo[:, subsample], scales_4_7[subsample], "Inhibition without active endocytosis")
 
     relativeGC(ax[3], unkVec_2_15, unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
