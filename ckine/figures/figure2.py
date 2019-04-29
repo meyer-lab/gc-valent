@@ -24,7 +24,7 @@ def makeFigure():
 
     unkVec_2_15, _ = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
-    subsample = np.random.choice(np.arange(unkVec.shape[1]), size=100, replace=False)
+    subsample = np.random.choice(np.arange(unkVec_4_7.shape[1]), size=100, replace=False)
 
     kfwd_avg, kfwd_std = kfwd_info(unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
