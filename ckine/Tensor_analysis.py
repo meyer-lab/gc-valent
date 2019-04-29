@@ -16,16 +16,17 @@ subtract = False
 
 def z_score_values(A, cell_dim):
     ''' Function that takes in the values tensor and z-scores it. '''
-    convAxes = [i for i in range(A.ndim) if i != cell_dim]
-    sigma = np.std(A, axis=convAxes)
-    mu = tl.mean(A, axis=convAxes)
-    if subtract is False:
-        mu[:] = 0.0
+    assert cell_dim < A.ndim
+    convAxes = tuple([i for i in range(A.ndim) if i != cell_dim])
+    convIDX = [None] * A.ndim
+    convIDX[cell_dim] = slice(None)
 
-    if cell_dim == 0:
-        return (A - mu[:, None, None]) / sigma[:, None, None]
-    elif cell_dim == 1:
-        return (A - mu[None, :, None]) / sigma[None, :, None]
+    sigma = np.std(A, axis=convAxes)
+    if subtract is False:
+        return A / sigma[tuple(convIDX)]
+
+    mu = tl.mean(A, axis=convAxes)
+    return (A - mu[tuple(convIDX)]) / sigma[tuple(convIDX)]
 
 def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
