@@ -24,15 +24,16 @@ def makeFigure():
 
     unkVec_2_15, _ = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
+    subsample = np.random.choice(np.arange(unkVec.shape[1]), size=100, replace=False)
 
     kfwd_avg, kfwd_std = kfwd_info(unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_plot(ax[1], unkVec_4_7, scales_4_7)
-    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
+    pstat_plot(ax[1], unkVec_4_7[:, subsample], scales_4_7[subsample])
+    plot_pretreat(ax[2], unkVec_4_7[:, subsample], scales_4_7[subsample], "Cross-talk pSTAT inhibition")
     traf_violin(ax[4], unkVec_4_7)
     rexpr_violin(ax[5], unkVec_4_7)
     scales_violin(ax[6], scales_4_7)
-    surf_gc(ax[7], 100., unkVec_4_7)
+    surf_gc(ax[7], 100., unkVec_4_7[:, subsample])
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
     plot_pretreat(ax[8], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
