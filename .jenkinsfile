@@ -12,23 +12,7 @@ pipeline {
         stage('Doc') { steps { sh 'make doc' } }
       }
     }
-    stage('Build Figures') {
-      parallel {
-        stage('Build Fig 1') {
-          steps { sh 'make ./Manuscript/Figures/figure1.svg' }
-        }
-        stage('Build Fig 2') {
-          steps { sh 'make ./Manuscript/Figures/figure2.svg' }
-        }
-        stage('Build Fig 3') {
-          steps { sh 'make ./Manuscript/Figures/figure3.svg' }
-        }
-        stage('Build Fig 4') {
-          steps { sh 'make ./Manuscript/Figures/figure4.svg' }
-        }
-      }
-    }
-    stage('Finish Build') { steps { sh 'make' } }
+    stage('Build') { steps { sh 'make -j 8' } }
     stage('Report') {
       steps {
         archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
