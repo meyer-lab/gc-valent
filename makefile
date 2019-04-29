@@ -89,8 +89,8 @@ testcpp: ckine/cppcheck
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
 	
-pylint.log: pylint: .pylintrc
+pylint.log: .pylintrc
 	(pylint3 -j 4 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
-html/index.html: doc:
+html/index.html:
 	doxygen Doxyfile
