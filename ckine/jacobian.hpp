@@ -15,7 +15,7 @@ void fullJacobian(const double * const yv, const ratesS<double> * const r, T &ou
 	stack.new_recording();
 
 	// Get the data in the right form
-	fullModel(y.data(), &r, dydt.data());
+	fullModel(y.data(), r, dydt.data());
 
 	stack.independent(&y[0], Nspecies);
 	stack.dependent(&dydt[0], Nspecies);
