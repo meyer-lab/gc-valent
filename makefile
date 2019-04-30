@@ -81,7 +81,7 @@ test: venv ckine/ckine.so
 	. venv/bin/activate; pytest
 
 testcover: venv ckine/ckine.so
-	. venv/bin/activate; pytest -n 3 --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate; pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
 	valgrind ckine/cppcheck
@@ -90,7 +90,7 @@ cppcheck: ckine/cppcheck
 	ckine/cppcheck
 	
 pylint.log: .pylintrc
-	(pylint3 -j 4 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
+	(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
 doc:
 	doxygen Doxyfile
