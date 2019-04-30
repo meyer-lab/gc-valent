@@ -8,7 +8,7 @@ flist = 1 2 3 4 5 S1 S2 S3 S4 S5 B1 B2 B3 B4 B5
 
 .PHONY: clean test all testprofile testcover doc testcpp autopep
 
-all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx html/index.html pylint.log
+all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -92,5 +92,5 @@ cppcheck: ckine/cppcheck
 pylint.log: .pylintrc
 	(pylint3 -j 4 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
-html/index.html:
+doc:
 	doxygen Doxyfile
