@@ -20,14 +20,13 @@ def makeFigure():
 
     data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, _ = import_samples_2_15()
-    subsample = np.random.choice(np.arange(unkVec_2_15.shape[1]), size=100, replace=False)
 
     # IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
         if i == (data_Visterra.shape[0] - 1):  # only plot the legend for the last entry
-            IL2_dose_response(ax[i], unkVec_2_15[:, subsample], cell_names_Visterra[i], data_Visterra[i], legend=True)
+            IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
         else:
-            IL2_dose_response(ax[i], unkVec_2_15[:, subsample], cell_names_Visterra[i], data_Visterra[i])
+            IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 

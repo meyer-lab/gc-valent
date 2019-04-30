@@ -23,12 +23,10 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_2_15()
-    subsample = np.random.choice(np.arange(unkVec.shape[1]), size=100, replace=False)
-    
     kfwd_avg, kfwd_std = kfwd_info(unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_act(ax[1], unkVec[:, subsample], scales[subsample])
-    surf_perc(ax[2:4], 'IL-2Rβ', unkVec[:, subsample])
+    pstat_act(ax[1], unkVec, scales)
+    surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
     violinPlots(ax[5:8], unkVec, scales)
     rateComp(ax[4], unkVec)
 
