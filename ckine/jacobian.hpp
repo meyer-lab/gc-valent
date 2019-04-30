@@ -1,3 +1,4 @@
+#include <adept.h>
 #include "reaction.hpp"
 
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
@@ -8,7 +9,7 @@ void fullJacobian(const double * const y, const ratesS<double> * const r, T &out
 	
 	adept::Stack stack;
 
-	array<adouble, Nspecies> y, dydt;
+	array<adept::adouble, Nspecies> y, dydt;
 
 	adept::set_values(&y[0], Nspecies, yv.data());
 
