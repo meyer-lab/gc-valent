@@ -16,35 +16,26 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
     
-    plot_dResp_2Ra(1.0, ax[0]);
-    ax[0].set_title("CD25+")
-    plot_dResp_2Ra(0.1, ax[1]);
-    ax[1].set_title("10% CD25+")
-    plot_dResp_2Ra(0.0, ax[2]);
-    ax[2].set_title("CD25-");
-    ax[0].legend(title="IL2Ra Kd vs wt");
+    for i in range(3):
+        plot_dResp_2Ra(CD25[i], ax[i])
+        ax[i].set_title(titles[i])
+        plot_dResp_2Rb(CD25[i], ax[3+i])
+        ax[3+i].set_title(titles[i])
+        plot_dResp_2Rb_HIGH(CD25[i], ax[6+i])
+        ax[6+i].set_title(titles[i])
     
-    plot_dResp_2Rb(1.0, ax[3]);
-    ax[3].set_title("CD25+")
-    plot_dResp_2Rb(0.1, ax[4]);
-    ax[4].set_title("10% CD25+")
-    plot_dResp_2Rb(0.0, ax[5]);
-    ax[5].set_title("CD25-");
-    ax[3].legend(title="IL2Rb Kd vs wt");
-    
-    plot_dResp_2Rb_HIGH(1.0, ax[6]);
-    ax[6].set_title("CD25+")
-    plot_dResp_2Rb_HIGH(0.1, ax[7]);
-    ax[7].set_title("10% CD25+")
-    plot_dResp_2Rb_HIGH(0.0, ax[8]);
-    ax[8].set_title("CD25-");
-    ax[6].legend(title="IL2Rb Kd vs wt");
+    ax[0].legend(title="IL2Ra Kd vs wt")
+    ax[3].legend(title="IL2Rb Kd vs wt")
+    ax[6].legend(title="IL2Rb Kd vs wt")
 
     f.tight_layout()
 
     return f
 
 changesAff = np.logspace(-2, 2, num=7)
+CD25 = [1.0, 0.1, 0.0]
+titles = ["CD25+", "10% CD25+", "CD25-"]
+
 
 def dRespon_loc(input, CD25): # same as dRespon except with different ILs range
         """ Calculate an IL2 dose response curve. """
