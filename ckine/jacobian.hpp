@@ -10,7 +10,7 @@ void fullJacobian(const double * const yv, const ratesS<double> * const r, T &ou
 
 	std::array<adept::adouble, Nspecies> y, dydt;
 
-	adept::set_values(&y[0], Nspecies, yv.data());
+	adept::set_values(&y[0], Nspecies, yv);
 
 	stack.new_recording();
 
