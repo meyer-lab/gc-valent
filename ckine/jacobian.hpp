@@ -166,77 +166,20 @@ void jacobian(const double * const y, const bindingRates<double> * const r, T &o
 template <class T>
 void fullJacobian(const double * const y, const ratesS<double> * const r, T &out) {
 	
-	// unless otherwise specified, assume all partial derivatives are 0
-	out.setConstant(0.0);
+	adept::Stack stack;
 
-	// Do surface jacobian
-	Eigen::Block<T> bloc = out.topLeftCorner(halfL, halfL);
-	jacobian(y, &r->surface, bloc, r->ILs.data());
+	array<adouble, Nspecies> y, dydt;
 
-	// Do endo jacobian, different ILs here
-	Eigen::Block<T> blocc = out.block(halfL, halfL, halfL, halfL);
-	jacobian(y + halfL, &r->endosome, blocc, y + halfL*2);
+	adept::set_values(&y[0], Nspecies, yv.data());
 
-	// Implement trafficking
-	double endo = 0;
-	double deg = 0;
-	double rec = 0;
-	for (size_t ii = 0; ii < halfL; ii++) {
-		if (activeV[ii]) {
-			endo = r->endo + r->activeEndo;
-			deg = r->kDeg;
-			rec = 0.0;
-		} else {
-			endo = r->endo;
-			deg = r->kDeg*r->sortF;
-			rec = r->kRec*(1.0-r->sortF);
-		}
+	stack.new_recording();
 
-		out(ii, ii) = out(ii, ii) - endo; // Endocytosis
-		out(ii + halfL, ii + halfL) -= deg + rec; // Degradation
-		out(ii + halfL, ii) += endo/internalFrac;
-		out(ii, ii + halfL) += rec*internalFrac; // Recycling
-	}
+	// Get the data in the right form
+	fullModel(y.data(), &rattes, dydt.data());
 
-	// Ligand degradation
-	for (size_t ii = (halfL*2); ii < ((halfL*2)+6); ii++)
-		out(ii, ii) -= r->kDeg;
+	stack.independent(&y[0], Nspecies);
+	stack.dependent(&dydt[0], Nspecies);
 
-	// Ligand binding
-	// Derivative is w.r.t. second number
-	const double eIL2 = y[56] / internalV;
-	out(56, 56) -= kfbnd * (y[halfL] + y[halfL+1]) / internalV;
-	out(halfL + 0, 56) = -kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(56, halfL) = -kfbnd * eIL2; // IL2 binding to IL2Ra
-	out(halfL + 1, 56) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(56, halfL+1) = -kfbnd * eIL2; // IL2 binding to IL2Rb
-	out(halfL + 3, 56) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(56, halfL+3) =  r->endosome.k1rev / internalV;
-	out(halfL + 4, 56) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(56, halfL+4) = r->endosome.k2rev / internalV;
-
-	const double eIL15 = y[57] / internalV;
-	out(57, 57) -= kfbnd * (y[halfL+1] + y[halfL + 9]) / internalV;
-	out(halfL + 1, 57) = -kfbnd * y[halfL + 1]; // IL15 binding to IL2Rb
-	out(57, halfL+1) = -kfbnd * eIL15; // IL15 binding to IL2Rb
-	out(halfL + 9, 57) = -kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(57, halfL+9) = -kfbnd * eIL15; // IL15 binding to IL15Ra
-	out(halfL + 10, 57) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(halfL + 11, 57) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
-	out(57, halfL+10) = r->endosome.k13rev / internalV;
-	out(57, halfL+11) = r->endosome.k14rev / internalV;
-
-	auto simpleCkine = [&](const size_t ij, const size_t ix, const double revRate) {
-		const double eIL = y[ix] / internalV;
-		out(ix, ix) -= kfbnd * y[halfL + ij] / internalV;
-		out(halfL + ij, ix) = -kfbnd * y[halfL + ij];
-		out(ix, halfL + ij) = -kfbnd * eIL;
-		out(halfL + ij + 1, ix) =  kfbnd * y[halfL + ij];
-		out(ix, halfL + ij + 1) = revRate / internalV;
-	};
-
-	simpleCkine(16, 58, r->endosome.k25rev); // IL7
-	simpleCkine(19, 59, r->endosome.k29rev); // IL9
-	simpleCkine(22, 60, r->endosome.k32rev); // IL4
-	simpleCkine(25, 61, r->endosome.k34rev); // IL21
+	Eigen::Matrix<double, Nspecies, Nspecies> jac_Auto, jac_Ana;
+	stack.jacobian(T.data());
 }
