@@ -21,5 +21,5 @@ void fullJacobian(const double * const yv, const ratesS<double> * const r, T &ou
 	stack.dependent(&dydt[0], Nspecies);
 
 	Eigen::Matrix<double, Nspecies, Nspecies> jac_Auto, jac_Ana;
-	stack.jacobian(T.data());
+	stack.jacobian(out.data());
 }
