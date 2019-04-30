@@ -6,6 +6,7 @@ pipeline {
   }
   stages {
     stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Venv') { steps { sh 'make venv' } }
     stage('Run') {
       parallel {
         stage('Test C++') { steps { sh 'make testcpp' } }
