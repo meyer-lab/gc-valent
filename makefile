@@ -84,7 +84,7 @@ testcover: venv ckine/ckine.so
 	. venv/bin/activate; pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
-	valgrind ckine/cppcheck
+	valgrind --leak-check=full ckine/cppcheck
 
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
