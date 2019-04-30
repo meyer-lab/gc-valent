@@ -5,18 +5,17 @@ typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 
 
 template <class T>
-void fullJacobian(const double * const y, const ratesS<double> * const r, T &out) {
-	
+void fullJacobian(const double * const yv, const ratesS<double> * const r, T &out) {
 	adept::Stack stack;
 
-	array<adept::adouble, Nspecies> y, dydt;
+	std::array<adept::adouble, Nspecies> y, dydt;
 
 	adept::set_values(&y[0], Nspecies, yv.data());
 
 	stack.new_recording();
 
 	// Get the data in the right form
-	fullModel(y.data(), &rattes, dydt.data());
+	fullModel(y.data(), &r, dydt.data());
 
 	stack.independent(&y[0], Nspecies);
 	stack.dependent(&dydt[0], Nspecies);
