@@ -6,6 +6,7 @@ pipeline {
       parallel {
         stage('Test C++') { steps { sh 'make testcpp' } }
         stage('Test') { steps { sh 'make testcover' } }
+        stage('Doc') { steps { sh 'make doc' } }
       }
     }
     stage('Build') { steps { sh 'make -j 8' } }
