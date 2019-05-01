@@ -149,7 +149,9 @@ protected:
 		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 
 		// Check sensitivities reproducibility
-		CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
+		for (size_t ii = 0; ii < soutput.size(); ii++) {
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Pretreat sensitivity at position ") + std::to_string(ii), soutput[ii], soutput2[ii]);
+		}
 	}
 };
 
