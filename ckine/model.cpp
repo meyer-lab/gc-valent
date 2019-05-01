@@ -311,7 +311,7 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 	Eigen::Matrix<double, Nspecies, Nspecies> jac;
 
 	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac);
+	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
 
 	yBdotv = -yBv.transpose()*jac;
 
@@ -329,7 +329,7 @@ int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data,
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
 	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac);
+	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
 
 	jac = -jac;
 	jac.transposeInPlace();
@@ -412,7 +412,7 @@ int Jac(double t, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
 	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac);
+	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
 
 	return 0;
 }
