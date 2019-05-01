@@ -18,6 +18,7 @@ pipeline {
         stage('Test') {
           steps {
             sh 'make testcover'
+            junit allowEmptyResults: true, testResults: 'junit.xml'
             cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
           }
         }
@@ -37,11 +38,6 @@ pipeline {
           }
         }
       }
-    }
-  }
-  post {
-    always {
-      xunit thresholds: [failed(failureThreshold: '2')], tools: [CppUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'testResults.xml', skipNoTestFiles: false, stopProcessingIfError: true), JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit.xml', skipNoTestFiles: false, stopProcessingIfError: true)]
     }
   }
 }
