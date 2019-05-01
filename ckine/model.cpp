@@ -83,7 +83,6 @@ public:
 	const double *preL;
 
 	void commonSetup(vector<double> paramsIn, const double preTin, const double * const preLin) {
-		stack.deactivate();
 		tret = 0.0;
 		params = paramsIn;
 		preT = preTin;
@@ -461,26 +460,24 @@ extern "C" int runCkine (const double * const tps, const size_t ntps, double * c
 	return 0;
 }
 
-x0JacM xNotp (vector<double> &params) {
+x0JacM xNotp (vector<double> &params, adept::Stack *stack) {
 	size_t Np = params.size();
-
-	adept::Stack stack;
 
 	vector<adouble> X(Np);
 	adept::set_values(&X[0], Np, params.data());
 
-	stack.new_recording();
+	stack->new_recording();
 
 	ratesS<adouble> rattes = ratesS<adouble>(X);
 
 	// Get the data in the right form
 	std::array<adouble, Nspecies> outAD = solveAutocrine(&rattes);
 
-	stack.independent(&X[0], Np);
-	stack.dependent(&outAD[0], Nspecies);
+	stack->independent(&X[0], Np);
+	stack->dependent(&outAD[0], Nspecies);
 
 	x0JacM gradZV(Nspecies, Np);
-	stack.jacobian(gradZV.data());
+	stack->jacobian(gradZV.data());
 
 	return gradZV;
 }
@@ -513,7 +510,7 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 
 	sMem.backward(tps[ntps-1] + preT);
 
-	x0JacM x0p = xNotp(sMem.params);
+	x0JacM x0p = xNotp(sMem.params, &sMem.stack);
 
 	// Get sensitivities
 	for (int bitps = ntps - 1; bitps >= 0; bitps--) {
