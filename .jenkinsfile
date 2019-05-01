@@ -13,12 +13,13 @@ pipeline {
           steps {
             sh 'make testcpp'
             archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
+			junit healthScaleFactor: 100.0, testResults: 'testResults.xml'
           }
         }
         stage('Test') {
           steps {
             sh 'make testcover'
-            junit allowEmptyResults: true, testResults: 'junit.xml'
+            junit testResults: 'junit.xml'
             cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
           }
         }
