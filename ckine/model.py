@@ -119,7 +119,7 @@ def runCkineU_IL2(tps, rxntfr):
     return (yOut, retVal)
 
 
-def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
+def runIL2simple(input, IL, recp, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
@@ -130,9 +130,9 @@ def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     k4rev = 8.6677
     k5rev = 0.1233
     k11rev = 63.0 * k5rev / 1.5 * input[1]
-    IL2Ra = 3.8704 * CD25
-    IL2Rb = 0.734
-    gc = 1.7147
+    IL2Ra = recp[0] * 0.0012448226
+    IL2Rb = recp[1] * 0.0012448226
+    gc = recp[2] * 0.0012448226
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
                        IL2Ra, IL2Rb, gc,
