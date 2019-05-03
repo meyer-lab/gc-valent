@@ -22,7 +22,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec, scales = import_samples_2_15(N=50)  # use these for simulations
+    unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))

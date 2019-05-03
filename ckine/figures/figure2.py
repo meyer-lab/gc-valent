@@ -24,7 +24,7 @@ def makeFigure():
 
     full_unkVec_2_15, _ = import_samples_2_15()
     full_unkVec_4_7, full_scales_4_7 = import_samples_4_7()  # full version used for violin plots
-    unkVec_4_7, scales_4_7 = import_samples_4_7(N=50)  # a subsampled version used for simulation
+    unkVec_4_7, scales_4_7 = import_samples_4_7(N=100)  # a subsampled version used for simulation
 
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))

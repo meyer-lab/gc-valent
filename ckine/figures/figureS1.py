@@ -15,7 +15,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec, scales = import_samples_2_15(Traf=False, N=50)
+    unkVec, scales = import_samples_2_15(Traf=False, N=100)
     full_unkVec, full_scales = import_samples_2_15(Traf=False)
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
