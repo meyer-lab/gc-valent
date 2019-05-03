@@ -15,19 +15,18 @@ def makeFigure():
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
-    
+
     data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, _ = import_samples_2_15()
     ckineConc, _, _, IL15_data = import_pstat()
-    
-    for i in range(data_Visterra.shape[0]):
+
         if i == (data_Visterra.shape[0] - 1): # only plot the legend for the last entry
             IL15_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], ckineConc, legend=True)
         else:
             IL15_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], ckineConc)
-            
-    match_cells = [6,7,12,0,1,9,2,3,10]
-    
+
+    match_cells = [6, 7, 12, 0, 1, 9, 2, 3, 10]
+
     for j, axis in enumerate(match_cells):
         plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL15_data[(j*4):((j+1)*4)])
 
@@ -59,7 +58,7 @@ def IL15_dose_response(ax, unkVec, cell_type, cell_data, cytokC, legend=False):
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for j in range(split):
             total_activity[i, j, :] = activity[(4*j):((j+1)*4)] # save the activity from this concentration for all 4 tps
-            
+
     # calculate total activity for a given cell type (across all IL15 concentrations & time points)
     avg_total_activity = np.sum(total_activity)/(split*tps.size)
 

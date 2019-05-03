@@ -134,10 +134,9 @@ def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
     IL2Rb = 0.734
     gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
-                       IL2Ra, IL2Rb, gc,
-                       k1rev * input_params[2], k2rev * input_params[2], k4rev * input_params[2], k5rev * input_params[2], 
-                       k11rev * input_params[2]])  # input_params[2] represents endosomal binding affinity relative to surface affinity
+    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2],
+                       k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]])
+    # input_params[2] represents endosomal binding affinity relative to surface affinity
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 

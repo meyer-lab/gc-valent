@@ -26,7 +26,7 @@ def makeFigure():
         else:
             IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], ckineConc)
 
-    match_cells = [6,7,12,0,1,9,2,3,10]
+    match_cells = [6, 7, 12, 0, 1, 9, 2, 3, 10]
     
     for j, axis in enumerate(match_cells):
         plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(j*4):((j+1)*4)])
