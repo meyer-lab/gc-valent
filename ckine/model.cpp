@@ -304,15 +304,22 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 	if (t < sMem->preT)
 		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
-	eigenVC yBv(NV_DATA_S(yB), Nspecies);
-	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
+	std::array<adept::adouble, Nspecies> ya, dydt;
 
-	Eigen::Matrix<double, Nspecies, Nspecies> jac;
+	adept::set_values(&ya[0], Nspecies, NV_DATA_S(y));
 
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
+	sMem->stack.new_recording();
 
-	yBdotv = -yBv.transpose()*jac;
+	// Get the data in the right form
+	fullModel(ya.data(), &rattes, dydt.data());
+
+	adouble yOut = 0;
+	yOut = -std::inner_product(dydt.begin(), dydt.end(), NV_DATA_S(yB), yOut);
+
+	sMem->stack.independent(&ya[0], Nspecies);
+	sMem->stack.dependent(&yOut, 1);
+
+	sMem->stack.jacobian(NV_DATA_S(yBdot));
 
 	return 0;
 }
