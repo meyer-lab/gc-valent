@@ -124,7 +124,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
-    if ax_pos == 1 or ax_pos == 2:
+    if ax_pos in (1, 2):
         ax.legend()
 
     elif ax_pos == 4 and fig3:
