@@ -4,7 +4,7 @@ This creates Figure 3.
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
-from ..Tensor_analysis import find_R2X, perform_decomposition
+from ..tensor import find_R2X, perform_decomposition
 from ..tensor_generation import data, cell_names
 
 cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].

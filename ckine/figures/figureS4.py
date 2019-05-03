@@ -6,7 +6,7 @@ import seaborn as sns
 import tensorly as tl
 from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, set_bounds
-from ..Tensor_analysis import perform_tucker, find_R2X_tucker
+from ..tensor import perform_tucker, find_R2X_tucker
 from ..tensor_generation import cell_names
 
 cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
