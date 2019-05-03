@@ -20,6 +20,7 @@ def makeFigure():
     unkVec_2_15, _ = import_samples_2_15()
     ckineConc, _, _, IL15_data = import_pstat()
 
+    for i in range(data_Visterra.shape[0]):
         if i == (data_Visterra.shape[0] - 1): # only plot the legend for the last entry
             IL15_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], ckineConc, legend=True)
         else:
