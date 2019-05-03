@@ -57,6 +57,7 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     for n in range(n_comps):
         factors = factors_list[n]
         R2X = find_R2X(tensor, factors, cells_dim)
+        print(R2X)
         R2X_array.append(R2X)
     ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
