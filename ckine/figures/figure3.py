@@ -46,9 +46,12 @@ def makeFigure():
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
-    data.plot.bar(x="Cell Type", rot=30, ax=ax)
-    ax.legend(loc=1)
+    data.plot.bar(x="Cell Type", ax=ax)
+    ax.legend(loc='best')
     ax.set_ylabel("Surface Receptor [# / cell]")
+    ax.set_xticklabels(ax.get_xticklabels(),
+                       rotation=40, rotation_mode="anchor", ha="right",
+                       position=(0, 0.05), fontsize=6.5)
 
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
@@ -57,7 +60,6 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     for n in range(n_comps):
         factors = factors_list[n]
         R2X = find_R2X(tensor, factors, cells_dim)
-        print(R2X)
         R2X_array.append(R2X)
     ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
