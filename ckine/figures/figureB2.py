@@ -54,7 +54,7 @@ def plot_dResp_2Ra(CD25, ax):
 
 
 def plot_dResp_2Rb(CD25, ax):
-    """ Plots dose response curves for various IL2Rb affinities given a CD25 relative expression rate. """
+    """ Plots dose response curves for various IL2Rb affinities given a CD25 relative expression rate with wt IL2Ra affinity. """
     for _, itemB in enumerate(changesAff):
         ILs, BB = dRespon_loc([1.0, itemB, 5.0], CD25)
         ax.semilogx(ILs, BB, label=str(round(itemB, 2)))
@@ -64,7 +64,7 @@ def plot_dResp_2Rb(CD25, ax):
 
 
 def plot_dResp_2Rb_HIGH(CD25, ax):
-    """ Plots dose response curves for various IL2Rb affinities given a CD25 relative expression rate. """
+    """ Plots dose response curves for various IL2Rb affinities given a CD25 relative expression rate with increased IL2Ra affinity. """
     for _, itemB in enumerate(changesAff):
         ILs, BB = dRespon_loc([0.1, itemB, 5.0], CD25)
         ax.semilogx(ILs, BB, label=str(round(itemB, 2)))
