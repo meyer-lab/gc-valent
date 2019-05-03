@@ -238,50 +238,56 @@ def import_samples_4_7():
 
     return unkVec, scales
 
+
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
 
+
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv')) # Every row in the data represents a specific cell
-    numpy_data = data.values[:, 1:] # returns data values in a numpy array
+    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv'))  # Every row in the data represents a specific cell
+    numpy_data = data.values[:, 1:]  # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
     return numpy_data, cell_names
+
 
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
     return rec_ex
 
+
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'),encoding ='latin1'))
-    ckineConc = data[1,2:14]
+    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'), encoding='latin1'))
+    ckineConc = data[1, 2:14]
     # 4 time points, 11 cell types, 12 concentrations
-    IL2_data = np.zeros((44,12))
-    IL15_data = np.zeros((44,12))
+    IL2_data = np.zeros((44, 12))
+    IL15_data = np.zeros((44, 12))
     cell_names = list()
     for i in range(11):
-        cell_names.append(data[12*i,1])
+        cell_names.append(data[12 * i, 1])
         if i <= 4:
-            zero_treatment = data[9+(12*i),13]
+            zero_treatment = data[9 + (12 * i), 13]
         else:
-            zero_treatment = data[5+(12*i),13]
-        IL2_data[4*i:4*(i+1),:] = data[3+(12*i):7+(12*i),2:14] - zero_treatment
-        IL15_data[4*i:4*(i+1),:] = data[7+(12*i):11+(12*i),2:14] - zero_treatment
+            zero_treatment = data[5 + (12 * i), 13]
+        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14] - zero_treatment
+        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14] - zero_treatment
 
     return ckineConc, cell_names, IL2_data, IL15_data
 
+
 def plot_scaled_pstat(ax, cytokC, pstat):
+    """ Creates plot of predicted pstat values (scaled by their average) for different timepoints across varied cytokine concentrations."""
     tps = np.array([0.5, 1., 2., 4.])
-    avg_activity = np.sum(pstat)/tps.size
+    avg_activity = np.sum(pstat) / tps.size
     # plot pstat5 data for each time point
-    ax.scatter(cytokC, pstat[3,:]/avg_activity, c="indigo", s=2) #0.5 hr
-    ax.scatter(cytokC, pstat[2,:]/avg_activity, c="teal", s=2) #1 hr
-    ax.scatter(cytokC, pstat[1,:]/avg_activity, c="forestgreen", s=2) #2 hr
-    ax.scatter(cytokC, pstat[0,:]/avg_activity, c="darkred", s=2) #4 hr
+    ax.scatter(cytokC, pstat[3, :] / avg_activity, c="indigo", s=2)  # 0.5 hr
+    ax.scatter(cytokC, pstat[2, :] / avg_activity, c="teal", s=2)  # 1 hr
+    ax.scatter(cytokC, pstat[1, :] / avg_activity, c="forestgreen", s=2)  # 2 hr
+    ax.scatter(cytokC, pstat[0, :] / avg_activity, c="darkred", s=2)  # 4 hr
