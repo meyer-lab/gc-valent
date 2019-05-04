@@ -2,7 +2,6 @@
 This file contains functions that are used in multiple figures.
 """
 import os
-import random
 from os.path import join
 import tensorly as tl
 import pymc3 as pm
@@ -168,7 +167,7 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def import_samples_2_15(Traf=True, ret_trace=False, N=-1):
+def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
@@ -211,14 +210,18 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=-1):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
-    if N > 0 and N < num:  # return a subsample if the user specified the number of samples
-        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        return unkVec[:, idx], scales[idx, :]
+    if N is not None:
+        if N > 0 and N < num:  # return a subsample if the user specified the number of samples
+            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+            return unkVec[:, idx], scales[idx, :]
+        else:
+            print("The N specified is out of bounds.")
+            raise ValueError
 
     return unkVec, scales
 
 
-def import_samples_4_7(N=-1):
+def import_samples_4_7(N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
     n_params = nParams()
@@ -244,9 +247,13 @@ def import_samples_4_7(N=-1):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo[ii],
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
 
-    if N > 0 and N < num:  # return a subsample if the user specified the number of samples
-        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        return unkVec[:, idx], scales[idx, :]
+    if N is not None:
+        if N > 0 and N < num:  # return a subsample if the user specified the number of samples
+            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+            return unkVec[:, idx], scales[idx, :]
+        else:
+            print("The N specified is out of bounds.")
+            raise ValueError
 
     return unkVec, scales
 
