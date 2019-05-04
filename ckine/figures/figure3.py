@@ -5,7 +5,7 @@ import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 from ..tensor import find_R2X, perform_decomposition
-from ..tensor_generation import data, cell_names
+from ..tensor_generation import import_Rexpr
 
 cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
 
@@ -16,7 +16,8 @@ def makeFigure():
     ax, f = getSetup((12, 9), (x, y), mults=[0], multz={0: 2}, empts=[7, 8, 11])
     # Blank out for the cartoon
     ax[0].axis('off')
-    
+
+    data, numpy_data, cell_names = import_Rexpr()
     factors_activity = []
     for jj in range(len(mat) - 1):
         factors = perform_decomposition(values, jj + 1, cell_dim)
