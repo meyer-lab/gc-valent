@@ -84,15 +84,11 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 5 and fig3:
-            legend1 = ax.legend(handles=h, loc=2)
-            ax.add_artist(legend1)
-            legend2 = ax.legend(handles=legend_shape, loc=3)
-            ax.add_artist(legend2)
+            ax.add_artist(ax.legend(handles=h, loc=2))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3))
         elif ax_pos == 2 and not fig3:
-            legend1 = ax.legend(handles=h, loc=2)
-            ax.add_artist(legend1)
-            legend2 = ax.legend(handles=legend_shape, loc=3)
-            ax.add_artist(legend2)
+            ax.add_artist(ax.legend(handles=h, loc=2))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3))
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
@@ -110,10 +106,14 @@ def traf_names():
 
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):
-    """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """
-    y_axis_top = np.percentile(y_axis, 97.5, axis=1)
-    y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
+    """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
+    y_axis_top = np.percentile(y_axis, 90., axis=1)
+    y_axis_bot = np.percentile(y_axis, 10., axis=1)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.4, label=label)
+
+    y_axis_top = np.percentile(y_axis, 75., axis=1)
+    y_axis_bot = np.percentile(y_axis, 25., axis=1)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.7, label=label)
 
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
@@ -124,7 +124,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
-    if ax_pos == 1 or ax_pos == 2:
+    if ax_pos in (1, 2):
         ax.legend()
 
     elif ax_pos == 4 and fig3:
@@ -163,7 +163,7 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def import_samples_2_15(Traf=True, ret_trace=False):
+def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
@@ -206,10 +206,18 @@ def import_samples_2_15(Traf=True, ret_trace=False):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
+    if N is not None:
+        if 0 < N < num:  # return a subsample if the user specified the number of samples
+            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+            unkVec, scales = unkVec[:, idx], scales[idx, :]
+        else:
+            print("The N specified is out of bounds.")
+            raise ValueError
+
     return unkVec, scales
 
 
-def import_samples_4_7():
+def import_samples_4_7(N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
     n_params = nParams()
@@ -234,6 +242,14 @@ def import_samples_4_7():
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo[ii],
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
+
+    if N is not None:
+        if 0 < N < num:  # return a subsample if the user specified the number of samples
+            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+            unkVec, scales = unkVec[:, idx], scales[idx, :]
+        else:
+            print("The N specified is out of bounds.")
+            raise ValueError
 
     return unkVec, scales
 

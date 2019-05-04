@@ -21,7 +21,6 @@
 #include "model.hpp"
 #include <adept.h>
 #include "reaction.hpp"
-#include "jacobian.hpp"
 #include "thread_pool.hpp"
 
 using std::array;
@@ -304,21 +303,28 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 	if (t < sMem->preT)
 		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
-	eigenVC yBv(NV_DATA_S(yB), Nspecies);
-	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
+	std::array<adept::adouble, Nspecies> ya, dydt;
 
-	Eigen::Matrix<double, Nspecies, Nspecies> jac;
+	adept::set_values(&ya[0], Nspecies, NV_DATA_S(y));
 
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
+	sMem->stack.new_recording();
 
-	yBdotv = -yBv.transpose()*jac;
+	// Get the data in the right form
+	fullModel(ya.data(), &rattes, dydt.data());
+
+	adouble yOut = 0;
+	yOut = -std::inner_product(dydt.begin(), dydt.end(), NV_DATA_S(yB), yOut);
+
+	sMem->stack.independent(&ya[0], Nspecies);
+	sMem->stack.dependent(&yOut, 1);
+
+	sMem->stack.jacobian(NV_DATA_S(yBdot));
 
 	return 0;
 }
 
 
-int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+int Jac(double t, N_Vector yv, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	solver *sMem = static_cast<solver *>(user_data);
 	ratesS<double> rattes = sMem->getRates();
 
@@ -328,7 +334,28 @@ int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data,
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
 	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
+	std::array<adept::adouble, Nspecies> y, dydt;
+
+	adept::set_values(&y[0], Nspecies, NV_DATA_S(yv));
+
+	sMem->stack.new_recording();
+
+	// Get the data in the right form
+	fullModel(y.data(), &rattes, dydt.data());
+
+	sMem->stack.independent(&y[0], Nspecies);
+	sMem->stack.dependent(&dydt[0], Nspecies);
+
+	sMem->stack.jacobian(jac.data());
+
+	return 0;
+}
+
+
+int JacB(double t, N_Vector y, N_Vector a, N_Vector b, SUNMatrix J, void *user_data, N_Vector c, N_Vector d, N_Vector e) {
+	Jac(t, y, a, J, user_data, c, d, e);
+
+	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
 	jac = -jac;
 	jac.transposeInPlace();
@@ -340,12 +367,11 @@ int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data,
 // fQB routine. Compute integrand for quadratures
 static int fQB(double t, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
 	solver *sMem = static_cast<solver *>(user_dataB);
-
-	size_t Np = sMem->params.size();
-
+	const size_t Np = sMem->params.size();
 	sMem->stack.activate();
 
 	vector<adouble> X(Np);
+	array<adouble, Nspecies> dydt;
 	adept::set_values(&X[0], Np, sMem->params.data());
 
 	if (t < sMem->preT)
@@ -353,25 +379,18 @@ static int fQB(double t, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dat
 
 	sMem->stack.new_recording();
 
-	array<adouble, Nspecies> dydt;
-
 	ratesS<adouble> rattes = ratesS<adouble>(X);
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(y), &rattes, dydt.data());
 
+	adouble yOut = 0;
+	yOut = std::inner_product(dydt.begin(), dydt.end(), NV_DATA_S(yB), yOut);
+
 	sMem->stack.independent(&X[0], Np);
-	sMem->stack.dependent(&dydt[0], Nspecies);
+	sMem->stack.dependent(&yOut, 1);
 
-	Eigen::Matrix<double, Nspecies, Eigen::Dynamic> jac_M(Nspecies, Np);
-
-	sMem->stack.jacobian(jac_M.data());
-
-	// Wrap the vectors we'll use
-	eigenV yBdotv(NV_DATA_S(qBdot), NV_LENGTH_S(qBdot));
-	eigenVC yBv(NV_DATA_S(yB), NV_LENGTH_S(yB));
-
-	yBdotv = yBv.transpose()*jac_M;
+	sMem->stack.jacobian(NV_DATA_S(qBdot));
 
 	return(0);
 }
@@ -398,22 +417,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 		cout << "Sensitivity enabled." << std::endl;
 
 	cout << std::endl << std::endl;
-}
-
-
-int Jac(double t, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	solver *sMem = static_cast<solver *>(user_data);
-	ratesS<double> rattes = sMem->getRates();
-
-	if (t < sMem->preT)
-		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
-
-	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
-
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
-
-	return 0;
 }
 
 
