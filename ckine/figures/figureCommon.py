@@ -211,9 +211,9 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
     if N is not None:
-        if N > 0 and N < num:  # return a subsample if the user specified the number of samples
+        if 0 < N < num:  # return a subsample if the user specified the number of samples
             idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            return unkVec[:, idx], scales[idx, :]
+            unkVec, scales = unkVec[:, idx], scales[idx, :]
         else:
             print("The N specified is out of bounds.")
             raise ValueError
@@ -248,9 +248,9 @@ def import_samples_4_7(N=None):
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
 
     if N is not None:
-        if N > 0 and N < num:  # return a subsample if the user specified the number of samples
+        if 0 < N < num:  # return a subsample if the user specified the number of samples
             idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            return unkVec[:, idx], scales[idx, :]
+            unkVec, scales = unkVec[:, idx], scales[idx, :]
         else:
             print("The N specified is out of bounds.")
             raise ValueError
