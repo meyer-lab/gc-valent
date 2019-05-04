@@ -248,17 +248,6 @@ def kfwd_info(unkVec):
     std = np.std(unkVec[6])
     return mean, std
 
-
-def import_Rexpr():
-    """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
-    numpy_data = data.values[:, 1:]  # returns data values in a numpy array
-    cell_names = list(data.values[:, 0])
-    # ['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
-    return data, numpy_data, cell_names
-
-
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
