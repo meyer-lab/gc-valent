@@ -10,7 +10,7 @@ from os.path import join
 import numpy as np
 import pandas as pds
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
-from figures.figureCommon import import_Rexpr
+from .figures.figureCommon import import_Rexpr
 
 # Load the data from csv file
 _, numpy_data, cell_names = import_Rexpr()
