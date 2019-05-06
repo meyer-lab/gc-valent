@@ -24,7 +24,7 @@ def import_Rexpr():
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     numpy_data = data.values[:, 1:]  # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
-    # ['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
+    # ['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215.
     return data, numpy_data, cell_names
 
 def ySolver(matIn, ts):
