@@ -1,9 +1,7 @@
 """
 Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions.
-The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines.
-Important Notes:
-    y_of_combos is a multidimensional matrix of size (length mesh x 1000 timeponts x 56 values of y)
-    values is also a multidimensional matrix of size (length mesh x 1000 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
+The initial conditions vary the concentrations of the three ligands to simulate different cell lines.
+Cell lines are defined by the number of each receptor subspecies on their surface.
 """
 import os
 from os.path import join
@@ -21,7 +19,7 @@ k4rev = 8.543317686
 k5rev = 0.12321939
 
 def import_Rexpr():
-    """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
+    """ Loads CSV file containing Rexpr levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     numpy_data = data.values[:, 1:]  # returns data values in a numpy array
