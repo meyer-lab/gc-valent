@@ -13,6 +13,7 @@ tl.set_backend(backend)  # Set the backend within every file that imports from T
 # Set whether or not we subtract in one place so we're consistent
 subtract = False
 
+
 def z_score_values(A, cell_dim):
     ''' Function that takes in the values tensor and z-scores it. '''
     assert cell_dim < A.ndim
