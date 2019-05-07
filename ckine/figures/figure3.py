@@ -39,9 +39,9 @@ def makeFigure():
     plot_timepoints(ax[5], factors_activ[0])  # Change final input value depending on need
 
     plot_cells(ax[3], factors_activ[1], 1, 2, cell_names, ax_pos=3)
-    plot_cells(ax[6], factors_activ[1], 1, 2, cell_names, ax_pos=6)
+    plot_cells(ax[6], factors_activ[1], 3, 4, cell_names, ax_pos=6)
 
-    plot_ligands(ax[4], factors_activ[2], 3, 4, ax_pos=4)
+    plot_ligands(ax[4], factors_activ[2], 1, 2, ax_pos=4)
     plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7)
 
     f.tight_layout()
