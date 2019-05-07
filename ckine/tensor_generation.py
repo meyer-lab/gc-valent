@@ -8,6 +8,7 @@ from os.path import join
 import numpy as np
 import pandas as pds
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
+#from .figures/figureCommon import import_samples_2_15
 
 # Set the following variables for multiple functions to use
 endo = 0.08
