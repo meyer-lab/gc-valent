@@ -3,6 +3,8 @@ This creates Figure 3.
 """
 import string
 import numpy as np
+import seaborn as sns
+sns.set(style="whitegrid")
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 from ..tensor import find_R2X, perform_decomposition
 from ..tensor_generation import import_Rexpr
@@ -13,7 +15,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((12, 9), (x, y), mults=[0], multz={0: 2}, empts=[7, 8, 11])
+    ax, f = getSetup((12, 9), (x, y), mults=[0,2], multz={0:2, 2:2}, empts=[7, 11])
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -33,12 +35,13 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
+    plot_timepoints(ax[5], factors_activ[0])  # Change final input value depending on need
 
-    for row in range(1, 3):
-        compNum = 2 * (row - 1) + 1
-        plot_cells(ax[row * 2 + 2], factors_activ[1], compNum, compNum + 1, cell_names, ax_pos=row * 2 + 2)
-        plot_ligands(ax[row * 2 + 3], factors_activ[2], compNum, compNum + 1, ax_pos=row * 2 + 3)
+    plot_cells(ax[3], factors_activ[1], 1, 2, cell_names, ax_pos=3)
+    plot_cells(ax[6], factors_activ[1], 1, 2, cell_names, ax_pos=6)
+
+    plot_ligands(ax[4], factors_activ[2], 3, 4, ax_pos=4)
+    plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7)
 
     f.tight_layout()
 
@@ -47,13 +50,12 @@ def makeFigure():
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
-    data.plot.bar(x="Cell Type", ax=ax)
+    sns.barplot(x="Cell Type", y="Count", hue="Receptor", data=data, ci=68, ax=ax, capsize=.2, errwidth=0.4)
     ax.legend(loc='best')
     ax.set_ylabel("Surface Receptor [# / cell]")
     ax.set_xticklabels(ax.get_xticklabels(),
                        rotation=40, rotation_mode="anchor", ha="right",
                        position=(0, 0.05), fontsize=6.5)
-
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     """Function to plot R2X bar graph."""

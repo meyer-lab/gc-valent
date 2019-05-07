@@ -75,7 +75,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii * n_ligands, (ii + 1) * n_ligands)
-        if ii == 0 and ax_pos == 5 and fig3:
+        if ii == 0 and ax_pos == 4 and fig3:
             legend = "full"
         elif ii == 0 and ax_pos == 2 and fig3 is False:
             legend = "full"
@@ -127,7 +127,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     if ax_pos in (1, 2):
         ax.legend()
 
-    elif ax_pos == 4 and fig3:
+    elif ax_pos == 3 and fig3:
         ax.legend()
     ax.set_title('Cells')
 
