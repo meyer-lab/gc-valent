@@ -249,7 +249,7 @@ def kfwd_info(unkVec):
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv'))  # Every row in the data represents a specific cell
+    data = pds.read_csv(join(path, 'data/Visterra_Receptor_Levels.csv'))  # Every row in the data represents a specific cell
     numpy_data = data.values[:, 1:]  # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
     return numpy_data, cell_names
@@ -262,22 +262,23 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
 
 
 def import_pstat():
-    """ Loads CSV file containing pSTAT5 levels from Visterra data. """
+    """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'), encoding='latin1'))
-    ckineConc = data[1, 2:14]
+    data = np.array(pds.read_csv(join(path, 'data/Visterra_pSTAT5.csv'), encoding='latin1'))
+    ckineConc = data[4, 2:14]
     # 4 time points, 11 cell types, 12 concentrations
     IL2_data = np.zeros((44, 12))
     IL15_data = np.zeros((44, 12))
     cell_names = list()
     for i in range(11):
-        cell_names.append(data[12 * i, 1])
+        cell_names.append(data[12 * i + 3, 1])
+        # Subtract the zero treatment plates before assigning to returned arrays
         if i <= 4:
-            zero_treatment = data[9 + (12 * i), 13]
+            zero_treatment = data[12 * (i + 1), 13]
         else:
-            zero_treatment = data[5 + (12 * i), 13]
-        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14] - zero_treatment
-        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14] - zero_treatment
+            zero_treatment = data[8 + (12 * i), 13]
+        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14] - zero_treatment
+        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14] - zero_treatment
 
     return ckineConc, cell_names, IL2_data, IL15_data
 
