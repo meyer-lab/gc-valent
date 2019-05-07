@@ -20,9 +20,9 @@ def makeFigure():
     _, data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, _ = import_samples_2_15()
     ckineConc, _, IL2_data, _ = import_pstat()
-    
+
     # Delete and organize data to match the cells between receptor level and pSTAT5 data
-    data_Visterra = np.delete(data_Visterra,[0,8],0)
+    data_Visterra = np.delete(data_Visterra, [0, 8], 0)
     cell_names_Visterra.remove('CD3+CD4+')
     cell_names_Visterra.remove('NKT')
     match_cells = [5, 6, 7, 8, 9, 10, 0, 2, 3, 4]

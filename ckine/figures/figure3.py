@@ -7,7 +7,8 @@ from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot
 from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import data, cell_names
 
-cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
+cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -26,7 +27,7 @@ def makeFigure():
     factors_activ = factors_activity[n_comps - 1]
 
     bar_receptors(ax[1], data)
-    plot_R2X(ax[2], values, factors_activity, n_comps=5, cells_dim = cell_dim)
+    plot_R2X(ax[2], values, factors_activity, n_comps=5, cells_dim=cell_dim)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
