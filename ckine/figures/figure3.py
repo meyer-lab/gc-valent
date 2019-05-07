@@ -1,21 +1,22 @@
 """
 This creates Figure 3.
 """
+from ..tensor_generation import import_Rexpr
+from ..tensor import find_R2X, perform_decomposition
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 import string
 import numpy as np
 import seaborn as sns
 sns.set(style="whitegrid")
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
-from ..tensor import find_R2X, perform_decomposition
-from ..tensor_generation import import_Rexpr
 
-cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
+cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((12, 9), (x, y), mults=[0,2], multz={0:2, 2:2}, empts=[7, 11])
+    ax, f = getSetup((12, 9), (x, y), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 11])
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -29,7 +30,7 @@ def makeFigure():
     factors_activ = factors_activity[n_comps - 1]
 
     bar_receptors(ax[1], data)
-    plot_R2X(ax[2], values, factors_activity, n_comps=5, cells_dim = cell_dim)
+    plot_R2X(ax[2], values, factors_activity, n_comps=5, cells_dim=cell_dim)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -56,6 +57,7 @@ def bar_receptors(ax, data):
     ax.set_xticklabels(ax.get_xticklabels(),
                        rotation=40, rotation_mode="anchor", ha="right",
                        position=(0, 0.05), fontsize=6.5)
+
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     """Function to plot R2X bar graph."""
