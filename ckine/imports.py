@@ -81,7 +81,7 @@ def import_samples_4_7(N=None):
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '..IL4-7_model_results'), bmodel.M)
+    trace = pm.backends.text.load(join(path, '../IL4-7_model_results'), bmodel.M)
     kfwd = trace.get_values('kfwd')
     k27rev = trace.get_values('k27rev')
     k33rev = trace.get_values('k33rev')
