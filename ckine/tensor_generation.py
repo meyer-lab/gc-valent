@@ -16,15 +16,14 @@ kfwd = 0.004475761
 k4rev = 8.543317686
 k5rev = 0.12321939
 
+rxntfR, _ = import_samples_2_15(N=1)
+rxntfR = np.squeeze(rxntfR)
 
-def ySolver(matIn, ts):
+def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
-    rxntfR, _ = import_samples_2_15(N=1)
-    rxntfR = np.squeeze(rxntfR)
-
-    rxntfR[22:30] = matIn[6:14]  # Receptor expression
-
+    if tensor:
+        rxntfR[22:30] = matIn[6:14]  # Receptor expression
     rxntfR[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
     temp, retVal = runCkineU(ts, rxntfR)
@@ -94,7 +93,6 @@ def findy(lig, n_timepoints):
 def prepare_tensor(lig, n_timepoints=100):
     """Function to generate the 4D values tensor."""
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints)  # mat here is basically the 2^lig cytokine stimulation; mats
-
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
 
     values[:, :, 0] = np.tensordot(y_of_combos, getTotalActiveSpecies(), (2, 0))
