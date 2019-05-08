@@ -24,8 +24,10 @@ def import_Rexpr():
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     df = data.groupby(['Cell Type','Receptor']).mean() #Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels #gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
+    receptor_names = receptor_names[[2,3,0,1]] #Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3
     numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size,receptor_names.size) #Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
-    return data, numpy_data, cell_names
+    #Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
+    return data, numpy_data[:,[2,3,0,1]], cell_names
 
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
@@ -82,7 +84,6 @@ def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
-    numpy_data = numpy_data[:,[2,3,0,1]]#Rearrange to place IL2Ra first, then IL2Rb, then gc, then ILRa in this order
     ILs = np.logspace(-2., 1., num=lig)  # Cytokine stimulation concentrations in nM
 
     # Goal is to make one cell expression levels by len(mat) for every cell

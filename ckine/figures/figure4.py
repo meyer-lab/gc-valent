@@ -101,10 +101,10 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     for i in range(PTS):
         for ii in range(rxntfr.shape[0]):
             rxntfr[ii, 0] = cytokC[i]
-            # updates rxntfr for receptor expression for IL2Ra [idx=2], IL2Rb[idx=3], gc[idx=0]
-            rxntfr[ii, 22] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            rxntfr[ii, 23] = receptor_expression(cell_data[3], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            rxntfr[ii, 24] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            # updates rxntfr for receptor expression for IL2Ra [idx=0], IL2Rb[idx=1], gc[idx=2]
+            rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
+            rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
         yOut, retVal = runCkineUP(tps, rxntfr)
         assert retVal >= 0  # make sure solver is working
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
