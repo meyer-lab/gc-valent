@@ -8,7 +8,6 @@ from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
-
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
@@ -19,7 +18,6 @@ def import_Rexpr():
     numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
     # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
     return data, numpy_data[:, [2, 3, 0, 1]], cell_names
-
 
 def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
@@ -74,7 +72,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
 
     return unkVec, scales
 
-
 def import_samples_4_7(N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
@@ -110,7 +107,6 @@ def import_samples_4_7(N=None):
             raise ValueError
 
     return unkVec, scales
-
 
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. """
