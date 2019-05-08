@@ -8,6 +8,7 @@ import numpy as np
 from .figureCommon import subplotLabel, getSetup, traf_names
 from ..imports import import_samples_2_15
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects

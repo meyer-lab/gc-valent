@@ -6,6 +6,7 @@ from .figureCommon import subplotLabel, getSetup, kfwd_info
 from .figure1 import pstat_act, violinPlots, rateComp
 from ..imports import import_samples_2_15
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects

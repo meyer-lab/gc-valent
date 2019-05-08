@@ -47,6 +47,7 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
+
 def set_bounds(ax, compNum):
     """Add labels and bounds"""
     ax.set_xlabel('Component ' + str(compNum))
@@ -57,6 +58,7 @@ def set_bounds(ax, compNum):
 
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
+
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
@@ -87,14 +89,17 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 
+
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
     ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
             fontsize=16, fontweight='bold', va='top')
 
+
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
     return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
+
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
@@ -105,6 +110,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_top = np.percentile(y_axis, 75., axis=1)
     y_axis_bot = np.percentile(y_axis, 25., axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.7, label=label)
+
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
     """This function plots the combination decomposition based on cell type."""
@@ -123,6 +129,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
 
     set_bounds(ax, component_x)
 
+
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
     """ Add cartoon to a figure file. """
     import svgutils.transform as st
@@ -135,6 +142,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
 
     template.append(cartoon)
     template.save(figFile)
+
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
@@ -149,6 +157,7 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.set_title('Time')
     ax.legend()
+
 
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """

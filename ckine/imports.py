@@ -8,16 +8,18 @@ from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
+
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
-    df = data.groupby(['Cell Type','Receptor']).mean() #Get the mean receptor count for each cell across trials in a new dataframe.
-    cell_names, receptor_names = df.index.unique().levels #gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    receptor_names = receptor_names[[2,3,0,1]] #Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3
-    numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size,receptor_names.size) #Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
-    #Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    return data, numpy_data[:,[2,3,0,1]], cell_names
+    df = data.groupby(['Cell Type', 'Receptor']).mean()  # Get the mean receptor count for each cell across trials in a new dataframe.
+    cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
+    receptor_names = receptor_names[[2, 3, 0, 1]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3
+    numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
+    # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
+    return data, numpy_data[:, [2, 3, 0, 1]], cell_names
+
 
 def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
@@ -79,7 +81,7 @@ def import_samples_4_7(N=None):
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../IL4-7_model_results'), bmodel.M)
+    trace = pm.backends.text.load(join(path, '..IL4-7_model_results'), bmodel.M)
     kfwd = trace.get_values('kfwd')
     k27rev = trace.get_values('k27rev')
     k33rev = trace.get_values('k33rev')
@@ -124,6 +126,3 @@ def import_pstat():
         IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14]
         IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14]
     return ckineConc, cell_names, IL2_data, IL15_data
-
-
-

@@ -16,33 +16,13 @@ kfwd = 0.004475761
 k4rev = 8.543317686
 k5rev = 0.12321939
 
+
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
-    rxntfR = np.zeros(nParams())
-    unkVec, _ = import_samples_2_15(N=1)
-    rxntfR[:] = np.squeeze(unkVec)
-    
-    # Set some given parameters already determined from fitting
-    '''
-    rxntfR = np.zeros(nParams())
-    rxntfR[6] = kfwd
-    rxntfR[7] = k4rev
-    rxntfR[8] = k5rev
-    rxntfR[9] = 3.107488811  # k16rev
-    rxntfR[10] = 0.212958572  # k17rev
-    rxntfR[11] = 0.013775029  # k22rev
-    rxntfR[12] = 0.151523448  # k23rev
-    rxntfR[13] = 0.094763588  # k27rev
-    rxntfR[15] = 0.095618346  # k33rev
-    # TODO: Update parameters based on IL9&21.
-    rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev
-    rxntfR[17] = endo  # endo
-    rxntfR[18] = 1.46  # activeEndo
-    rxntfR[19] = sortF  # sortF
-    rxntfR[20] = kRec  # kRec
-    rxntfR[21] = kDeg  # kDeg
-    '''
+    rxntfR, _ = import_samples_2_15(N=1)
+    rxntfR = np.squeeze(rxntfR)
+
     rxntfR[22:30] = matIn[6:14]  # Receptor expression
 
     rxntfR[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
