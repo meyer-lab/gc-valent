@@ -19,8 +19,12 @@ k5rev = 0.12321939
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
-
+    rxntfR = np.zeros(nParams())
+    unkVec, _ = import_samples_2_15(N=1)
+    rxntfR[:] = np.squeeze(unkVec)
+    
     # Set some given parameters already determined from fitting
+    '''
     rxntfR = np.zeros(nParams())
     rxntfR[6] = kfwd
     rxntfR[7] = k4rev
@@ -38,7 +42,7 @@ def ySolver(matIn, ts):
     rxntfR[19] = sortF  # sortF
     rxntfR[20] = kRec  # kRec
     rxntfR[21] = kDeg  # kDeg
-
+    '''
     rxntfR[22:30] = matIn[6:14]  # Receptor expression
 
     rxntfR[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
