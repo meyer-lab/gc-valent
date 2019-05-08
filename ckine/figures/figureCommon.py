@@ -4,16 +4,12 @@ This file contains functions that are used in multiple figures.
 import os
 from os.path import join
 import tensorly as tl
-import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
-from ..model import nParams
-from ..fit import build_model as build_model_2_15, find_gc
-from ..fit_others import build_model as build_model_4_7
 from ..tensor_generation import prepare_tensor
 
 n_ligands = 4
@@ -51,7 +47,6 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
-
 def set_bounds(ax, compNum):
     """Add labels and bounds"""
     ax.set_xlabel('Component ' + str(compNum))
@@ -62,7 +57,6 @@ def set_bounds(ax, compNum):
 
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
-
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
@@ -93,17 +87,14 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 
-
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
     ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
             fontsize=16, fontweight='bold', va='top')
 
-
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
     return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
-
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
@@ -114,7 +105,6 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_top = np.percentile(y_axis, 75., axis=1)
     y_axis_bot = np.percentile(y_axis, 25., axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.7, label=label)
-
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
     """This function plots the combination decomposition based on cell type."""
@@ -133,7 +123,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
 
     set_bounds(ax, component_x)
 
-
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
     """ Add cartoon to a figure file. """
     import svgutils.transform as st
@@ -146,7 +135,6 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
 
     template.append(cartoon)
     template.save(figFile)
-
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
@@ -162,116 +150,8 @@ def plot_timepoints(ax, factors):
     ax.set_title('Time')
     ax.legend()
 
-
-def import_samples_2_15(Traf=True, ret_trace=False, N=None):
-    """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    bmodel = build_model_2_15(traf=Traf)
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-
-    if Traf:
-        trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    else:
-        trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
-
-    scales = trace.get_values('scales')
-    num = scales.size
-    kfwd = trace.get_values('kfwd')
-    rxn = trace.get_values('rxn')
-    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
-    Rexpr_15 = trace.get_values('Rexpr_15Ra')
-
-    if Traf:
-        endo = trace.get_values('endo')
-        activeEndo = trace.get_values('activeEndo')
-        sortF = trace.get_values('sortF')
-        kRec = trace.get_values('kRec')
-        kDeg = trace.get_values('kDeg')
-        Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
-    else:
-        endo = np.zeros((num))
-        activeEndo = np.zeros((num))
-        sortF = np.zeros((num))
-        kRec = np.zeros((num))
-        kDeg = np.zeros((num))
-        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
-
-    unkVec = np.zeros((n_params, num))
-    for ii in range(num):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
-
-    if N is not None:
-        if 0 < N < num:  # return a subsample if the user specified the number of samples
-            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            unkVec, scales = unkVec[:, idx], scales[idx, :]
-        else:
-            print("The N specified is out of bounds.")
-            raise ValueError
-
-    return unkVec, scales
-
-
-def import_samples_4_7(N=None):
-    ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
-    bmodel = build_model_4_7()
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL4-7_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd')
-    k27rev = trace.get_values('k27rev')
-    k33rev = trace.get_values('k33rev')
-    endo = trace.get_values('endo')
-    activeEndo = trace.get_values('activeEndo')
-    sortF = trace.get_values('sortF')
-    kRec = trace.get_values('kRec')
-    kDeg = trace.get_values('kDeg')
-    scales = trace.get_values('scales')
-    GCexpr = (328. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-    IL7Raexpr = (2591. * endo[0]) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-    IL4Raexpr = (254. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-    num = scales.shape[0]
-
-    unkVec = np.zeros((n_params, num))
-    for ii in range(num):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
-
-    if N is not None:
-        if 0 < N < num:  # return a subsample if the user specified the number of samples
-            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            unkVec, scales = unkVec[:, idx], scales[idx, :]
-        else:
-            print("The N specified is out of bounds.")
-            raise ValueError
-
-    return unkVec, scales
-
-
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
-
-
-def import_pstat():
-    """ Loads CSV file containing pSTAT5 levels from Visterra data. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'), encoding='latin1'))
-    ckineConc = data[1, 2:14]
-    # 4 time points, 11 cell types, 12 concentrations
-    IL2_data = np.zeros((44, 12))
-    IL15_data = np.zeros((44, 12))
-    cell_names = list()
-    for i in range(11):
-        cell_names.append(data[12 * i, 1])
-        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14]
-        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14]
-    return ckineConc, cell_names, IL2_data, IL15_data

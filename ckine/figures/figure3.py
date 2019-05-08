@@ -1,7 +1,7 @@
 """
 This creates Figure 3.
 """
-from ..tensor_generation import import_Rexpr
+from ..imports import import_Rexpr
 from ..tensor import find_R2X, perform_decomposition
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 import string

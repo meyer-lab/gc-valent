@@ -3,11 +3,9 @@ Generate a tensor for the different y-values that arise at different timepoints 
 The initial conditions vary the concentrations of the three ligands to simulate different cell lines.
 Cell lines are defined by the number of each receptor subspecies on their surface.
 """
-import os
-from os.path import join
 import numpy as np
-import pandas as pds
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
+from .imports import import_Rexpr, import_samples_2_15
 
 # Set the following variables for multiple functions to use
 endo = 0.08
@@ -17,17 +15,6 @@ kDeg = 0.017
 kfwd = 0.004475761
 k4rev = 8.543317686
 k5rev = 0.12321939
-
-def import_Rexpr():
-    """ Loads CSV file containing Rexpr levels from Visterra data. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
-    df = data.groupby(['Cell Type','Receptor']).mean() #Get the mean receptor count for each cell across trials in a new dataframe.
-    cell_names, receptor_names = df.index.unique().levels #gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    receptor_names = receptor_names[[2,3,0,1]] #Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3
-    numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size,receptor_names.size) #Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
-    #Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    return data, numpy_data[:,[2,3,0,1]], cell_names
 
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
