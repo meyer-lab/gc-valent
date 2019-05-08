@@ -7,15 +7,6 @@ import numpy as np
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
 from .imports import import_Rexpr, import_samples_2_15
 
-# Set the following variables for multiple functions to use
-endo = 0.08
-kRec = 0.15
-sortF = 0.18
-kDeg = 0.017
-kfwd = 0.004475761
-k4rev = 8.543317686
-k5rev = 0.12321939
-
 rxntfR, _ = import_samples_2_15(N=1)
 rxntfR = np.squeeze(rxntfR)
 
@@ -35,7 +26,9 @@ def ySolver(matIn, ts, tensor=True):
 def ySolver_IL2(matIn, ts):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
-
+    kfwd = 0.004475761
+    k4rev = 8.543317686
+    k5rev = 0.12321939
     k1rev = 0.6 * 10.0 * 0.01
     k2rev = 0.6 * 144.0
     k11rev = 63.0 * k5rev / 1.5
