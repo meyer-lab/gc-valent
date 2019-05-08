@@ -7,7 +7,6 @@ from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot
 import string
 import numpy as np
 import seaborn as sns
-sns.set(style="whitegrid")
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 
