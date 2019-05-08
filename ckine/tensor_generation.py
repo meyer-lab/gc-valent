@@ -42,7 +42,6 @@ def ySolver_IL2(matIn, ts):
 
     return yOut
 
-
 def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     # Load the data from csv file
@@ -60,7 +59,7 @@ def findy(lig, n_timepoints):
     # Set receptor levels for IL7Ra, IL9R, IL4Ra, IL21Ra to one. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra measured.
     no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0
     # need to convert numbers to expression values
-    numpy_data[:, :] = (numpy_data[:, :] * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+    numpy_data[:, :] = (numpy_data[:, :] * rxntfR[17]) / (1. + ((rxntfR[20] * (1. - rxntfR[19])) / (rxntfR[21] * rxntfR[19])))  # constant according to measured number per cell
     all_receptors = np.concatenate((numpy_data, no_expression), axis=1)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
     receptor_repeats = np.repeat(all_receptors, len(mat), 0)  # Create an array that repeats the receptor expression levels 'len(mat)' times
 
@@ -81,7 +80,6 @@ def findy(lig, n_timepoints):
             y_of_combos[ii] = ySolver(new_mat[ii, :], ts)
 
     return y_of_combos, new_mat, mat, mats, cell_names
-
 
 def prepare_tensor(lig, n_timepoints=100):
     """Function to generate the 4D values tensor."""

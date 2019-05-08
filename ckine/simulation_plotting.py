@@ -14,7 +14,6 @@ def input_IL2_15(final_conc, num):
         ligand_conc[idx, 0:2] = [C[0], C[1]]
     return ligand_conc, xaxis
 
-
 def solve_IL2_IL15(final_conc, num, time, nSpecies=nSpecies):
     """Function to simulate model with IL2 and IL15 only at timepoint tps."""
     ligand_conc, xaxis = input_IL2_15(final_conc, num)
