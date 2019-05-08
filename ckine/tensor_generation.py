@@ -8,7 +8,6 @@ from os.path import join
 import numpy as np
 import pandas as pds
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
-#from .figures/figureCommon import import_samples_2_15
 
 # Set the following variables for multiple functions to use
 endo = 0.08
@@ -19,20 +18,14 @@ kfwd = 0.004475761
 k4rev = 8.543317686
 k5rev = 0.12321939
 
-
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
-    cell_names = data.values[0:12, 0]
-    numpy_data = np.zeros((cell_names.size, 4))
-    for i in range(12):
-        numpy_data[i, 0] = np.mean(data.iloc[0 + i:37 + i:12].values[:, 2])  # IL2Ra mean
-        numpy_data[i, 1] = np.mean(data.iloc[48 + i:85 + i:12].values[:, 2])  # IL2Rb mean
-        numpy_data[i, 2] = np.mean(data.iloc[96 + i:133 + i:12].values[:, 2])  # gc mean
-        numpy_data[:, 3] = np.zeros(cell_names.size)  # IL15Ra have been below detection limit so set to 0.
-    return data, numpy_data, list(cell_names)
-
+    df = data.groupby(['Cell Type','Receptor']).mean() #Get the mean receptor count for each cell across trials in a new dataframe.
+    cell_names, receptor_names = df.index.unique().levels
+    numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size,receptor_names.size) #Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
+    return data, numpy_data, cell_names
 
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
