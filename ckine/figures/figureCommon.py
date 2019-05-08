@@ -10,12 +10,6 @@ import pandas as pds
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
-from ..tensor_generation import prepare_tensor
-
-n_ligands = 4
-values, _, mat, _, _ = prepare_tensor(n_ligands)
-values = tl.tensor(values)
-
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
@@ -60,7 +54,7 @@ def set_bounds(ax, compNum):
     ax.set_ylim(-y_max, y_max)
 
 
-def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
+def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
     cmap = sns.color_palette("hls", n_ligands)
@@ -77,7 +71,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
             legend = "full"
         else:
             legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mesh[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
             ax.add_artist(ax.legend(handles=h, loc=2))
