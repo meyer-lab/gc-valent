@@ -9,7 +9,7 @@ import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
-from ..tensor import import_samples_2_15
+from ..imports import import_samples_2_15
 
 
 def makeFigure():
