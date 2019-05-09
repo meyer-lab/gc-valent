@@ -1,10 +1,10 @@
 """
 This creates Figure 3.
 """
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from ..imports import import_Rexpr
 from ..tensor import find_R2X, perform_decomposition
 from ..tensor_generation import prepare_tensor
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 import string
 import tensorly as tl
 import numpy as np
