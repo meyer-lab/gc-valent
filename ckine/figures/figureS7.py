@@ -4,9 +4,9 @@ This creates Figure S7. Full panel of measured vs simulated for IL15.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int, receptor_expression, import_pstat, plot_scaled_pstat
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, receptor_expression, plot_scaled_pstat
 from ..model import runCkineUP, getTotalActiveSpecies
-from ..tensor_generation import import_Rexpr
+from ..imports import import_Rexpr, import_samples_2_15, import_pstat
 
 
 def makeFigure():
