@@ -20,20 +20,17 @@ def import_Rexpr():
     return data, numpy_data[:, [2, 3, 0, 1]], cell_names
 
 
-bmodelTraf = build_model_2_15(traf=True)
-bmodelNoTraf = build_model_2_15(traf=False)
-
-
 def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
+    bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
 
     if Traf:
-        trace = pm.backends.text.load(join(path, '../IL2_model_results'), bmodelTraf)
+        trace = pm.backends.text.load(join(path, '../IL2_model_results'), bmodel)
     else:
-        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf'), bmodelNoTraf)
+        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf'), bmodel)
 
     # option to return trace instead of numpy array
     if ret_trace:
