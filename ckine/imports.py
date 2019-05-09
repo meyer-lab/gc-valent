@@ -28,9 +28,9 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     path = os.path.dirname(os.path.abspath(__file__))
 
     if Traf:
-        trace = pm.backends.text.load(join(path, '../IL2_model_results'), model=bmodel)
+        trace = pm.backends.text.load(join(path, '../IL2_model_results'), bmodel.M)
     else:
-        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf'), model=bmodel)
+        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf'), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:
