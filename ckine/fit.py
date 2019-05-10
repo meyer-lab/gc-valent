@@ -129,12 +129,12 @@ class build_model:
                 kDeg = T.zeros(1, dtype=np.float64)
                 sortF = T.ones(1, dtype=np.float64) * 0.5
 
-            2Rb_value, gc_value = find_2Rb_gc(self.traf, endo, kRec, sortF, kDeg)  # find rate of expression or abundance (depending on traf)
-            Rexpr_2Rb = T.ones(1, dtype=np.float64) * 2Rb_value
+            IL2Rb_value, gc_value = find_2Rb_gc(self.traf, endo, kRec, sortF, kDeg)  # find rate of expression or abundance (depending on traf)
+            Rexpr_2Rb = T.ones(1, dtype=np.float64) * IL2Rb_value
             Rexpr_gc = T.ones(1, dtype=np.float64) * gc_value
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
-            Rexpr_2Ra_2Rb = pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1)  # Expression: IL2Ra
+            Rexpr_2Ra = pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1)  # Expression: IL2Ra
             Rexpr_15Ra = pm.Lognormal('Rexpr_15Ra', sd=0.5, shape=1)  # Expression: IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
