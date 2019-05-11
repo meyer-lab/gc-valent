@@ -40,7 +40,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
-    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
+    Rexpr_2Ra = trace.get_values('Rexpr_2Ra')
     Rexpr_15 = trace.get_values('Rexpr_15Ra')
 
     if Traf:
@@ -49,19 +49,21 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
         sortF = trace.get_values('sortF')
         kRec = trace.get_values('kRec')
         kDeg = trace.get_values('kDeg')
-        Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
+        Rexpr_2Rb, Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
+        
     else:
         endo = np.zeros((num))
         activeEndo = np.zeros((num))
         sortF = np.zeros((num))
         kRec = np.zeros((num))
         kDeg = np.zeros((num))
-        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
+        Rexpr_2Rb = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)[0]
+        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)[1]
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2Ra[ii], Rexpr_2Rb[ii], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
     if N is not None:
         if 0 < N < num:  # return a subsample if the user specified the number of samples
