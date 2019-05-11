@@ -4,7 +4,7 @@ from os.path import join
 import pymc3 as pm
 import numpy as np
 import pandas as pds
-from .fit import build_model as build_model_2_15, find_gc
+from .fit import build_model as build_model_2_15, find_2Rb_gc
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
@@ -49,7 +49,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
         sortF = trace.get_values('sortF')
         kRec = trace.get_values('kRec')
         kDeg = trace.get_values('kDeg')
-        Rexpr_2Rb, Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
+        Rexpr_2Rb, Rexpr_gc = find_2Rb_gc(Traf, endo, kRec, sortF, kDeg)
         
     else:
         endo = np.zeros((num))
@@ -57,8 +57,8 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
         sortF = np.zeros((num))
         kRec = np.zeros((num))
         kDeg = np.zeros((num))
-        Rexpr_2Rb = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)[0]
-        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)[1]
+        Rexpr_2Rb = np.ones((num), dtype=float) * find_2Rb_gc(Traf, endo, kRec, sortF, kDeg)[0]
+        Rexpr_gc = np.ones((num), dtype=float) * find_2Rb_gc(Traf, endo, kRec, sortF, kDeg)[1]
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
