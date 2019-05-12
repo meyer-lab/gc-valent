@@ -50,18 +50,17 @@ def plot_geweke(ax, traf):
     ax[0].legend()
 
     # plot the scores for receptor expression rates
-    rexpr_names = ['IL-2Rα', 'IL-2Rβ', 'IL-15Rα']
+    rexpr_names = ['IL-2Rα', 'IL-15Rα']
     rexpr_len = len(rexpr_names)
     colors = cm.rainbow(np.linspace(0, 1, rexpr_len))
 
     # plot IL2Ra and IL2Rb
-    for ii in range(rexpr_len - 1):
-        ax[1].scatter(score[0]['Rexpr_2Ra_2Rb'][ii][:, 0], score[0]['Rexpr_2Ra_2Rb'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rexpr_names[ii])
+    ax[1].scatter(score[0]['Rexpr_2Ra'][:, 0], score[0]['Rexpr_2Ra'][:, 1], marker='o', s=25, color=colors[0], label=rexpr_names[0])
     # plot IL15Ra
-    ax[1].scatter(score[0]['Rexpr_15Ra'][:, 0], score[0]['Rexpr_15Ra'][:, 1], marker='o', s=25, color=colors[2], label=rexpr_names[2])
+    ax[1].scatter(score[0]['Rexpr_15Ra'][:, 0], score[0]['Rexpr_15Ra'][:, 1], marker='o', s=25, color=colors[1], label=rexpr_names[1])
     ax[1].axhline(-1., c='r')
     ax[1].axhline(1., c='r')
-    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra_2Rb'].shape[0] / 2 + 10),
+    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[1].set_title('Trafficking Model: Receptor Expression Rates')
