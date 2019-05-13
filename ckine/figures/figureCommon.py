@@ -38,6 +38,10 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     else:
         ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
             gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]
+    
+    # shrink the padding between ticks and axes
+    for a in ax:
+        a.tick_params(axis='both', pad=-2)
 
     return (ax, f)
 
