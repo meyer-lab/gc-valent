@@ -172,4 +172,5 @@ def legend_2_15(ax):
                           markerfacecolor='k', markersize=8),
                        Line2D([0], [0], marker='^', color='w', label='IL-2Rα- cells',
                           markerfacecolor='k', markersize=8)]
-    ax.legend(handles=legend_elements, loc='center')
+    ax.legend(handles=legend_elements, loc='center', mode="expand", fontsize="large")
+    ax.axis('off')  # remove the grid

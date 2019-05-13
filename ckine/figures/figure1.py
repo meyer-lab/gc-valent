@@ -15,20 +15,27 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 5], multz={0: 2, 5: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 6], multz={0: 2, 6: 2})
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
 
+    # plot the legend in the top right corner (index 2)
+    leg_ind = 2
+    legend_2_15(ax[leg_ind])
+
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        # add conditionals to skip the legend
+        if ii < leg_ind:
+            subplotLabel(item, string.ascii_uppercase[ii])
+        elif ii > leg_ind:
+            subplotLabel(item, string.ascii_uppercase[ii-1])
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
-    legend_2_15(ax[2])
     surf_perc(ax[3:5], 'IL-2Rβ', unkVec)
     violinPlots(ax[6:9], full_unkVec, full_scales)
     rateComp(ax[5], full_unkVec)
