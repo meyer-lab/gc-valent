@@ -131,7 +131,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     if Traf:
         traf.columns = traf_names()
         b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5)
-        b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+        b.set_xticklabels(b.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.06))
         b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
@@ -141,7 +141,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     else:
         c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5)
         c.set(title="Receptor abundance levels", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell})}$")
-    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.06))
 
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
