@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info, legend_2_15
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..imports import import_samples_2_15
 
@@ -15,7 +15,7 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 6], multz={0: 2, 6: 2}, empts=[3])
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 5], multz={0: 2, 5: 2})
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
@@ -28,9 +28,10 @@ def makeFigure():
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
-    surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
-    violinPlots(ax[5:8], full_unkVec, full_scales)
-    rateComp(ax[4], full_unkVec)
+    legend_2_15(ax[2])
+    surf_perc(ax[3:5], 'IL-2Rβ', unkVec)
+    violinPlots(ax[6:9], full_unkVec, full_scales)
+    rateComp(ax[5], full_unkVec)
 
     f.tight_layout(w_pad=1.3)
 
@@ -130,24 +131,26 @@ def violinPlots(ax, unkVec, scales, Traf=True):
 
     if Traf:
         traf.columns = traf_names()
-        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5)
+        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5, color="grey")
         b.set_xticklabels(b.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.06))
         b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
+    col_list = ["violet", "violet", "grey", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
     if Traf:
-        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5)
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5, palette=col_list_palette)
         c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     else:
-        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5)
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
         c.set(title="Receptor abundance levels", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell})}$")
-    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.06))
+    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.04))
 
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
     scales.columns = [r'$C_{5}$']
-    d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5)
+    d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5, color="grey")
     d.set(ylabel="value", title="pSTAT5 scaling constant")
 
 
