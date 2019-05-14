@@ -5,7 +5,7 @@ B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-1
 C) Posterior distributions for receptor surface abundance in no-trafficking model.
 D) Posterior distribution for the pSTAT5 activity scaling constant in no-trafficking model. ](./Figures/figureS1.svg){#fig:supp1}
 
-![**Geweke criterion scores for trafficking and no-trafficking IL-2 and IL-15 models.** Geweke criterion in all subplots was calculated using first 10% of MCMC chain and last 50% of MCMC chain. A-D) Scores from parameters sampled in the trafficking model ([@Fig:modelConstruct]). E-G) Scores from parameters sampled in the no-trafficking model ([@Fig:supp1]). ](./Figures/figureS2.svg){#fig:supp2}
+![**Geweke criterion scores for trafficking and no-trafficking IL-2 and IL-15 models.** Geweke criterion in all subplots was calculated using first 10% and last 50% of MCMC chain. A-D) Scores from parameters sampled in the trafficking model ([@Fig:modelConstruct]). E-G) Scores from parameters sampled in the no-trafficking model ([@Fig:supp1]). ](./Figures/figureS2.svg){#fig:supp2}
 
 ![**Receptor quantification on PBMC-derived immune cell types.** XXX](./Figures/figureS3.svg){#fig:supp3}
 
