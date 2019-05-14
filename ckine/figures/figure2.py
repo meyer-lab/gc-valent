@@ -116,8 +116,8 @@ def traf_violin(ax, unkVec):
     traf = pd.DataFrame(unkVec[:, 17:22])
 
     traf.columns = traf_names()
-    a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5)
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Trafficking parameters")
 
@@ -130,8 +130,10 @@ def rexpr_violin(ax, unkVec):
     Rexpr = pd.DataFrame(Rexpr)
 
     Rexpr.columns = [r'$\gamma_{c}$', 'IL-7Rα', 'IL-4Rα']
-    a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5)
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    col_list = ["grey", "blue", "lightblue"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     a.set_title("Receptor expression rates")
 
@@ -141,7 +143,7 @@ def scales_violin(ax, scales):
     scales = pd.DataFrame(scales)
 
     scales.columns = [r'$C_{6}$', r'$C_{5}$']
-    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5)
+    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5, color="grey")
     a.set_ylabel("value")
     a.set_title("pSTAT scaling constants")
 
@@ -302,5 +304,5 @@ def relativeGC(ax, unkVec2, unkVec4):
     sns.set_palette(col_list_palette)
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
