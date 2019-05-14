@@ -24,7 +24,7 @@ def makeFigure():
 
     for i in range(receptor_data.shape[0]):
         # plot matching experimental and predictive pSTAT data for the same cell type
-        for j in range(len(cell_names_pstat)):
+        for j, _ in enumarate(cell_names_pstat):
             if cell_names_receptor[i] == cell_names_pstat[j]:
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(j * 4):((j + 1) * 4)])
                 if i == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
