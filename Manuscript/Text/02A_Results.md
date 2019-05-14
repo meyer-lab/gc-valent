@@ -1,6 +1,6 @@
 # Results
 
-## Family model captures  IL-2 and IL-15 dose response and the effect of IL-2Rα expression
+## Trafficking is necessary to capture IL-2 and IL-15 dose response and the effect of IL-2Rα expression
 
 ![**A family-wide model of the common gamma chain cytokine receptors.** A) Cartoon of all receptor-ligand complexes and binding events. Ligands are circles and complexes are boxes. Active species are outlined in red. Rate constants obtained from literature are denoted by diamonds; those solved through detailed balance are denoted by octagons and those solved through fitting are denoted by octagons with double outline. Rate constants that were measured as proportional to other rates are denoted by triangles.
 B) Model prediction vs. experimental results for maximal pSTAT5 activation in YT-1 cells under various concentrations of ligand stimulation for 500 minutes. Experimental measurements are denoted by triangles for IL-2Rα- cells and circles for IL-2Rα+ cells. The 95% confidence intervals of model predictions are denoted by shaded regions.
