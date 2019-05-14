@@ -7,10 +7,10 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
+from matplotlib.patches import Patch
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 from ..imports import import_samples_4_7, import_samples_2_15
-from matplotlib.patches import Patch
 
 
 def makeFigure():
@@ -298,9 +298,7 @@ def relativeGC(ax, unkVec2, unkVec4):
     df = pd.DataFrame({'2·2Rα': kfwd_2 / k4rev, '2·2Rβ': kfwd_2 / k5rev, '2·2Rα·2Rβ': kfwd_2 / k10rev, '15·15Rα': kfwd_2 / k16rev,
                        '15·2Rβ': kfwd_2 / k17rev, '15·15Rα·2Rβ': kfwd_2 / k22rev, '7·7Rα': kfwd_4 / k27rev, '4·4Rα': kfwd_4 / k33rev})
 
-    col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
+    sns.set_palette(sns.xkcd_palette(["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]))
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
