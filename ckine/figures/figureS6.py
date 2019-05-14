@@ -4,9 +4,9 @@ This creates Figure S6. Full panel of measured vs simulated for IL2.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, receptor_expression, plot_scaled_pstat
-from ..model import runCkineUP, getTotalActiveSpecies
-from ..imports import import_Rexpr, import_samples_2_15, import_pstat
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
+from ..imports import import_Rexpr, import_pstat, import_samples_2_15
 
 
 def makeFigure():
@@ -17,24 +17,21 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    _, data_Visterra, cell_names_Visterra = import_Rexpr()
+    _, receptor_data, cell_names_receptor = import_Rexpr()
     unkVec_2_15, _ = import_samples_2_15()
-    ckineConc, _, IL2_data, _ = import_pstat()
+    ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
+    axis = 0
 
-    # Delete and organize data to match the cells between receptor level and pSTAT5 data
-    data_Visterra = np.delete(data_Visterra, [0, 8], 0)
-    cell_names_Visterra.remove('CD3+CD4+')
-    cell_names_Visterra.remove('NKT')
-    match_cells = [5, 6, 7, 8, 9, 10, 0, 2, 3, 4]
-
-    for i in range(data_Visterra.shape[0]):
-        if i == (data_Visterra.shape[0] - 1):  # only plot the legend for the last entry
-            IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], ckineConc, legend=True)
-        else:
-            IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], ckineConc)
-
-    for axis, j in enumerate(match_cells):
-        plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(j * 4):((j + 1) * 4)])
+    for i in range(receptor_data.shape[0]):
+        # plot matching experimental and predictive pSTAT data for the same cell type
+        for j in range(len(cell_names_pstat)):
+            if cell_names_receptor[i] == cell_names_pstat[j]:
+                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(j * 4):((j + 1) * 4)])
+                if i == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
+                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[i], receptor_data[i], ckineConc, legend=True)
+                else:
+                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[i], receptor_data[i], ckineConc)
+                axis = axis + 1
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 

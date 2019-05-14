@@ -158,3 +158,13 @@ def kfwd_info(unkVec):
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
+
+def plot_scaled_pstat(ax, cytokC, pstat):
+    """ Plots pSTAT5 data scaled by the average activity measurement. """
+    tps = np.array([0.5, 1., 2., 4.])
+    avg_activity = np.sum(pstat)/tps.size
+    # plot pstat5 data for each time point
+    ax.scatter(cytokC, pstat[3,:]/avg_activity, c="indigo", s=2) #0.5 hr
+    ax.scatter(cytokC, pstat[2,:]/avg_activity, c="teal", s=2) #1 hr
+    ax.scatter(cytokC, pstat[1,:]/avg_activity, c="forestgreen", s=2) #2 hr
+    ax.scatter(cytokC, pstat[0,:]/avg_activity, c="darkred", s=2) #4 hr
