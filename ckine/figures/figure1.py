@@ -83,8 +83,8 @@ def surf_perc(ax, species, unkVec):
 
     for n in range(4):
         # plot results within confidence intervals
-        plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid", "IL-2")
-        plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod", "IL-15")
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid")
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod")
 
     # label axes and titles
     ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 500 nM")
@@ -112,21 +112,19 @@ def pstat_act(ax, unkVec, scales):
     IL15_minus = output[:, (PTS * 3):(PTS * 4)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL-2")
-    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL-15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid")
+    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod")
     plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
     plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values  # imports file into pandas array
-    ax.scatter(data[:, 0], data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100, label="IL-2, 2Rα-")  # IL2 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL-15, 2Rα-")  # IL15 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+")  # IL2 in 2Ra+
-    ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+")  # IL15 in 2Ra+
+    ax.scatter(data[:, 0], data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # IL2 in 2Ra-
+    ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
+    ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
+    ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
-
-    ax.legend()
 
 
 def violinPlots(ax, unkVec, scales, Traf=True):
@@ -206,6 +204,7 @@ def rateComp(ax, unkVec):
 
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, linewidth=0, scale='width')
+    a.get_legend().remove()  # remove the legend
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
