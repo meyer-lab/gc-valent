@@ -306,9 +306,10 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
+
 def legend_4_7(ax):
     """ Plots a legend for all the IL-4 and IL-7 related plots in its own subpanel. """
-    legend_elements = [ Patch(facecolor='b', label='IL-7 stimulation'),
-                        Patch(facecolor='powderblue', label='IL-4 stimulation')]
+    legend_elements = [Patch(facecolor='b', label='IL-7 stimulation'),
+                       Patch(facecolor='powderblue', label='IL-4 stimulation')]
     ax.legend(handles=legend_elements, loc='lower center', fontsize="large")
     ax.axis('off')  # remove the grid

@@ -29,7 +29,7 @@ def makeFigure():
         if ii < leg_ind:
             subplotLabel(item, string.ascii_uppercase[ii])
         elif ii > leg_ind:
-            subplotLabel(item, string.ascii_uppercase[ii-1])
+            subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots

@@ -15,6 +15,7 @@ n_ligands = 4
 values, _, mat, _, _ = prepare_tensor(n_ligands)
 values = tl.tensor(values)
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects

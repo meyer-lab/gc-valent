@@ -21,7 +21,7 @@ def makeFigure():
         if ii < leg_ind:
             subplotLabel(item, string.ascii_uppercase[ii])
         elif ii > leg_ind:
-            subplotLabel(item, string.ascii_uppercase[ii-1])
+            subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     unkVec, scales = import_samples_2_15(Traf=False, N=100)
     full_unkVec, full_scales = import_samples_2_15(Traf=False)
