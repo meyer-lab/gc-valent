@@ -31,15 +31,15 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
-    traf_violin(ax[4], full_unkVec_4_7)
-    rexpr_violin(ax[5], full_unkVec_4_7)
-    scales_violin(ax[6], full_scales_4_7)
-    surf_gc(ax[7], 100., full_unkVec_4_7)
+    traf_violin(ax[6], full_unkVec_4_7)
+    rexpr_violin(ax[7], full_unkVec_4_7)
+    scales_violin(ax[8], full_scales_4_7)
+    surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
+    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
 
-    relativeGC(ax[3], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
+    relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
     f.tight_layout()
 
@@ -285,7 +285,7 @@ def data_path():
 
 
 def relativeGC(ax, unkVec2, unkVec4):
-    """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev,
+    """ This function compares the relative complex affinities for GC. The rates included in this violin plot will be k4rev, k10rev,
     k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
 
     # assign values from unkVec

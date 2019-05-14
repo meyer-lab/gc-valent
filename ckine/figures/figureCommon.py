@@ -167,7 +167,7 @@ def kfwd_info(unkVec):
 def legend_2_15(ax):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [ Patch(facecolor='darkorchid', label='IL-2'),
-                       Patch(facecolor='goldenrod', label='IL-15'),
+                        Patch(facecolor='goldenrod', label='IL-15'),
                         Line2D([0], [0], marker='o', color='w', label='IL-2Rα+ cells',
                           markerfacecolor='k', markersize=8),
                        Line2D([0], [0], marker='^', color='w', label='IL-2Rα- cells',
