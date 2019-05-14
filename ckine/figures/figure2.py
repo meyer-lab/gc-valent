@@ -10,6 +10,7 @@ import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 from ..imports import import_samples_4_7, import_samples_2_15
+from matplotlib.patches import Patch
 
 
 def makeFigure():
@@ -29,6 +30,7 @@ def makeFigure():
 
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
+    legend_4_7(ax[0])
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
@@ -37,7 +39,7 @@ def makeFigure():
     surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
+    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, "Cross-talk w/o active endocytosis")
 
     relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
@@ -98,8 +100,8 @@ def pstat_plot(ax, unkVec, scales):
     IL7_output = output[K:(K * 2)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue", "IL-4")
-    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100., "b", "IL-7")
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100., "b")
 
     # overlay experimental data
     ax.scatter(np.log10(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=100)
@@ -107,7 +109,6 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=400)
     ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
-    ax.legend()
 
 
 def traf_violin(ax, unkVec):
@@ -223,8 +224,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K:(K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim. (IL-7 pre.)")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim. (IL-4 pre.)")
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b")
     ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment concentration (log$_{10}$[nM])')
 
     # add experimental data to plots
@@ -234,7 +235,6 @@ def plot_pretreat(ax, unkVec, scales, title):
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k')
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
-    ax.legend()
 
 
 def surf_gc(ax, cytokC_pg, unkVec):
@@ -244,11 +244,10 @@ def surf_gc(ax, cytokC_pg, unkVec):
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
     IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
-    plot_conf_int(ax, ts, IL4vec, "powderblue", "IL-4")
-    plot_conf_int(ax, ts, IL7vec, "b", "IL-7")
-    ax.set(title=("Ligand conc: " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    plot_conf_int(ax, ts, IL4vec, "powderblue")
+    plot_conf_int(ax, ts, IL7vec, "b")
+    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
-    ax.legend()
 
 
 def calc_surf_gc(t, cytokC_pg, unkVec):
@@ -306,3 +305,10 @@ def relativeGC(ax, unkVec2, unkVec4):
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
+
+def legend_4_7(ax):
+    """ Plots a legend for all the IL-4 and IL-7 related plots in its own subpanel. """
+    legend_elements = [ Patch(facecolor='b', label='IL-7 stimulation'),
+                        Patch(facecolor='powderblue', label='IL-4 stimulation')]
+    ax.legend(handles=legend_elements, loc='lower center', fontsize="large")
+    ax.axis('off')  # remove the grid
