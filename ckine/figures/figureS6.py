@@ -22,15 +22,15 @@ def makeFigure():
     ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
     axis = 0
 
-    for i in range(receptor_data.shape[0]):
+    for i, _ in enumerate(cell_names_pstat):
         # plot matching experimental and predictive pSTAT data for the same cell type
-        for j, _ in enumarate(cell_names_pstat):
-            if cell_names_receptor[i] == cell_names_pstat[j]:
-                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(j * 4):((j + 1) * 4)])
-                if i == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
-                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[i], receptor_data[i], ckineConc, legend=True)
+        for j in range(receptor_data.shape[0]):
+            if cell_names_pstat[i] == cell_names_receptor[j]:
+                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
+                if j == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
+                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
                 else:
-                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[i], receptor_data[i], ckineConc)
+                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[j], receptor_data[j], ckineConc)
                 axis = axis + 1
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
