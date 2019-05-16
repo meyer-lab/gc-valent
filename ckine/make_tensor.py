@@ -10,7 +10,7 @@ from .imports import import_Rexpr, import_samples_2_15, import_pstat
 rxntfR, _ = import_samples_2_15(N=1)
 rxntfR = np.squeeze(rxntfR)
 
-n_lig = 3 #Set the number of different cytokines used to 3
+n_lig = 3 #Set the number of different cytokines used to make the tensor to 3
 
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
