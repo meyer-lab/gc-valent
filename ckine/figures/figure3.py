@@ -14,7 +14,6 @@ cell_dim = 1  # For this figure, the cell dimension is along the second [python 
 values, _, mat, _, _ = prepare_tensor()
 values = tl.tensor(values)
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -50,7 +49,6 @@ def makeFigure():
     f.tight_layout()
 
     return f
-
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
