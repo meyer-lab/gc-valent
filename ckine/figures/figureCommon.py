@@ -8,6 +8,7 @@ from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
+
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
@@ -54,17 +55,18 @@ def set_bounds(ax, compNum):
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
 
+
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
-    cmap = sns.color_palette("hls", int(mesh.shape[0]/n_ligands))
+    cmap = sns.color_palette("hls", int(mesh.shape[0] / n_ligands))
 
     legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
                     Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle='')]
 
     for ii in range(n_ligands):
-        idx = range(ii * int(mesh.shape[0]/n_ligands), (ii + 1) * int(mesh.shape[0]/n_ligands))
+        idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
 
         if ii == 0 and ax_pos == 4 and fig3:
             legend = "full"
@@ -72,7 +74,8 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
             legend = "full"
         else:
             legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mesh[idx, :].astype(int), axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii],
+                        hue=np.log10(np.sum(mesh[idx, :].astype(int), axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
             ax.add_artist(ax.legend(handles=h, loc=2))

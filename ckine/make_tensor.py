@@ -10,7 +10,8 @@ from .imports import import_Rexpr, import_samples_2_15, import_pstat
 rxntfR, _ = import_samples_2_15(N=1)
 rxntfR = np.squeeze(rxntfR)
 
-n_lig = 3 #Set the number of different cytokines used to make the tensor to 3
+n_lig = 3  # Set the number of different cytokines used to make the tensor to 3
+
 
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
@@ -49,16 +50,16 @@ def meshprep(n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
-    ILs, _, _, _ = import_pstat() # Cytokine stimulation concentrations in nM
+    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
 
     '''Goal is to make one cell expression levels by len(mat) for every cell
     Make mesh grid of all ligand concentrations, First is IL-2 WT, Second is IL-2 Mutant; Third is IL-15.
     Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)'''
     concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                     np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                     np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6)))  
-    '''Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12). 
+                          np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                          np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6)))
+    '''Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     Just stacks up concMesh on top of each other 12 times (or however many cells are available)'''
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
 
@@ -72,14 +73,15 @@ def meshprep(n_timepoints):
     '''Concatenate to obtain the new meshgrid.
     Conc_recept_cell basically repeats the initial stimulation concentration for all ligands of interest an X amount of times (X = # of cells)
     The first [len(ILs)*3] are for cell 1, second [len(ILs)*3] are for cell 2, etc...'''
-    Conc_recept_cell = np.concatenate((concMesh_stacked, receptor_repeats), axis=1)  
+    Conc_recept_cell = np.concatenate((concMesh_stacked, receptor_repeats), axis=1)
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
+
 
 def prep_tensor(n_lig, n_timepoints=100):
     """Function to generate the 3D values tensor."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(n_timepoints)
-    idx_ref = concMesh.shape[0]/n_lig #Provides a reference for the order of idices at which the mutant is present.
-    
+    idx_ref = concMesh.shape[0] / n_lig  # Provides a reference for the order of idices at which the mutant is present.
+
     # generate n_timepoints evenly spaced timepoints to 4 hrs
     ts = np.logspace(-3., np.log10(4 * 60.), n_timepoints)
     ts = np.insert(ts, 0, 0.0)
@@ -88,18 +90,19 @@ def prep_tensor(n_lig, n_timepoints=100):
     y_of_combos = np.zeros((len(Conc_recept_cell), ts.size, nSpecies()))
 
     for jj in range(Conc_recept_cell.shape[0]):
-        if jj % concMesh.shape[0] < idx_ref or jj % concMesh.shape[0] >= idx_ref*(n_lig-1):
-            #Solve using the wildtype model.These indices are for WT IL-2 and WT IL-15.
+        if jj % concMesh.shape[0] < idx_ref or jj % concMesh.shape[0] >= idx_ref * (n_lig - 1):
+            # Solve using the wildtype model.These indices are for WT IL-2 and WT IL-15.
             y_of_combos[jj] = ySolver(Conc_recept_cell[jj, :], ts)
         else:
-            #Solve using the mutant model for mut-IL2
+            # Solve using the mutant model for mut-IL2
             y_of_combos[jj] = ySolver_IL2_mut(Conc_recept_cell[jj, :], ts)
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
+
 def make_tensor(n_lig=n_lig, n_timepoints=100):
     """Function to generate the 3D values tensor."""
-    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(n_lig, n_timepoints)  
-    
+    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(n_lig, n_timepoints)
+
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
 
     values[:, :, 0] = np.tensordot(y_of_combos, getTotalActiveSpecies(), (2, 0))
