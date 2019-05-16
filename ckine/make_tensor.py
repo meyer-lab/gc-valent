@@ -10,6 +10,7 @@ from .imports import import_Rexpr, import_samples_2_15, import_pstat
 rxntfR, _ = import_samples_2_15(N=1)
 rxntfR = np.squeeze(rxntfR)
 
+n_lig = 3 #Set the number of different cytokines used to 3
 
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
@@ -95,7 +96,7 @@ def prep_tensor(n_lig, n_timepoints=100):
             y_of_combos[jj] = ySolver_IL2_mut(Conc_recept_cell[jj, :], ts)
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
-def make_tensor(n_lig=3, n_timepoints=100):
+def make_tensor(n_lig=n_lig, n_timepoints=100):
     """Function to generate the 3D values tensor."""
     y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(n_lig, n_timepoints)  
     
