@@ -12,7 +12,7 @@ from ..make_tensor import make_tensor, n_lig
 
 n_ligands = n_lig
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
-values, _, mat, _, _ = prepare_tensor()
+values, _, mat, _, _ = make_tensor()
 values = tl.tensor(values)
 
 def makeFigure():
