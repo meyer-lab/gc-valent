@@ -12,7 +12,6 @@ from ..imports import import_Rexpr
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3

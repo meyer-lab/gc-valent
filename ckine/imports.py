@@ -8,7 +8,6 @@ from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
-
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))

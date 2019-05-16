@@ -8,11 +8,10 @@ import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from ..imports import import_Rexpr
 from ..tensor import find_R2X, perform_decomposition
-from ..tensor_generation import prepare_tensor
+from ..make_tensor import make_tensor
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
-n_ligands = 4
-values, _, mat, _, _ = prepare_tensor(n_ligands)
+values, _, mat, _, _ = prepare_tensor()
 values = tl.tensor(values)
 
 
