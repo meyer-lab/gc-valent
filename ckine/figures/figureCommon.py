@@ -75,7 +75,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
         else:
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii],
-                        hue=np.log10(np.sum(mesh[idx, :].astype(int), axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
+                        hue=int(np.log10(np.sum(mesh[idx, :].astype(float), axis=1))), ax=ax, palette=cmap, s=100, legend=legend)
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
             ax.add_artist(ax.legend(handles=h, loc=2))
