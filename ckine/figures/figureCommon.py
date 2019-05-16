@@ -3,6 +3,7 @@ This file contains functions that are used in multiple figures.
 """
 import seaborn as sns
 import numpy as np
+import pysnooper
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
@@ -54,7 +55,7 @@ def set_bounds(ax, compNum):
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
 
-
+@pysnooper.snoop()
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
@@ -66,13 +67,14 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii * n_ligands, (ii + 1) * n_ligands)
+
         if ii == 0 and ax_pos == 4 and fig3:
             legend = "full"
         elif ii == 0 and ax_pos == 2 and fig3 is False:
             legend = "full"
         else:
             legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker='x', hue=np.log10(np.sum(mesh[idx, :].astype(float), axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[idx], hue=np.log10(np.sum(mesh[idx, :].astype(float), axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
             ax.add_artist(ax.legend(handles=h, loc=2))
