@@ -40,7 +40,7 @@ def makeFigure():
 
 def IL2_dose_response(ax, unkVec, cell_type, cell_data, cytokC, legend=False):
     """ Shows activity for a given cell type at various IL2 concentrations """
-    tps = np.array([0.5, 1., 2., 4.])
+    tps = np.array([0.5, 1., 2., 4.]) * 60.
     PTS = 12  # number of cytokine concentrations
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
