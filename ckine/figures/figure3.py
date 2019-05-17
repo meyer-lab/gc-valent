@@ -45,8 +45,8 @@ def makeFigure():
     plot_cells(ax[3], factors_activ[1], 1, 2, cell_names, ax_pos=3)
     plot_cells(ax[6], factors_activ[1], 3, 4, cell_names, ax_pos=6)
 
-    plot_ligands(ax[4], factors_activ[2], 1, 2, ax_pos=4, n_ligands=n_ligands, mesh=mat)
-    plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7, n_ligands=n_ligands, mesh=mat)
+    plot_ligands(ax[4], factors_activ[2], 1, 2, ax_pos=4, n_ligands=n_ligands, mesh=mat, fig=f)
+    plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7, n_ligands=n_ligands, mesh=mat, fig=f)
 
     f.tight_layout()
 
