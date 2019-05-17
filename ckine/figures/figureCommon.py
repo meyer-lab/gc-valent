@@ -59,7 +59,7 @@ def set_bounds(ax, compNum):
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
-    cmap = sns.color_palette("RdBu", n_colors=int(mesh.shape[0] / n_ligands))
+    cmap = sns.color_palette("hls", n_colors=int(mesh.shape[0] / n_ligands))
 
     legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
