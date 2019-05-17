@@ -77,7 +77,7 @@ def meshprep():
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def prep_tensor(numlig, n_timepoints=100):
+def prep_tensor(numlig, n_timepoints):
     """Function to generate the 3D values tensor."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
     idx_ref = concMesh.shape[0] / numlig  # Provides a reference for the order of idices at which the mutant is present.
