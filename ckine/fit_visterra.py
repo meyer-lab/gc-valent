@@ -40,11 +40,11 @@ class pSTAT_activity:
         for i, _ in enumerate(self.cell_names_pstat):
             # plot matching experimental and predictive pSTAT data for the same cell type
             for j in range(self.receptor_data.shape[0]):
-                if cell_names_pstat[i] == cell_names_receptor[j]:
-                    unkVec[16] = receptor_expression(self.receptor_data[j, 0], unkVec[11], unkVec[14], unkVec[13], unkVec[15])  # IL2Ra
-                    unkVec[17] = receptor_expression(self.receptor_data[j, 1], unkVec[11], unkVec[14], unkVec[13], unkVec[15])  # IL2Rb
-                    unkVec[18] = receptor_expression(self.receptor_data[j, 2], unkVec[11], unkVec[14], unkVec[13], unkVec[15])  # gc
-                    unkVec[19] = receptor_expression(self.receptor_data[j, 3], unkVec[11], unkVec[14], unkVec[13], unkVec[15])  # IL15Ra
+                if self.cell_names_pstat[i] == self.cell_names_receptor[j]:
+                    T.set_subtensor(unkVec[16], receptor_expression(self.receptor_data[j, 0], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Ra
+                    T.set_subtensor(unkVec[17], receptor_expression(self.receptor_data[j, 1], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Rb
+                    T.set_subtensor(unkVec[18], receptor_expression(self.receptor_data[j, 2], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # gc
+                    T.set_subtensor(unkVec[19], receptor_expression(self.receptor_data[j, 3], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL15Ra
                     actVec = Op(unkVec)
 
                     # account for pSTAT5 saturation and then normalize from 0 to 1
@@ -53,8 +53,12 @@ class pSTAT_activity:
 
                     # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
                     data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
+                    print("data_cat.shape:", data_cat.shape)
+                    
+                    newVec = T.reshape(actVec, data_cat.shape)
 
-                    tot_res.append((data_cat - actVec))  # append residual to the list
+                    temp = newVec - data_cat  # append residual to the list
+                    tot_res.append(temp)
         return tot_res
                     
 
