@@ -62,7 +62,7 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def plot_ligands(ax, factors, component_x, component_y, IL_treat):
+def plot_ligands(ax, factors, component_x, component_y, IL_treat,ax_pos):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*']
     n_ligands = len(IL_treat)
@@ -85,4 +85,4 @@ def plot_ligands(ax, factors, component_x, component_y, IL_treat):
         ax.add_artist(legend2)
 
     ax.set_title('Ligands')
-    set_bounds(ax, component_x)
+    set_bounds(ax, component_x, ax_pos)
