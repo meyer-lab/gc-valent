@@ -47,7 +47,7 @@ def ySolver_IL2_mut(matIn, ts):
 
 
 def meshprep():
-    """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
+    """Prepares the initial conditions for the tensor."""
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
@@ -78,7 +78,7 @@ def meshprep():
 
 
 def prep_tensor(numlig, n_timepoints):
-    """Function to generate the 3D values tensor."""
+    """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
     idx_ref = concMesh.shape[0] / numlig  # Provides a reference for the order of idices at which the mutant is present.
 
@@ -100,7 +100,7 @@ def prep_tensor(numlig, n_timepoints):
 
 
 def make_tensor(numlig=n_lig, n_timepoints=100):
-    """Function to generate the 3D values tensor."""
+    """Function to generate the 3D values tensor from the prepared solutions."""
     y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(numlig, n_timepoints)
 
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
