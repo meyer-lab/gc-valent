@@ -7,7 +7,7 @@ import numpy as np
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
 
-rxntfR, _ = import_samples_2_15(N=1)
+rxntfR, _ = import_samples_2_15(N=1, tensor=True)
 rxntfR = np.squeeze(rxntfR)
 
 n_lig = 3  # Set the number of different cytokines used to make the tensor to 3
