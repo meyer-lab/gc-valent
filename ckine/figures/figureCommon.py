@@ -8,6 +8,7 @@ from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
+
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
@@ -58,7 +59,7 @@ def set_bounds(ax, compNum):
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
-    cmap = sns.color_palette("RdBu", n_colors = int(mesh.shape[0] / n_ligands))
+    cmap = sns.color_palette("RdBu", n_colors=int(mesh.shape[0] / n_ligands))
 
     legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
@@ -73,7 +74,8 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
             legend = "full"
         else:
             legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue= np.around(np.sum(mesh[idx, :], axis=1).astype(float), decimals =4), marker=markers[ii], ax=ax, palette=cmap, s=100, legend=legend)
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=np.around(np.sum(mesh[idx, :],
+                                                                                                               axis=1).astype(float), decimals=4), marker=markers[ii], ax=ax, palette=cmap, s=100, legend=legend)
 
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
@@ -85,6 +87,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
+
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
