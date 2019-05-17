@@ -16,6 +16,7 @@ def commonTraf():
     sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
     return kfwd, endo, activeEndo, kRec, kDeg, sortF
 
+
 class pSTAT_activity:
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in distinct cell lines from Visterra. """
     
@@ -49,7 +50,7 @@ class pSTAT_activity:
                     # account for pSTAT5 saturation and then normalize from 0 to 1
                     actVec = actVec / (actVec + scale)
                     actVec = actVec / T.max(actVec)
-                    
+
                     # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
                     data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
 
@@ -98,4 +99,3 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
-            
