@@ -43,11 +43,14 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
-
-def set_bounds(ax, compNum):
+def set_bounds(ax, compNum, ax_pos):
     """Add labels and bounds"""
     ax.set_xlabel('Component ' + str(compNum))
+    ax.yaxis.set_label_position("left")
     ax.set_ylabel('Component ' + str(compNum + 1))
+    if ax_pos==4 or ax_pos==2:
+        ax.yaxis.set_label_position("right")
+        ax.set_ylabel('Concentration (nM)', labelpad=30)
 
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim()))) * 1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim()))) * 1.1
@@ -59,7 +62,10 @@ def set_bounds(ax, compNum):
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
-    cmap = sns.color_palette("hls", n_colors=int(mesh.shape[0] / n_ligands))
+    hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=4)
+    norm = plt.Normalize(hu.min(), hu.max())
+    sm = plt.cm.ScalarMappable(cmap="Reds", norm=norm)
+    sm.set_array([])
 
     legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
@@ -68,24 +74,21 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
     for ii in range(n_ligands):
         idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
 
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette='Reds', s=100, legend = False)
+
         if ii == 0 and ax_pos == 4 and fig3:
-            legend = "full"
+            ax.figure.colorbar(sm, ax=ax)
+
         elif ii == 0 and ax_pos == 2 and fig3 is False:
-            legend = "full"
-        else:
-            legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=np.around(np.sum(mesh[idx, :], axis=1).astype(float), decimals=4), marker=markers[ii], ax=ax, palette=cmap, s=100, legend=legend)
+            ax.figure.colorbar(sm, ax=ax)
 
-        h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
-            ax.add_artist(ax.legend(handles=h, loc=2))
             ax.add_artist(ax.legend(handles=legend_shape, loc=3))
+            
         elif ax_pos == 2 and not fig3:
-            ax.add_artist(ax.legend(handles=h, loc=2))
             ax.add_artist(ax.legend(handles=legend_shape, loc=3))
-
     ax.set_title('Ligands')
-    set_bounds(ax, component_x)
+    set_bounds(ax, component_x, ax_pos)
 
 
 def subplotLabel(ax, letter, hstretch=1):
@@ -125,7 +128,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
         ax.legend()
     ax.set_title('Cells')
 
-    set_bounds(ax, component_x)
+    set_bounds(ax, component_x, ax_pos)
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
@@ -149,7 +152,6 @@ def plot_timepoints(ax, factors):
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
         ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
-        ax.scatter(ts[-1], factors[-1, ii], s=12, color='k')
 
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')

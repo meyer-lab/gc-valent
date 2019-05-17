@@ -16,7 +16,7 @@ cell_dim = 0  # For this figure, the cell dimension is along the first [python i
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 7), (2, 2))
+    ax, f = getSetup((7.5, 5), (2, 2))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels

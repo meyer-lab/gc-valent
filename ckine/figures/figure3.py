@@ -20,7 +20,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((12, 9), (x, y), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 11])
+    ax, f = getSetup((7.5, 6), (x, y), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 11])
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -59,8 +59,9 @@ def bar_receptors(ax, data):
     ax.legend(loc='best')
     ax.set_ylabel("Surface Receptor [# / cell]")
     ax.set_xticklabels(ax.get_xticklabels(),
-                       rotation=40, rotation_mode="anchor", ha="right",
+                       rotation=20, rotation_mode="anchor", ha="right",
                        position=(0, 0.05), fontsize=6.5)
+    ax.set_yscale('log')
 
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
