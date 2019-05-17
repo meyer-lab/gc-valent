@@ -4,7 +4,7 @@ The initial conditions vary the concentrations of the three ligands to simulate 
 Cell lines are defined by the number of each receptor subspecies on their surface.
 """
 import numpy as np
-from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
+from .model import runCkineU, nSpecies, runCkineU_IL2, getTotalActiveSpecies
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
 
 rxntfR, _ = import_samples_2_15(N=1, tensor=True)
@@ -46,7 +46,7 @@ def ySolver_IL2_mut(matIn, ts):
     return yOut
 
 
-def meshprep(n_timepoints):
+def meshprep():
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
@@ -77,10 +77,10 @@ def meshprep(n_timepoints):
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def prep_tensor(n_lig, n_timepoints=100):
+def prep_tensor(numlig, n_timepoints=100):
     """Function to generate the 3D values tensor."""
-    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(n_timepoints)
-    idx_ref = concMesh.shape[0] / n_lig  # Provides a reference for the order of idices at which the mutant is present.
+    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
+    idx_ref = concMesh.shape[0] / numlig  # Provides a reference for the order of idices at which the mutant is present.
 
     # generate n_timepoints evenly spaced timepoints to 4 hrs
     ts = np.logspace(-3., np.log10(4 * 60.), n_timepoints)
@@ -90,7 +90,7 @@ def prep_tensor(n_lig, n_timepoints=100):
     y_of_combos = np.zeros((len(Conc_recept_cell), ts.size, nSpecies()))
 
     for jj in range(Conc_recept_cell.shape[0]):
-        if jj % concMesh.shape[0] < idx_ref or jj % concMesh.shape[0] >= idx_ref * (n_lig - 1):
+        if jj % concMesh.shape[0] < idx_ref or jj % concMesh.shape[0] >= idx_ref * (numlig - 1):
             # Solve using the wildtype model.These indices are for WT IL-2 and WT IL-15.
             y_of_combos[jj] = ySolver(Conc_recept_cell[jj, :], ts)
         else:
@@ -99,9 +99,9 @@ def prep_tensor(n_lig, n_timepoints=100):
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def make_tensor(n_lig=n_lig, n_timepoints=100):
+def make_tensor(numlig=n_lig, n_timepoints=100):
     """Function to generate the 3D values tensor."""
-    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(n_lig, n_timepoints)
+    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(numlig, n_timepoints)
 
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
 
