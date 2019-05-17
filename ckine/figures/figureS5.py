@@ -41,7 +41,7 @@ def makeFigure():
 
     plot_cells(ax[2], factors_activ[0], 1, 2, cell_names, ax_pos=1)
 
-    plot_ligands(ax[3], factors_activ[2], 1, 2, ckineConc)
+    plot_ligands(ax[3], factors_activ[2], 1, 2, ckineConc, ax_pos=3)
     f.tight_layout()
 
     return f
@@ -62,7 +62,7 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def plot_ligands(ax, factors, component_x, component_y, IL_treat):
+def plot_ligands(ax, factors, component_x, component_y, IL_treat,ax_pos):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*']
     n_ligands = len(IL_treat)
@@ -85,4 +85,4 @@ def plot_ligands(ax, factors, component_x, component_y, IL_treat):
         ax.add_artist(legend2)
 
     ax.set_title('Ligands')
-    set_bounds(ax, component_x)
+    set_bounds(ax, component_x, ax_pos)
