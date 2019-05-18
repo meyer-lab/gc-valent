@@ -35,7 +35,7 @@ class pSTAT_activity:
 
         # Find amount of active species for each simulation
         Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
-        
+
         tot_res = T.zeros((self.receptor_data.shape[0], self.ts.size*2, self.cytokC.size))
         for i, name in enumerate(self.cell_names_pstat):
             if name == "CD8+" or name == "Naive Treg":
@@ -55,12 +55,10 @@ class pSTAT_activity:
 
                         # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
                         data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
-                        print("data_cat[0]", data_cat[0])
 
                         newVec = T.reshape(actVec, data_cat.shape)  # TODO: use print statements to make sure that this reshape has been done correctly
 
-                        temp = newVec - data_cat  # append residual to the list
-                        print(temp)
+                        temp = newVec - data_cat  # copy residuals into the cell's row within tot_res
                         tot_res = T.set_subtensor(tot_res[i], temp)
 
         return tot_res
