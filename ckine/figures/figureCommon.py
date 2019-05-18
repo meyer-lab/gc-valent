@@ -78,11 +78,11 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
-            ax.add_artist(ax.legend(handles=h, loc=2))
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3))
+            ax.add_artist(ax.legend(handles=h, loc=6, title="Conc. (nM)", fontsize="small"))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=4))
         elif ax_pos == 2 and not fig3:
-            ax.add_artist(ax.legend(handles=h, loc=2))
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3))
+            ax.add_artist(ax.legend(handles=h, loc=6, title="Conc. (nM)", fontsize="small"))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=4))
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
