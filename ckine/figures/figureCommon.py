@@ -2,12 +2,14 @@
 This file contains functions that are used in multiple figures.
 """
 import seaborn as sns
+sns.set(style="darkgrid")
 import numpy as np
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
-
+from matplotlib.colors import LogNorm
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
@@ -57,10 +59,10 @@ def set_bounds(ax, compNum):
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True):
     "This function is to plot the ligand combination dimension of the values tensor."
-    markers = ['^', '*', 'x']
-    hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=4)
-    norm = plt.Normalize(hu.min(), hu.max())
-    cmap = sns.dark_palette("#cc2e3a", n_colors=len(hu), reverse=True, as_cmap=True)
+    markers = ['^', '*', '.']
+    hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
+    norm = LogNorm(vmin=hu.min(), vmax=hu.max())
+    cmap = sns.dark_palette("#2eccc0", n_colors=len(hu), reverse=True, as_cmap=True)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
 
@@ -71,12 +73,13 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
     for ii in range(n_ligands):
         idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
 
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette='Reds', s=100, legend = False, hue_norm=None)
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend = False, hue_norm=LogNorm())
 
         if ii == 0 and ax_pos == 4 and fig3:
-            #ax.figure.colorbar(sm, ax=ax)
-            fig.colorbar(sm, ax=ax)
-            #fig.colorbar.set_label('Concentration (nM)')
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            a = fig.colorbar(sm, cax=cax)
+            a.set_label('Concentration (nM)')
 
         elif ii == 0 and ax_pos == 2 and fig3 is False:
             ax.figure.colorbar(sm, ax=ax)
@@ -179,7 +182,7 @@ def legend_2_15(ax):
 
 def plot_scaled_pstat(ax, cytokC, pstat):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
-    tps = np.array([0.5, 1., 2., 4.]) * 60.
+    tps = np.array([0.5, 1., 2., 4.])
     avg_activity = np.sum(pstat) / tps.size
     # plot pstat5 data for each time point
     ax.scatter(cytokC, pstat[3, :] / avg_activity, c="indigo", s=2)  # 0.5 hr
