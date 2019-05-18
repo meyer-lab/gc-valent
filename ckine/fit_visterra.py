@@ -39,7 +39,6 @@ class pSTAT_activity:
         tot_res = T.zeros((self.receptor_data.shape[0], self.ts.size*2, self.cytokC.size))
         for i, name in enumerate(self.cell_names_pstat):
             if name == "CD8+" or name == "Naive Treg":
-                print("caught", name)
                 # plot matching experimental and predictive pSTAT data for the same cell type
                 for j in range(self.receptor_data.shape[0]):
                     if self.cell_names_pstat[i] == self.cell_names_receptor[j]:
