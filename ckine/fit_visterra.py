@@ -37,29 +37,31 @@ class pSTAT_activity:
         Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
         
         tot_res = T.zeros((self.receptor_data.shape[0], self.ts.size*2, self.cytokC.size))
-        for i, _ in enumerate(self.cell_names_pstat):
-            # plot matching experimental and predictive pSTAT data for the same cell type
-            for j in range(self.receptor_data.shape[0]):
-                if self.cell_names_pstat[i] == self.cell_names_receptor[j]:
-                    unkVec = T.set_subtensor(unkVec[16], receptor_expression(self.receptor_data[j, 0], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Ra
-                    unkVec = T.set_subtensor(unkVec[17], receptor_expression(self.receptor_data[j, 1], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Rb
-                    unkVec = T.set_subtensor(unkVec[18], receptor_expression(self.receptor_data[j, 2], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # gc
-                    unkVec = T.set_subtensor(unkVec[19], receptor_expression(self.receptor_data[j, 3], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL15Ra
-                    actVec = Op(unkVec)
+        for i, name in enumerate(self.cell_names_pstat):
+            if name == "CD8+" or name == "Naive Treg":
+                print("caught", name)
+                # plot matching experimental and predictive pSTAT data for the same cell type
+                for j in range(self.receptor_data.shape[0]):
+                    if self.cell_names_pstat[i] == self.cell_names_receptor[j]:
+                        unkVec = T.set_subtensor(unkVec[16], receptor_expression(self.receptor_data[j, 0], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Ra
+                        unkVec = T.set_subtensor(unkVec[17], receptor_expression(self.receptor_data[j, 1], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Rb
+                        unkVec = T.set_subtensor(unkVec[18], receptor_expression(self.receptor_data[j, 2], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # gc
+                        unkVec = T.set_subtensor(unkVec[19], receptor_expression(self.receptor_data[j, 3], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL15Ra
+                        actVec = Op(unkVec)
 
-                    # account for pSTAT5 saturation and then normalize from 0 to 1
-                    actVec = actVec / (actVec + scale)
-                    actVec = actVec / T.max(actVec)
+                        # account for pSTAT5 saturation and then normalize from 0 to 1
+                        actVec = actVec / (actVec + scale)
+                        actVec = actVec / T.max(actVec)
 
-                    # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
-                    data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
-                    print("data_cat[0]", data_cat[0])
+                        # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
+                        data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
+                        print("data_cat[0]", data_cat[0])
 
-                    newVec = T.reshape(actVec, data_cat.shape)  # TODO: use print statements to make sure that this reshape has been done correctly
+                        newVec = T.reshape(actVec, data_cat.shape)  # TODO: use print statements to make sure that this reshape has been done correctly
 
-                    temp = newVec - data_cat  # append residual to the list
-                    print(temp)
-                    tot_res = T.set_subtensor(tot_res[i], temp)
+                        temp = newVec - data_cat  # append residual to the list
+                        print(temp)
+                        tot_res = T.set_subtensor(tot_res[i], temp)
 
         return tot_res
                     
