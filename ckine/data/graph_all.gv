@@ -54,7 +54,7 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL2 {
-    	node [style=filled,color=mediumorchid1, margin=0];
+    	node [style=filled,color=mediumorchid2, margin=0];
         penwidth=0;
 
         "1" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
@@ -104,7 +104,7 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL15 {
-    	node [style=filled,color=goldenrod4, margin=0];
+    	node [style=filled,color=goldenrod2, margin=0];
         edge [dir=none, weight=1];
         penwidth=0;
 
@@ -155,7 +155,7 @@ digraph cgamma_cytok {
         }
 
     subgraph cluster_IL7 {
-    	node [style=filled,color=dodgerblue4, margin=0];
+    	node [style=filled,color=dodgerblue2, margin=0];
         edge [dir=none, weight=1];
         penwidth=0;
         
@@ -171,7 +171,7 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL9 {
-    	node [style=filled,color=darkolivegreen4, margin=0];
+    	node [style=filled,color=darkolivegreen3, margin=0];
         edge [dir=none, weight=1];
         penwidth=0;
         
@@ -187,7 +187,7 @@ digraph cgamma_cytok {
     }
 
     subgraph cluster_IL4 {
-    	node [style=filled, color=lightcyan4, margin=0];
+    	node [style=filled, color=lightcyan2, margin=0];
         edge [dir=none, weight=1];
         penwidth=0;
         
@@ -202,7 +202,7 @@ digraph cgamma_cytok {
         "33" -> "4·4Rα·gc";
     }
     subgraph cluster_IL21 {
-    	node [style=filled, color=slategray4, margin=0];
+    	node [style=filled, color=slategray3, margin=0];
         edge [dir=none, weight=1];
         penwidth=0;
         
