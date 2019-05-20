@@ -2,7 +2,6 @@
 This file contains functions that are used in multiple figures.
 """
 import seaborn as sns
-sns.set(style="darkgrid")
 import numpy as np
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
@@ -75,20 +74,22 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend = False, hue_norm=LogNorm())
 
-        if ii == 0 and ax_pos == 4 and fig3:
+        if ii == 0 and ax_pos == 5 and fig3:
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="5%", pad=0.05)
             a = fig.colorbar(sm, cax=cax)
             a.set_label('Concentration (nM)')
 
         elif ii == 0 and ax_pos == 2 and fig3 is False:
-            ax.figure.colorbar(sm, ax=ax)
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            a = fig.colorbar(sm, cax=cax)
+            a.set_label('Concentration (nM)')
 
-        if ax_pos == 4 and fig3:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3))
-            
+        if ax_pos == 5 and fig3:
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
         elif ax_pos == 2 and not fig3:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 
@@ -121,13 +122,13 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']  # 'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
     for ii in range(len(factors[:, component_x - 1])):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
     if ax_pos in (1, 2):
-        ax.legend()
+        ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8)
 
-    elif ax_pos == 3 and fig3:
-        ax.legend()
+    elif ax_pos == 4 and fig3:
+        ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8)
     ax.set_title('Cells')
 
     set_bounds(ax, component_x)
@@ -158,7 +159,7 @@ def plot_timepoints(ax, factors):
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
-    ax.legend()
+    ax.legend(handletextpad=0.5,handlelength=0.5,framealpha=0.5,markerscale=0.7,loc=4, fontsize=8)
 
 
 def kfwd_info(unkVec):
