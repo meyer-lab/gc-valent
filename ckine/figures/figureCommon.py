@@ -70,9 +70,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
         hu = mesh
-        
 
-    
     norm = LogNorm(vmin=hu.min(), vmax=hu.max())
     cmap = sns.dark_palette("#2eccc0", n_colors=len(hu), reverse=True, as_cmap=True)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -83,7 +81,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
         if fig4:
             idx = range(ii * len(mesh), (ii + 1) * len(mesh))
 
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend = False, hue_norm=LogNorm())
+        sns.scatterplot(x=factors[idx, component_x-1], y=factors[idx, component_y-1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend = False, hue_norm=LogNorm())
 
         if ii == 0 and ax_pos == 5 and fig3:
             divider = make_axes_locatable(ax)
@@ -179,7 +177,7 @@ def plot_timepoints(ax, factors):
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
-    ax.legend(handletextpad=0.5,handlelength=0.5,framealpha=0.5,markerscale=0.7,loc=4, fontsize=8)
+    ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4, fontsize=8)
 
 
 def kfwd_info(unkVec):
