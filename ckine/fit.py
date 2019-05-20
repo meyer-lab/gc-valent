@@ -6,7 +6,7 @@ import pymc3 as pm
 import theano.tensor as T
 import numpy as np
 import pandas as pds
-from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, receptor_expression
+from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, getSurfaceGCSpecies, receptor_expression
 from .differencing_op import runCkineDoseOp
 
 
@@ -73,6 +73,31 @@ class IL2Rb_trafficking:
         # return residual assuming all IL2Rb starts on the cell surface
         return a / a[0] - self.data
 
+
+class gc_trafficking:
+    """ Calculating the percent of gc on cell surface under 157 nM of IL2 stimulation according to Mitra et al."""
+    def __init__(self):
+        numpy_data = load_data('data/mitra_surface_gc_depletion.csv')
+
+        # times from experiment are in first column
+        self.ts = numpy_data[:, 0]
+
+        # percent of gc that stays on surface (scale from 0-1)
+        self.data = numpy_data[:, 1]
+
+        self.cytokM = np.zeros((1, 6), dtype=np.float64)
+        self.cytokM[0, 0] = 157.
+
+    def calc(self, unkVec):
+        """ Calculates difference between relative IL2Rb on surface in model prediction and Ring experiment. """
+        # Condense to just gc
+        Op = runCkineDoseOp(tt=self.ts, condense=getSurfaceGCSpecies().astype(np.float64), conditions=self.cytokM)
+
+        # IL2Ra+ stimulation only
+        a = Op(unkVec)
+
+        # return residual assuming all gc starts on the cell surface
+        return a / a[0] - self.data
 
 class IL2_15_activity:
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in Ring et al. """
