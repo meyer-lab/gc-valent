@@ -37,8 +37,8 @@ def find_2Rb_gc(traf=True, endo=0, kRec=0, sortF=0, kDeg=0):
     data = load_data("data/YT_1_receptor_levels.csv")  # data = [['YT-1', -1, IL-2Rb, gc, -1]] where data[0, 3] represents the gc level
     if traf:
         return receptor_expression(data[0, 2], endo, kRec, sortF, kDeg), receptor_expression(data[0, 3], endo, kRec, sortF, kDeg)
-    else:
-        return data[0, 2], data[0, 3]
+
+    return data[0, 2], data[0, 3]
 
 
 class IL2Rb_trafficking:
