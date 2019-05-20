@@ -156,9 +156,11 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
+    ax2 = ax[sc_ax].twinx()
     scales_sort.columns = [r'$C_{5}$', r'$f_{sort}$']
-    d = sns.violinplot(data=scales_sort, ax=ax[sc_ax], linewidth=0.5, color="grey")
+    d = sns.violinplot(data=scales_sort[r'$C_{5}$'], ax=ax[sc_ax], linewidth=0.5, color="red", kwargs={'alpha':0.3})
     d.set(ylabel="value", title="pSTAT5 scaling constant & sort fraction")
+    e = sns.violinplot(data=scales_sort[r'$f_{sort}$'], ax=ax2, linewidth=0.5, color="grey", kwargs={'alpha':0.3})
 
 
 def rateComp(ax, unkVec):
