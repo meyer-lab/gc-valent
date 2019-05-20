@@ -58,14 +58,14 @@ def set_bounds(ax, compNum):
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
     "This function is to plot the ligand combination dimension of the values tensor."
-    if fig3:
+    if not fig4:
         markers = ['^', '*', '.']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                         Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
                         Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle='')]
         hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
 
-    elif fig4:
+    else fig4:
         markers = ['^', '*']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data

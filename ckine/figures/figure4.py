@@ -60,30 +60,3 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.set_title('Time')
     ax.legend()
-
-
-'''def plot_lignds(ax, factors, component_x, component_y, IL_treat):
-    "This function is to plot the ligand combination dimension of the values tensor."
-    markers = ['^', '*']
-    n_ligands = len(IL_treat)
-    cmap = sns.color_palette("hls", n_ligands)
-
-    legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                    Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
-
-    for ii in range(int(factors.shape[0] / n_ligands)):
-        idx = range(ii * n_ligands, (ii + 1) * n_ligands)
-        if ii == 0:
-            legend = "full"
-        else:
-            legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=IL_treat, ax=ax, palette=cmap, s=100, legend=legend)
-        h, _ = ax.get_legend_handles_labels()
-        legend1 = ax.legend(handles=h, loc=2)
-        ax.add_artist(legend1)
-        legend2 = ax.legend(handles=legend_shape, loc=3)
-        ax.add_artist(legend2)
-
-    ax.set_title('Ligands')
-    set_bounds(ax, component_x)
-'''
