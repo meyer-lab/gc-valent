@@ -65,7 +65,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
                         Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle='')]
         hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
 
-    else fig4:
+    else:
         markers = ['^', '*']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
