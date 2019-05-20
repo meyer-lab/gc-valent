@@ -21,7 +21,7 @@ def makeFigure():
     ax[0].axis('off')
 
     # plot the legend in the top right corner (index 2)
-    leg_ind = 2
+    leg_ind = 1
     legend_2_15(ax[leg_ind])
 
     for ii, item in enumerate(ax):
@@ -35,7 +35,7 @@ def makeFigure():
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_act(ax[1], unkVec, scales)
+    pstat_act(ax[2], unkVec, scales)
     surf_perc(ax[3:5], 'IL-2Rβ', unkVec)
     violinPlots(ax[6:9], full_unkVec, full_scales)
     rateComp(ax[5], full_unkVec)

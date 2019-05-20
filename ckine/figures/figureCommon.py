@@ -168,11 +168,11 @@ def legend_2_15(ax):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
                        Patch(facecolor='goldenrod', label='IL-15'),
-                       Line2D([0], [0], marker='o', color='w', label='IL-2Rα+ cells',
+                       Line2D([0], [0], marker='o', color='w', label='IL-2Rα+',
                               markerfacecolor='k', markersize=8),
-                       Line2D([0], [0], marker='^', color='w', label='IL-2Rα- cells',
+                       Line2D([0], [0], marker='^', color='w', label='IL-2Rα-',
                               markerfacecolor='k', markersize=8)]
-    ax.legend(handles=legend_elements, loc='center', mode="expand", fontsize="large")
+    ax.legend(handles=legend_elements, loc='center right', fontsize="large")
     ax.axis('off')  # remove the grid
 
 
