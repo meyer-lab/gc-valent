@@ -130,9 +130,11 @@ def pstat_act(ax, unkVec, scales):
 def violinPlots(ax, unkVec, scales, Traf=True):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
-    traf = pd.DataFrame(unkVec[:, 17:22])
+    traf = np.concatenate((unkVec[:, 17:19], unkVec[:, 20:22]), axis=1)
+    traf = pd.DataFrame(traf)
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
-    scales = pd.DataFrame(scales)
+    scales_sort = np.vstack((scales[:, 0], unkVec[:, 19]))
+    scales_sort = pd.DataFrame(scales_sort.T)
 
     if Traf:
         traf.columns = traf_names()
@@ -154,9 +156,9 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
-    scales.columns = [r'$C_{5}$']
-    d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5, color="grey")
-    d.set(ylabel="value", title="pSTAT5 scaling constant")
+    scales_sort.columns = [r'$C_{5}$', r'$f_{sort}$']
+    d = sns.violinplot(data=scales_sort, ax=ax[sc_ax], linewidth=0.5, color="grey")
+    d.set(ylabel="value", title="pSTAT5 scaling constant & sort fraction")
 
 
 def rateComp(ax, unkVec):
