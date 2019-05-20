@@ -56,21 +56,32 @@ def set_bounds(ax, compNum):
     ax.set_ylim(-y_max, y_max)
 
 
-def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True):
+def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
     "This function is to plot the ligand combination dimension of the values tensor."
-    markers = ['^', '*', '.']
-    hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
+    if fig3:
+        markers = ['^', '*', '.']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle='')]
+        hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
+
+    elif fig4:
+        markers = ['^', '*']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                    Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
+        hu = mesh
+        
+
+    
     norm = LogNorm(vmin=hu.min(), vmax=hu.max())
     cmap = sns.dark_palette("#2eccc0", n_colors=len(hu), reverse=True, as_cmap=True)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
 
-    legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                    Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
-                    Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle='')]
-
     for ii in range(n_ligands):
         idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
+        if fig4:
+            idx = range(ii * len(mesh), (ii + 1) * len(mesh))
 
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend = False, hue_norm=LogNorm())
 
@@ -86,10 +97,19 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
             a = fig.colorbar(sm, cax=cax)
             a.set_label('Concentration (nM)')
 
+        elif ii == 0 and ax_pos == 3 and fig4:
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            a = fig.colorbar(sm, cax=cax)
+            a.set_label('Concentration (nM)')
+
         if ax_pos == 5 and fig3:
             ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
         elif ax_pos == 2 and not fig3:
             ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+        elif ax_pos == 3 and fig4:
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 

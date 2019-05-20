@@ -5,7 +5,7 @@ import string
 from matplotlib.lines import Line2D
 import numpy as np
 import seaborn as sns
-from .figureCommon import subplotLabel, getSetup, plot_cells, set_bounds
+from .figureCommon import subplotLabel, getSetup, plot_cells, set_bounds, plot_ligands
 from .figure3 import plot_R2X
 from ..tensor import perform_decomposition
 from ..imports import import_pstat
@@ -20,13 +20,14 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    ckineConc, _, IL2_data, IL15_data = import_pstat()
+    ckineConc, cell_names, IL2_data, IL15_data = import_pstat()
     ckineConc = np.round(np.flip(ckineConc).astype(np.double), 5)
     IL2 = np.flip(IL2_data, axis=(0, 1))  # Makes them in both chronological order and ascending stimulation concentration
     IL15 = np.flip(IL15_data, axis=(0, 1))  # Makes them in both chronological order and ascending stimulation concentration
+    IL2 = np.insert(IL2, range(0,IL2.shape[0],4), 0.0, axis=0) #add in a zero value for the activity at t=0
+    IL15 = np.insert(IL15, range(0,IL15.shape[0],4), 0.0, axis=0) #add in a zero value for the activity at t=0
     concat = np.concatenate((IL2, IL15), axis=1)  # Prepare for tensor reshaping
-    measured_tensor = np.reshape(concat, (11, 4, 24))
-    cell_names = ['Mem Th', 'Naive Th', 'T helper', 'Mem Treg', 'Naive Treg', 'Tregs', 'Mem CD8+', 'Naive CD8+', 'CD3+CD8+', 'NKT', 'NK']
+    measured_tensor = np.reshape(concat, (len(cell_names), 5, IL2.shape[1]*2))
 
     factors_activity = []
     for jj in range(measured_tensor.shape[2] - 1):
@@ -40,7 +41,7 @@ def makeFigure():
 
     plot_cells(ax[2], factors_activ[0], 1, 2, cell_names, ax_pos=1)
 
-    plot_ligands(ax[3], factors_activ[2], 1, 2, ckineConc)
+    plot_ligands(ax[3], factors_activ[2], 1, 2, ax_pos=3, n_ligands=2, mesh=ckineConc, fig=f, fig3=False, fig4=True)
     f.tight_layout()
 
     return f
@@ -48,7 +49,7 @@ def makeFigure():
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint curves in one figure."""
-    ts = np.array([0.5, 1., 2., 4.]) * 60.
+    ts = np.array([0.0,0.5, 1., 2., 4.]) * 60.
 
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
@@ -61,7 +62,7 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def plot_ligands(ax, factors, component_x, component_y, IL_treat):
+'''def plot_lignds(ax, factors, component_x, component_y, IL_treat):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*']
     n_ligands = len(IL_treat)
@@ -85,3 +86,4 @@ def plot_ligands(ax, factors, component_x, component_y, IL_treat):
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
+'''
