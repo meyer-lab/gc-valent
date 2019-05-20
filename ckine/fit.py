@@ -136,6 +136,7 @@ class build_model:
         self.dst15 = IL2_15_activity()
         if self.traf:
             self.IL2Rb = IL2Rb_trafficking()
+            self.gc = gc_trafficking()
         self.M = self.build()
 
     def build(self):
@@ -170,10 +171,15 @@ class build_model:
             pm.Normal('fitD_15', sd=sd_15, observed=Y_15)  # experimental-derived stderr is used
 
             if self.traf:
-                Y_int = self.IL2Rb.calc(unkVec)  # fitting the data based on dst.calc for the given parameters
+                Y_int = self.IL2Rb.calc(unkVec)  # fitting the data based on IL2Rb surface data
                 sd_int = T.minimum(T.std(Y_int), 0.02)  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
                 pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
+                
+                Y_gc = self.gc.calc(unkVec)  # fitting the data based on gc surface data
+                sd_gc = T.minimum(T.std(Y_gc), 0.02)  # Add bounds for the stderr to help force the fitting solution
+                pm.Deterministic('Y_gc', T.sum(T.square(Y_gc)))
+                pm.Normal('fitD_gc', sd=sd_gc, observed=Y_gc)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
