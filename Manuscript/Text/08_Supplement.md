@@ -13,7 +13,7 @@ D) Posterior distribution for the pSTAT5 activity scaling constant in no-traffic
 
 ![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS5.svg){#fig:supp5}
 
-![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS6.svg){#fig:supp5}
+![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS6.svg){#fig:supp6}
 
-![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS7.svg){#fig:supp5}
+![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS7.svg){#fig:supp7}
 
