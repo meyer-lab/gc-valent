@@ -43,7 +43,8 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
-    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
+    Rexpr_2Ra = trace.get_values('Rexpr_2Ra')    
+    Rexpr_2Rb = trace.get_values('Rexpr_2Rb')
     Rexpr_15 = trace.get_values('Rexpr_15Ra')
 
     if Traf:
@@ -64,7 +65,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2Ra[ii], Rexpr_2Rb[ii], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
     if N is not None:
         if 0 < N < num:  # return a subsample if the user specified the number of samples

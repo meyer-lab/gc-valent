@@ -18,15 +18,15 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    plot_geweke(ax[0:4], True)
-    plot_geweke(ax[4:7], False)
+    plot_geweke_2_15(ax[0:4], True)
+    plot_geweke_2_15(ax[4:7], False)
 
     f.tight_layout()
 
     return f
 
 
-def plot_geweke(ax, traf):
+def plot_geweke_2_15(ax, traf):
     """ Uses geweke criterion to evaluate model convergence during fitting. """
     trace = import_samples_2_15(Traf=traf, ret_trace=True)  # return the trace
 
@@ -54,14 +54,13 @@ def plot_geweke(ax, traf):
     rexpr_len = len(rexpr_names)
     colors = cm.rainbow(np.linspace(0, 1, rexpr_len))
 
-    # plot IL2Ra and IL2Rb
-    for ii in range(rexpr_len - 1):
-        ax[1].scatter(score[0]['Rexpr_2Ra_2Rb'][ii][:, 0], score[0]['Rexpr_2Ra_2Rb'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rexpr_names[ii])
-    # plot IL15Ra
+    # plot IL2Ra, IL2Rb, and gc
+    ax[1].scatter(score[0]['Rexpr_2Ra'][:, 0], score[0]['Rexpr_2Ra'][:, 1], marker='o', s=25, color=colors[0], label=rexpr_names[0])
+    ax[1].scatter(score[0]['Rexpr_2Rb'][:, 0], score[0]['Rexpr_2Rb'][:, 1], marker='o', s=25, color=colors[1], label=rexpr_names[1])
     ax[1].scatter(score[0]['Rexpr_15Ra'][:, 0], score[0]['Rexpr_15Ra'][:, 1], marker='o', s=25, color=colors[2], label=rexpr_names[2])
     ax[1].axhline(-1., c='r')
     ax[1].axhline(1., c='r')
-    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra_2Rb'].shape[0] / 2 + 10),
+    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[1].set_title('Trafficking model: receptor expression')
