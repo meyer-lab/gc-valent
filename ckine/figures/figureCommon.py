@@ -103,6 +103,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
         if ax_pos == 5 and fig3:
             ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+
         elif ax_pos == 2 and not fig3:
             ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
         elif ax_pos == 3 and fig4:
