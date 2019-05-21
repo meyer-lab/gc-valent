@@ -89,8 +89,10 @@ def surf_perc(ax, species, unkVec):
     # label axes and titles
     ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 500 nM")
     ax[1].set_ylim(0, 115)
+    ax[1].set_xticks(np.arange(0, 105, step=15))
     ax[0].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 1 nM")
     ax[0].set_ylim(0, 115)
+    ax[0].set_xticks(np.arange(0, 105, step=15))
 
 
 def pstat_act(ax, unkVec, scales):
@@ -125,6 +127,7 @@ def pstat_act(ax, unkVec, scales):
     ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
     ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
+    ax.set_xticks(np.arange(-3.3, 3.7, step=2))
 
 
 def violinPlots(ax, unkVec, scales, Traf=True):
