@@ -36,7 +36,7 @@ def makeFigure():
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[2], unkVec, scales)
-    surf_perc(ax[3:5], 'IL-2Rβ', unkVec)
+    IL2Rb_perc(ax[3:5], unkVec)
     violinPlots(ax[6:9], full_unkVec, full_scales)
     rateComp(ax[5], full_unkVec)
 
@@ -45,25 +45,21 @@ def makeFigure():
     return f
 
 
-def surf_perc(ax, species, unkVec):
-    """ Calculates the percent of IL2Rb or gc on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
-    if species == 'IL-2Rβ':
-        surf = surf_IL2Rb()  # load proper class
-        # overlay experimental data
-        path = os.path.dirname(os.path.abspath(__file__))
-        data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values  # imports file into pandas array
-        data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values  # imports file into pandas array
-        ax[0].scatter(data_minus[:, 0], data_minus[:, 1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 1nM of IL2 in 2Ra-
-        ax[0].scatter(data_minus[:, 0], data_minus[:, 2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101)  # 1nM of IL15 in 2Ra-
-        ax[1].scatter(data_minus[:, 0], data_minus[:, 5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 500nM of IL2 in 2Ra-
-        ax[1].scatter(data_minus[:, 0], data_minus[:, 6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101)  # 500nM of IL15 in 2Ra-
-        ax[0].scatter(data_plus[:, 0], data_plus[:, 1] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100)  # 1nM of IL2 in 2Ra+
-        ax[0].scatter(data_plus[:, 0], data_plus[:, 2] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101)  # 1nM of IL15 in 2Ra+
-        ax[1].scatter(data_plus[:, 0], data_plus[:, 5] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100)  # 500nM of IL2 in 2Ra+
-        ax[1].scatter(data_plus[:, 0], data_plus[:, 6] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101)  # 500nM of IL15 in 2Ra+
-
-    if species == 'gc':
-        surf = surf_gc()    # load proper class
+def IL2Rb_perc(ax, unkVec):
+    """ Calculates the percent of IL2Rb on the cell surface over the course of 90 mins. Cell environments match those of surface IL2Rb data collected by Ring et al. """
+    surf = surf_IL2Rb()  # load proper class
+    # overlay experimental data
+    path = os.path.dirname(os.path.abspath(__file__))
+    data_minus = pd.read_csv(join(path, "../data/IL2Ra-_surface_IL2RB_datasets.csv")).values  # imports file into pandas array
+    data_plus = pd.read_csv(join(path, "../data/IL2Ra+_surface_IL2RB_datasets.csv")).values  # imports file into pandas array
+    ax[0].scatter(data_minus[:, 0], data_minus[:, 1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 1nM of IL2 in 2Ra-
+    ax[0].scatter(data_minus[:, 0], data_minus[:, 2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101)  # 1nM of IL15 in 2Ra-
+    ax[1].scatter(data_minus[:, 0], data_minus[:, 5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 500nM of IL2 in 2Ra-
+    ax[1].scatter(data_minus[:, 0], data_minus[:, 6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101)  # 500nM of IL15 in 2Ra-
+    ax[0].scatter(data_plus[:, 0], data_plus[:, 1] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100)  # 1nM of IL2 in 2Ra+
+    ax[0].scatter(data_plus[:, 0], data_plus[:, 2] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101)  # 1nM of IL15 in 2Ra+
+    ax[1].scatter(data_plus[:, 0], data_plus[:, 5] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100)  # 500nM of IL2 in 2Ra+
+    ax[1].scatter(data_plus[:, 0], data_plus[:, 6] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101)  # 500nM of IL15 in 2Ra+
 
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -87,10 +83,10 @@ def surf_perc(ax, species, unkVec):
         plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod")
 
     # label axes and titles
-    ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 500 nM")
+    ax[1].set(xlabel="Time (min)", ylabel=("Surface IL-2Rβ (%)"), title="500 nM")
     ax[1].set_ylim(0, 115)
     ax[1].set_xticks(np.arange(0, 105, step=15))
-    ax[0].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 1 nM")
+    ax[0].set(xlabel="Time (min)", ylabel=("Surface IL-2Rβ (%)"), title="1 nM")
     ax[0].set_ylim(0, 115)
     ax[0].set_xticks(np.arange(0, 105, step=15))
 
@@ -162,7 +158,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
         sc_ax = 2
     scales_sort.columns = [r'$C_{5}$', r'$f_{sort}$']
     d = sns.violinplot(data=scales_sort, ax=ax[sc_ax], linewidth=0.5, color="grey")
-    d.set(ylabel="value", title="pSTAT5 scaling constant & sort fraction")
+    d.set(ylabel="value", title="pSTAT5 constant & sort fraction")
 
 
 def rateComp(ax, unkVec):
