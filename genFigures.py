@@ -27,7 +27,7 @@ if __name__ == '__main__':
     if sys.argv[1] == '2':
         # Overlay Figure 2 cartoon
         overlayCartoon(fdir + 'figure2.svg',
-                       './simple_crosstalk.svg', 10, 10, scalee=0.3)  # scalee was 0.35, y was 15
+                       './simple_crosstalk.svg', 10, 10, scalee=0.3)  # might need to adjust this
 
     if sys.argv[1] == '3':
         # Overlay Figure 3 cartoon
