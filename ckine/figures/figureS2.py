@@ -118,7 +118,7 @@ def plot_geweke_4_7(ax):
 
     # plot the scores for scaling constant and kfwd
     ax[1].scatter(score[0]['scales'][0][:, 0], score[0]['scales'][0][:, 1], marker='o', s=25, color='g', label=r'$C_{5}$')
-    ax[1].scatter(score[0]['scales'][1][:, 0], score[0]['scales'][1][:, 1], marker='o', s=25, color='g', label=r'$C_{6}$')
+    ax[1].scatter(score[0]['scales'][1][:, 0], score[0]['scales'][1][:, 1], marker='o', s=25, color='c', label=r'$C_{6}$')
     ax[1].scatter(score[0]['kfwd'][:, 0], score[0]['kfwd'][:, 1], marker='o', s=25, color='b', label=r'$k_{fwd}$')
     ax[1].axhline(-1., c='r')
     ax[1].axhline(1., c='r')
