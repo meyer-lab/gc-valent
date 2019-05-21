@@ -78,13 +78,18 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     return unkVec, scales
 
 
-def import_samples_4_7(N=None):
+def import_samples_4_7(ret_trace=False, N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../IL4-7_model_results'), bmodel.M)
+
+    # option to return trace instead of numpy array
+    if ret_trace:
+        return trace
+
     kfwd = trace.get_values('kfwd')
     k27rev = trace.get_values('k27rev')
     k33rev = trace.get_values('k33rev')
