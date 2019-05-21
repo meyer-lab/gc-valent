@@ -30,7 +30,7 @@ csl: ./Manuscript/Templates/nature.csl
 # Summary points
 
 - A dynamical model of the γ-chain cytokines successfully captures responses to IL-2, IL-15, IL-4, and IL-7.
-- Receptor trafficking proves necessary for capturing complete activity dynamics. 
+- Receptor trafficking is necessary for capturing ligand response. 
 - Canonical polyadic decomposition maps responses across cell populations, receptors, cytokines, and dynamics.
 - An activation model and factorization provide design specifications for engineering cell-specific responses.
 
