@@ -83,10 +83,10 @@ class gc_trafficking:
         self.ts = numpy_data[:, 0]
 
         # percent of gc that stays on surface (scale from 0-1)
-        self.data = numpy_data[:, 1]
+        self.data = numpy_data[:, 1] / 100.
 
         self.cytokM = np.zeros((1, 6), dtype=np.float64)
-        self.cytokM[0, 0] = 157.
+        self.cytokM[0, 0] = 1000.  # 1 uM of IL-2 was given to 3 x 10^5 YT-1 cells
 
     def calc(self, unkVec):
         """ Calculates difference between relative IL2Rb on surface in model prediction and Ring experiment. """
