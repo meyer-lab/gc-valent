@@ -59,4 +59,3 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.set_title('Time')
     ax.legend()
-    ax.set_aspect('equal', 'box')
