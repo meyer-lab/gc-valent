@@ -111,7 +111,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
-
+    #ax.set_aspect(1.0/ax.get_data_ratio()*10)
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
@@ -151,7 +151,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     ax.set_title('Cells')
 
     set_bounds(ax, component_x)
-
+    ax.set_aspect(1.0/ax.get_data_ratio()*1.0)
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
     """ Add cartoon to a figure file. """
@@ -179,7 +179,8 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.set_title('Time')
     ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4, fontsize=8)
-
+    #ax.set_aspect(aspect=1000, adjustable='box')
+    ax.set_aspect(1.0/ax.get_data_ratio()*1.0)
 
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
