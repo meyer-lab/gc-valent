@@ -20,7 +20,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 2, 4
-    #ax, f = getSetup((7.5, 6), (x, y), mults=[0, 2, 4, 6, 8, 10], multz={0: 2, 2: 2, 4: 2, 6: 2, 8: 2, 10: 2})
+    #ax, f = getSetup((7.5, 5), (x, y), mults=[0, 2, 4, 6, 8, 10], multz={0: 2, 2: 2, 4: 2, 6: 2, 8: 2, 10: 2})
     ax, f = getSetup((7.5, 5), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
     # Blank out for the cartoon
     ax[0].axis('off')
@@ -47,7 +47,7 @@ def makeFigure():
 
     plot_ligands(ax[5], factors_activ[2], 1, 2, ax_pos=5, n_ligands=n_ligands, mesh=mat, fig=f)
 
-    f.tight_layout(h_pad=0.3)
+    f.tight_layout()
 
     return f
 
@@ -78,5 +78,3 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     ax.set_ylim(0, 1)
     ax.set_xticks(np.arange(1, n_comps + 1))
     ax.set_xticklabels(np.arange(1, n_comps + 1))
-    #ax.set_aspect(aspect=4, adjustable='box')
-    ax.set_aspect(1.0/ax.get_data_ratio()*1.0)
