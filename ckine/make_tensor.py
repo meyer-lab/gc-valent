@@ -90,21 +90,21 @@ def prep_tensor(numlig, n_timepoints):
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), ts.size, nSpecies()))
 
-    #Find the indices
+    #Find the indices where IL-2 mutant lies in the meshgrid of all tensor conditions.
     mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
     rmvs = mut2[np.arange(1, mut2.size, numlig)]
 
-    count = -1
+    mutIL2_idxs = np.zeros((rmvs.size, idx_ref))
+    for jj in range(len(rmvs)):
+        mutIL2_idxs[jj] = np.array(range(rmvs[jj], rmvs[jj]+idx_ref)) #Find the indices where the IL2-mutant is.
+
     for jj, row in enumerate(Conc_recept_cell):
-        if jj in range(rmvs[count], rmvs[count]+idx_ref):
+        if jj in mutIL2_idxs:
             #Solve using the mutant IL2 solver for these particular indices.
             y_of_combos[jj] = ySolver_IL2_mut(row, ts)
         else:
             #Solve using the WT solver for each of IL2, IL15, and IL7.
             y_of_combos[jj] = ySolver(row, ts)
-
-        if jj % concMesh.shape[0] is 0:
-            count += 1
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
