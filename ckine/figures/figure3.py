@@ -45,10 +45,10 @@ def makeFigure():
     plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
 
     plot_cells(ax[4], factors_activ[1], 1, 2, cell_names, ax_pos=4)
-    plot_cells(ax[8], factors_activ[1], 1, 2, cell_names, ax_pos=8)
+    plot_cells(ax[8], factors_activ[1], 3, 4, cell_names, ax_pos=8)
 
     plot_ligands(ax[5], factors_activ[2], 1, 2, ax_pos=5, n_ligands=n_ligands, mesh=mat, fig=f)
-    plot_ligands(ax[9], factors_activ[2], 1, 2, ax_pos=9, n_ligands=n_ligands, mesh=mat, fig=f)
+    plot_ligands(ax[9], factors_activ[2], 3, 4, ax_pos=9, n_ligands=n_ligands, mesh=mat, fig=f)
 
     f.tight_layout()
 
