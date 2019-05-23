@@ -24,6 +24,7 @@ def makeFigure():
     # Blank out for the cartoon
     ax[0].axis('off')
     ax[6].axis('off')
+    ax[7].axis('off')
 
     data, _, cell_names = import_Rexpr()
     factors_activity = []

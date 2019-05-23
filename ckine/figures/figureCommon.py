@@ -82,7 +82,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
         if fig4:
             idx = range(ii * len(mesh), (ii + 1) * len(mesh))
 
-        sns.scatterplot(x=factors[idx, component_x-1], y=factors[idx, component_y-1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend = False, hue_norm=LogNorm())
+        sns.scatterplot(x=factors[idx, component_x-1], y=factors[idx, component_y-1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
 
         if ii == 0 and ax_pos == 5 and fig3:
             divider = make_axes_locatable(ax)

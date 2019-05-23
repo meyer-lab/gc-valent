@@ -90,21 +90,21 @@ def prep_tensor(numlig, n_timepoints):
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), ts.size, nSpecies()))
 
-    #Find the indices 
+    #Find the indices
     mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
-    rmvs = mut2[np.arange(1,  mut2.size, numlig)]
+    rmvs = mut2[np.arange(1, mut2.size, numlig)]
 
     count = -1
     for jj, row in enumerate(Conc_recept_cell):
         if jj in range(rmvs[count], rmvs[count]+idx_ref):
-            #Solve using the mutant IL2 solver for these particular indices. 
+            #Solve using the mutant IL2 solver for these particular indices.
             y_of_combos[jj] = ySolver_IL2_mut(row, ts)
         else:
             #Solve using the WT solver for each of IL2, IL15, and IL7.
             y_of_combos[jj] = ySolver(row, ts)
 
         if jj % concMesh.shape[0] is 0:
-            count+=1
+            count += 1
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
