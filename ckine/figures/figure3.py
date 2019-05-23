@@ -20,7 +20,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((7.5, 5), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
+    ax, f = getSetup((7.5, 8), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
     # Blank out for the cartoon
     ax[0].axis('off')
     ax[6].axis('off')
