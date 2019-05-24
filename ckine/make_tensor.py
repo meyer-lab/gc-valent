@@ -26,14 +26,19 @@ def ySolver(matIn, ts, tensor=True):
     return temp
 
 
-def ySolver_IL2_mut(matIn, ts):
+def ySolver_IL2_mut(matIn, ts, mut=='a'):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
     kfwd = 0.004475761
     k4rev = 8.543317686
     k5rev = 0.12321939
-    k1rev = 0.6 * 10.0 * 0.01
-    k2rev = 0.6 * 144.0
+    
+    if mut is 'a':
+        k1rev = 0.6 * 10.0 * 0.01 #100x more binding to IL2Ra
+        k2rev = 0.6 * 144.0
+    elif mut is 'b':
+        k1rev = 0.6 * 10.0
+        k2rev = 0.6 * 144.0 * 0.01 #100x more bindng to IL2Rb
     k11rev = 63.0 * k5rev / 1.5
     rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
                        matIn[6], matIn[7], matIn[8],  # IL2Ra, IL2Rb, gc
@@ -45,8 +50,7 @@ def ySolver_IL2_mut(matIn, ts):
 
     return yOut
 
-
-def meshprep():
+def meshprep(mut):
     """Prepares the initial conditions for the tensor."""
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
@@ -56,10 +60,15 @@ def meshprep():
     '''Goal is to make one cell expression levels by len(mat) for every cell
     Make mesh grid of all ligand concentrations, First is IL-2 WT, Second is IL-2 Mutant; Third is IL-15; Fourth is IL7
     Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)'''
-    concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+    if mut:
+        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                           np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                          np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
-                          np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
+                          np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
+    else:
+        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
     '''Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     Just stacks up concMesh on top of each other 12 times (or however many cells are available)'''
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
@@ -78,9 +87,9 @@ def meshprep():
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def prep_tensor(numlig, n_timepoints):
+def prep_tensor(numlig, n_timepoints, mut):
     """Function to solve the model for initial conditions in meshprep()."""
-    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
+    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
     idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
 
     # generate n_timepoints evenly spaced timepoints to 4 hrs
@@ -89,28 +98,39 @@ def prep_tensor(numlig, n_timepoints):
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), ts.size, nSpecies()))
+    
+    
+    if mut:
+        for jj, row in enumerate(Conc_recept_cell):
+            y_of_combos[jj] = ySolver_IL2_mut(row, ts)   #add the conditions of when you want IL2; mutIL2-2ra; mutIL2-2rb
+    
+    
+    else:
+        #Find the indices where IL-2 mutant lies in the meshgrid of all tensor conditions.
+        mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
+        rmvs = mut2[np.arange(1, mut2.size, numlig)]
 
-    #Find the indices where IL-2 mutant lies in the meshgrid of all tensor conditions.
-    mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
-    rmvs = mut2[np.arange(1, mut2.size, numlig)]
+        mutIL2_idxs = np.zeros((rmvs.size, idx_ref))
+        for jj in range(len(rmvs)):
+            mutIL2_idxs[jj] = np.array(range(rmvs[jj], rmvs[jj]+idx_ref)) #Find the indices where the IL2-mutant is.
 
-    mutIL2_idxs = np.zeros((rmvs.size, idx_ref))
-    for jj in range(len(rmvs)):
-        mutIL2_idxs[jj] = np.array(range(rmvs[jj], rmvs[jj]+idx_ref)) #Find the indices where the IL2-mutant is.
-
-    for jj, row in enumerate(Conc_recept_cell):
-        if jj in mutIL2_idxs:
-            #Solve using the mutant IL2 solver for these particular indices.
-            y_of_combos[jj] = ySolver_IL2_mut(row, ts)
-        else:
-            #Solve using the WT solver for each of IL2, IL15, and IL7.
-            y_of_combos[jj] = ySolver(row, ts)
-    return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
+        for jj, row in enumerate(Conc_recept_cell):
+            if jj in mutIL2_idxs:
+                #Solve using the mutant IL2 solver for these particular indices.
+                y_of_combos[jj] = ySolver_IL2_mut(row, ts)
+            else:
+                #Solve using the WT solver for each of IL2, IL15, and IL7.
+                y_of_combos[jj] = ySolver(row, ts)
+    
+    
+        
 
 
-def make_tensor(numlig=n_lig, n_timepoints=100):
+    return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names    
+
+def make_tensor(numlig=n_lig, n_timepoints=100, mut==False):
     """Function to generate the 3D values tensor from the prepared solutions."""
-    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(numlig, n_timepoints)
+    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(numlig, n_timepoints, mut)
 
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
 
