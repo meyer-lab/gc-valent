@@ -30,7 +30,6 @@ def makeFigure():
 
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    legend_4_7(ax[0])
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
@@ -143,13 +142,11 @@ def rexpr_violin(ax, unkVec):
 def scales_violin(ax, unkVec, scales):
     """ Create violin plot of activity scaling constants. """
     scales6 = scales[:, 0] / np.max(scales[:, 0])
-    print(scales6.shape)
     scales5 = scales[:, 1] / np.max(scales[:, 1])
-    print(unkVec[19, :].shape)
     scales_sort = np.vstack((scales6, scales5, unkVec[19, :]))
     scales_sort = pd.DataFrame(scales_sort.T)
 
-    scales_sort.columns = [r'$C_{6}$', r'$C_{5}$', r'f_{sort}']
+    scales_sort.columns = [r'$C_{6}$', r'$C_{5}$', r'$f_{sort}$']
     a = sns.violinplot(data=scales_sort, ax=ax, linewidth=0.5, color="grey")
     a.set_ylabel("value")
     a.set_title("pSTAT constants & sort fraction")
