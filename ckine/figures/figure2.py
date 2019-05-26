@@ -35,7 +35,7 @@ def makeFigure():
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
-    scales_violin(ax[8], full_scales_4_7)
+    scales_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
     surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
@@ -114,11 +114,12 @@ def pstat_plot(ax, unkVec, scales):
 def traf_violin(ax, unkVec):
     """ Create violin plot of trafficking parameters. """
     unkVec = unkVec.transpose()
-    traf = pd.DataFrame(unkVec[:, 17:22])
+    traf = np.concatenate((unkVec[:, 17:19], unkVec[:, 20:22]), axis=1)
+    traf = pd.DataFrame(traf)
 
     traf.columns = traf_names()
     a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Trafficking parameters")
 
@@ -139,14 +140,19 @@ def rexpr_violin(ax, unkVec):
     a.set_title("Receptor expression rates")
 
 
-def scales_violin(ax, scales):
+def scales_violin(ax, unkVec, scales):
     """ Create violin plot of activity scaling constants. """
-    scales = pd.DataFrame(scales)
+    scales6 = scales[:, 0] / np.max(scales[:, 0])
+    print(scales6.shape)
+    scales5 = scales[:, 1] / np.max(scales[:, 1])
+    print(unkVec[19, :].shape)
+    scales_sort = np.vstack((scales6, scales5, unkVec[19, :]))
+    scales_sort = pd.DataFrame(scales_sort.T)
 
-    scales.columns = [r'$C_{6}$', r'$C_{5}$']
-    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5, color="grey")
+    scales_sort.columns = [r'$C_{6}$', r'$C_{5}$', r'f_{sort}']
+    a = sns.violinplot(data=scales_sort, ax=ax, linewidth=0.5, color="grey")
     a.set_ylabel("value")
-    a.set_title("pSTAT scaling constants")
+    a.set_title("pSTAT constants & sort fraction")
 
 
 def pretreat_calc(unkVec, scales, pre_conc):
