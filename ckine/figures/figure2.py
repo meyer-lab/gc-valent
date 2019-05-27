@@ -227,8 +227,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K:(K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b")
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim/IL-7 pretreat")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim/IL-4 pretreat")
     ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment concentration (log$_{10}$[nM])')
 
     # add experimental data to plots
@@ -249,7 +249,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue")
     plot_conf_int(ax, ts, IL7vec, "b")
-    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
 
 
@@ -307,10 +307,3 @@ def relativeGC(ax, unkVec2, unkVec4):
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
-
-def legend_4_7(ax):
-    """ Plots a legend for all the IL-4 and IL-7 related plots in its own subpanel. """
-    legend_elements = [Patch(facecolor='b', label='IL-7 stimulation'),
-                       Patch(facecolor='powderblue', label='IL-4 stimulation')]
-    ax.legend(handles=legend_elements, loc='lower center', fontsize="large")
-    ax.axis('off')  # remove the grid
