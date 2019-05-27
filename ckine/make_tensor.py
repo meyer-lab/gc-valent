@@ -107,7 +107,7 @@ def prep_tensor(n_timepoints, mut):
         IL2Rb = mut2[np.arange(2, mut2.size, numlig)]
         IL2Ra_idxs = np.zeros((IL2Ra.size, idx_ref))
         IL2Rb_idxs = IL2Ra_idxs.copy()
-        for jj,_ in enumerate(IL2Ra):
+        for jj, _ in enumerate(IL2Ra):
             IL2Ra_idxs[jj] = np.array(range(IL2Ra[jj], IL2Ra[jj]+idx_ref)) #Find the indices where the IL2-mutant is.
             IL2Rb_idxs[jj] = np.array(range(IL2Rb[jj], IL2Rb[jj]+idx_ref))
 

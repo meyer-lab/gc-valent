@@ -2,7 +2,6 @@
 This creates Figure S5. CP decomposition of measured pSTAT data.
 """
 import string
-from matplotlib.lines import Line2D
 import numpy as np
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands
 from .figure3 import plot_R2X
