@@ -17,19 +17,20 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2})
 
-    # blank out first two axes for cartoon
-    ax[0].axis('off')
+    real_mults = [0, 9]  # subplots in ax that are actually mults
+    ax[0].axis('off')  # blank out first two axes for cartoon
 
     # plot the legend in the top right corner (index 2)
     leg_ind = 1
     legend_2_15(ax[leg_ind])
 
     for ii, item in enumerate(ax):
+        h = 2.5 if ii in real_mults else 1
         # add conditionals to skip the legend
         if ii < leg_ind:
-            subplotLabel(item, string.ascii_uppercase[ii])
+            subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
         elif ii > leg_ind:
-            subplotLabel(item, string.ascii_uppercase[ii - 1])
+            subplotLabel(item, string.ascii_uppercase[ii - 1], hstretch=h)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots

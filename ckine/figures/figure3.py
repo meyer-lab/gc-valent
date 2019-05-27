@@ -21,6 +21,7 @@ def makeFigure():
     # Get list of axis objects
     x, y = 3, 4
     ax, f = getSetup((12, 9), (x, y), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 11])
+    real_mults = [0, 1]
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -38,7 +39,8 @@ def makeFigure():
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
+        h = 2.5 if ii in real_mults else 1
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)  # Add subplot labels
 
     plot_timepoints(ax[5], factors_activ[0])  # Change final input value depending on need
 
