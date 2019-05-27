@@ -5,14 +5,13 @@ import string
 import tensorly as tl
 import seaborn as sns
 import numpy as np
-import matplotlib.cm as cm
-from matplotlib import gridspec, pyplot as plt
+from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.colors import LogNorm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
-from ..tensor import find_R2X, perform_decomposition
+from ..tensor import perform_decomposition
 from ..make_tensor import make_tensor, n_lig
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
@@ -29,7 +28,7 @@ def makeFigure():
     ax[5].axis('off')
 
     n_ligands = n_lig(mut=True)
-    data, _, cell_names = import_Rexpr()
+    _, _, cell_names = import_Rexpr()
     factors_activity = []
     for jj in range(len(mat) - 1):
         factors = perform_decomposition(values, jj + 1, cell_dim)

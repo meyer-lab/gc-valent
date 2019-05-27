@@ -3,11 +3,10 @@ This creates Figure 3.
 """
 import string
 import tensorly as tl
-import numpy as np
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, plot_R2X
 from ..imports import import_Rexpr
-from ..tensor import find_R2X, perform_decomposition
+from ..tensor import perform_decomposition
 from ..make_tensor import make_tensor, n_lig
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
