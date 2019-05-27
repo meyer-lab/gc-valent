@@ -12,7 +12,7 @@ from ..imports import import_samples_2_15, import_samples_4_7
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((12, 3), (3, 4))
+    ax, f = getSetup((12, 6), (3, 4))
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -130,15 +130,15 @@ def plot_geweke_4_7(ax):
 
     colors = cm.rainbow(np.linspace(0, 1, 5))
     tr_names = traf_names()
-    ax[3].scatter(score[0]['endo'][:, 0], score[0]['endo'][:, 1], marker='o', s=25, color=colors[0], label=tr_names[0])
-    ax[3].scatter(score[0]['activeEndo'][:, 0], score[0]['activeEndo'][:, 1], marker='o', s=25, color=colors[1], label=tr_names[1])
-    ax[3].scatter(score[0]['sortF'][:, 0], score[0]['sortF'][:, 1], marker='o', s=25, color=colors[2], label=r'$f_{sort}$')  # sortF not in traf_names()
-    ax[3].scatter(score[0]['kRec'][:, 0], score[0]['kRec'][:, 1], marker='o', s=25, color=colors[3], label=tr_names[2])
-    ax[3].scatter(score[0]['kDeg'][:, 0], score[0]['kDeg'][:, 1], marker='o', s=25, color=colors[4], label=tr_names[3])
-    ax[3].axhline(-1., c='r')
-    ax[3].axhline(1., c='r')
-    ax[3].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['endo'].shape[0] / 2 + 10),
+    ax[2].scatter(score[0]['endo'][:, 0], score[0]['endo'][:, 1], marker='o', s=25, color=colors[0], label=tr_names[0])
+    ax[2].scatter(score[0]['activeEndo'][:, 0], score[0]['activeEndo'][:, 1], marker='o', s=25, color=colors[1], label=tr_names[1])
+    ax[2].scatter(score[0]['sortF'][:, 0], score[0]['sortF'][:, 1], marker='o', s=25, color=colors[2], label=r'$f_{sort}$')  # sortF not in traf_names()
+    ax[2].scatter(score[0]['kRec'][:, 0], score[0]['kRec'][:, 1], marker='o', s=25, color=colors[3], label=tr_names[2])
+    ax[2].scatter(score[0]['kDeg'][:, 0], score[0]['kDeg'][:, 1], marker='o', s=25, color=colors[4], label=tr_names[3])
+    ax[2].axhline(-1., c='r')
+    ax[2].axhline(1., c='r')
+    ax[2].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['endo'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score", title="IL-4/-7 model: traf rates")
-    ax[3].legend()
+    ax[2].legend()
 
     
