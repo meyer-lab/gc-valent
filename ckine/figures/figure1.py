@@ -134,8 +134,9 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     traf = pd.DataFrame(traf)
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
     scaless = scales[:, 0] / np.max(scales)
-    scales_sort = np.vstack((scaless, unkVec[:, 19]))
-    scales_sort = pd.DataFrame(scales_sort.T)
+    kfwd = unkVec[:, 6] / np.max(unkVec[:, 6])
+    misc = np.vstack((scaless, unkVec[:, 19], kfwd))
+    misc = pd.DataFrame(misc.T)
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
     col_list = ["violet", "violet", "grey", "goldenrod"]
@@ -153,9 +154,9 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
-    scales_sort.columns = [r'$C_{5}$', r'$f_{sort}$']
-    c = sns.violinplot(data=scales_sort, ax=ax[sc_ax], linewidth=0.5, color="grey")
-    c.set(ylabel="value", title="pSTAT5 constant & sort fraction")
+    misc.columns = [r'$C_{5}$ / '+"{:.2E}".format(np.max(scales)), r'$f_{sort}$', r'$k_{fwd}$ / '+"{:.2E}".format(np.max(unkVec[:, 6]))]
+    c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
+    c.set(ylabel="value", title="Miscellaneous parameters")
 
 
 def rateComp(ax, unkVec):
