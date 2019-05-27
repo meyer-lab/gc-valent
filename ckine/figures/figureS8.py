@@ -7,7 +7,8 @@ import seaborn as sns
 import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.lines import Line2D, matplotlib.colors import LogNorm
+from matplotlib.lines import Line2D
+from matplotlib.colors import LogNorm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
 from ..tensor import perform_decomposition
