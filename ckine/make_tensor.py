@@ -107,7 +107,7 @@ def prep_tensor(n_timepoints, mut):
         IL2Rb = mut2[np.arange(2, mut2.size, numlig)]
         IL2Ra_idxs = np.zeros((IL2Ra.size, idx_ref))
         IL2Rb_idxs = IL2Ra_idxs.copy()
-        for jj in range(len(IL2Ra)):
+        for jj,_ in enumerate(IL2Ra):
             IL2Ra_idxs[jj] = np.array(range(IL2Ra[jj], IL2Ra[jj]+idx_ref)) #Find the indices where the IL2-mutant is.
             IL2Rb_idxs[jj] = np.array(range(IL2Rb[jj], IL2Rb[jj]+idx_ref))
 
@@ -122,7 +122,7 @@ def prep_tensor(n_timepoints, mut):
         #Find the indices where IL-2 mutant lies in the meshgrid of all tensor conditions.
         rmvs = mut2[np.arange(1, mut2.size, numlig)]
         mutIL2_idxs = np.zeros((rmvs.size, idx_ref))
-        for jj,_ in enumerate(rmvs):
+        for jj, _ in enumerate(rmvs):
             mutIL2_idxs[jj] = np.array(range(rmvs[jj], rmvs[jj]+idx_ref)) #Find the indices where the IL2-mutant is.
 
         for jj, row in enumerate(Conc_recept_cell):
@@ -132,7 +132,7 @@ def prep_tensor(n_timepoints, mut):
             else:
                 #Solve using the WT solver for each of IL2, IL15, and IL7.
                 y_of_combos[jj] = ySolver(row, ts)
-    return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names    
+    return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 def make_tensor(n_timepoints=100, mut=False):
     """Function to generate the 3D values tensor from the prepared solutions."""
