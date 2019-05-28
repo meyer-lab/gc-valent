@@ -129,15 +129,16 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     set_bounds(ax, component_x)
 
 
-def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
+def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
     import svgutils.transform as st
 
-    # Overlay Figure 4 cartoon
+    # Overlay Figure cartoons
     template = st.fromfile(figFile)
     cartoon = st.fromfile(cartoonFile).getroot()
 
     cartoon.moveto(x, y, scale=scalee)
+    cartoon.scale_xy(scale_x, scale_y)
 
     template.append(cartoon)
     template.save(figFile)
@@ -165,7 +166,7 @@ def kfwd_info(unkVec):
     return mean, std
 
 
-def legend_2_15(ax):
+def legend_2_15(ax, font_size="small", location="center right"):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
                        Patch(facecolor='goldenrod', label='IL-15'),
@@ -173,7 +174,7 @@ def legend_2_15(ax):
                               markerfacecolor='k', markersize=8),
                        Line2D([0], [0], marker='^', color='w', label='IL-2Rα-',
                               markerfacecolor='k', markersize=8)]
-    ax.legend(handles=legend_elements, loc='center right', fontsize="large")
+    ax.legend(handles=legend_elements, loc=location, fontsize=font_size)
     ax.axis('off')  # remove the grid
 
 
