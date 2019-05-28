@@ -15,32 +15,24 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[2])
 
-    real_mults = [0, 9]  # subplots in ax that are actually mults
+    real_mults = [0, 8]  # subplots in ax that are actually mults
     ax[0].axis('off')  # blank out first two axes for cartoon
-
-    # plot the legend in the top right corner (index 2)
-    leg_ind = 1
-    legend_2_15(ax[leg_ind])
 
     for ii, item in enumerate(ax):
         h = 2.5 if ii in real_mults else 1
-        # add conditionals to skip the legend
-        if ii < leg_ind:
-            subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
-        elif ii > leg_ind:
-            subplotLabel(item, string.ascii_uppercase[ii - 1], hstretch=h)
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_act(ax[2], unkVec, scales)
-    IL2Rb_perc(ax[3:5], unkVec)
-    gc_perc(ax[5], unkVec)
-    violinPlots(ax[6:9], full_unkVec, full_scales)
-    rateComp(ax[9], full_unkVec)
+    pstat_act(ax[1], unkVec, scales)
+    IL2Rb_perc(ax[2:4], unkVec)
+    gc_perc(ax[4], unkVec)
+    violinPlots(ax[5:8], full_unkVec, full_scales)
+    rateComp(ax[8], full_unkVec)
 
     f.tight_layout(w_pad=1.3)
 
