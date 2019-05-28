@@ -127,7 +127,6 @@ def plot_geweke_4_7(ax):
     ax[1].set_title(r'IL-4/-7 model: $C_{5}$, $C_{6}$, and $k_{fwd}$')
     ax[1].legend()
 
-
     colors = cm.rainbow(np.linspace(0, 1, 5))
     tr_names = traf_names()
     ax[2].scatter(score[0]['endo'][:, 0], score[0]['endo'][:, 1], marker='o', s=25, color=colors[0], label=tr_names[0])
@@ -140,5 +139,3 @@ def plot_geweke_4_7(ax):
     ax[2].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['endo'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score", title="IL-4/-7 model: traf rates")
     ax[2].legend()
-
-    

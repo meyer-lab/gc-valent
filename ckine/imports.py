@@ -43,7 +43,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
-    Rexpr_2Ra = trace.get_values('Rexpr_2Ra')    
+    Rexpr_2Ra = trace.get_values('Rexpr_2Ra')
     Rexpr_2Rb = trace.get_values('Rexpr_2Rb')
     Rexpr_15 = trace.get_values('Rexpr_15Ra')
 

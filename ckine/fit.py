@@ -76,6 +76,7 @@ class IL2Rb_trafficking:
 
 class gc_trafficking:
     """ Calculating the percent of gc on cell surface under 157 nM of IL2 stimulation according to Mitra et al."""
+
     def __init__(self):
         numpy_data = load_data('data/mitra_surface_gc_depletion.csv')
 
@@ -98,6 +99,7 @@ class gc_trafficking:
 
         # return residual assuming all gc starts on the cell surface
         return a / a[0] - self.data
+
 
 class IL2_15_activity:
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in Ring et al. """
@@ -177,7 +179,7 @@ class build_model:
                 sd_int = T.minimum(T.std(Y_int), 0.02)  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
                 pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
-                
+
                 Y_gc = self.gc.calc(unkVec_2Ra_minus)  # fitting the data using IL2Ra- cells
                 sd_gc = T.minimum(T.std(Y_gc), 0.02)  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic('Y_gc', T.sum(T.square(Y_gc)))

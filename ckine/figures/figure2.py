@@ -146,7 +146,8 @@ def misc_violin(ax, unkVec, scales):
     misc = np.vstack((scales6, scales5, unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
     misc = pd.DataFrame(misc.T)
 
-    misc.columns = [r'$C_{6}$ / '+'{:.2E}'.format(np.max(scales[:, 0])), r'$C_{5}$ / '+'{:.2E}'.format(np.max(scales[:, 1])), r'$f_{sort}$', r'$k_{fwd}$ / '+"{:.2E}".format(np.max(unkVec[6, :]))]
+    misc.columns = [r'$C_{6}$ / ' + '{:.2E}'.format(np.max(scales[:, 0])), r'$C_{5}$ / ' + '{:.2E}'.format(np.max(scales[:, 1])),
+                    r'$f_{sort}$', r'$k_{fwd}$ / ' + "{:.2E}".format(np.max(unkVec[6, :]))]
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel("value")
@@ -307,4 +308,3 @@ def relativeGC(ax, unkVec2, unkVec4):
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
-

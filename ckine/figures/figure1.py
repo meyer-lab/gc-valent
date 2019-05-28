@@ -165,7 +165,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
     a.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0))
-    
+
     if Traf:
         traf.columns = traf_names()
         b = sns.violinplot(data=np.log10(traf), ax=ax[1], linewidth=0.5, color="grey")
@@ -175,7 +175,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
-    misc.columns = [r'$C_{5}$ / '+"{:.2E}".format(np.max(scales)), r'$f_{sort}$', r'$k_{fwd}$ / '+"{:.2E}".format(np.max(unkVec[:, 6]))]
+    misc.columns = [r'$C_{5}$ / ' + "{:.2E}".format(np.max(scales)), r'$f_{sort}$', r'$k_{fwd}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
     c.set(ylabel="value", title="Miscellaneous parameters")
 
