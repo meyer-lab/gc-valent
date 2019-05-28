@@ -38,6 +38,7 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[2], unkVec, scales)
     IL2Rb_perc(ax[3:5], unkVec)
+    gc_perc(ax[5], unkVec)
     violinPlots(ax[6:9], full_unkVec, full_scales)
     rateComp(ax[9], full_unkVec)
 
@@ -90,6 +91,26 @@ def IL2Rb_perc(ax, unkVec):
     ax[0].set(xlabel="Time (min)", ylabel=("Surface IL-2Rβ (%)"), title="1 nM")
     ax[0].set_ylim(0, 115)
     ax[0].set_xticks(np.arange(0, 105, step=15))
+
+
+def gc_perc(ax, unkVec):
+    """ Calculates the amount of gc that stays on the cell surface and compares it to experimental values in Mitra paper. """
+    surf = surf_gc()  # load proper class
+    # overlay experimental data
+    path = os.path.dirname(os.path.abspath(__file__))
+    data = pd.read_csv(join(path, "../data/mitra_surface_gc_depletion.csv")).values  # imports file into pandas array
+    ts = data[:, 0]
+    ax.scatter(ts, data[:, 1], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 1000 nM of IL2 in 2Ra-
+
+    y_max = 100.
+    size = len(ts)
+    output = surf.calc(unkVec, ts) * y_max  # run the simulation
+    plot_conf_int(ax, ts, output.T, "darkorchid")
+
+    # label axes and titles
+    ax.set(xlabel="Time (min)", ylabel=r"Surface $\gamma_{c}$ (%)", title="1000 nM")
+    ax.set_ylim(0, 115)
+    ax.set_xticks(np.arange(0, 300, step=60))
 
 
 def pstat_act(ax, unkVec, scales):

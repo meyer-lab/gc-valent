@@ -34,7 +34,7 @@ def makeFigure():
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
-    scales_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
+    misc_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
     surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
@@ -139,17 +139,18 @@ def rexpr_violin(ax, unkVec):
     a.set_title("Receptor expression rates")
 
 
-def scales_violin(ax, unkVec, scales):
-    """ Create violin plot of activity scaling constants. """
+def misc_violin(ax, unkVec, scales):
+    """ Create violin plot of activity scaling constants, sortF, and kfwd. """
     scales6 = scales[:, 0] / np.max(scales[:, 0])
     scales5 = scales[:, 1] / np.max(scales[:, 1])
-    scales_sort = np.vstack((scales6, scales5, unkVec[19, :]))
-    scales_sort = pd.DataFrame(scales_sort.T)
+    misc = np.vstack((scales6, scales5, unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
+    misc = pd.DataFrame(misc.T)
 
-    scales_sort.columns = [r'$C_{6}$', r'$C_{5}$', r'$f_{sort}$']
-    a = sns.violinplot(data=scales_sort, ax=ax, linewidth=0.5, color="grey")
+    misc.columns = [r'$C_{6}$ / '+'{:.2E}'.format(np.max(scales[:, 0])), r'$C_{5}$ / '+'{:.2E}'.format(np.max(scales[:, 1])), r'$f_{sort}$', r'$k_{fwd}$ / '+"{:.2E}".format(np.max(unkVec[6, :]))]
+    a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel("value")
-    a.set_title("pSTAT constants & sort fraction")
+    a.set_title("Miscellaneous parameters")
 
 
 def pretreat_calc(unkVec, scales, pre_conc):
