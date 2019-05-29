@@ -37,10 +37,10 @@ def ySolver_IL2_mut(matIn, ts, mut='a'):
     kfwd = 0.004475761
     k4rev = 8.543317686
     k5rev = 0.12321939
-    if mut is 'a':
+    if mut == 'a':
         k1rev = 0.6 * 10.0 * 0.01 #100x more binding to IL2Ra
         k2rev = 0.6 * 144.0
-    elif mut is 'b':
+    elif mut == 'b':
         k1rev = 0.6 * 10.0
         k2rev = 0.6 * 144.0 * 0.01 #100x more bindng to IL2Rb
     k11rev = 63.0 * k5rev / 1.5
