@@ -64,19 +64,20 @@ def meshprep(mut):
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
 
-    '''Goal is to make one cell expression levels by len(mat) for every cell
-    Make mesh grid of all ligand concentrations, First is IL-2 WT, Second is IL-2 Mutant; Third is IL-15; Fourth is IL7
-    Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)'''
+    # Goal is to make one cell expression levels by len(mat) for every cell
+    # Make mesh grid of all ligand concentrations, First is IL-2 WT, Second is IL-2 Mutant; Third is IL-15; Fourth is IL7
+    # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)
     if mut:
-        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)
-                                                                                                   ).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
+        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
     else:
         concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
-    '''Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
-    Just stacks up concMesh on top of each other 12 times (or however many cells are available)'''
+    # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
+    # Just stacks up concMesh on top of each other 12 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
 
     # Set receptor levels for IL9R, IL4Ra, IL21Ra to 0. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra measured.
