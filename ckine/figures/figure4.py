@@ -29,7 +29,7 @@ def makeFigure():
 
 
 def nllsq(ax, x0, xdata, ydata):
-    lsq_res = least_squares(residuals, x0, args = (xdata, ydata), bounds=([10.**-13., 0.],[10.**-7, 5.]))
+    lsq_res = least_squares(residuals, x0, args = (xdata, ydata), bounds=([10.**-13., 0.],[10.**-7, 5.]), verbose=2)
     print(lsq_res.x)
     y = hill_equation(xdata, lsq_res.x)
     ax.scatter(xdata, ydata)
