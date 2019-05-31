@@ -19,7 +19,7 @@ def makeFigure():
     
     ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
     
-    x0 = [10**-10, 2.]
+    x0 = [10**-10, 2., 2000.]
     
     for i, _ in enumerate(cell_names_pstat):
         test = IL2_data[(i * 4):((i + 1) * 4)]
@@ -29,7 +29,7 @@ def makeFigure():
 
 
 def nllsq(ax, x0, xdata, ydata):
-    lsq_res = least_squares(residuals, x0, args = (xdata, ydata), bounds=([10.**-13., 0.],[10.**-7, 5.]))
+    lsq_res = least_squares(residuals, x0, args = (xdata, ydata), bounds=([10.**-13., 0.,2000.],[10.**-7, 5.,100000.]))
     print(lsq_res.x)
     y = hill_equation(xdata, lsq_res.x)
     ax.scatter(xdata, ydata)
@@ -38,7 +38,8 @@ def nllsq(ax, x0, xdata, ydata):
 def hill_equation(x, x0):
     k = x0[0]
     n = x0[1]
-    y = (x**n)/((k**n) + (x**n))
+    A = x0[2]
+    y = A * (x**n)/((k**n) + (x**n))
     return y
 
 def residuals(x0, x, y):
