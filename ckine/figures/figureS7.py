@@ -18,8 +18,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, _ = import_samples_2_15()  # use all rates
-    _, scale = import_samples_2_15(N=1)  # just use 1 scaling constant
+    unkVec_2_15, scale = import_samples_2_15()  # use all rates
     ckineConc, cell_names_pstat, _, IL15_data = import_pstat()
     axis = 0
 
@@ -61,9 +60,8 @@ def IL15_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=F
         yOut, retVal = runCkineUP(tps, rxntfr)
         assert retVal >= 0  # make sure solver is working
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-        activity = activity / (activity + scale[0])  # account for pSTAT5 saturation
         for j in range(split):
-            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
+            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j, 0])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
 
     # calculate total activity for a given cell type (across all IL15 concentrations & time points)
     avg_total_activity = np.sum(total_activity) / (split * tps.size)
