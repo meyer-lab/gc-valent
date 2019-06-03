@@ -53,7 +53,7 @@ def IL15_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=F
     # loop for each IL15 concentration
     for i in range(PTS):
         for ii in range(rxntfr.shape[0]):
-            rxntfr[ii, 0] = cytokC[i]
+            rxntfr[ii, 1] = cytokC[i]
             # updates rxntfr for receptor expression for IL2Rb, gc, IL15Ra
             rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
