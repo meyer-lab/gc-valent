@@ -27,8 +27,9 @@ class pSTAT_activity:
         Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         output = list()
+        jj = 0
         for i, name in enumerate(self.cell_names_pstat):
-            if name == "NK" or name == "CD8+" or name == "Mem CD8+":
+            if name == "NK" or name == "CD8+" or name == "Mem CD8+" or name == "Naive Treg":
                 # plot matching experimental and predictive pSTAT data for the same cell type
                 j = self.cell_names_receptor.get_loc(self.cell_names_pstat[i])
 
@@ -39,16 +40,17 @@ class pSTAT_activity:
                 actVec = Op(unkVec)
 
                 # account for pSTAT5 saturation and then normalize from 0 to 1
-                actVec = actVec / (actVec + scale)
-                actVec = actVec / T.max(actVec)
+                actVec = actVec / (actVec + scale[jj])
+                actVec = actVec / T.mean(actVec)
 
                 # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
                 data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
-                data_cat = data_cat / np.max(data_cat)
+                data_cat = data_cat / np.mean(data_cat)
 
                 newVec = T.reshape(actVec, data_cat.shape)  # TODO: use print statements to make sure that this reshape has been done correctly
 
                 output.append(newVec - data_cat)  # copy residuals into list
+                jj = jj + 1
 
         return output
 
@@ -78,7 +80,7 @@ class build_model:
 
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
-            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=4)  # create scaling constant for activity measurements
 
             # plug in 0 for all receptor rates... will override with true measurements in act.calc()
             Rexpr = T.zeros(4, dtype=np.float64)
