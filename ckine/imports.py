@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pds
 from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
-from .fit_visterra import build_model as build_model_visterra
 from .model import nParams
 
 
@@ -125,6 +124,8 @@ def import_samples_4_7(ret_trace=False, N=None):
 
 def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
     """ Imports the sampling results from fitting to visterra data in fit_visterra.py. """
+    from .fit_visterra import build_model as build_model_visterra
+
     bmodel = build_model_visterra(traf=Traf)
     n_params = nParams()
 

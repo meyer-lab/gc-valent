@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, find_cell_scale
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
-from ..imports import import_Rexpr, import_pstat, import_samples_2_15
+from ..imports import import_Rexpr, import_pstat, import_visterra_2_15
 
 
 def makeFigure():
@@ -18,7 +18,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scale = import_visterra_2_15()  # use all rates
+    unkVec_2_15, scales = import_visterra_2_15()  # use all rates
     ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
     axis = 0
 
