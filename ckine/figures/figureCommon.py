@@ -235,8 +235,8 @@ def find_cell_scale(scales, cell_name):
     """ Uses results from fit_visterra to map cell name to the correct index in scales. """
     name_map = {"Naive Treg": 0, "NK": 1, "CD8+": 2, "Mem CD8+": 3}
     if cell_name in name_map:
-        out = scales[name_map[cell_name]]  # find specific scale
+        out = scales[:, name_map[cell_name]]  # find specific scale
     else:
-        out = scales[0]  # use Naive Treg scale otherwise
+        out = scales[:, 0]  # use Naive Treg scale otherwise
     return out
     

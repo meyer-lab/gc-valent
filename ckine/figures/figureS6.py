@@ -61,7 +61,7 @@ def IL2_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=Fa
         assert retVal >= 0  # make sure solver is working
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for j in range(split):
-            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j, 0])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
+            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
 
     # calculate total activity for a given cell type (across all IL2 concentrations & time points)
     avg_total_activity = np.sum(total_activity) / (split * tps.size)
