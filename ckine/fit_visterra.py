@@ -80,7 +80,7 @@ class build_model:
 
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
-            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=4)  # create scaling constant for activity measurements
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=4)  # order: Naive Treg, NK, CD8+, Mem CD8+
 
             # plug in 0 for all receptor rates... will override with true measurements in act.calc()
             Rexpr = T.zeros(4, dtype=np.float64)
