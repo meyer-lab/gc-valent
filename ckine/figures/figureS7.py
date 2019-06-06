@@ -18,7 +18,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scales = import_visterra_2_15()  # use all rates
+    unkVec_2_15, scales = import_visterra_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, _, IL15_data = import_pstat()
     axis = 0
 
