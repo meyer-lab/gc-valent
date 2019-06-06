@@ -4,7 +4,7 @@ This creates Figure S6. Full panel of measured vs simulated for IL2.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, find_cell_scale
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 from ..imports import import_Rexpr, import_pstat, import_samples_2_15
 
@@ -18,7 +18,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scale = import_samples_2_15()  # use all rates
+    unkVec_2_15, scale = import_visterra_2_15()  # use all rates
     ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
     axis = 0
 
@@ -27,6 +27,7 @@ def makeFigure():
         for j in range(receptor_data.shape[0]):
             if cell_names_pstat[i] == cell_names_receptor[j]:
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
+                scale = find_cell_scale(scales, cell_names_receptor[j])
                 if j == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
                     IL2_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
                 else:

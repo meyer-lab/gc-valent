@@ -229,3 +229,14 @@ def plot_scaled_pstat(ax, cytokC, pstat):
     ax.scatter(cytokC, pstat[2, :] / avg_activity, c="teal", s=2)  # 1 hr
     ax.scatter(cytokC, pstat[1, :] / avg_activity, c="forestgreen", s=2)  # 2 hr
     ax.scatter(cytokC, pstat[0, :] / avg_activity, c="darkred", s=2)  # 4 hr
+
+
+def find_cell_scale(scales, cell_name):
+    """ Uses results from fit_visterra to map cell name to the correct index in scales. """
+    name_map = {"Naive Treg": 0, "NK": 1, "CD8+": 2, "Mem CD8+": 3}
+    if cell_name in name_map:
+        out = scales[name_map[cell_name]]  # find specific scale
+    else:
+        out = scales[0]  # use Naive Treg scale otherwise
+    return out
+    
