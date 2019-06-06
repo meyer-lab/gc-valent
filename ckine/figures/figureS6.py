@@ -12,14 +12,14 @@ from ..imports import import_Rexpr, import_pstat, import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 4))
+    ax, f = getSetup((7, 6), (5, 4))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scale = import_samples_2_15()  # use all rates
-    ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
+    unkVec_2_15, scale = import_samples_2_15(N=100)  # use all rates
+    ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
     axis = 0
 
     for i, _ in enumerate(cell_names_pstat):
@@ -27,10 +27,17 @@ def makeFigure():
         for j in range(receptor_data.shape[0]):
             if cell_names_pstat[i] == cell_names_receptor[j]:
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
-                if j == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
-                    IL2_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
+                plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
+                if axis == 9:  # only plot the legend for the last entry
+                    dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j],
+                                  receptor_data[j], 0, ckineConc)  # IL-2
+                    dose_response(ax[axis+10], unkVec_2_15, scale, cell_names_receptor[j],
+                                  receptor_data[j], 1, ckineConc, legend=True)  # IL-15
                 else:
-                    IL2_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc)
+                    dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j],
+                                  receptor_data[j], 0, ckineConc)  # IL-2
+                    dose_response(ax[axis+10], unkVec_2_15, scale, cell_names_receptor[j],
+                                  receptor_data[j], 1, ckineConc)  # IL-15
                 axis = axis + 1
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
@@ -38,8 +45,8 @@ def makeFigure():
     return f
 
 
-def IL2_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=False):
-    """ Shows activity for a given cell type at various IL2 concentrations """
+def dose_response(ax, unkVec, scale, cell_type, cell_data, cytokIDX, cytokC, legend=False):
+    """ Shows activity for a given cell type at various cytokine concentrations and timepoints. """
     tps = np.array([0.5, 1., 2., 4.]) * 60.
     PTS = 12  # number of cytokine concentrations
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
@@ -51,7 +58,7 @@ def IL2_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=Fa
     # loop for each IL2 concentration
     for i in range(PTS):
         for ii in range(rxntfr.shape[0]):
-            rxntfr[ii, 0] = cytokC[i]
+            rxntfr[ii, cytokIDX] = cytokC[i]
             # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
             rxntfr[ii, 22] = receptor_expression(cell_data[0], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
@@ -67,9 +74,14 @@ def IL2_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=Fa
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
-        plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt], (tps[tt] / 60.).astype(str))
+        if legend:
+            plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt], (tps[tt] / 60.).astype(str))
+            ax.legend(title='time (hours)', loc='center left', borderaxespad=10.)
+        else:
+            plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt])
 
     # plots for input cell type
-    ax.set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
-    if legend is True:
-        ax.legend(title='time (hours)', loc='center left', borderaxespad=10.)
+    if cytokIDX == 0:
+        ax.set(xlabel=r'[IL-2] (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
+    elif cytokIDX == 1:
+        ax.set(xlabel=r'[IL-15] (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
