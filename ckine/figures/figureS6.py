@@ -12,7 +12,7 @@ from ..imports import import_Rexpr, import_pstat, import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (5, 4))
+    ax, f = getSetup((7, 6), (4, 5))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -26,8 +26,6 @@ def makeFigure():
         # plot matching experimental and predictive pSTAT data for the same cell type
         for j in range(receptor_data.shape[0]):
             if cell_names_pstat[i] == cell_names_receptor[j]:
-                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
-                plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
                 if axis == 9:  # only plot the legend for the last entry
                     dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j],
                                   receptor_data[j], 0, ckineConc)  # IL-2
@@ -38,6 +36,8 @@ def makeFigure():
                                   receptor_data[j], 0, ckineConc)  # IL-2
                     dose_response(ax[axis+10], unkVec_2_15, scale, cell_names_receptor[j],
                                   receptor_data[j], 1, ckineConc)  # IL-15
+                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
+                plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
                 axis = axis + 1
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
