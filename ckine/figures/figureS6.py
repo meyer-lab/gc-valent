@@ -4,6 +4,7 @@ This creates Figure S6. Full panel of measured vs simulated for IL2.
 import string
 import numpy as np
 import matplotlib.cm as cm
+from scipy.optimize import minimize
 from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 from ..imports import import_Rexpr, import_pstat, import_samples_2_15
@@ -67,21 +68,36 @@ def dose_response(ax, unkVec, scale, cell_type, cell_data, cytokIDX, cytokC, leg
         assert retVal >= 0  # make sure solver is working
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for j in range(split):
-            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j, 0])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
+            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
 
-    # calculate total activity for a given cell type (across all IL2 concentrations & time points)
-    avg_total_activity = np.sum(total_activity) / (split * tps.size)
+    # account for pSTAT5 saturation
+    for j in range(split):
+        total_activity[:, j, :] = total_activity[:, j, :] / (total_activity[:, j, :] + scale[j, 0])
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
         if legend:
-            plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt], (tps[tt] / 60.).astype(str))
+            plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt], colors[tt], (tps[tt] / 60.).astype(str))
             ax.legend(title='time (hours)', loc='center left', borderaxespad=10.)
         else:
-            plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt])
+            plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt], colors[tt])
 
     # plots for input cell type
     if cytokIDX == 0:
         ax.set(xlabel=r'[IL-2] (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
     elif cytokIDX == 1:
         ax.set(xlabel=r'[IL-15] (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
+
+
+def optimize_scale(scale_guess, model_act, exp_act):
+    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
+    exp_act = exp_act / np.mean(exp_act)
+
+    def calc_res(sc):
+        """ Calculate the residual.. This is the function we minimize. """
+        scaled_act = model_act / (model_act + sc)
+        scaled_act = scaled_act / np.mean(scaled_act)
+        return abs(exp_act - scaled_act)
+
+    res = minimize(calc_res, scale_guess, bound=(0, None))
+    return res.x
