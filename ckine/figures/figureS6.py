@@ -95,14 +95,11 @@ def optimize_scale(scale_guess, model_act, exp_act):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
     exp_act = exp_act.T / np.mean(exp_act)  # transpose to match model_act and normalize by mean
 
-    print("scale_guess:", scale_guess)
-    print("model_act.shape:", model_act.shape)
-    print("exp_act.shape:", exp_act.shape)
     def calc_res(sc):
         """ Calculate the residual.. This is the function we minimize. """
         scaled_act = model_act / (model_act + sc)
         scaled_act = scaled_act / np.mean(scaled_act)
-        return abs(exp_act - scaled_act)
+        return np.sum(np.square(exp_act - scaled_act))  # return sum of squared error (a scalar)
 
     res = minimize(calc_res, scale_guess, bounds=((0, None),))
     return res.x
