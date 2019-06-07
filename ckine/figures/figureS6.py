@@ -70,10 +70,11 @@ def dose_response(ax, unkVec, scales, cell_type, cell_data, cytokIDX, cytokC, ex
         for j in range(split):
             total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
 
+    # scale receptor/cell measurements to pSTAT activity for each sample
     for j in range(len(scales)):
-        guess = np.array([scales[j, 0], 100.])  # first value is 
-        scale1, scale2 = optimize_scale(guess, total_activity[:, j, :], exp_data)
-        total_activity[:, j, :] = scale2 * total_activity[:, j, :] / (total_activity[:, j, :] + scale1)  # account for pSTAT5 saturation
+        guess = np.array([scales[j, 0], 100.])  # scaling factors are sigmoidal and linear, respectively
+        scale1, scale2 = optimize_scale(guess, total_activity[:, j, :], exp_data)  # find optimal constants
+        total_activity[:, j, :] = scale2 * total_activity[:, j, :] / (total_activity[:, j, :] + scale1)  # adjust activity for this sample
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
@@ -99,5 +100,5 @@ def optimize_scale(scale_guess, model_act, exp_act):
         scaled_act = sc[1] * model_act / (model_act + sc[0])
         return np.sum(np.square(exp_act - scaled_act))  # return sum of squared error (a scalar)
 
-    res = minimize(calc_res, scale_guess, bounds=((0, None), (0, None)))
+    res = minimize(calc_res, scale_guess, bounds=((0, None), (0, None)))  # find result of minimization where both params are >= 0
     return res.x
