@@ -71,10 +71,9 @@ def dose_response(ax, unkVec, scales, cell_type, cell_data, cytokIDX, cytokC, ex
             total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
 
     for j in range(len(scales)):
-        scale = optimize_scale(scales[j, 0], total_activity[:, j, :], exp_data)
-        total_activity[:, j, :] = total_activity[:, j, :] / (total_activity[:, j, :] + scale)  # account for pSTAT5 saturation
-
-    total_activity = total_activity / np.mean(total_activity)  # normalize by average activity
+        guess = np.array([scales[j, 0], 100.])  # first value is 
+        scale1, scale2 = optimize_scale(guess, total_activity[:, j, :], exp_data)
+        total_activity[:, j, :] = scale2 * total_activity[:, j, :] / (total_activity[:, j, :] + scale1)  # account for pSTAT5 saturation
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
@@ -93,13 +92,12 @@ def dose_response(ax, unkVec, scales, cell_type, cell_data, cytokIDX, cytokC, ex
 
 def optimize_scale(scale_guess, model_act, exp_act):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-    exp_act = exp_act.T / np.mean(exp_act)  # transpose to match model_act and normalize by mean
+    exp_act = exp_act.T  # transpose to match model_act
 
     def calc_res(sc):
         """ Calculate the residual.. This is the function we minimize. """
-        scaled_act = model_act / (model_act + sc)
-        scaled_act = scaled_act / np.mean(scaled_act)
+        scaled_act = sc[1] * model_act / (model_act + sc[0])
         return np.sum(np.square(exp_act - scaled_act))  # return sum of squared error (a scalar)
 
-    res = minimize(calc_res, scale_guess, bounds=((0, None),))
+    res = minimize(calc_res, scale_guess, bounds=((0, None), (0, None)))
     return res.x
