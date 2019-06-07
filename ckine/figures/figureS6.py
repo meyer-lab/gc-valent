@@ -19,7 +19,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scale = import_samples_2_15(N=100)  # use all rates
+    unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
     axis = 0
 
@@ -28,15 +28,15 @@ def makeFigure():
         for j in range(receptor_data.shape[0]):
             if cell_names_pstat[i] == cell_names_receptor[j]:
                 if axis == 9:  # only plot the legend for the last entry
-                    dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j],
-                                  receptor_data[j], 0, ckineConc)  # IL-2
-                    dose_response(ax[axis+10], unkVec_2_15, scale, cell_names_receptor[j],
-                                  receptor_data[j], 1, ckineConc, legend=True)  # IL-15
+                    dose_response(ax[axis], unkVec_2_15, scales, cell_names_receptor[j],
+                                  receptor_data[j], 0, ckineConc, IL2_data[(i * 4):((i + 1) * 4)])  # IL-2
+                    dose_response(ax[axis+10], unkVec_2_15, scales, cell_names_receptor[j],
+                                  receptor_data[j], 1, ckineConc, IL15_data[(i * 4):((i + 1) * 4)], legend=True)  # IL-15
                 else:
-                    dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j],
-                                  receptor_data[j], 0, ckineConc)  # IL-2
-                    dose_response(ax[axis+10], unkVec_2_15, scale, cell_names_receptor[j],
-                                  receptor_data[j], 1, ckineConc)  # IL-15
+                    dose_response(ax[axis], unkVec_2_15, scales, cell_names_receptor[j],
+                                  receptor_data[j], 0, ckineConc, IL2_data[(i * 4):((i + 1) * 4)])  # IL-2
+                    dose_response(ax[axis+10], unkVec_2_15, scales, cell_names_receptor[j],
+                                  receptor_data[j], 1, ckineConc, IL15_data[(i * 4):((i + 1) * 4)])  # IL-15
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
                 plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
                 axis = axis + 1
@@ -46,7 +46,7 @@ def makeFigure():
     return f
 
 
-def dose_response(ax, unkVec, scale, cell_type, cell_data, cytokIDX, cytokC, legend=False):
+def dose_response(ax, unkVec, scales, cell_type, cell_data, cytokIDX, cytokC, exp_data, legend=False):
     """ Shows activity for a given cell type at various cytokine concentrations and timepoints. """
     tps = np.array([0.5, 1., 2., 4.]) * 60.
     PTS = 12  # number of cytokine concentrations
@@ -70,9 +70,11 @@ def dose_response(ax, unkVec, scale, cell_type, cell_data, cytokIDX, cytokC, leg
         for j in range(split):
             total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
 
-    # account for pSTAT5 saturation
-    for j in range(split):
-        total_activity[:, j, :] = total_activity[:, j, :] / (total_activity[:, j, :] + scale[j, 0])
+    for j in range(len(scales)):
+        scale = optimize_scale(scales[j, 0], total_activity[:, j, :], exp_data)
+        total_activity[:, j, :] = total_activity[:, j, :] / (total_activity[:, j, :] + scale)  # account for pSTAT5 saturation
+
+    total_activity = total_activity / np.mean(total_activity)  # normalize by average activity
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
@@ -91,13 +93,16 @@ def dose_response(ax, unkVec, scale, cell_type, cell_data, cytokIDX, cytokC, leg
 
 def optimize_scale(scale_guess, model_act, exp_act):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-    exp_act = exp_act / np.mean(exp_act)
+    exp_act = exp_act.T / np.mean(exp_act)  # transpose to match model_act and normalize by mean
 
+    print("scale_guess:", scale_guess)
+    print("model_act.shape:", model_act.shape)
+    print("exp_act.shape:", exp_act.shape)
     def calc_res(sc):
         """ Calculate the residual.. This is the function we minimize. """
         scaled_act = model_act / (model_act + sc)
         scaled_act = scaled_act / np.mean(scaled_act)
         return abs(exp_act - scaled_act)
 
-    res = minimize(calc_res, scale_guess, bound=(0, None))
+    res = minimize(calc_res, scale_guess, bounds=((0, None),))
     return res.x
