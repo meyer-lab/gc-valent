@@ -153,4 +153,20 @@ Simply Cellular Compensation Standard (anti-Mouse IgG), Bangs Labs: 550, Lot# 12
 
 #### Panel 4: Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation
 
+|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|      Vendor     	|
+|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------:	|
+|      CD25      	|      1:120     	|    Brilliant   Violet 421    	|    M-A251    	|    356114    	|    BioLegend    	|
+|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|    Biolegend    	|
+|       CD4      	|      1:120     	|    Brilliant   Violet 785    	|    RPA-T4    	|    300554    	|    Biolegend    	|
+|      CD127     	|      1:120     	|       Alexa Fluor   488      	|    A019D5    	|    351313    	|    Biolegend    	|
+|     CD45RA     	|      1:120     	|        PE/Dazzle   594       	|     HI100    	|    304146    	|    Biolegend    	|
+|      CD56      	|      1:120     	|            PE/Cy7            	|    5.1H11    	|    362510    	|    Biolegend    	|
+|       CD8      	|      1:200     	|       Alexa   Fluor 647      	|    RPA-T8    	|    301062    	|    Biolegend    	|
 
+#### Protocol
+
+Protocol
+Cryopreserved PBMCs (ATCC, lot# 81115172) were thawed to room temperature and slowly diluted with 9 mL pre-warmed RPMI-1640 medium (Gibco) supplemented with 10% fetal bovine serum (FBS, Seradigm, lot #322B15). Media was removed, and cells washed once more with 10 mL warm RPMI-1640 + 10% FBS. Cells were brought to 1.5e6 cells/mL, distributed at 250,000 cells per well in a 96-well V-bottom plate, and allowed to recover 2 hours at 37°C in an incubator at 5% CO2. Cells were washed twice with PBS + 0.1% BSA (PBSA) then suspended in 50 uL PBSA + 10% FBS for 10 min on ice to reduce background binding to IgG.
+Antibodies were diluted in PBSA + 10% FBS and cells were stained for 1 hour at 4° C in darkness with a gating panel (Panel 1, Panel 2, Panel 3, or Panel 4) and one anti-receptor antibody, or an equal concentration of matched isotype/fluorochrome control antibody. Stain for CD25 was included in Panel 1 when CD122, CD132, CD127, or CD215 was being measured (CD25 is used to separate Tregs from other CD4+ T cells).
+Compensation beads (Simply Cellular Compensation Standard, Bangs Labs) and quantitation standards (Quantum Simply Cellular anti-Mouse IgG or anti-Rat IgG, Bangs Labs) were prepared for compensation and standard curve. One well was prepared for each fluorophore with 2 uL antibody in 50 uL PBSA and the corresponding beads. Bead standards were incubated for 1 hour at room temperature in darkness.
+Both beads and cells were washed twice with PBSA. Cells were suspended in 120 uL per well PBSA, and beads to 50 uL, and analyzed using an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) with a sip time of 35 seconds and beads 30 seconds. Antibody number was calculated from fluorescence intensity by subtracting isotype control values from matched receptor stains and calibrated using the two lowest binding quantitation standards. Treg cells could not be gated in the absence of CD25, so CD4+ T cells were used as the isotype control to measure CD25 in Treg populations. Cells were gated as shown in Supplemental Figure x. Measurements were performed using four independent staining procedures over two days. Separately, the analysis was performed with anti-receptor antibodies at 3x normal concentration to verify that receptor binding was saturated.
