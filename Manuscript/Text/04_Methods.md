@@ -126,3 +126,31 @@ Simply Cellular Compensation Standard (anti-Mouse IgG), Bangs Labs: 550, Lot# 12
 |     Mouse   IgG2B isotype     	|      3:100     	|              APC             	|     133303    	|     IC0041A    	|    R&D   Systems    	|
 |    Mouse   IgG1, κ isotype    	|      1:120     	|       Alexa   Fluor 488      	|    MOPC-21    	|     400129     	|      Biolegend      	|
 
+#### Panel 1: Antibodies to gate Naïve and Memory T-regulatory and T-helper cells
+
+|    Antibody    	|    Dilution    	|    Fluorophore               	|    Clone     	|    CAT#      	|    Vendor       	|
+|----------------	|----------------	|------------------------------	|--------------	|--------------	|-----------------	|
+|    CD3         	|    1:120       	|    Brilliant   Violet 605    	|    UCHT1     	|    300460    	|    BioLegend    	|
+|    CD4         	|    1:120       	|    Brilliant   Violet 785    	|    RPA-T4    	|    300554    	|    BioLegend    	|
+|    CD127       	|    1:120       	|    Alexa Fluor   488         	|    A019D5    	|    351313    	|    BioLegend    	|
+|    CD45RA      	|    1:120       	|    PE/Dazzle   594           	|    HI100     	|    304146    	|    BioLegend    	|
+
+
+#### Panel 2: Antibodies to gate NK and CD56bright NK cells
+
+|    Antibody    	|    Dilution    	|    Fluorophore               	|    Clone     	|    CAT#      	|    Vendor       	|
+|----------------	|----------------	|------------------------------	|--------------	|--------------	|-----------------	|
+|    CD3         	|    1:120       	|    Brilliant   Violet 605    	|    UCHT1     	|    300460    	|    BioLegend    	|
+|    CD56        	|    1:120       	|    PE/Dazzle   594           	|    5.1H11    	|    362544    	|    BioLegend    	|
+
+#### Panel 3: Antibodies to gate Naïve and Memory Cytotoxic T cells
+
+|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|      Vendor     	|
+|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------:	|
+|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|    BioLegend    	|
+|       CD8      	|      1:120     	|    Brilliant   Violet 785    	|    RPA-T8    	|    301046    	|    BioLegend    	|
+|     CD45RA     	|      1:120     	|        PE/Dazzle   594       	|     HI100    	|    304146    	|    BioLegend    	|
+
+#### Panel 4: Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation
+
+
