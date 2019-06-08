@@ -40,7 +40,9 @@ def makeFigure():
 
     plot_cells(ax[2], factors_activ[0], 1, 2, cell_names, ax_pos=1)
 
-    plot_ligands(ax[3], factors_activ[2], 1, 2, ax_pos=3, n_ligands=2, mesh=ckineConc, fig=f, fig3=False, fig4=True)
+    #plot_ligands(ax[3], factors_activ[2], 1, 2, ax_pos=3, n_ligands=2, mesh=ckineConc, fig=f, fig3=False, fig4=True)
+    plot_ligands(ax[3], factors_activ[2], n_ligands=2, fig=4, mesh=ckineConc)
+
     f.tight_layout()
 
     return f

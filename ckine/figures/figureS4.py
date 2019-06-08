@@ -2,7 +2,7 @@
 This creates Figure S4, which covers the Tucker factorization form.
 """
 import string
-import seaborn as sns
+import seaborn as sns; sns.set()
 import tensorly as tl
 from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints

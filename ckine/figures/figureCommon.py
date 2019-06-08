@@ -1,7 +1,7 @@
 """
 This file contains functions that are used in multiple figures.
 """
-import seaborn as sns
+import seaborn as sns; sns.set()
 import numpy as np
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
@@ -10,6 +10,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.colors import LogNorm
 from ..tensor import find_R2X
+from ..imports import import_pstat
 
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
@@ -72,8 +73,14 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     ax.set_xticklabels(np.arange(1, n_comps + 1))
 
 
-def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
+def ploot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
     "This function is to plot the ligand combination dimension of the values tensor."
+    
+    
+    
+    
+    
+    
     if not fig4:
         markers = ['^', '*', '.', 'd']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
@@ -185,6 +192,45 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
     template.append(cartoon)
     template.save(figFile)
+
+def plot_ligands(ax, factors, n_ligands, fig, mesh):
+    """Function to put all ligand decomposition plots in one figure."""
+    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs = np.flip(ILs)
+    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    if fig is not 4:
+        markers = ['^', '*', '.', 'd']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
+    else:
+        markers = ['^', '*']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
+
+    for ii in range(factors.shape[1]):
+
+        for jj in range(n_ligands):
+            idx = range(jj * int(mesh.shape[0] / n_ligands), (jj + 1) * int(mesh.shape[0] / n_ligands))
+            if fig is 4:
+                idx = range(jj * len(mesh), (jj + 1) * len(mesh))
+            if jj is 0:
+                ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1), marker=markers[jj], markersize=6)
+            else:
+                ax.plot(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj], markersize=6)
+
+    if fig is not 4:
+            ax.add_artist(ax.legend(handles=legend_shape, loc=8, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+    else:
+        ax.add_artist(ax.legend(handles=legend_shape, loc=8, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+
+    ax.set_xlabel('Ligand Concentration (nM)')
+    ax.set_ylabel('Component')
+    ax.set_title('Ligands')
+    ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4, fontsize=8)
+
+
 
 
 def plot_timepoints(ax, factors):
