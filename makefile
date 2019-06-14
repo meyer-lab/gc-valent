@@ -37,9 +37,8 @@ $(fdir)/figure%eps: $(fdir)/figure%svg
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(patsubst %, $(fdir)/figure%.pdf, $(flist))
-	(cd ./Manuscript && latexmk -xelatex -f -quiet)
-	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
+Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
+	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
 	clang++    $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
