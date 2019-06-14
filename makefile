@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 fdir = ./Manuscript/Figures
-tdir = ./Manuscript/Templates
+tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
@@ -92,7 +92,7 @@ cppcheck: ckine/cppcheck
 	ckine/cppcheck
 	
 pylint.log: .pylintrc
-	(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
+	(pylint3 --rcfile=./common/.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
 doc:
 	doxygen Doxyfile
