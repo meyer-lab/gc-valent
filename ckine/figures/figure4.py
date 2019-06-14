@@ -5,7 +5,7 @@ import string
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands
-from .figure3 import plot_R2X
+from .figure3 import plot_R2X, values
 from ..tensor import perform_decomposition
 from ..imports import import_pstat
 
@@ -33,6 +33,7 @@ def makeFigure():
     for jj in range(measured_tensor.shape[2] - 1):
         factors = perform_decomposition(measured_tensor, jj + 1, cell_dim)
         factors_activity.append(factors)
+    predicted_factors = perform_decomposition(values, 3, cell_dim)
     plot_R2X(ax[4], measured_tensor, factors_activity, n_comps=5, cells_dim=cell_dim)
 
     n_comps = 2
@@ -41,8 +42,15 @@ def makeFigure():
     plot_cells(ax[6], factors_activ[0], 1, 2, cell_names, ax_pos=6)
     plot_ligands(ax[7], factors_activ[2], n_ligands=2, fig=4, mesh=ckineConc)
     
-    for ii in range(2):
-        correlation_plots(ax[], predicted, experimental, cell_names)
+
+    print(factors_activ[0][:,1].shape) #11 measured PSTAT cells
+    print(predicted_factors[1][:,0].shape) #12 predicted cells
+    #correlation_cells(ax[8], factors_activ[0][:,1], predicted_factors[1][:,0], cell_names)
+    #correlation_cells(ax[9], factors_activ[0][:,0], predicted_factors[1][:,2], cell_names)
+
+    #correlation_ligands(ax[10], factors_activ[2][:,1], predicted_factors[1][:,0])
+    #correlation_ligands(ax[11], factors_activ[2][:,0], predicted_factors[1][:,2])
+
 
     f.tight_layout()
 
@@ -63,9 +71,13 @@ def plot_timepoints(ax, factors):
     ax.set_title('Time')
     ax.legend()
 
-def correlation_plots(ax, predicted, experimental, cell_names):
-    """Function that takes in predicted and experimental components and plots them against each other."""
+def correlation_cells(ax, experimental, predicted, cell_names):
+    """Function that takes in predicted and experimental components from cell decomposion and plots them against each other."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
     for ii, cell_name in enumerate(cell_names):
         ax.scatter(experimental, predicted, c=[colors[ii]], marker=markersCells[ii], label=cell_name, alpha=0.75)
+
+def correlation_ligands(ax, experimental, predicted):
+    """Function that takes in predicted and experimental components from ligand decomposion and plots them against each other."""
+    ax.scatter(experimental, predicted)
