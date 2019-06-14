@@ -101,7 +101,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']  # 'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
-    for ii in range(len(factors[:, component_x - 1])):
+    for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
     if ax_pos in (1, 6, 7):
@@ -147,9 +147,11 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
             if fig is 4:
                 idx = range(jj * len(mesh), (jj + 1) * len(mesh))
             if jj is 0:
-                ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1), marker=markers[jj], markersize=6)
+                ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
+                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
             else:
-                ax.plot(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj], markersize=6)
+                ax.plot(ILs, factors[idx, ii], color=colors[ii])
+                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
     # Shrink current axis by 20%
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

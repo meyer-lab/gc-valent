@@ -17,7 +17,7 @@ cell_dim = 1  # For this figure, the cell dimension is along the second [python 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
-    ax, f = getSetup((7.5, 5), (x, y))
+    ax, f = getSetup((7.5, 5), (x, y), empts=[5])
 
     _, _, cell_names = import_Rexpr()
     n_ligands = n_lig(mut=False)
@@ -32,12 +32,8 @@ def makeFigure():
     factors = out[1]
     plot_timepoints(ax[0], tl.to_numpy(factors[0]))
     plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names, ax_pos=1, fig3=False)
-    plot_cells(ax[4], tl.to_numpy(factors[1]), 2, 3, cell_names, ax_pos=4, fig3=False)
-
-    for row in range(2):
-        compNum = 2 * row + 1
-        plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos=row * y + 2, n_ligands=n_ligands, mesh=mat, fig=f, fig3=False)
-
+    plot_cells(ax[2], tl.to_numpy(factors[1]), 2, 3, cell_names, ax_pos=4, fig3=False)
+    plot_ligands(ax[4], tl.to_numpy(factors[2]), n_ligands=4, fig='S4', mesh=mat)
     f.tight_layout()
 
     return f
