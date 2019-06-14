@@ -91,8 +91,8 @@ testcpp: ckine/cppcheck
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
 	
-pylint.log: common/.pylintrc
-	(pylint3 --rcfile=./common/.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
+pylint.log: common/pylintrc
+	(pylint3 --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
 doc:
 	doxygen Doxyfile
