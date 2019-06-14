@@ -104,9 +104,9 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
-    if ax_pos in (1, 7):
+    if ax_pos in (1, 6, 7):
         ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
-
+    ax.set_title('Cells')
     set_bounds(ax, component_x)
 
 
