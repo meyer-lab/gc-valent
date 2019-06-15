@@ -1,5 +1,5 @@
 """
-This creates Figure 3.
+This creates Figure S7.
 """
 import string
 import tensorly as tl

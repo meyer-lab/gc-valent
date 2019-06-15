@@ -1,17 +1,17 @@
 """
 This creates Figure 3.
 """
-import string
-import tensorly as tl
-import seaborn as sns; sns.set()
-import numpy as np
-import matplotlib.cm as cm
-from scipy import stats
-from sklearn.decomposition import PCA
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
 from ..tensor import perform_decomposition
 from ..make_tensor import make_tensor, n_lig
+from sklearn.decomposition import PCA
+from scipy import stats
+import numpy as np
+import matplotlib.cm as cm
+import string
+import tensorly as tl
+import seaborn as sns
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
@@ -25,7 +25,6 @@ def makeFigure():
     ax, f = getSetup((7.5, 7), (x, y), mults=[2, 4], multz={2: 2, 4: 3})
     real_mults = [2, 3]
 
-    n_ligands = n_lig(mut=False)
     data, numpy_data, cell_names = import_Rexpr()
     factors_activity = []
     for jj in range(len(mat) - 1):
@@ -72,9 +71,9 @@ def catplot_receptors(ax, data):
 def PCA_receptor(ax, cell_names, data):
     """Plot PCA scores and loadings for Receptor Expression Data. """
     pca = PCA(n_components = 2)
-    data = stats.zscore(data.astype(float), axis = 1)
-    scores = pca.fit(data).transform(data) #34 cells by n_comp
-    loadings = pca.components_ #n_comp by 8 receptors
+    data = stats.zscore(data.astype(float), axis=1)
+    scores = pca.fit(data).transform(data) #11 cells by n_comp
+    loadings = pca.components_ #n_comp by 7 receptors
     expVar = pca.explained_variance_ratio_
 
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
@@ -83,10 +82,10 @@ def PCA_receptor(ax, cell_names, data):
     labelReceptors = ['IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra'] #'IL9R', 'IL4Ra', 'IL21Ra']
 
     for ii in range(scores.shape[0]):
-        ax[0].scatter(scores[ii,0], scores[ii,1], c = [colors[ii]], marker = markersCells[ii], label = cell_names[ii])
+        ax[0].scatter(scores[ii,0], scores[ii,1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
     for jj in range(loadings.shape[1]):
-        ax[1].scatter(loadings[0,jj], loadings[1,jj], marker = markersReceptors[jj], label = labelReceptors[jj])
+        ax[1].scatter(loadings[0,jj], loadings[1,jj], marker=markersReceptors[jj], label=labelReceptors[jj])
 
     x_max1 = np.max(np.absolute(np.asarray(ax[0].get_xlim())))*1.1
     y_max1 = np.max(np.absolute(np.asarray(ax[0].get_ylim())))*1.1

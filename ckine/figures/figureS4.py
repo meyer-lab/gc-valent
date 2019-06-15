@@ -1,15 +1,14 @@
 """
 This creates Figure S4, which covers the Tucker factorization form.
 """
-import string
-import seaborn as sns; sns.set()
-import tensorly as tl
-from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import values, mat
 from ..tensor import perform_tucker, find_R2X_tucker
 from ..imports import import_Rexpr
-from ..make_tensor import n_lig
+from tensorly import unfold
+import string
+import seaborn as sns
+import tensorly as tl
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 
@@ -20,7 +19,6 @@ def makeFigure():
     ax, f = getSetup((7.5, 5), (x, y), empts=[5])
 
     _, _, cell_names = import_Rexpr()
-    n_ligands = n_lig(mut=False)
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
     rank_list = [3, 3, 4]

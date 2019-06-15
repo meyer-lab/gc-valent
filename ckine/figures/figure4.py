@@ -41,16 +41,6 @@ def makeFigure():
     plot_timepoints(ax[5], factors_activ[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
     plot_cells(ax[6], factors_activ[0], 1, 2, cell_names, ax_pos=6)
     plot_ligands(ax[7], factors_activ[2], n_ligands=2, fig=4, mesh=ckineConc)
-    
-
-    print(factors_activ[0][:,1].shape) #11 measured PSTAT cells
-    print(predicted_factors[1][:,0].shape) #12 predicted cells
-    #correlation_cells(ax[8], factors_activ[0][:,1], predicted_factors[1][:,0], cell_names)
-    #correlation_cells(ax[9], factors_activ[0][:,0], predicted_factors[1][:,2], cell_names)
-
-    #correlation_ligands(ax[10], factors_activ[2][:,1], predicted_factors[1][:,0])
-    #correlation_ligands(ax[11], factors_activ[2][:,0], predicted_factors[1][:,2])
-
 
     f.tight_layout()
 

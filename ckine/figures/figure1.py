@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info, legend_2_15
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..imports import import_samples_2_15
 
@@ -95,7 +95,6 @@ def gc_perc(ax, unkVec):
     ax.scatter(ts, data[:, 1], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 1000 nM of IL2 in 2Ra-
 
     y_max = 100.
-    size = len(ts)
     output = surf.calc(unkVec, ts) * y_max  # run the simulation
     plot_conf_int(ax, ts, output.T, "darkorchid")
 

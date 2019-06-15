@@ -1,16 +1,16 @@
 """
 This file contains functions that are used in multiple figures.
 """
-import seaborn as sns; sns.set()
+from ..tensor import find_R2X
+from ..imports import import_pstat
+import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
-from matplotlib.colors import LogNorm
-from ..tensor import find_R2X
-from ..imports import import_pstat
+
 
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
@@ -129,7 +129,7 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    if fig is not 4:
+    if fig != 4:
         markers = ['^', '*', '.', 'd']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                         Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
@@ -144,9 +144,9 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
 
         for jj in range(n_ligands):
             idx = range(jj * int(mesh.shape[0] / n_ligands), (jj + 1) * int(mesh.shape[0] / n_ligands))
-            if fig is 4:
+            if fig == 4:
                 idx = range(jj * len(mesh), (jj + 1) * len(mesh))
-            if jj is 0:
+            if jj == 0:
                 ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
                 ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
             else:
@@ -156,7 +156,7 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 
-    if fig is not 4:
+    if fig != 4:
         ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8, bbox_to_anchor=(1, 0.5)))
 
     else:
@@ -204,7 +204,6 @@ def legend_2_15(ax, font_size="small", location="center right"):
 
 def plot_scaled_pstat(ax, cytokC, pstat):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
-    tps = np.array([0.5, 1., 2., 4.]) * 60.
     # plot pstat5 data for each time point
     ax.scatter(cytokC, pstat[3, :], c="indigo", s=2)  # 0.5 hr
     ax.scatter(cytokC, pstat[2, :], c="teal", s=2)  # 1 hr
