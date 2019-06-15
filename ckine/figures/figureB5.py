@@ -3,13 +3,9 @@ This creates Figure 5.
 """
 import string
 import tensorly as tl
-import seaborn as sns
 import numpy as np
-from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
-from matplotlib.colors import LogNorm
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X, set_bounds
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X
 from ..imports import import_Rexpr, import_pstat
 from ..tensor import perform_decomposition
 from ..make_tensor import make_tensor, n_lig
