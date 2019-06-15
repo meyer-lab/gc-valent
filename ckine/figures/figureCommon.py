@@ -3,6 +3,7 @@ This file contains functions that are used in multiple figures.
 """
 import seaborn as sns
 import numpy as np
+import matplotlib
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -10,6 +11,9 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.colors import LogNorm
 from ..tensor import find_R2X
+
+
+matplotlib.rcParams['legend.labelspacing'] = 0.2
 
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
@@ -119,12 +123,12 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
             a.set_label('Concentration (nM)')
 
         if ax_pos == 5 and fig3:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
 
         elif ax_pos == 2 and not fig3:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
         elif ax_pos == 3 and fig4:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
@@ -163,10 +167,10 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
     if ax_pos in (1, 2):
-        ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
+        ax.legend(borderpad=0.35, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
 
     elif ax_pos == 4 and fig3:
-        ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
+        ax.legend(borderpad=0.35, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
     ax.set_title('Cells')
 
     set_bounds(ax, component_x)
