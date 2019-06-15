@@ -1,10 +1,10 @@
 """
 This creates Figure S4, which covers the Tucker factorization form.
 """
-from tensorly import unfold
 import string
 import seaborn as sns
 import tensorly as tl
+from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import values, mat
 from ..tensor import perform_tucker, find_R2X_tucker

@@ -1,8 +1,6 @@
 """
 This file contains functions that are used in multiple figures.
 """
-from ..tensor import find_R2X
-from ..imports import import_pstat
 import seaborn as sns
 import numpy as np
 import matplotlib.cm as cm
@@ -10,8 +8,8 @@ from matplotlib import gridspec, pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
-
-
+from ..tensor import find_R2X
+from ..imports import import_pstat
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
@@ -104,7 +102,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
-    if ax_pos in (1, 6, 7):
+    if ax_pos in (1, 2, 5, 7):
         ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
     ax.set_title('Cells')
     set_bounds(ax, component_x)
@@ -160,10 +158,11 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
         ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8, bbox_to_anchor=(1, 0.5)))
 
     else:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=8, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+        ax.add_artist(ax.legend(handles=legend_shape, loc=4, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
+    ax.set_xscale('log')
     ax.set_title('Ligands')
 
     # Put a legend to the right of the current axis
