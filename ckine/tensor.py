@@ -7,7 +7,7 @@ from tensorly.decomposition import non_negative_parafac, non_negative_tucker
 from tensorly.decomposition.candecomp_parafac import normalize_factors
 from tensorly.metrics.regression import variance as tl_var
 
-backend = 'pytorch'  # Tensorly backend choice
+backend = 'numpy'  # Tensorly backend choice
 tl.set_backend(backend)  # Set the backend within every file that imports from Tensor_analysis.py
 
 # Set whether or not we subtract in one place so we're consistent
