@@ -29,8 +29,6 @@ def makeFigure():
         else:
             IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
-    f.tight_layout(w_pad=0.1, h_pad=1.0)
-
     return f
 
 

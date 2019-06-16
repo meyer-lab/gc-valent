@@ -31,6 +31,4 @@ def makeFigure():
     rateComp(ax[1], full_unkVec)
     violinPlots(ax[3:5], full_unkVec, full_scales, Traf=False)
 
-    f.tight_layout()
-
     return f

@@ -40,8 +40,6 @@ def makeFigure():
                 plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
                 axis = axis + 1
 
-    f.tight_layout(w_pad=0.1, h_pad=1.0)
-
     return f
 
 

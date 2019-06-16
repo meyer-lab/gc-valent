@@ -11,7 +11,7 @@ from matplotlib.patches import Patch
 from ..tensor import find_R2X
 from ..imports import import_pstat
 
-def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
+def getSetup(figsize, gridd, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
             font_scale=0.7,
@@ -23,23 +23,29 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     # create empty list if empts isn't specified
     if empts is None:
         empts = []
+    
+    if multz is None:
+        multz = dict()
 
-    # Setup plotting space
-    f = plt.figure(figsize=figsize)
-
-    # Make grid
-    gs1 = gridspec.GridSpec(*gridd)
+    # Setup plotting space and grid
+    f = plt.figure(figsize=figsize, constrained_layout=True)
+    gs1 = gridspec.GridSpec(*gridd, figure=f)
 
     # Get list of axis objects
-    if mults is None:
-        ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1]) if x not in empts]
-    else:
-        ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
-            gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]
+    x = 0
+    ax = list()
+    while x < gridd[0] * gridd[1]:
+        if x not in empts and x not in multz.keys(): # If this is just a normal subplot
+            ax.append(f.add_subplot(gs1[x]))
+        elif x in multz.keys(): # If this is a subplot that spans grid elements
+            ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
+            x += multz[x]
+        x += 1
 
     # shrink the padding between ticks and axes
     for a in ax:
         a.tick_params(axis='both', pad=-2)
+    # TODO: Move the above to rcParams
 
     return (ax, f)
 
