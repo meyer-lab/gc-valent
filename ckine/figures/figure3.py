@@ -49,12 +49,12 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    plot_timepoints(ax[5], factors_activ[0])  # Change final input value depending on need
+    plot_timepoints(ax[5], tl.to_numpy(factors_activ[0]))  # Change final input value depending on need
 
-    plot_cells(ax[6], factors_activ[1], 1, 2, cell_names, ax_pos=5)
-    plot_cells(ax[7], factors_activ[1], 2, 3, cell_names, ax_pos=6)
+    plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names, ax_pos=5)
+    plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 2, 3, cell_names, ax_pos=6)
 
-    plot_ligands(ax[8], factors_activ[2], n_ligands=4, fig=3, mesh=mat)
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), n_ligands=4, fig=3, mesh=mat)
 
     return f
 
