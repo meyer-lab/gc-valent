@@ -13,6 +13,7 @@ from ..tensor import find_R2X
 from ..imports import import_pstat
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
+matplotlib.rcParams['legend.fontsize'] = 8
 
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
@@ -107,7 +108,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
     if ax_pos in (1, 2, 5, 7):
-        ax.legend(borderpad=0.35, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
+        ax.legend(borderpad=0.35, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fancybox=True, framealpha=0.5)
 
     ax.set_title('Cells')
     set_bounds(ax, component_x)
@@ -160,10 +161,10 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 
     if fig != 4:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8, bbox_to_anchor=(1, 0.5)))
+        ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.4, handlelength=0.2, handletextpad=0.5, markerscale=0.7, bbox_to_anchor=(1, 0.5)))
 
     else:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=4, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+        ax.add_artist(ax.legend(handles=legend_shape, loc=4, borderpad=0.3, handlelength=0.2, handletextpad=0.5, markerscale=0.7))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
@@ -171,7 +172,7 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     ax.set_title('Ligands')
 
     # Put a legend to the right of the current axis
-    ax.legend(loc=3, bbox_to_anchor=(1, 0.5), handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, fontsize=8)
+    ax.legend(loc=3, bbox_to_anchor=(1, 0.5), handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7)
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
@@ -184,7 +185,7 @@ def plot_timepoints(ax, factors):
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
-    ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4, fontsize=8)
+    ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4)
 
 
 def kfwd_info(unkVec):
@@ -194,7 +195,7 @@ def kfwd_info(unkVec):
     return mean, std
 
 
-def legend_2_15(ax, font_size="small", location="center right"):
+def legend_2_15(ax, location="center right"):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
                        Patch(facecolor='goldenrod', label='IL-15'),
@@ -202,7 +203,7 @@ def legend_2_15(ax, font_size="small", location="center right"):
                               markerfacecolor='k', markersize=8),
                        Line2D([0], [0], marker='^', color='w', label='IL-2Rα-',
                               markerfacecolor='k', markersize=8)]
-    ax.legend(handles=legend_elements, loc=location, fontsize=font_size)
+    ax.legend(handles=legend_elements, loc=location)
     ax.axis('off')  # remove the grid
 
 
