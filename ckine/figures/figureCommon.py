@@ -198,25 +198,7 @@ def legend_2_15(ax, font_size="small", location="center right"):
 def plot_scaled_pstat(ax, cytokC, pstat):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
     # plot pstat5 data for each time point
-<<<<<<< HEAD
-    ax.scatter(cytokC, pstat[3, :] / avg_activity, c="indigo", s=2)  # 0.5 hr
-    ax.scatter(cytokC, pstat[2, :] / avg_activity, c="teal", s=2)  # 1 hr
-    ax.scatter(cytokC, pstat[1, :] / avg_activity, c="forestgreen", s=2)  # 2 hr
-    ax.scatter(cytokC, pstat[0, :] / avg_activity, c="darkred", s=2)  # 4 hr
-
-
-def find_cell_scale(scales, cell_name):
-    """ Uses results from fit_visterra to map cell name to the correct index in scales. """
-    name_map = {"Naive Treg": 0, "NK": 1, "CD8+": 2, "Mem CD8+": 3}
-    if cell_name in name_map:
-        out = scales[:, name_map[cell_name]]  # find specific scale
-    else:
-        out = scales[:, 0]  # use Naive Treg scale otherwise
-    return out
-    
-=======
     ax.scatter(cytokC, pstat[3, :], c="indigo", s=2)  # 0.5 hr
     ax.scatter(cytokC, pstat[2, :], c="teal", s=2)  # 1 hr
     ax.scatter(cytokC, pstat[1, :], c="forestgreen", s=2)  # 2 hr
     ax.scatter(cytokC, pstat[0, :], c="darkred", s=2)  # 4 hr
->>>>>>> master

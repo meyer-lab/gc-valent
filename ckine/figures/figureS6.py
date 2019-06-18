@@ -4,14 +4,10 @@ This creates Figure S6. Full panel of measured vs simulated for IL2.
 import string
 import numpy as np
 import matplotlib.cm as cm
-<<<<<<< HEAD
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, find_cell_scale
-=======
 from scipy.optimize import minimize
 from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
->>>>>>> master
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
-from ..imports import import_Rexpr, import_pstat, import_visterra_2_15
+from ..imports import import_Rexpr, import_pstat, import_samples_2_15
 
 
 def makeFigure():
@@ -23,10 +19,6 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-<<<<<<< HEAD
-    unkVec_2_15, scales = import_visterra_2_15(N=100)  # use all rates
-    ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
-=======
     unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
 
@@ -35,25 +27,17 @@ def makeFigure():
     IL15_data = IL15_data / 1000.0
 
     tps = np.array([0.5, 1., 2., 4.]) * 60.
->>>>>>> master
     axis = 0
 
     for i, _ in enumerate(cell_names_pstat):
         # plot matching experimental and predictive pSTAT data for the same cell type
         for j in range(receptor_data.shape[0]):
             if cell_names_pstat[i] == cell_names_receptor[j]:
-<<<<<<< HEAD
-                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
-                scale = find_cell_scale(scales, cell_names_receptor[j])
-                if j == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
-                    IL2_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
-=======
                 IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[j], tps, ckineConc,
                                                                  IL2_data[(i * 4):((i + 1) * 4)], IL15_data[(i * 4):((i + 1) * 4)])
                 if axis == 9:  # only plot the legend for the last entry
                     plot_dose_response(ax[axis], ax[axis+10], IL2_activity, IL15_activity,
                                        cell_names_receptor[j], tps, ckineConc, legend=True)
->>>>>>> master
                 else:
                     plot_dose_response(ax[axis], ax[axis+10], IL2_activity, IL15_activity,
                                        cell_names_receptor[j], tps, ckineConc)
@@ -90,9 +74,6 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
         assert retVal >= 0  # make sure solver is working
         activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for j in range(split):
-<<<<<<< HEAD
-            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
-=======
             total_activity2[i, j, :] = activity2[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
             total_activity15[i, j, :] = activity15[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
 
@@ -104,7 +85,6 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
         total_activity15[:, j, :] = scale2 * total_activity15[:, j, :] / (total_activity15[:, j, :] + scale1)  # adjust activity for this sample
 
     return total_activity2, total_activity15
->>>>>>> master
 
 
 def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, cytokC, legend=False):
