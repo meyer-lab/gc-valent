@@ -8,11 +8,10 @@ from matplotlib import gridspec, pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
-from matplotlib.colors import LogNorm
 from ..tensor import find_R2X
+from ..imports import import_pstat
 
-
-def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
+def getSetup(figsize, gridd, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
             font_scale=0.7,
@@ -24,23 +23,29 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     # create empty list if empts isn't specified
     if empts is None:
         empts = []
+    
+    if multz is None:
+        multz = dict()
 
-    # Setup plotting space
-    f = plt.figure(figsize=figsize)
-
-    # Make grid
-    gs1 = gridspec.GridSpec(*gridd)
+    # Setup plotting space and grid
+    f = plt.figure(figsize=figsize, constrained_layout=True)
+    gs1 = gridspec.GridSpec(*gridd, figure=f)
 
     # Get list of axis objects
-    if mults is None:
-        ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1]) if x not in empts]
-    else:
-        ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
-            gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]
+    x = 0
+    ax = list()
+    while x < gridd[0] * gridd[1]:
+        if x not in empts and x not in multz.keys(): # If this is just a normal subplot
+            ax.append(f.add_subplot(gs1[x]))
+        elif x in multz.keys(): # If this is a subplot that spans grid elements
+            ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
+            x += multz[x]
+        x += 1
 
     # shrink the padding between ticks and axes
-    for a in ax:
-        a.tick_params(axis='both', pad=-2)
+    # for a in ax:
+    #     a.tick_params(axis='both', pad=-2)
+    # TODO: Move the above to rcParams
 
     return (ax, f)
 
@@ -71,65 +76,6 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     ax.set_xticks(np.arange(1, n_comps + 1))
     ax.set_xticklabels(np.arange(1, n_comps + 1))
 
-
-def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
-    "This function is to plot the ligand combination dimension of the values tensor."
-    if not fig4:
-        markers = ['^', '*', '.', 'd']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
-        hu = np.around(np.sum(mesh[range(int(mesh.shape[0] / n_ligands)), :], axis=1).astype(float), decimals=7)
-
-    else:
-        markers = ['^', '*']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
-        hu = mesh
-
-    norm = LogNorm(vmin=hu.min(), vmax=hu.max())
-    cmap = sns.dark_palette("#2eccc0", n_colors=len(hu), reverse=True, as_cmap=True)
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-
-    for ii in range(n_ligands):
-        idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
-        if fig4:
-            idx = range(ii * len(mesh), (ii + 1) * len(mesh))
-
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
-
-        if ii == 0 and ax_pos == 5 and fig3:
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="5%", pad=0.05)
-            a = fig.colorbar(sm, cax=cax)
-            a.set_label('Concentration (nM)')
-
-        elif ii == 0 and ax_pos == 2 and fig3 is False:
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="5%", pad=0.05)
-            a = fig.colorbar(sm, cax=cax)
-            a.set_label('Concentration (nM)')
-
-        elif ii == 0 and ax_pos == 3 and fig4:
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="5%", pad=0.05)
-            a = fig.colorbar(sm, cax=cax)
-            a.set_label('Concentration (nM)')
-
-        if ax_pos == 5 and fig3:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
-
-        elif ax_pos == 2 and not fig3:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
-        elif ax_pos == 3 and fig4:
-            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
-
-    ax.set_title('Ligands')
-    set_bounds(ax, component_x)
-
-
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
     ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
@@ -157,18 +103,14 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']  # 'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
 
-    for ii in range(len(factors[:, component_x - 1])):
+    for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
 
-    if ax_pos in (1, 2):
-        ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
-
-    elif ax_pos == 4 and fig3:
+    if ax_pos in (1, 2, 5, 7):
         ax.legend(borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
     ax.set_title('Cells')
-
     set_bounds(ax, component_x)
 
 
@@ -185,6 +127,39 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
     template.append(cartoon)
     template.save(figFile)
+
+def plot_ligands(ax, factors, n_ligands, fig, mesh):
+    """Function to put all ligand decomposition plots in one figure."""
+    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs = np.flip(ILs)
+    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    if fig != 4:
+        markers = ['^', '*', '.', 'd']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
+    else:
+        markers = ['^', '*']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
+
+    for ii in range(factors.shape[1]):
+        for jj in range(n_ligands):
+            idx = range(jj * int(mesh.shape[0] / n_ligands), (jj + 1) * int(mesh.shape[0] / n_ligands))
+            if fig == 4:
+                idx = range(jj * len(mesh), (jj + 1) * len(mesh))
+            if jj == 0:
+                ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
+                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
+            else:
+                ax.plot(ILs, factors[idx, ii], color=colors[ii])
+                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
+
+    ax.set_xlabel('Ligand Concentration (nM)')
+    ax.set_ylabel('Component')
+    ax.set_xscale('log')
+    ax.set_title('Ligands')
 
 
 def plot_timepoints(ax, factors):
@@ -222,9 +197,8 @@ def legend_2_15(ax, font_size="small", location="center right"):
 
 def plot_scaled_pstat(ax, cytokC, pstat):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
-    tps = np.array([0.5, 1., 2., 4.]) * 60.
-    avg_activity = np.sum(pstat) / tps.size
     # plot pstat5 data for each time point
+<<<<<<< HEAD
     ax.scatter(cytokC, pstat[3, :] / avg_activity, c="indigo", s=2)  # 0.5 hr
     ax.scatter(cytokC, pstat[2, :] / avg_activity, c="teal", s=2)  # 1 hr
     ax.scatter(cytokC, pstat[1, :] / avg_activity, c="forestgreen", s=2)  # 2 hr
@@ -240,3 +214,9 @@ def find_cell_scale(scales, cell_name):
         out = scales[:, 0]  # use Naive Treg scale otherwise
     return out
     
+=======
+    ax.scatter(cytokC, pstat[3, :], c="indigo", s=2)  # 0.5 hr
+    ax.scatter(cytokC, pstat[2, :], c="teal", s=2)  # 1 hr
+    ax.scatter(cytokC, pstat[1, :], c="forestgreen", s=2)  # 2 hr
+    ax.scatter(cytokC, pstat[0, :], c="darkred", s=2)  # 4 hr
+>>>>>>> master

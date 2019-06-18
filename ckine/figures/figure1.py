@@ -15,10 +15,10 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[2])
+    ax, f = getSetup((10, 7), (3, 4), multz={0: 2, 10: 1}, empts=[2])
 
     real_mults = [0, 8]  # subplots in ax that are actually mults
-    ax[0].axis('off')  # blank out first two axes for cartoon
+    ax[0].axis('off')  # blank out first axis for cartoon
 
     for ii, item in enumerate(ax):
         h = 2.5 if ii in real_mults else 1
@@ -33,8 +33,6 @@ def makeFigure():
     gc_perc(ax[4], unkVec)
     violinPlots(ax[5:8], full_unkVec, full_scales)
     rateComp(ax[8], full_unkVec)
-
-    f.tight_layout(w_pad=1.3)
 
     return f
 
@@ -95,7 +93,6 @@ def gc_perc(ax, unkVec):
     ax.scatter(ts, data[:, 1], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 1000 nM of IL2 in 2Ra-
 
     y_max = 100.
-    size = len(ts)
     output = surf.calc(unkVec, ts) * y_max  # run the simulation
     plot_conf_int(ax, ts, output.T, "darkorchid")
 
