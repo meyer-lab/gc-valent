@@ -80,6 +80,7 @@ When fitting our model to the data, we used PyMC model that incorporates Bayesia
 
 ### Tensor generation
 
+<<<<<<< HEAD
 After fitting the model and obtaining the posterior distributions of each unknown parameter, we generated a three-dimensional dataset for the ligand activities over time upon simulating 12 cell types with IL-2, IL-15, or a mutant IL-2Rα affinity-enriched IL-2. The receptor expression rates for IL-2Rα, IL-2Rβ, γ~c~, and IL-15Rα were calculated based on measured surface abundance ([@Fig:tfac]B). The initial ligand concentrations to stimulate the cells matched those from experimental doses ([@Fig:supp5]D). As a result, the final dataset was a tensor of dimensions 100 timepoints by 13 cell types by 3*X ligand values, where X is the number of initial ligand concentrations used for each of IL-2, IL-15, and mutant IL-2. From there, tensor factorization was employed to visualize variation in the data.
 
 ### Tensor factorization
@@ -87,11 +88,23 @@ After fitting the model and obtaining the posterior distributions of each unknow
 Before decomposition, each tensor was variance scaled across cell populations. Tensor factorization analysis was performed using a python package called TensorLy. We applied non-negative Canonical Polyadic Decomposition (also known as CP or PARAFAC) to obtain one matrix (or factor) per mode of the tensor ([@Fig:tfac]A). This decomposition follows the scheme that just as a matrix can be expressed as the sum of the outer product of two vectors, a tensor of order 3 can be expressed as the sum of the ‘R’ outer product of three vectors. Each vector then belongs to a decomposition matrix, called a factor, along the corresponding dimension. From there, each of the three factor matrices will have R columns.
  
 In order to determine the number of components (R) necessary to explain 90% of the variance in the original tensor, an $R^2X$ metric was computed and compared for decomposing the tensor using different number of components. This method first required to decompose the tensor into the sum of R vector products utilizing tensorly.parafac, which results in 3 factor matrices whose second dimension is R. Following, the tensor was reconstructed with tensorly.kruskal_to_tensor by multiplying the factors out. Then, the $R^2X$ was computed using
+=======
+After fitting the model and obtaining the posterior distributions of the unknown parameters, we generated a three-dimensional dataset for the ligand activities at different timepoints upon simulating eight cell types exclusively with one of IL-2, IL-15, and a mutant IL-2Rα affinity-enriched IL-2. The receptor expression rates for IL-2Rα, IL-2Rβ, γ~c~, and IL-15Rα were calculated after measuring their levels on different cells ([@Fig:tfac]B). The initial ligand concentrations to stimulate the cells with ranged from $10^{-2}$ to $10^1$ nM. Each combination of these initial conditions, when inputted into the model, resulted in a matrix of size 100 timepoints by 62 species values. In order to interpret the concentration values at different timepoints, we reduced these values to three, accounting for the respective active species concentrations. As a result, the final dataset was a tensor of dimensions 100 timepoints by 8 cell types by 3*X ligand values, where X is the number of initial ligand concentrations used for each of IL-2, IL-15, and mutant IL-2. From there, further tensor decomposition methods such as tensor factorization were employed in order to achieve intuitive representation and handling of higher dimensional data without losing the structural characteristics of the data itself. 
+
+### Tensor factorization
+
+Before deconstructing the dataset and applying any decomposition methods, the tensor was scaled along the dimension of the 3*X values in order to mitigate the different scales available in the varied results. This z-scoring ensures the data is put on a similar scale during analysis.
+
+Tensor factorization analysis was performed using a python package called TensorLy. Given our tensor of order 3, we applied Canonical Polyadic Decomposition (also known as CP or PARAFAC) to obtain one matrix (or factor) per mode of the tensor ([@Fig:tfac]A). This decomposition follows the scheme that just as a matrix can be expressed as the sum of the outer product of two vectors, a tensor of order 3 can be expressed as the sum of the ‘R’ outer product of three vectors. Each vector then belongs to a decomposition matrix, called a factor, along the corresponding dimension. From there, each of the three factor matrices will have R columns. 
+ 
+In order to determine the number of components (R) necessary to explain 90 percent of the variance in the original tensor, an R^2X metric was computed and compared for decomposing the tensor using different number of components. This method first required to decompose the tensor into the sum of R vector products utilizing tensorly.parafac, which results in 3 factor matrices whose second dimension is R. Following, the tensor was reconstructed with tensorly.kruskal_to_tensor by multiplying the factors out. Then, the R^2X was computed using
+>>>>>>> Tensor methods
 
 $$R^2X = 1 - (variance(X_r-X)/variance(X)).$$
 
 Here, X_r is the reconstructed tensor and X is the original tensor. By iterating over different possible R component numbers, the percent explained variance is obtained. 
  
+<<<<<<< HEAD
 The original simulated tensor was then decomposed to 4 components along each dimension and the columns within each factor matrix were plotted against each other to help visualize corresponding relationships between variables. 
 
 We also employed non-negative Tucker Decomposition. This decomposed our tensor into a core tensor and three matrices which correspond to the core scalings along each mode of time, cells, and active ligands. This meant that the tensor’s first dimension (time) was decomposed to 3 components, and the second and third dimensions were decomposed to 4 components each ([@Fig:supp4]A-E). 
@@ -204,3 +217,8 @@ Methanol – Beantown Chemical: 218905-4L<br/>
 #### Protocol
 
 Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 or IL-15 (R&D Systems) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in Supplemental "Figure XXX", and the median pSTAT5 level extracted for each population in each well.
+=======
+From the R^2X values, we determined that 3 components were needed to explain 90 percent of the variance ([@Fig:tfac]C). Yet we used 4 for plotting purposes. The original tensor was then decomposed to 4 components along each dimension and the columns within each factor matrix were plotted against each other to help visualize corresponding relationships between variables. 
+
+Moreover, we employed another tensor decomposition method called Tucker Decomposition. This decomposed our tensor into a core tensor and three matrices which correspond to the core scalings along each mode of time, cells, and active ligands. Since Tucker decomposition is advised to be used for data compression and dimensionality reduction, we kept an R^2X of 99 percent when choosing the number of components. This meant that the tensor’s first dimension (time) was decomposed to 3 components, and the second and third dimensions were decomposed to 4 components each ([@Fig:supp3]A-E). 
+>>>>>>> Tensor methods
