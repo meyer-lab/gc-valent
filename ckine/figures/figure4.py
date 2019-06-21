@@ -4,7 +4,7 @@ This creates Figure 4. CP decomposition of measured pSTAT data.
 import string
 import numpy as np
 import math
-from scipy.optimize import least_squares, minimize
+from scipy.optimize import least_squares, fsolve
 from .figureCommon import subplotLabel, getSetup
 from ..imports import import_pstat
 
@@ -23,7 +23,6 @@ def makeFigure():
     
     print(np.log10(ckineConc.astype(np.float)*10**4))
     
-    
     for i, _ in enumerate(cell_names_pstat):
         test = IL2_data[(i * 4):((i + 1) * 4)]
         test2 = test[3] # add log?
@@ -37,6 +36,13 @@ def nllsq(ax, x0, xdata, ydata):
     y = hill_equation(xdata, lsq_res.x)
     ax.scatter(xdata, ydata)
     ax.plot(xdata, y)
+    y_halfMax = np.maximum(y) / 2
+    f = y_halfMax - (lsq_res.x[3] * np.power(x / lsq_res.x[0], lsq_res.x[1]) / (1.0 + np.power(x / lsq_res.x[0], lsq_res.x[1])))
+    halfMaxConc = fsolve(hill_equation, y_halfMax)
+    
+def inverse_hill():
+    xk = np.power(x / x0[0], x0[1])
+    y - (x0[2] * xk / (1.0 + xk))
 
 def hill_equation(x, x0):
     k = x0[0]
