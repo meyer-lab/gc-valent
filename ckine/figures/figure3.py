@@ -100,7 +100,7 @@ def PCA_receptor(ax, cell_names, data):
     ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100, 2)) + '%)')
     ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100, 2)) + '%)')
     ax[0].set_title('Scores')
-    ax[0].legend(loc='upper left', borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
+    #ax[0].legend(loc='upper left', borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
     set_bounds(ax[0], 1)
 
     ax[1].set_xlim(-x_max2, x_max2)
