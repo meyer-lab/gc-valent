@@ -12,6 +12,9 @@ from ..tensor import perform_decomposition
 from ..imports import import_pstat
 
 
+cell_dim = 0  # For this figure, the cell dimension is along the first [python index 0].
+
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
