@@ -4,7 +4,7 @@ tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
-flist = 1 2 3 4 5 S1 S2 S3 S4 S5 S6 S7 B1 B2 B3 B4 B5
+flist = 1 2 3 4 5 S1 S2 S3 S4 S5 S6 B1 B2 B3 B4 B5
 
 .PHONY: clean test all testprofile testcover doc testcpp autopep
 
@@ -24,7 +24,7 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate; pip install -Ur requirements.txt
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg
+$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate; ./genFigures.py $*
 

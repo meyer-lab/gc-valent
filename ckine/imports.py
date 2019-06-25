@@ -15,11 +15,11 @@ def import_Rexpr():
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     df = data.groupby(['Cell Type', 'Receptor']).mean()  # Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    cell_names = cell_names[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6]]  # Reorder to match most plots
+    cell_names = cell_names[[5, 1, 6, 2, 10, 8, 4, 9, 7, 3, 0]]  # Reorder to match most plots
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
     numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
     numpy_data = numpy_data[:, [2, 3, 0, 1, 4]]  # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    numpy_data = numpy_data[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6], :]  # Reorder to match cells.
+    numpy_data = numpy_data[[5, 1, 6, 2, 10, 8, 4, 9, 7, 3, 0], :]  # Reorder to match cells.
     return data, numpy_data, cell_names
 
 
@@ -110,6 +110,58 @@ def import_samples_4_7(ret_trace=False, N=None):
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo[ii],
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
+
+    if N is not None:
+        if 0 < N < num:  # return a subsample if the user specified the number of samples
+            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+            unkVec, scales = unkVec[:, idx], scales[idx, :]
+        else:
+            print("The N specified is out of bounds.")
+            raise ValueError
+
+    return unkVec, scales
+
+
+def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
+    """ Imports the sampling results from fitting to visterra data in fit_visterra.py. """
+    from .fit_visterra import build_model as build_model_visterra
+
+    bmodel = build_model_visterra(traf=Traf)
+    n_params = nParams()
+
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    if Traf:
+        trace = pm.backends.text.load(join(path, '../IL2_visterra_results'), bmodel.M)
+    else:
+        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf_visterra'), bmodel.M)
+
+    # option to return trace instead of numpy array
+    if ret_trace:
+        return trace
+
+    scales = trace.get_values('scales')
+    kfwd = trace.get_values('kfwd')
+    num = kfwd.size
+    rxn = trace.get_values('rxn')
+
+    if Traf:
+        endo = trace.get_values('endo')
+        activeEndo = trace.get_values('activeEndo')
+        sortF = trace.get_values('sortF')
+        kRec = trace.get_values('kRec')
+        kDeg = trace.get_values('kDeg')
+    else:
+        endo = np.zeros((num))
+        activeEndo = np.zeros((num))
+        sortF = np.zeros((num))
+        kRec = np.zeros((num))
+        kDeg = np.zeros((num))
+
+    unkVec = np.zeros((n_params, num))
+    for ii in range(num):
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., 0., 0., 0., 0., 0., 0.])  # set Rexprs to 0
 
     if N is not None:
         if 0 < N < num:  # return a subsample if the user specified the number of samples
