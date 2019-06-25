@@ -1,5 +1,5 @@
 """
-This creates Figure 4. CP decomposition of measured pSTAT data.
+This creates Figure 4. Comparison of measured and predicted pSTAT data.
 """
 import string
 import math
