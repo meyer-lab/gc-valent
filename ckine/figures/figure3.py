@@ -90,7 +90,6 @@ def PCA_receptor(ax, cell_names, data):
         ax[1].scatter(loadings[0, jj], loadings[1, jj], marker=markersReceptors[jj], label=labelReceptors[jj])
 
     ax[0].set_title('Scores')
-    ax[0].get_legend().remove()
     set_bounds(ax[0], 1)
     ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100, 2)) + '%)')
     ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100, 2)) + '%)')
