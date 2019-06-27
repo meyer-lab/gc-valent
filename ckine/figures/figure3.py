@@ -23,7 +23,7 @@ logging.info("Done constructing tensor.")
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 7), (3, 4), multz={0: 1, 4: 2})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 4: 2})
 
     logging.info("Starting decomposition.")
     data, numpy_data, cell_names = import_Rexpr()
