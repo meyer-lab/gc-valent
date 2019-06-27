@@ -89,24 +89,16 @@ def PCA_receptor(ax, cell_names, data):
     for jj in range(loadings.shape[1]):
         ax[1].scatter(loadings[0, jj], loadings[1, jj], marker=markersReceptors[jj], label=labelReceptors[jj])
 
-    x_max1 = np.max(np.absolute(np.asarray(ax[0].get_xlim()))) * 1.1
-    y_max1 = np.max(np.absolute(np.asarray(ax[0].get_ylim()))) * 1.1
-
-    x_max2 = np.max(np.absolute(np.asarray(ax[1].get_xlim()))) * 1.1
-    y_max2 = np.max(np.absolute(np.asarray(ax[1].get_ylim()))) * 1.1
-
-    ax[0].set_xlim(-x_max1, x_max1)
-    ax[0].set_ylim(-y_max1, y_max1)
     ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100, 2)) + '%)')
     ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100, 2)) + '%)')
+    # FIX: The labels here are overridden by set_bounds
     ax[0].set_title('Scores')
-    ax[0].legend(loc='upper left', borderpad=0.35, labelspacing=0.1, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fontsize=8, fancybox=True, framealpha=0.5)
+    ax[0].get_legend().remove()
     set_bounds(ax[0], 1)
 
-    ax[1].set_xlim(-x_max2, x_max2)
-    ax[1].set_ylim(-y_max2, y_max2)
     ax[1].set_xlabel('PC1 (' + str(round(expVar[0] * 100, 2)) + '%)')
     ax[1].set_ylabel('PC2 (' + str(round(expVar[1] * 100, 2)) + '%)')
+    # FIX: The labels here are overridden by set_bounds
     ax[1].set_title('Loadings')
     ax[1].legend()
     set_bounds(ax[1], 1)
