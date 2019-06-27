@@ -2,6 +2,7 @@
 This creates Figure S4, which covers the Tucker factorization form.
 """
 import string
+import logging
 import seaborn as sns
 import tensorly as tl
 from tensorly import unfold
@@ -21,10 +22,9 @@ def makeFigure():
     _, _, cell_names = import_Rexpr()
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
-    rank_list = [3, 3, 4]
+    rank_list = [2, 3, 3]
     out = perform_tucker(values, rank_list, cell_dim)
-    print(out[0])
-    print(find_R2X_tucker(values, out, cell_dim))
+    logging.info(find_R2X_tucker(values, out, cell_dim))
 
     plot_core(ax[3], out[0])
     factors = out[1]
