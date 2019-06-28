@@ -98,17 +98,6 @@ We also employed non-negative Tucker Decomposition. This decomposed our tensor i
 
 ## Experimental Methods
 
-### IL-2, IL-15, and IL-7 Receptor Quantitation
-#### Materials
-
-Primary Peripheral Blood Mononuclear Cells, Normal, Human: ATCC, PCS-800-011, Lot# 81115172<br/>
-RPMI Medium 1640 (1x): Gibco, 11875-093<br/>
-FBS: Seradigm, 1500-500, Lot# 322B15<br/>
-BSA Fraction V 7.5%: Gibco, 15260-037 Lot# 2000843<br/>
-Quantum Simply Cellular anti-Mouse IgG, Bangs Labs: 815, Lot# 13895<br/>
-Quantum Simply Cellular anti-Rat IgG, Bangs Labs: 817, Lot# 13294<br/>
-Simply Cellular Compensation Standard (anti-Mouse IgG), Bangs Labs: 550, Lot# 12970<br/>
-
 #### Antibodies for IL-2, IL-15, and IL-7 receptor analysis:
 
 |            Antibody           	|    Dilution    	|          Fluorophore         	|     Clone     	|      CAT#      	|        Vendor       	|
@@ -163,15 +152,15 @@ Simply Cellular Compensation Standard (anti-Mouse IgG), Bangs Labs: 550, Lot# 12
 |      CD56      	|      1:120     	|            PE/Cy7            	|    5.1H11    	|    362510    	|    Biolegend    	|
 |       CD8      	|      1:200     	|       Alexa   Fluor 647      	|    RPA-T8    	|    301062    	|    Biolegend    	|
 
-#### Protocol
+### Receptor abundance quantitation
 
-Cryopreserved PBMCs (ATCC, lot# 81115172) were thawed to room temperature and slowly diluted with 9 mL pre-warmed RPMI-1640 medium (Gibco) supplemented with 10% fetal bovine serum (FBS, Seradigm, lot# 322B15). Media was removed, and cells washed once more with 10 mL warm RPMI-1640 + 10% FBS. Cells were brought to $1.5\times10^{6}$ cells/mL, distributed at 250,000 cells per well in a 96-well V-bottom plate, and allowed to recover 2 hours at 37℃ in an incubator at 5% CO2. Cells were washed twice with PBS + 0.1% BSA (PBSA) then suspended in 50 µL PBSA + 10% FBS for 10 min on ice to reduce background binding to IgG.
+Cryopreserved PBMCs (ATCC, PCS-800-011, lot#81115172) were thawed to room temperature and slowly diluted with 9 mL pre-warmed RPMI-1640 medium (Gibco, 11875-093) supplemented with 10% fetal bovine serum (FBS, Seradigm, 1500-500, lot#322B15). Media was removed, and cells washed once more with 10 mL warm RPMI-1640 + 10% FBS. Cells were brought to $1.5\times10^{6}$ cells/mL, distributed at 250,000 cells per well in a 96-well V-bottom plate, and allowed to recover 2 hours at 37℃ in an incubator at 5% CO2. Cells were washed twice with PBS + 0.1% BSA (PBSA, Gibco, 15260-037, Lot#2000843) then suspended in 50 µL PBSA + 10% FBS for 10 min on ice to reduce background binding to IgG.
 
 Antibodies were diluted in PBSA + 10% FBS and cells were stained for 1 hour at 4℃ in darkness with a gating panel (Panel 1, Panel 2, Panel 3, or Panel 4) and one anti-receptor antibody, or an equal concentration of matched isotype/fluorochrome control antibody. Stain for CD25 was included in Panel 1 when CD122, CD132, CD127, or CD215 was being measured (CD25 is used to separate Tregs from other CD4+ T cells).
 
-Compensation beads (Simply Cellular Compensation Standard, Bangs Labs) and quantitation standards (Quantum Simply Cellular anti-Mouse IgG or anti-Rat IgG, Bangs Labs) were prepared for compensation and standard curve. One well was prepared for each fluorophore with 2 µL antibody in 50 µL PBSA and the corresponding beads. Bead standards were incubated for 1 hour at room temperature in darkness.
+Compensation beads (Simply Cellular Compensation Standard, Bangs Labs, 550, lot#12970) and quantitation standards (Quantum Simply Cellular anti-Mouse IgG or anti-Rat IgG, Bangs Labs, 815, Lot# 13895, 817, Lot# 13294) were prepared for compensation and standard curve. One well was prepared for each fluorophore with 2 µL antibody in 50 µL PBSA and the corresponding beads. Bead standards were incubated for 1 hr at room temperature in the dark.
 
-Both beads and cells were washed twice with PBSA. Cells were suspended in 120 µL per well PBSA, and beads to 50 uL, and analyzed using an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) with a sip time of 35 seconds and beads 30 seconds. Antibody number was calculated from fluorescence intensity by subtracting isotype control values from matched receptor stains and calibrated using the two lowest binding quantitation standards. Treg cells could not be gated in the absence of CD25, so CD4+ T cells were used as the isotype control to measure CD25 in Treg populations. Cells were gated as shown in Supplemental "Figure XXX". Measurements were performed using four independent staining procedures over two days. Separately, the analysis was performed with anti-receptor antibodies at 3x normal concentration to verify that receptor binding was saturated.
+Both beads and cells were washed twice with PBSA. Cells were suspended in 120 µL per well PBSA, and beads to 50 uL, and analyzed using an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) with a sip time of 35 seconds and beads 30 seconds. Antibody number was calculated from fluorescence intensity by subtracting isotype control values from matched receptor stains and calibrated using the two lowest binding quantitation standards. Treg cells could not be gated in the absence of CD25, so CD4+ T cells were used as the isotype control to measure CD25 in Treg populations. Cells were gated as shown in [@Fig:gating]. Measurements were performed using four independent staining procedures over two days. Separately, the analysis was performed with anti-receptor antibodies at 3x normal concentration to verify that receptor binding was saturated.
 
 ### pSTAT5 Measurement of IL-2 and IL-15 Signaling in PBMCs 
 #### Materials
@@ -203,4 +192,4 @@ Methanol – Beantown Chemical: 218905-4L<br/>
 
 #### Protocol
 
-Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 or IL-15 (R&D Systems) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in Supplemental "Figure XXX", and the median pSTAT5 level extracted for each population in each well.
+Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 or IL-15 (R&D Systems) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in [@Fig:gating], and the median pSTAT5 level extracted for each population in each well.
