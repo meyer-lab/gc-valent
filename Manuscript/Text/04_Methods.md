@@ -48,24 +48,11 @@ All ligand-receptor binding processes had a forward rate constant of $k_{bnd}$ w
 +--------------------+------------------+--------------------------------------+
 | $k_{14} / k_{bnd}$ | 438 nM           | [@ring_mechanistic_2012]             |
 +--------------------+------------------+--------------------------------------+
-| IL-4                                                                         |
-+--------------------+------------------+--------------------------------------+
-| $k_{32} / k_{bnd}$ | 1.0 nM           | [@Gonnordeaal1253]                   |
-+--------------------+------------------+--------------------------------------+
-| IL-7                                                                         |
-+--------------------+------------------+--------------------------------------+
-| $k_{25} / k_{bnd}$ | 59 nM            | [@Walsh_IL7_2012]                    |
-+--------------------+------------------+--------------------------------------+
-| IL-9                                                                         |
-+--------------------+------------------+--------------------------------------+
-| $k_{29} / k_{bnd}$ | 0.1 nM           | [@Renauld5690]                       |
-+--------------------+------------------+--------------------------------------+
-| IL-21                                                                        |
-+--------------------+------------------+--------------------------------------+
-| $k_{34} / k_{bnd}$ | 0.07 nM          | [@Gonnordeaal1253]                   |
-+--------------------+------------------+--------------------------------------+
 
 : Experimentally measured K~d~ values in literature.
+
+
+Experimentally-derived affinities of 1.0 nM [@Gonnordeaal1253], 59 nM [@Walsh_IL7_2012], 0.1 nM [@Renauld5690], and 0.07 nM [@Gonnordeaal1253] were used for IL-4, IL-7, IL-9, and IL-21 binding to their cognate private receptors, respectively.
 
 The rate of endocytosis is quantified by a constant of $k_{endo,a}$ for active complexes and $k_{endo}$ for all other species. The fraction of all endosomal species sent to lysosomes is $f_{sort}$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $k_{deg}$ and $k_{rec}$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 10 fl and the surface area of the endosome is half the size of the cell surface [@MEYER201525].
 
@@ -162,12 +149,7 @@ Compensation beads (Simply Cellular Compensation Standard, Bangs Labs, 550, lot#
 
 Both beads and cells were washed twice with PBSA. Cells were suspended in 120 µL per well PBSA, and beads to 50 uL, and analyzed using an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) with a sip time of 35 seconds and beads 30 seconds. Antibody number was calculated from fluorescence intensity by subtracting isotype control values from matched receptor stains and calibrated using the two lowest binding quantitation standards. Treg cells could not be gated in the absence of CD25, so CD4+ T cells were used as the isotype control to measure CD25 in Treg populations. Cells were gated as shown in [@Fig:gating]. Measurements were performed using four independent staining procedures over two days. Separately, the analysis was performed with anti-receptor antibodies at 3x normal concentration to verify that receptor binding was saturated.
 
-### pSTAT5 Measurement of IL-2 and IL-15 Signaling in PBMCs 
-#### Materials
-Recombinant Human IL-2: R&D Systems, 202-IL-010<br/>
-Recombinant Human IL-15: R&D Systems, 247-ILB-025<br/>
-10% Phosphate Buffered Formalin: Fisher Scientific, SF100-4<br/>
-Methanol – Beantown Chemical: 218905-4L<br/>
+### pSTAT5 Measurement of IL-2 and IL-15 Signaling in PBMCs
 
 ### Flow Cytometry Antibodies for pSTAT5 Analysis:
 
@@ -190,6 +172,6 @@ Methanol – Beantown Chemical: 218905-4L<br/>
 |      CD56      	|      1:120     	|       Alexa   Fluor 488      	|    5.1H11    	|    362518    	|             BioLegend             	|
 |     pSTAT5     	|      1:120     	|              PE              	|     D4737    	|     14603    	|    Cell   Signaling Technology    	|
 
-#### Protocol
 
-Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 or IL-15 (R&D Systems) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in [@Fig:gating], and the median pSTAT5 level extracted for each population in each well.
+
+Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 (R&D Systems, 202-IL-010) or IL-15 (R&D Systems, 247-ILB-025) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin (Fisher Scientific, SF100-4) for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in [@Fig:gating], and the median pSTAT5 level extracted for each population in each well.
