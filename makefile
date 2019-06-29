@@ -29,10 +29,10 @@ $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figur
 	. venv/bin/activate; ./genFigures.py $*
 
 $(fdir)/figure%pdf: $(fdir)/figure%svg
-	rsvg-convert -f pdf $< -o $@
+	rsvg-convert --keep-image-data -f pdf $< -o $@
 
 $(fdir)/figure%eps: $(fdir)/figure%svg
-	rsvg-convert -f eps $< -o $@
+	rsvg-convert --keep-image-data -f eps $< -o $@
 
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
@@ -50,7 +50,6 @@ ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp ckine
 	clang++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
 
 Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))
-	mkdir -p ./Manuscript/Figures
 	cp -R $(fdir) ./
 	pandoc -s $(pan_common) -o $@
 	rm -r ./Figures
@@ -66,7 +65,7 @@ autopep:
 
 clean:
 	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
-	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
+	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
 
