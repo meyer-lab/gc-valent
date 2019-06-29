@@ -4,7 +4,7 @@ tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
-flist = 1 2 3 4 5 S1 S2 S3 S4 S5 S6 B1 B2 B3 B4 B5
+flist = 1 2 3 4 5 S1 S2 S4 S5 S6 B1 B2 B3 B4 B5
 
 .PHONY: clean test all testprofile testcover doc testcpp autopep
 
@@ -37,7 +37,7 @@ $(fdir)/figure%eps: $(fdir)/figure%svg
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
+Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
 	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
