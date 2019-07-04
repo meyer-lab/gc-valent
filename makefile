@@ -21,12 +21,12 @@ venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
 	test -d venv || virtualenv venv
-	. venv/bin/activate; pip install -Ur requirements.txt
+	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
-	. venv/bin/activate; ./genFigures.py $*
+	. venv/bin/activate && ./genFigures.py $*
 
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f pdf $< -o $@
@@ -70,10 +70,10 @@ clean:
 	find -iname "*.pyc" -delete
 
 test: venv ckine/ckine.so
-	. venv/bin/activate; pytest
+	. venv/bin/activate && pytest
 
 testcover: venv ckine/ckine.so
-	. venv/bin/activate; pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate && pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
 	valgrind --leak-check=full --track-origins=yes --trace-children=yes ckine/cppcheck
@@ -83,8 +83,8 @@ testcpp: ckine/cppcheck
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
 	
-pylint.log: common/pylintrc
-	(pylint3 --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
+pylint.log: venv common/pylintrc
+	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
 doc:
 	doxygen Doxyfile
