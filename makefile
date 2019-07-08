@@ -20,7 +20,7 @@ CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsun
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	test -d venv || virtualenv venv
+	test -d venv || virtualenv --system-site-packages venv
 	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
 
