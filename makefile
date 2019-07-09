@@ -41,7 +41,7 @@ Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pd
 	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
-	gcc $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+	g++ $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
 ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
 	g++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
