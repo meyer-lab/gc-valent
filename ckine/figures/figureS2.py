@@ -20,8 +20,8 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    plot_geweke_2_15(ax[0:4], True)
-    plot_geweke_2_15(ax[4:7], False)
+    plot_geweke_2_15(ax[0], True)
+    plot_geweke_2_15(ax[4], False)
     plot_geweke_4_7(ax[8:11])
 
     return f
@@ -34,11 +34,6 @@ def plot_geweke_2_15(ax, traf):
     # use use trace to calculate geweke z-scores
     score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
 
-    # plot the scores for rxn rates
-    rxn_len = len(score[0]['rxn'])
-    rxn_names = [r'$k_{4}$', r'$k_{5}$', r'$k_{16}$', r'$k_{17}$', r'$k_{22}$', r'$k_{23}$']
-    print("score[0]['kfwd'][10, 1]:", score[0]['kfwd'][10, 1])
-    temp_kfwd = score[0]['kfwd'][10, 1]
     # take score from the 10th interval in the chain... can change this to a random int later
     dictt = {r'$k_{4}$': score[0]['rxn'][0][10, 1], 
              r'$k_{5}$': score[0]['rxn'][1][10, 1],
@@ -51,81 +46,29 @@ def plot_geweke_2_15(ax, traf):
              'IL-15Rα': score[0]['Rexpr_15Ra'][10, 1],
              r'$C_{5}$': score[0]['scales'][10, 1],
              r'$k_{fwd}$': score[0]['kfwd'][10, 1]}
-    
+
     if traf:  # add the trafficking parameters if necessary
         dictt.update({r'$k_{endo}$': score[0]['endo'][10, 1],
                      r'$k_{endo,a}$': score[0]['activeEndo'][10, 1],
                      r'$f_{sort}$': score[0]['sortF'][10, 1],
-                     r'$k_{rec}$:': score[0]['kRec'][10, 1],
+                     r'$k_{rec}$': score[0]['kRec'][10, 1],
                      r'$k_{deg}$': score[0]['kDeg'][10, 1]})
+        ax.set_title(r'IL-2/-15 trafficking model')
+    else:
+        ax.set_title(r'IL-2/-15 no trafficking model')
 
     df = pd.DataFrame.from_dict(dictt, orient='index')
-    df.index.rename('param', inplace=True)
-    sns.scatterplot(data=df, ax=ax[0])
+    sns.scatterplot(data=df, ax=ax)
+    print("df:", df)
+    print("df.columns:", df.columns)
 
-    """
-    for ii in range(rxn_len):
-        
-        ax[0].scatter(score[0]['rxn'][ii][:, 0], score[0]['rxn'][ii][:, 1], marker='o', s=25, color='b', label=rxn_names[ii])  # plot all rates within rxn
-    
-    # plot the scores
-    
-    ax[0].axhline(-1., c='r')
-    ax[0].axhline(1., c='r')
-    ax[0].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['rxn'].shape[0] / 2 + 10),
-              xlabel="Position in Chain", ylabel="Geweke Score")
-    if traf:
-        ax[0].set_title('IL-2/-15 traf model: reverse rxn')
-    else:
-        ax[0].set_title('IL-2/-15 no traf model: reverse rxn')
-    ax[0].legend()
+    ax.set_xticklabels(list(dictt.keys()),
+                       rotation=25,
+                       rotation_mode="anchor",
+                       ha="right",
+                       fontsize=8,
+                       position=(0, 0.075))
 
-    # plot the scores for receptor expression rates
-    rexpr_names = ['IL-2Rα', 'IL-2Rβ', 'IL-15Rα']
-    rexpr_len = len(rexpr_names)
-    colors = cm.rainbow(np.linspace(0, 1, rexpr_len))
-
-    # plot IL2Ra, IL2Rb, and gc
-    ax[1].scatter(score[0]['Rexpr_2Ra'][:, 0], score[0]['Rexpr_2Ra'][:, 1], marker='o', s=25, color=colors[0], label=rexpr_names[0])
-    ax[1].scatter(score[0]['Rexpr_2Rb'][:, 0], score[0]['Rexpr_2Rb'][:, 1], marker='o', s=25, color=colors[1], label=rexpr_names[1])
-    ax[1].scatter(score[0]['Rexpr_15Ra'][:, 0], score[0]['Rexpr_15Ra'][:, 1], marker='o', s=25, color=colors[2], label=rexpr_names[2])
-    ax[1].axhline(-1., c='r')
-    ax[1].axhline(1., c='r')
-    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra'].shape[0] / 2 + 10),
-              xlabel="Position in Chain", ylabel="Geweke Score")
-    if traf:
-        ax[1].set_title('IL-2/-15 traf model: receptor expression')
-    else:
-        ax[1].set_title('IL-2/-15 no-traf model: receptor abundance')
-    ax[1].legend()
-
-    # plot the scores for scaling constant and kfwd
-    ax[2].scatter(score[0]['scales'][:, 0], score[0]['scales'][:, 1], marker='o', s=25, color='g', label=r'$C_{5}$')
-    ax[2].scatter(score[0]['kfwd'][:, 0], score[0]['kfwd'][:, 1], marker='o', s=25, color='b', label=r'$k_{fwd}$')
-    ax[2].axhline(-1., c='r')
-    ax[2].axhline(1., c='r')
-    ax[2].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['kfwd'].shape[0] / 2 + 10),
-              xlabel="Position in Chain", ylabel="Geweke Score")
-    if traf:
-        ax[2].set_title(r'IL-2/-15 traf model: $C_{5}$ and $k_{fwd}$')
-    else:
-        ax[2].set_title(r'IL-2/-15 no-traf model: $C_{5}$ and $k_{fwd}$')
-    ax[2].legend()
-
-    if traf is True:
-        colors = cm.rainbow(np.linspace(0, 1, 5))
-        tr_names = traf_names()
-        ax[3].scatter(score[0]['endo'][:, 0], score[0]['endo'][:, 1], marker='o', s=25, color=colors[0], label=tr_names[0])
-        ax[3].scatter(score[0]['activeEndo'][:, 0], score[0]['activeEndo'][:, 1], marker='o', s=25, color=colors[1], label=tr_names[1])
-        ax[3].scatter(score[0]['sortF'][:, 0], score[0]['sortF'][:, 1], marker='o', s=25, color=colors[2], label=r'$f_{sort}$')  # sortF not in traf_names()
-        ax[3].scatter(score[0]['kRec'][:, 0], score[0]['kRec'][:, 1], marker='o', s=25, color=colors[3], label=tr_names[2])
-        ax[3].scatter(score[0]['kDeg'][:, 0], score[0]['kDeg'][:, 1], marker='o', s=25, color=colors[4], label=tr_names[3])
-        ax[3].axhline(-1., c='r')
-        ax[3].axhline(1., c='r')
-        ax[3].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['endo'].shape[0] / 2 + 10),
-                  xlabel="Position in Chain", ylabel="Geweke Score", title="IL-2/-15 traf model: traf rates")
-        ax[3].legend()
-        """
 
 
 def plot_geweke_4_7(ax):
