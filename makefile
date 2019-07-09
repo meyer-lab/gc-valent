@@ -15,7 +15,7 @@ ifeq ($(UNAME_S),Linux)
     LINKFLAG = -Wl,-rpath=./ckine
 endif
 
-CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lstdc++ -lcppunit
+CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -L/usr/local/lib64/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lstdc++ -lcppunit
 
 venv: venv/bin/activate
 
