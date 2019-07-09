@@ -47,7 +47,7 @@ def plot_geweke_2_15(ax, traf):
              r'$C_{5}$': score[0]['scales'][10, 1],
              r'$k_{fwd}$': score[0]['kfwd'][10, 1]}
 
-    if traf:  # add the trafficking parameters if necessary
+    if traf:  # add the trafficking parameters if necessary & set proper title
         dictt.update({r'$k_{endo}$': score[0]['endo'][10, 1],
                      r'$k_{endo,a}$': score[0]['activeEndo'][10, 1],
                      r'$f_{sort}$': score[0]['sortF'][10, 1],
@@ -58,16 +58,17 @@ def plot_geweke_2_15(ax, traf):
         ax.set_title(r'IL-2/-15 no trafficking model')
 
     df = pd.DataFrame.from_dict(dictt, orient='index')
-    sns.scatterplot(data=df, ax=ax)
-    print("df:", df)
-    print("df.columns:", df.columns)
+    sns.scatterplot(data=np.abs(df), ax=ax)
 
-    ax.set_xticklabels(list(dictt.keys()),
+    ax.set_xticklabels(list(dictt.keys()),  # use keys from dict as x-axis labels
                        rotation=25,
                        rotation_mode="anchor",
                        ha="right",
                        fontsize=8,
                        position=(0, 0.075))
+    ax.get_legend().set_visible(False)  # remove legend created by sns
+    ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
+    ax.set(ylim=(-0.1, 1.25))
 
 
 
