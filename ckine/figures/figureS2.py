@@ -5,6 +5,8 @@ import string
 import pymc3 as pm
 import matplotlib.cm as cm
 import numpy as np
+import pandas as pd
+import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, traf_names
 from ..imports import import_samples_2_15, import_samples_4_7
 
@@ -35,9 +37,39 @@ def plot_geweke_2_15(ax, traf):
     # plot the scores for rxn rates
     rxn_len = len(score[0]['rxn'])
     rxn_names = [r'$k_{4}$', r'$k_{5}$', r'$k_{16}$', r'$k_{17}$', r'$k_{22}$', r'$k_{23}$']
-    colors = cm.rainbow(np.linspace(0, 1, rxn_len))
+    print("score[0]['kfwd'][10, 1]:", score[0]['kfwd'][10, 1])
+    temp_kfwd = score[0]['kfwd'][10, 1]
+    # take score from the 10th interval in the chain... can change this to a random int later
+    dictt = {r'$k_{4}$': score[0]['rxn'][0][10, 1], 
+             r'$k_{5}$': score[0]['rxn'][1][10, 1],
+             r'$k_{16}$': score[0]['rxn'][2][10, 1],
+             r'$k_{17}$': score[0]['rxn'][3][10, 1],
+             r'$k_{22}$': score[0]['rxn'][4][10, 1],
+             r'$k_{23}$': score[0]['rxn'][5][10, 1],
+             'IL-2Rα': score[0]['Rexpr_2Ra'][10, 1],
+             'IL-2Rβ': score[0]['Rexpr_2Rb'][10, 1],
+             'IL-15Rα': score[0]['Rexpr_15Ra'][10, 1],
+             r'$C_{5}$': score[0]['scales'][10, 1],
+             r'$k_{fwd}$': score[0]['kfwd'][10, 1]}
+    
+    if traf:  # add the trafficking parameters if necessary
+        dictt.update({r'$k_{endo}$': score[0]['endo'][10, 1],
+                     r'$k_{endo,a}$': score[0]['activeEndo'][10, 1],
+                     r'$f_{sort}$': score[0]['sortF'][10, 1],
+                     r'$k_{rec}$:': score[0]['kRec'][10, 1],
+                     r'$k_{deg}$': score[0]['kDeg'][10, 1]})
+
+    df = pd.DataFrame.from_dict(dictt, orient='index')
+    df.index.rename('param', inplace=True)
+    sns.scatterplot(data=df, ax=ax[0])
+
+    """
     for ii in range(rxn_len):
-        ax[0].scatter(score[0]['rxn'][ii][:, 0], score[0]['rxn'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rxn_names[ii])  # plot all rates within rxn
+        
+        ax[0].scatter(score[0]['rxn'][ii][:, 0], score[0]['rxn'][ii][:, 1], marker='o', s=25, color='b', label=rxn_names[ii])  # plot all rates within rxn
+    
+    # plot the scores
+    
     ax[0].axhline(-1., c='r')
     ax[0].axhline(1., c='r')
     ax[0].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['rxn'].shape[0] / 2 + 10),
@@ -93,6 +125,7 @@ def plot_geweke_2_15(ax, traf):
         ax[3].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['endo'].shape[0] / 2 + 10),
                   xlabel="Position in Chain", ylabel="Geweke Score", title="IL-2/-15 traf model: traf rates")
         ax[3].legend()
+        """
 
 
 def plot_geweke_4_7(ax):
