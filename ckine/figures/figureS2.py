@@ -35,16 +35,16 @@ def plot_geweke_2_15(ax, traf):
     score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
 
     # take z-score from interval with maximum absolute value (i.e. the interval that converged the worst)
-    dictt = {r'$k_{4}$': max(abs(min(score[0]['rxn'][0][:, 1])), max(score[0]['rxn'][0][:, 1])),
-             r'$k_{5}$': max(abs(min(score[0]['rxn'][1][:, 1])), max(score[0]['rxn'][1][:, 1])),
-             r'$k_{16}$': max(abs(min(score[0]['rxn'][2][:, 1])), max(score[0]['rxn'][2][:, 1])),
-             r'$k_{17}$': max(abs(min(score[0]['rxn'][3][:, 1])), max(score[0]['rxn'][3][:, 1])),
-             r'$k_{22}$': max(abs(min(score[0]['rxn'][4][:, 1])), max(score[0]['rxn'][4][:, 1])),
-             r'$k_{23}$': max(abs(min(score[0]['rxn'][5][:, 1])), max(score[0]['rxn'][5][:, 1])),
-             'IL-2Rα': max(abs(min(score[0]['Rexpr_2Ra'][:, 1])), max(score[0]['Rexpr_2Ra'][:, 1])),
-             'IL-2Rβ': max(abs(min(score[0]['Rexpr_2Rb'][:, 1])), max(score[0]['Rexpr_2Rb'][:, 1])),
-             'IL-15Rα': max(abs(min(score[0]['Rexpr_15Ra'][:, 1])), max(score[0]['Rexpr_15Ra'][:, 1])),
-             r'$C_{5}$': max(abs(min(score[0]['scales'][:, 1])), max(score[0]['scales'][:, 1])),
+    dictt = {r'$k_{4}$': max(abs(score[0]['rxn'][0][:, 1])),
+             r'$k_{5}$': max(abs(score[0]['rxn'][1][:, 1])),
+             r'$k_{16}$': max(abs(score[0]['rxn'][2][:, 1])),
+             r'$k_{17}$': max(abs(score[0]['rxn'][3][:, 1])),
+             r'$k_{22}$': max(abs(score[0]['rxn'][4][:, 1])),
+             r'$k_{23}$': max(abs(score[0]['rxn'][5][:, 1])),
+             'IL-2Rα': max(abs(score[0]['Rexpr_2Ra'][:, 1])),
+             'IL-2Rβ': max(abs(score[0]['Rexpr_2Rb'][:, 1])),
+             'IL-15Rα': max(abs(score[0]['Rexpr_15Ra'][:, 1])),
+             r'$C_{5}$': max(abs(score[0]['scales'][:, 1])),
              r'$k_{fwd}$': max(abs(min(score[0]['kfwd'][:, 1])), max(score[0]['kfwd'][:, 1])),}
 
     if traf:  # add the trafficking parameters if necessary & set proper title
@@ -68,7 +68,7 @@ def plot_geweke_2_15(ax, traf):
                        position=(0, 0.075))
     ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25), ylabel=r"max|$z-score$|")
+    ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
 
 
 
