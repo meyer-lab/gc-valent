@@ -45,14 +45,14 @@ def plot_geweke_2_15(ax, traf):
              'IL-2Rβ': max(abs(score[0]['Rexpr_2Rb'][:, 1])),
              'IL-15Rα': max(abs(score[0]['Rexpr_15Ra'][:, 1])),
              r'$C_{5}$': max(abs(score[0]['scales'][:, 1])),
-             r'$k_{fwd}$': max(abs(min(score[0]['kfwd'][:, 1])), max(score[0]['kfwd'][:, 1])),}
+             r'$k_{fwd}$': max(abs(score[0]['kfwd'][:, 1]))}
 
     if traf:  # add the trafficking parameters if necessary & set proper title
-        dictt.update({r'$k_{endo}$': max(abs(min(score[0]['endo'][:, 1])), max(score[0]['endo'][:, 1])),
-                     r'$k_{endo,a}$': max(abs(min(score[0]['activeEndo'][:, 1])), max(score[0]['activeEndo'][:, 1])),
-                     r'$f_{sort}$': max(abs(min(score[0]['sortF'][:, 1])), max(score[0]['sortF'][:, 1])),
-                     r'$k_{rec}$': max(abs(min(score[0]['kRec'][:, 1])), max(score[0]['kRec'][:, 1])),
-                     r'$k_{deg}$': max(abs(min(score[0]['kDeg'][:, 1])), max(score[0]['kDeg'][:, 1]))})
+        dictt.update({r'$k_{endo}$': max(abs(score[0]['endo'][:, 1])),
+                     r'$k_{endo,a}$': max(abs(score[0]['activeEndo'][:, 1])),
+                     r'$f_{sort}$': max(abs(score[0]['sortF'][:, 1])),
+                     r'$k_{rec}$': max(abs(score[0]['kRec'][:, 1])),
+                     r'$k_{deg}$': max(abs(score[0]['kDeg'][:, 1]))})
         ax.set_title(r'IL-2/-15 trafficking model')
     else:
         ax.set_title(r'IL-2/-15 no trafficking model')
@@ -80,18 +80,18 @@ def plot_geweke_4_7(ax, traf=True):
     score = pm.diagnostics.geweke(trace, first=0.1, last=0.5, intervals=20)
 
     # take score from the 10th interval in the chain... can change this to a random int later
-    dictt = {r'$k_{27}$': max(abs(min(score[0]['k27rev'][:, 1])), max(score[0]['k27rev'][:, 1])),
-             r'$k_{33}$': max(abs(min(score[0]['k33rev'][:, 1])), max(score[0]['k33rev'][:, 1])),
-             r'$C_{5}$': max(abs(min(score[0]['scales'][0][:, 1])), max(score[0]['scales'][0][:, 1])),
-             r'$C_{6}$': max(abs(min(score[0]['scales'][1][:, 1])), max(score[0]['scales'][1][:, 1])),
-             r'$k_{fwd}$': max(abs(min(score[0]['kfwd'][:, 1])), max(score[0]['kfwd'][:, 1]))}
+    dictt = {r'$k_{27}$': max(abs(score[0]['k27rev'][:, 1])),
+             r'$k_{33}$': max(abs(score[0]['k33rev'][:, 1])),
+             r'$C_{5}$': max(abs(score[0]['scales'][0][:, 1])),
+             r'$C_{6}$': max(abs(score[0]['scales'][1][:, 1])),
+             r'$k_{fwd}$': max(abs(score[0]['kfwd'][:, 1]))}
 
     if traf:  # add the trafficking parameters if necessary & set proper title
-        dictt.update({r'$k_{endo}$': max(abs(min(score[0]['endo'][:, 1])), max(score[0]['endo'][:, 1])),
-                     r'$k_{endo,a}$': max(abs(min(score[0]['activeEndo'][:, 1])), max(score[0]['activeEndo'][:, 1])),
-                     r'$f_{sort}$': max(abs(min(score[0]['sortF'][:, 1])), max(score[0]['sortF'][:, 1])),
-                     r'$k_{rec}$': max(abs(min(score[0]['kRec'][:, 1])), max(score[0]['kRec'][:, 1])),
-                     r'$k_{deg}$': max(abs(min(score[0]['kDeg'][:, 1])), max(score[0]['kDeg'][:, 1]))})
+        dictt.update({r'$k_{endo}$': max(abs(score[0]['endo'][:, 1])),
+                     r'$k_{endo,a}$': max(abs(score[0]['activeEndo'][:, 1])),
+                     r'$f_{sort}$': max(abs(score[0]['sortF'][:, 1])),
+                     r'$k_{rec}$': max(abs(score[0]['kRec'][:, 1])),
+                     r'$k_{deg}$': max(abs(score[0]['kDeg'][:, 1]))})
         ax.set_title(r'IL-4/-7 trafficking model')
     else:
         ax.set_title(r'IL-4/-7 no trafficking model')
@@ -107,5 +107,5 @@ def plot_geweke_4_7(ax, traf=True):
                        position=(0, 0.075))
     ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25))
+    ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
 
