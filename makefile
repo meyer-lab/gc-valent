@@ -12,7 +12,7 @@ all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscr
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    LINKFLAG = -Wl,-rpath=./ckine,-rpath=/usr/local/lib64/
+    LINKFLAG = -Wl,-rpath=./ckine
 endif
 
 CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lstdc++ -lcppunit
