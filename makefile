@@ -10,11 +10,6 @@ flist = 1 2 3 4 5 S1 S2 S4 S5 B1 B2 B3 B4 B5
 
 all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-    LINKFLAG = -Wl,-rpath=./ckine
-endif
-
 CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lstdc++ -lcppunit
 
 venv: venv/bin/activate
@@ -41,13 +36,13 @@ Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pd
 	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
-	g++ $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -Wl,-rpath=/usr/lib/ -L/usr/lib/ -o $@
+	g++ $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC $(CPPLINKS) -o $@
 
 ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
-	g++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -Wl,-rpath=/usr/lib/ -L/usr/lib/ -o $@
+	g++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC $(CPPLINKS) -o $@
 
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp ckine/reaction.hpp
-	g++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
+	g++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug -Wl,-rpath=./ckine -o $@
 
 Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))
 	cp -R $(fdir) ./
