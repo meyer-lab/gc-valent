@@ -101,6 +101,7 @@ public:
 		}
 		
 		CVodeSetErrHandlerFn(cvode_mem, &errorHandler, static_cast<void *>(this));
+		CVodeSetstabLimDet(cvode_mem, true);
 
 		// Pass along the parameter structure to the differential equations
 		if (CVodeSetUserData(cvode_mem, static_cast<void *>(this)) < 0) {
