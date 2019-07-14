@@ -26,7 +26,9 @@ def makeFigure():
 
     rank_list = [2, 3, 2]
     out = perform_tucker(values, rank_list, cell_dim)
-    logging.info(find_R2X_tucker(values, out, cell_dim))
+    RtwoX = find_R2X_tucker(values, out, cell_dim)
+    logging.info(RtwoX)
+    assert RtwoX > 0.95
     logging.info(out[0].shape)
 
     plot_core(ax[4], out[0][0, :, :])
