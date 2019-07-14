@@ -69,7 +69,7 @@ def plot_ligands(ax, factors, n_ligands, mesh):
     # Shrink current axis by 20%
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+    ax.add_artist(ax.legend(handles=legend_shape, loc=2))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
@@ -77,4 +77,4 @@ def plot_ligands(ax, factors, n_ligands, mesh):
     ax.set_title('Ligands')
 
     # Put a legend to the right of the current axis
-    ax.legend(loc=3, bbox_to_anchor=(1, 0.5), handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, fontsize=8)
+    ax.legend(loc=3, bbox_to_anchor=(1, 0.5))
