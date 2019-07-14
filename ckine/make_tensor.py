@@ -17,11 +17,7 @@ tensor_time = np.linspace(0., 240., 50)
 
 def n_lig(mut=False):
     '''Function to return the number of cytokines used in building the tensor.'''
-    if mut:
-        n_lig = 4
-    else:
-        n_lig = 3
-    return n_lig
+    return 3
 
 
 def ySolver(matIn, ts, tensor=True):
