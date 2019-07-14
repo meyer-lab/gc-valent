@@ -7,12 +7,12 @@ import numpy as np
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X
 from ..imports import import_Rexpr, import_pstat
-from ..tensor import perform_decomposition
+from ..tensor import perform_decomposition, z_score_values
 from ..make_tensor import make_tensor, n_lig
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor(mut=True)
-values = tl.tensor(values)
+values = z_score_values(tl.tensor(values), cell_dim)
 
 
 def makeFigure():
