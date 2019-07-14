@@ -80,7 +80,7 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
         factors = factors_list[n]
         R2X = find_R2X(tensor, factors, cells_dim)
         R2X_array.append(R2X)
-    print(R2X_array)
+
     ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
