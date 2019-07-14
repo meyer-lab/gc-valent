@@ -60,7 +60,7 @@ When fitting our model to the data, we used PyMC model that incorporates Bayesia
 
 ### Tensor Generation and Factorization
 
-To perform factorization of model predictions, we generated a three-dimensional (timepoints ·⨉✖️ cell types by ligand) dataset for the ligand activities over time. We predicted simulating 10 cell types with IL-2, IL-7, IL-15, or a mutant IL-2Rα affinity-enriched IL-2. The receptor expression rates were set based on measured surface abundance ([@Fig:tfac]B). The ligand stimulation concentrations matched those from our experiments ([@Fig:supp5]D).
+To perform factorization of model predictions, we generated a three-dimensional (timepoints $\times$ cell types $\times$ ligand) dataset for the ligand activities over time. We predicted simulating 10 cell types with IL-2, IL-7, IL-15, or a mutant IL-2Rα affinity-enriched IL-2. The receptor expression rates were set based on measured surface abundance ([@Fig:tfac]B). The ligand stimulation concentrations matched those from our experiments ([@Fig:supp5]D).
 
 Before decomposition, each tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv]. The number of components was set based on the minimum required number to reconstruct >95% of the variance in the original tensor (R2X).
 
