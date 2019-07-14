@@ -12,7 +12,7 @@ rxntfR = np.squeeze(rxntfR)
 
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
-tensor_time = np.linspace(0.0, 4 * 60., 100)
+tensor_time = np.linspace(0., 240., 50)
 
 
 def n_lig(mut=False):
