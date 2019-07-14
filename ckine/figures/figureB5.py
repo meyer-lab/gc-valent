@@ -24,14 +24,14 @@ def makeFigure():
     n_ligands = n_lig(mut=True)
     _, _, cell_names = import_Rexpr()
     factors_activity = []
-    for jj in range(len(mat) - 1):
-        factors = perform_decomposition(values, jj + 1, cell_dim)
+    for jj in range(5):
+        factors = perform_decomposition(values, jj + 1)
         factors_activity.append(factors)
 
     n_comps = 3
     factors_activ = factors_activity[n_comps - 1]
 
-    plot_R2X(ax[0], values, factors_activity, n_comps=5, cells_dim=cell_dim)
+    plot_R2X(ax[0], values, factors_activity)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
