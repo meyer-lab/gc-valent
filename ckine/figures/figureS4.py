@@ -24,7 +24,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    rank_list = [2, 3, 3]
+    rank_list = [2, 3, 2]
     out = perform_tucker(values, rank_list, cell_dim)
     logging.info(find_R2X_tucker(values, out, cell_dim))
     logging.info(out[0].shape)

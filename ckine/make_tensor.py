@@ -18,9 +18,9 @@ tensor_time = np.linspace(0., 240., 50)
 def n_lig(mut=False):
     '''Function to return the number of cytokines used in building the tensor.'''
     if mut:
-        n_lig = 3
-    else:
         n_lig = 4
+    else:
+        n_lig = 3
     return n_lig
 
 
@@ -74,10 +74,10 @@ def meshprep(mut):
     if mut:
         concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
     else:
         concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
@@ -109,6 +109,20 @@ def prep_tensor(mut):
     mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
 
     if mut:
+        # Find the indices where IL-2 mutant lies in the meshgrid of all tensor conditions.
+        rmvs = mut2[np.arange(1, mut2.size, numlig)]
+        mutIL2_idxs = np.zeros((rmvs.size, idx_ref))
+        for jj, _ in enumerate(rmvs):
+            mutIL2_idxs[jj] = np.array(range(rmvs[jj], rmvs[jj] + idx_ref))  # Find the indices where the IL2-mutant is.
+
+        for jj, row in enumerate(Conc_recept_cell):
+            if jj in mutIL2_idxs:
+                # Solve using the mutant IL2 solver for these particular indices.
+                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time)
+            else:
+                # Solve using the WT solver for each of IL2, IL15, and IL7.
+                y_of_combos[jj] = ySolver(row, tensor_time)
+    else:
         IL2Ra = mut2[np.arange(1, mut2.size, numlig)]
         IL2Rb = mut2[np.arange(2, mut2.size, numlig)]
         IL2Ra_idxs = np.zeros((IL2Ra.size, idx_ref))
@@ -124,20 +138,7 @@ def prep_tensor(mut):
                 y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut='b')  # Solve using the mutant IL2-IL2Rb solver
             else:
                 y_of_combos[jj] = ySolver(row, tensor_time)  # Solve using the WT solver for IL2.
-    else:
-        # Find the indices where IL-2 mutant lies in the meshgrid of all tensor conditions.
-        rmvs = mut2[np.arange(1, mut2.size, numlig)]
-        mutIL2_idxs = np.zeros((rmvs.size, idx_ref))
-        for jj, _ in enumerate(rmvs):
-            mutIL2_idxs[jj] = np.array(range(rmvs[jj], rmvs[jj] + idx_ref))  # Find the indices where the IL2-mutant is.
 
-        for jj, row in enumerate(Conc_recept_cell):
-            if jj in mutIL2_idxs:
-                # Solve using the mutant IL2 solver for these particular indices.
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time)
-            else:
-                # Solve using the WT solver for each of IL2, IL15, and IL7.
-                y_of_combos[jj] = ySolver(row, tensor_time)
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 

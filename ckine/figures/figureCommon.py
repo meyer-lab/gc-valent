@@ -148,16 +148,15 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    if fig != 4:
-        markers = ['^', '*', '.', 'd']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
-    else:
+    if fig == 4:
         markers = ['^', '*']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                         Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
+    else:
+        markers = ['^', '.', 'd']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
 
     for ii in range(factors.shape[1]):
         for jj in range(n_ligands):
