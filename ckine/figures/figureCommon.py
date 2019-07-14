@@ -39,7 +39,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
     # create empty list if empts isn't specified
     if empts is None:
         empts = []
-    
+
     if multz is None:
         multz = dict()
 
@@ -51,9 +51,9 @@ def getSetup(figsize, gridd, multz=None, empts=None):
     x = 0
     ax = list()
     while x < gridd[0] * gridd[1]:
-        if x not in empts and x not in multz.keys(): # If this is just a normal subplot
+        if x not in empts and x not in multz.keys():  # If this is just a normal subplot
             ax.append(f.add_subplot(gs1[x]))
-        elif x in multz.keys(): # If this is a subplot that spans grid elements
+        elif x in multz.keys():  # If this is a subplot that spans grid elements
             ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
             x += multz[x]
         x += 1
@@ -87,6 +87,7 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     ax.set_ylim(0, 1)
     ax.set_xticks(np.arange(1, n_comps + 1))
     ax.set_xticklabels(np.arange(1, n_comps + 1))
+
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
@@ -141,6 +142,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.append(cartoon)
     template.save(figFile)
 
+
 def plot_ligands(ax, factors, n_ligands, fig, mesh):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
@@ -181,6 +183,7 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
 
     # Put a legend to the right of the current axis
     ax.legend(loc=3)
+
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
