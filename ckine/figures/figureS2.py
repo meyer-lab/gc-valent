@@ -3,11 +3,10 @@ This creates Figure S2. Full panel of Geweke convergence tests.
 """
 import string
 import pymc3 as pm
-import matplotlib.cm as cm
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from .figureCommon import subplotLabel, getSetup, traf_names
+from .figureCommon import subplotLabel, getSetup
 from ..imports import import_samples_2_15, import_samples_4_7
 
 
