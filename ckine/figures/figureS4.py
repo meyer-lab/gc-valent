@@ -25,8 +25,8 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
     rank_list = [2, 3, 2]
-    out = perform_tucker(values, rank_list, cell_dim)
-    RtwoX = find_R2X_tucker(values, out, cell_dim)
+    out = perform_tucker(values, rank_list)
+    RtwoX = find_R2X_tucker(values, out)
     logging.info(RtwoX)
     assert RtwoX > 0.95
     logging.info(out[0].shape)
