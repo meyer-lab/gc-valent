@@ -11,6 +11,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..tensor import find_R2X
 from ..imports import import_pstat
+from ..make_tensor import tensor_time
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -79,6 +80,7 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
         factors = factors_list[n]
         R2X = find_R2X(tensor, factors, cells_dim)
         R2X_array.append(R2X)
+    print(R2X_array)
     ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
@@ -182,11 +184,9 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
-    ts = np.logspace(-3., np.log10(4 * 60.), 100)
-    ts = np.insert(ts, 0, 0.0)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
-        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
+        ax.plot(tensor_time, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
 
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
