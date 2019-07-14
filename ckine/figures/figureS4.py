@@ -37,7 +37,7 @@ def makeFigure():
     plot_timepoints(ax[0], tl.to_numpy(factors[0]))
     plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names, ax_pos=1, fig3=False)
     plot_cells(ax[2], tl.to_numpy(factors[1]), 2, 3, cell_names, ax_pos=4, fig3=False)
-    plot_ligands(ax[3], tl.to_numpy(factors[2]), n_ligands=4, fig='S4', mesh=mat)
+    plot_ligands(ax[3], tl.to_numpy(factors[2]), n_ligands=3, fig='S4', mesh=mat)
 
     return f
 

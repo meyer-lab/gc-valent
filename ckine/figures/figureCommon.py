@@ -155,8 +155,8 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     else:
         markers = ['^', '.', 'd']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-7', marker=markers[2], linestyle='')]
 
     for ii in range(factors.shape[1]):
         for jj in range(n_ligands):
