@@ -9,7 +9,7 @@ from ..tensor import perform_decomposition, z_score_values
 from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
-values, _, mat, _, _ = make_tensor(mut=True)
+values, _, _, _, _ = make_tensor(mut=True)
 values = z_score_values(tl.tensor(values), cell_dim)
 
 
@@ -39,6 +39,6 @@ def makeFigure():
     plot_cells(ax[2], factors_activ[1], 1, 2, cell_names)
     plot_cells(ax[3], factors_activ[1], 2, 3, cell_names)
 
-    plot_ligands(ax[4], factors_activ[2], mesh=mat, ligand_names=['IL-2', 'IL-2Ra mut', 'IL-2Rb mut'])
+    plot_ligands(ax[4], factors_activ[2], ligand_names=['IL-2', 'IL-2Ra mut', 'IL-2Rb mut'])
 
     return f
