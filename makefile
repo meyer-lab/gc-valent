@@ -64,6 +64,9 @@ clean:
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
 
+spell: Manuscript/Text/*.md
+	pandoc --lua-filter common/templates/spell.lua $< | sort | uniq -ic
+
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
 
