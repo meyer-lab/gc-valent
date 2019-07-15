@@ -41,7 +41,7 @@ def makeFigure():
     factors_activ = factors_activity[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.
     plot_timepoints(ax[1], np.array([0.0, 0.5, 1., 2., 4.]) * 60., factors_activ[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
     plot_cells(ax[2], factors_activ[0], 1, 2, cell_names)
-    plot_ligands(ax[3], factors_activ[2], n_ligands=2, fig=4, mesh=ckineConc)
+    plot_ligands(ax[3], factors_activ[2], ligand_names=['IL-2', 'IL-15'])
 
     return f
 
