@@ -54,7 +54,7 @@ def makeFigure():
     plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), n_ligands=3, fig=3, mesh=mat, cutoff=1.0)
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=1.0)
 
     return f
 

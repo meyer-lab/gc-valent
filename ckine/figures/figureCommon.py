@@ -136,27 +136,22 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
-def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
+def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    n_ligands = len(ligand_names)
     ILs = np.flip(ILs)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    if fig == 4:
-        markers = ['^', '*']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
-    else:
-        markers = ['^', '.', 'd']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-7', marker=markers[2], linestyle='')]
+    legend_shape = []
+    markers = ['^', '.', 'd']
+
+    for ii, name in enumerate(ligand_names):
+        legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle='')) # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
         componentLabel = True
         for jj in range(n_ligands):
-            idx = range(jj * int(mesh.shape[0] / n_ligands), (jj + 1) * int(mesh.shape[0] / n_ligands))
-            if fig == 4:
-                idx = range(jj * len(mesh), (jj + 1) * len(mesh))
+            idx = range(jj * len(ILs), (jj + 1) * len(ILs))
                 
             # If the component value never gets over cutoff, then don't plot the line
             if np.max(factors[idx, ii]) > cutoff:
@@ -165,12 +160,9 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
                     componentLabel = False
                 else:
                     ax.plot(ILs, factors[idx, ii], color=colors[ii])
-                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
+                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[idx])
 
-    if fig != 4:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=2))
-    else:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=4))
+    ax.add_artist(ax.legend(handles=legend_shape, loc=4))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
