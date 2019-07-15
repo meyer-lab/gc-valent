@@ -141,7 +141,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
     ILs = np.flip(ILs)
-    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    colors = sns.color_palette()
     legend_shape = []
     markers = ['^', '.', 'd']
 
@@ -152,7 +152,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
         componentLabel = True
         for jj in range(n_ligands):
             idx = range(jj * len(ILs), (jj + 1) * len(ILs))
-                
+
             # If the component value never gets over cutoff, then don't plot the line
             if np.max(factors[idx, ii]) > cutoff:
                 if componentLabel:
@@ -160,7 +160,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
                     componentLabel = False
                 else:
                     ax.plot(ILs, factors[idx, ii], color=colors[ii])
-                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[idx])
+                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
     ax.add_artist(ax.legend(handles=legend_shape, loc=4))
 

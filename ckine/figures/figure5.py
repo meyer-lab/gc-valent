@@ -20,8 +20,8 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    ckineConc, cell_names, IL2_data, IL15_data = import_pstat()
-    ckineConc = np.round(np.flip(ckineConc).astype(np.double), 5)
+    _, cell_names, IL2_data, IL15_data = import_pstat()
+
     IL2 = np.flip(IL2_data, axis=(0, 1))  # Makes them in both chronological order and ascending stimulation concentration
     IL15 = np.flip(IL15_data, axis=(0, 1))  # Makes them in both chronological order and ascending stimulation concentration
     IL2 = np.insert(IL2, range(0, IL2.shape[0], 4), 0.0, axis=0)  # add in a zero value for the activity at t=0
