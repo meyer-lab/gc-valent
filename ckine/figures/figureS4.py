@@ -7,7 +7,7 @@ import numpy as np
 import seaborn as sns
 import tensorly as tl
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from .figure3 import values, mat
+from .figure3 import values
 from ..tensor import perform_tucker, find_R2X_tucker
 from ..make_tensor import tensor_time
 from ..imports import import_Rexpr
