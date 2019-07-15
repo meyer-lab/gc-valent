@@ -10,7 +10,6 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..make_tensor import tensor_time
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -184,16 +183,16 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
     ax.legend(loc=3)
 
 
-def plot_timepoints(ax, factors):
+def plot_timepoints(ax, ts, factors):
     """Function to put all timepoint plots in one figure."""
-    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    colors = sns.color_palette()
     for ii in range(factors.shape[1]):
-        ax.plot(tensor_time, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
+        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
 
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
-    ax.legend(loc=4)
+    ax.legend()
 
 
 def kfwd_info(unkVec):

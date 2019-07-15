@@ -11,7 +11,7 @@ import tensorly as tl
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
-from ..tensor import perform_decomposition, z_score_values
+from ..tensor import perform_decomposition, z_score_values, tensor_time
 from ..make_tensor import make_tensor
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
@@ -49,7 +49,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    plot_timepoints(ax[5], tl.to_numpy(factors_activ[0]))  # Change final input value depending on need
+    plot_timepoints(ax[5], tensor_time, tl.to_numpy(factors_activ[0]))
 
     plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names, ax_pos=5)
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 3, cell_names, ax_pos=6)
