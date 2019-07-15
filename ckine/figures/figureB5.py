@@ -16,8 +16,7 @@ values = z_score_values(tl.tensor(values), cell_dim)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 2, 3
-    ax, f = getSetup((7.5, 5), (x, y), empts=[5])
+    ax, f = getSetup((7.5, 2.5), (1, 4))
 
     _, _, cell_names = import_Rexpr()
     factors_activity = []
@@ -25,7 +24,7 @@ def makeFigure():
         factors = perform_decomposition(values, jj + 1)
         factors_activity.append(factors)
 
-    n_comps = 3
+    n_comps = 2
     factors_activ = factors_activity[n_comps - 1]
 
     plot_R2X(ax[0], values, factors_activity)
@@ -37,8 +36,7 @@ def makeFigure():
     plot_timepoints(ax[1], tensor_time, factors_activ[0])
 
     plot_cells(ax[2], factors_activ[1], 1, 2, cell_names)
-    plot_cells(ax[3], factors_activ[1], 2, 3, cell_names)
 
-    plot_ligands(ax[4], factors_activ[2], ligand_names=['IL-2', 'IL-2Ra mut', 'IL-2Rb mut'])
+    plot_ligands(ax[3], factors_activ[2], ligand_names=['IL-2', 'IL-2Ra mut', 'IL-2Rb mut'])
 
     return f
