@@ -65,7 +65,7 @@ clean:
 	find -iname "*.pyc" -delete
 
 spell: Manuscript/Text/*.md
-	pandoc --lua-filter common/templates/spell.lua $< | sort | uniq -ic
+	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
