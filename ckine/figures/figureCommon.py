@@ -106,21 +106,19 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
         ax.legend()
 
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
+def plot_cells(ax, factors, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
 
     for ii, _ in enumerate(factors[:, component_x - 1]):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.3)
-
-    if ax_pos == 6:
-        ax.legend()
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
     ax.set_title('Cells')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
     set_bounds(ax, component_x)
+    ax.legend()
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
