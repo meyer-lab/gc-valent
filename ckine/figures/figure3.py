@@ -16,6 +16,8 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
+values[:, :, 24:36] /= 30.0 # Scale IL-7 down
+
 values = z_score_values(tl.tensor(values), cell_dim)
 logging.info("Done constructing tensor.")
 
@@ -54,7 +56,7 @@ def makeFigure():
     plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=1.0)
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=3.0)
 
     return f
 
