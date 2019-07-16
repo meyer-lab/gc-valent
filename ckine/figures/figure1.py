@@ -166,6 +166,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
         sc_ax = 2
     misc.columns = [r'$C_{5}$ / ' + "{:.2E}".format(np.max(scales)), r'$f_{sort}$', r'$k_{fwd}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
+    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
     c.set(ylabel="value", title="Miscellaneous parameters")
 
 
@@ -219,4 +220,5 @@ def rateComp(ax, unkVec):
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
     a.scatter(1.1, np.log10(kfbnd * 468), color='goldenrod')  # overlay point for k14rev
+    a.set_xticklabels(a.get_xticklabels(), fontsize=6.2)
     a.set_title("Analogous reverse reaction rates")
