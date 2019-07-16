@@ -21,7 +21,7 @@ def makeFigure():
     ax[0].axis('off')  # blank out first axis for cartoon
 
     for ii, item in enumerate(ax):
-        h = 2.5 if ii in real_mults else 1
+        h = 3.25 if ii in real_mults else 1
         subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
