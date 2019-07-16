@@ -12,7 +12,7 @@ rxntfR = np.squeeze(rxntfR)
 
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
-tensor_time = np.linspace(0., 240., 50)
+tensor_time = np.linspace(0., 240., 200)
 
 
 def n_lig():
@@ -73,8 +73,7 @@ def meshprep(mut):
                               np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
     else:
         concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
+                              np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6)))
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     # Just stacks up concMesh on top of each other 12 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
@@ -98,7 +97,7 @@ def meshprep(mut):
 def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
-    numlig = n_lig(mut)
+    numlig = n_lig()
     idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
 
     # Allocate a y_of_combos

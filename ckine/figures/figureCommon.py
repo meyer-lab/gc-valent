@@ -136,7 +136,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
-def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
+def plot_ligands(ax, factors, ligand_names):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
@@ -154,13 +154,12 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
             idx = range(jj * len(ILs), (jj + 1) * len(ILs))
 
             # If the component value never gets over cutoff, then don't plot the line
-            if np.max(factors[idx, ii]) > cutoff:
-                if componentLabel:
-                    ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
-                    componentLabel = False
-                else:
-                    ax.plot(ILs, factors[idx, ii], color=colors[ii])
-                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
+            if componentLabel:
+                ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
+                componentLabel = False
+            else:
+                ax.plot(ILs, factors[idx, ii], color=colors[ii])
+            ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
     ax.add_artist(ax.legend(handles=legend_shape, loc=4))
 
