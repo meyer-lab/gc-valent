@@ -15,7 +15,7 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), multz={0: 2, 10: 1}, empts=[2])
+    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 2, 10: 1}, empts=[2])
 
     real_mults = [0, 8]  # subplots in ax that are actually mults
     ax[0].axis('off')  # blank out first axis for cartoon
