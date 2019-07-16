@@ -15,7 +15,7 @@ from ..imports import import_samples_4_7, import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 3))
+    ax, f = getSetup((7.6, 6), (3, 3))
 
     # Blank out for the cartoon
     ax[0].axis('off')
