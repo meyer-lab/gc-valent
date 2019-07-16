@@ -73,7 +73,8 @@ def meshprep(mut):
                               np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
     else:
         concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6)))
+                              np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
+                              np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     # Just stacks up concMesh on top of each other 12 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
