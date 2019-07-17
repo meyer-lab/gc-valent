@@ -174,11 +174,11 @@ def import_pstat():
     path = os.path.dirname(os.path.dirname(__file__))
     data = np.array(pds.read_csv(join(path, 'ckine/data/pSTAT_data.csv'), encoding='latin1'))
     ckineConc = data[4, 2:14]
-    # 4 time points, 11 cell types, 12 concentrations, 2 replicates
-    IL2_data = np.zeros((44, 12))
-    IL2_data2 = np.zeros((44, 12))
-    IL15_data = np.zeros((44, 12))
-    IL15_data2 = np.zeros((44, 12))
+    # 4 time points, 10 cell types, 12 concentrations, 2 replicates
+    IL2_data = np.zeros((40, 12))
+    IL2_data2 = np.zeros((40, 12))
+    IL15_data = np.zeros((40, 12))
+    IL15_data2 = np.zeros((40, 12))
     cell_names = list()
     for i in range(10):
         cell_names.append(data[12 * i + 3, 1])
