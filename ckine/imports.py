@@ -174,18 +174,24 @@ def import_pstat():
     path = os.path.dirname(os.path.dirname(__file__))
     data = np.array(pds.read_csv(join(path, 'ckine/data/pSTAT_data.csv'), encoding='latin1'))
     ckineConc = data[4, 2:14]
-    # 4 time points, 11 cell types, 12 concentrations
+    # 4 time points, 11 cell types, 12 concentrations, 2 replicates
     IL2_data = np.zeros((44, 12))
+    IL2_data2 = np.zeros((44, 12))
     IL15_data = np.zeros((44, 12))
+    IL15_data2 = np.zeros((44, 12))
     cell_names = list()
-    for i in range(11):
+    for i in range(10):
         cell_names.append(data[12 * i + 3, 1])
         # Subtract the zero treatment plates before assigning to returned arrays
         if i <= 4:
             zero_treatment = data[12 * (i + 1), 13]
+            zero_treatment2 = data[12 * (i + 1), 30]
         else:
             zero_treatment = data[8 + (12 * i), 13]
-        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14] - zero_treatment
-        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14] - zero_treatment
+            zero_treatment2 = data[8 + (12 * i), 30]
+        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment
+        IL2_data2[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2
+        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment
+        IL15_data2[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment2
 
-    return ckineConc, cell_names, IL2_data, IL15_data
+    return ckineConc, cell_names, IL2_data, IL15_data, IL2_data2, IL15_data2
