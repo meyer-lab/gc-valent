@@ -30,37 +30,46 @@ def makeFigure():
     tps_num = np.array([0.5, 1., 2., 4.]) * 60.
     data_types = []
     cell_types = []
-    EC50s_2 = np.zeros(len(cell_names_pstat)*len(tps)*2)
-    EC50s_15 = np.zeros(len(cell_names_pstat)*len(tps)*2)
+    EC50s_2 = np.zeros(len(cell_names_pstat)*len(tps)*4)
+    EC50s_15 = np.zeros(len(cell_names_pstat)*len(tps)*4)
     
     for j, name in enumerate(cell_names_pstat):
         # match cells
-        for k, _ in enumerate(cell_names_receptor):
-            if cell_names_pstat[j] == cell_names_receptor[k]:
-                celltype_data_2 = IL2_data[(j * 4):((j + 1) * 4)]
-                celltype_data_15 = IL15_data[(j * 4):((j + 1) * 4)]
-                data_types.append(np.tile(np.array('Predicted'), len(tps)))
-                # predicted EC50
-                EC50_2, EC50_15 = calculate_experimental_EC50(x0, receptor_data[k], tps_num, celltype_data_2, celltype_data_15)
-                for l, item in enumerate(EC50_2):
-                    EC50s_2[(2*len(tps)*j)+l] = item
-                    EC50s_15[(2*len(tps)*j)+l] = EC50_15[l]
-                # experimental EC50
-                for i, _ in enumerate(tps):
-                    timepoint_data_2 = celltype_data_2[i]
-                    timepoint_data_15 = celltype_data_15[i]
-                    EC50s_2[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2)
-                    EC50s_15[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
-                data_types.append(np.tile(np.array('Experimental'), len(tps)))
-                cell_types.append(np.tile(np.array(name), len(tps)*2)) # for both experimental and predicted
+        assert cell_names_pstat[j] == cell_names_receptor[j]
+        celltype_data_2 = IL2_data[(j * 4):((j + 1) * 4)]
+        celltype_data_2b = IL2_data2[(j * 4):((j + 1) * 4)]
+        celltype_data_15 = IL15_data[(j * 4):((j + 1) * 4)]
+        celltype_data_15b = IL15_data2[(j * 4):((j + 1) * 4)]
+        data_types.append(np.tile(np.array('Predicted'), len(tps)))
+        # predicted EC50
+        EC50_2, EC50_15 = calculate_experimental_EC50(x0, receptor_data[j], tps_num, celltype_data_2, celltype_data_15)
+        if j >=4:
+            EC50_2b, EC50_15b = calculate_experimental_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
+        for l, item in enumerate(EC50_2):
+            EC50s_2[(2*len(tps)*j)+l] = item
+            EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+l] = EC50_2b[l]
+            EC50s_15[(2*len(tps)*j)+l] = EC50_15[l]
+            EC50s_15[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+l] = EC50_15b[l]
+        # experimental EC50
+        for i, _ in enumerate(tps):
+            timepoint_data_2 = celltype_data_2[i]
+            timepoint_data_2b = celltype_data_2b[i]
+            timepoint_data_15 = celltype_data_15[i]
+            timepoint_data_15b = celltype_data_15b[i]
+            EC50s_2[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2)
+            EC50s_2[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2b)
+            EC50s_15[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
+            EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
+        data_types.append(np.tile(np.array('Experimental'), len(tps)))
+        cell_types.append(np.tile(np.array(name), len(tps)*2)) # for both experimental and predicted
     
     EC50 = np.concatenate((EC50s_2, EC50s_15), axis=None)
     EC50 = EC50 - 4 # account for 10^4 multiplication
-    data_types = np.tile(np.array(data_types).reshape(80,), 2) #for IL2 and IL15
-    print(data_types)
-    cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
-    IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat)*len(tps)*2), np.tile(np.array('IL15'), len(cell_names_pstat)*len(tps)*2)), axis=None)
-    data = {'Time Point':np.tile(np.array(tps), len(cell_names_pstat)*4), 'IL':IL, 'Cell Type':cell_types.reshape(160,), 'Data Type':data_types.reshape(160,), 'EC-50':EC50}
+    data_types = np.tile(np.array(data_types).reshape(80,), 4) #for IL2 and IL15, 2 replicates
+    cell_types = np.tile(np.array(cell_types).reshape(80,), 4)
+    IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat)*len(tps)*4), np.tile(np.array('IL15'), len(cell_names_pstat)*len(tps)*4)), axis=None)
+    print(np.tile(np.array(tps), len(cell_names_pstat)*8).shape, IL.shape, EC50.shape)
+    data = {'Time Point':np.tile(np.array(tps), len(cell_names_pstat)*8), 'IL':IL, 'Cell Type':cell_types.reshape(320,), 'Data Type':data_types.reshape(320,), 'EC-50':EC50}
     df = pd.DataFrame(data) 
     
     print(df.loc[(df['Time Point'] == '30 mins') & (df["IL"] == 'IL2'), "Data Type"])
@@ -72,8 +81,11 @@ def makeFigure():
 
 def catplot_comparison(ax, df, tps):
     for i, tp in enumerate(tps):
-        sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL2')], ax=ax[i])
-        sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], ax=ax[4+i])
+        sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL2')], legend=False, ax=ax[i])
+        if i == 3:
+            sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=True, legend_out=True, ax=ax[4+i])
+        else:
+            sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4+i])
         ax[i].set_ylabel('IL2 log[EC50] ('+tp+')')
         ax[4+i].set_ylabel('IL15 log[EC50] ('+tp+')')
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
