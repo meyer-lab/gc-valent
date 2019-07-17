@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares, fsolve
 from .figureCommon import subplotLabel, getSetup
-from .figureS6 import calc_dose_response
+from .figureS5 import calc_dose_response
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL15_data, IL2_data2, IL15_data2 = import_pstat()
@@ -26,7 +26,7 @@ def makeFigure():
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
     
     x0 = [1, 2., 1000.]
-    tps = ['4 hrs', '2 hrs', '1 hr', '30 mins']
+    tps = ['30 mins', '1 hr', '2 hrs', '4 hrs']
     tps_num = np.array([0.5, 1., 2., 4.]) * 60.
     data_types = []
     cell_types = []
@@ -43,24 +43,27 @@ def makeFigure():
                 # predicted EC50
                 EC50_2, EC50_15 = calculate_experimental_EC50(x0, receptor_data[k], tps_num, celltype_data_2, celltype_data_15)
                 for l, item in enumerate(EC50_2):
-                    EC50s_2[(j*len(tps))+l] = item
-                    EC50s_15[(j*len(tps))+l] = EC50_15[l]
+                    EC50s_2[(2*len(tps)*j)+l] = item
+                    EC50s_15[(2*len(tps)*j)+l] = EC50_15[l]
                 # experimental EC50
                 for i, _ in enumerate(tps):
                     timepoint_data_2 = celltype_data_2[i]
                     timepoint_data_15 = celltype_data_15[i]
-                    EC50s_2[len(cell_names_pstat)+(j*len(tps))+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2)
-                    EC50s_15[len(cell_names_pstat)+(j*len(tps))+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
+                    EC50s_2[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2)
+                    EC50s_15[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
                 data_types.append(np.tile(np.array('Experimental'), len(tps)))
                 cell_types.append(np.tile(np.array(name), len(tps)*2)) # for both experimental and predicted
     
     EC50 = np.concatenate((EC50s_2, EC50s_15), axis=None)
     EC50 = EC50 - 4 # account for 10^4 multiplication
-    data_types = np.tile(np.array(data_types), 2) #for IL2 and IL15
-    cell_types = np.tile(np.array(cell_types), 2)
+    data_types = np.tile(np.array(data_types).reshape(80,), 2) #for IL2 and IL15
+    print(data_types)
+    cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
     IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat)*len(tps)*2), np.tile(np.array('IL15'), len(cell_names_pstat)*len(tps)*2)), axis=None)
     data = {'Time Point':np.tile(np.array(tps), len(cell_names_pstat)*4), 'IL':IL, 'Cell Type':cell_types.reshape(160,), 'Data Type':data_types.reshape(160,), 'EC-50':EC50}
     df = pd.DataFrame(data) 
+    
+    print(df.loc[(df['Time Point'] == '30 mins') & (df["IL"] == 'IL2'), "Data Type"])
     
     catplot_comparison(ax, df, tps)
 
@@ -72,9 +75,9 @@ def catplot_comparison(ax, df, tps):
         sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL2')], ax=ax[i])
         sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], ax=ax[4+i])
         ax[i].set_ylabel('IL2 log[EC50] ('+tp+')')
-        ax[2*i].set_ylabel('IL15 log[EC50] ('+tp+')')
+        ax[4+i].set_ylabel('IL15 log[EC50] ('+tp+')')
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
-        ax[2*i].set_xticklabels(ax[2*i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+        ax[4+i].set_xticklabels(ax[2*i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
 
 
 def calculate_experimental_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):

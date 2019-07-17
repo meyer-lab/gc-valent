@@ -185,13 +185,14 @@ def import_pstat():
         # Subtract the zero treatment plates before assigning to returned arrays
         if i <= 4:
             zero_treatment = data[12 * (i + 1), 13]
-            zero_treatment2 = data[12 * (i + 1), 30]
+            zero_treatment2 = data[8 + (12 * i), 30] #TODO: check that zero treatment inconsistency in original data is accurate
         else:
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
-        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment
-        IL2_data2[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2
-        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment
-        IL15_data2[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment2
+        # order of increasing time by cell type
+        IL2_data[4 * i:4 * (i + 1), :] = np.flip(data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL2_data2[4 * i:4 * (i + 1), :] = np.flip(data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL15_data[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL15_data2[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment2)
 
     return ckineConc, cell_names, IL2_data, IL15_data, IL2_data2, IL15_data2
