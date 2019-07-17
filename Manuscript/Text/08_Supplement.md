@@ -44,8 +44,9 @@
 
 : Antibodies used to quantify receptors and cell types.
 
-$\mathrm{^{*}}$ CST: Cell Signaling Techology
-$\mathrm{^{†}}$ Panel 0: Antibodies for IL-2, IL-15, and IL-7 receptor analysis, Panel 1: Antibodies to gate Naïve and Memory T-regulatory and T-helper cells, Panel 2: Antibodies to gate NK and CD56bright NK cells, Panel 3: Antibodies to gate Naïve and Memory Cytotoxic T cells, Panel 4: Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation, Panel 5: Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells, Panel 6: Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells
+$\mathrm{^{*}}$CST: Cell Signaling Techology
+
+$\mathrm{^{†}}$*Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells
 
 ![**Model without trafficking fails to capture IL-2/IL-15 dose response.** A) Model without trafficking fit to IL-2 and IL-15 pSTAT5 dose response data [@ring_mechanistic_2012]. This model was not fit to the surface IL-2Rβ measurements since no receptors were allowed to internalize from the cell surface ([@Fig:modelConstruct]B-D).
 B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-15 in no-trafficking model.
