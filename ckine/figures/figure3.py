@@ -4,6 +4,7 @@ This creates Figure 3.
 import string
 import logging
 import numpy as np
+import scipy as sp
 from sklearn.decomposition import PCA
 from scipy import stats
 import matplotlib.cm as cm
