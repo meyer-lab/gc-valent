@@ -8,7 +8,7 @@ All analysis was implemented in Python, and can be found at <https://github.com/
 
 Cytokine binding to receptors was modeled using ordinary differential equations (ODEs). The ligands of interest were six cytokines: IL-2, IL-15, IL-4, IL-7, IL-9, and IL-21. IL-2 and IL-15 each had two private receptors, one being a signaling-deficient α-chain (IL-2Rα and IL-15Rα) and the other being signaling-competent IL-2Rβ. The other four cytokines each had one signaling-competent private receptor (IL-7Rα, IL-9R, IL-4Rα, IL-21Rα). Ligands must bind first to a private receptor and then can dimerize to other private receptors or the common γ~c~ receptor thereafter. Direct binding of ligand to γ~c~ was not included because such a reaction was not observed experimentally [@Voss2428].
 
-Our model accounted for endosomal trafficking, allowing all species to be endocytosed, recycled, and degraded. Each receptor was synthesized and placed on the cell surface at a unique rate. *All binding events occuring on the cell surface also occured in the endosome with the same rate parameters* (Pretty sure the binding is 5x weaker in the endosome because of its acidic environment). The surface and endosomal ligand concentrations were assumed to be equal for each cytokine. The number densities of each complex and receptor were different between the cell surface and endosome. 
+Our model accounted for endosomal trafficking, allowing all species to be endocytosed, recycled, and degraded. Each receptor was synthesized and placed on the cell surface at a unique rate. *All binding events occurring on the cell surface also occurred in the endosome with the same rate parameters* (Pretty sure the binding is 5x weaker in the endosome because of its acidic environment). The surface and endosomal ligand concentrations were assumed to be equal for each cytokine. The number densities of each complex and receptor were different between the cell surface and endosome. 
 
 The rate of change for free receptors and complexes were modeled through ODEs. There were 28 ODEs that represented the rate of change for free receptors and complexes on the cell surface, 28 ODEs that represented the rate of change for free receptors and complexes in the endosome, and 6 ODEs that represented the rate of change of ligand concentration. For our model, all of the free receptors and complexes were measured in units of number per cell and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of $\mathrm{\frac{1}{nM \times min}}$, rate constants for the forward dimerization of free receptor to complex had units of $\mathrm{\frac{cell}{min \times number}}$, and the dissociation of a complex into another complex and free receptor had units of $\mathrm{min^{-1}}$.
 
@@ -52,7 +52,7 @@ The rate of endocytosis is quantified by a constant of k~endo,a~ for active comp
 
 We used Markov chain Monte Carlo to fit the unknown parameters in our model to experimental data obtained by Ring, et al. and Gonnord, et al. [@ring_mechanistic_2012; @Gonnordeaal1253]. Experimental measurements include p-STAT activity under stimulation with varying concentrations of IL-2, IL-15, IL-4, and IL-7 as well as time-course measurements of surface IL-2Rβ upon IL-2 and IL-15 stimulation. YT-1 human NK cells were used for all data-sets involving IL-2 and IL-15. Human PBMCs were used for all data-sets involving IL-4 and IL-7. All YT-1 cell experiments were repeated in the absence of IL-2Rα. All of the data used from the Ring paper can be found in Figure 5 of said paper and all of the Gonnord data can be found in Figure S3 of said paper. Measurements of receptor counts at steady state in Gonnord et al. were used to solve for IL-7Rα, IL-4Rα, and γ~c~ expression rates in human PBMCs. We created functions that calculated p-STAT activity and percent of surface IL-2Rβ under various cellular conditions in order to calculate the residuals between our model predictions and experimental data. 
 
-When fitting our model to the data, we used PyMC model that incorporates Bayesian Statistics to store the likelihood of the model at a given point. The fitting process varied the unknown rate parameters in an attempt to minimize the residuals between our model predictions and experimental data. All unknown rate parameters were assumed to have a lognormal distribution with a standard deviation of 0.1; the only exception to these distributions was f~sort~ which was assumed to have a beta distribution with shape parameters of α=20 and β=40. Executing this fitting process yielded likelihood distributions of each unknown parameter and sum of squared error between model prediction and experimental data at each point of experiemental data. The Geweke criterion metric was used to verify fitting convergance for all versions of the model ([@Fig:supp2]) [@Geweke92].
+When fitting our model to the data, we used PyMC model that incorporates Bayesian Statistics to store the likelihood of the model at a given point. The fitting process varied the unknown rate parameters in an attempt to minimize the residuals between our model predictions and experimental data. All unknown rate parameters were assumed to have a lognormal distribution with a standard deviation of 0.1; the only exception to these distributions was f~sort~ which was assumed to have a beta distribution with shape parameters of α=20 and β=40. Executing this fitting process yielded likelihood distributions of each unknown parameter and sum of squared error between model prediction and experimental data at each point of experimental data. The Geweke criterion metric was used to verify fitting convergance for all versions of the model ([@Fig:supp2]) [@Geweke92].
 
 ### Tensor Generation and Factorization
 
@@ -61,60 +61,6 @@ To perform factorization of model predictions, we generated a three-dimensional 
 Before decomposition, each tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv]. The number of components was set based on the minimum required number to reconstruct >95% of the variance in the original tensor (R2X).
 
 ## Experimental Methods
-
-#### Antibodies for IL-2, IL-15, and IL-7 receptor analysis:
-
-|        Antibody        	|    Dilution    	|          Fluorophore         	|     Clone     	|      CAT#      	|        Vendor       	|
-|:----------------------:	|:--------------:	|:----------------------------:	|:-------------:	|:--------------:	|:-------------------:	|
-|          CD25          	|      1:120     	|    Brilliant   Violet 421    	|     M-A251    	|     356114     	|      BioLegend      	|
-|         CD122          	|      1:120     	|            PE/Cy7            	|      TU27     	|     339014     	|      BioLegend      	|
-|         CD132          	|      1:120     	|              APC             	|     TUGh4     	|     338608     	|      BioLegend      	|
-|   CD215 (1st   mAb)    	|      1:120     	|              APC             	|     JM7A4     	|     330210     	|      BioLegend      	|
-|   CD215 (2nd   mAb)    	|      3:100     	|              APC             	|     151303    	|    FAB1471A    	|    R&D   Systems    	|
-|         CD127          	|      1:120     	|       Alexa   Fluor 488      	|     A019D5    	|     351313     	|      Biolegend      	|
-|       Ms IgG1κ         	|      1:240     	|    Brilliant   Violet 421    	|    MOPC-21    	|     400158     	|      BioLegend      	|
-|        Ms IgG1κ        	|      1:240     	|            PE/Cy7            	|    MOPC-21    	|     400126     	|      BioLegend      	|
-|        Rat   IgG2Bκ    	|      1:60      	|              APC             	|    RTK4530    	|     400612     	|      BioLegend      	|
-|       Ms IgG2Bκ        	|      1:120     	|              APC             	|     MPC-11    	|     400320     	|      BioLegend      	|
-|        Ms IgG2B        	|      3:100     	|              APC             	|     133303    	|     IC0041A    	|    R&D   Systems    	|
-|       Ms IgG1κ         	|      1:120     	|       Alexa   Fluor 488      	|    MOPC-21    	|     400129     	|      Biolegend      	|
-
-#### Panel 1: Antibodies to gate Naïve and Memory T-regulatory and T-helper cells
-
-|    Antibody    	|    Dilution    	|    Fluorophore               	|    Clone     	|    CAT#      	|    Vendor       	|
-|----------------	|----------------	|------------------------------	|--------------	|--------------	|-----------------	|
-|    CD3         	|    1:120       	|    Brilliant   Violet 605    	|    UCHT1     	|    300460    	|    BioLegend    	|
-|    CD4         	|    1:120       	|    Brilliant   Violet 785    	|    RPA-T4    	|    300554    	|    BioLegend    	|
-|    CD127       	|    1:120       	|    Alexa Fluor   488         	|    A019D5    	|    351313    	|    BioLegend    	|
-|    CD45RA      	|    1:120       	|    PE/Dazzle   594           	|    HI100     	|    304146    	|    BioLegend    	|
-
-
-#### Panel 2: Antibodies to gate NK and CD56bright NK cells
-
-|    Antibody    	|    Dilution    	|    Fluorophore               	|    Clone     	|    CAT#      	|    Vendor       	|
-|----------------	|----------------	|------------------------------	|--------------	|--------------	|-----------------	|
-|    CD3         	|    1:120       	|    Brilliant   Violet 605    	|    UCHT1     	|    300460    	|    BioLegend    	|
-|    CD56        	|    1:120       	|    PE/Dazzle   594           	|    5.1H11    	|    362544    	|    BioLegend    	|
-
-#### Panel 3: Antibodies to gate Naïve and Memory Cytotoxic T cells
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|      Vendor     	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------:	|
-|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|    BioLegend    	|
-|       CD8      	|      1:120     	|    Brilliant   Violet 785    	|    RPA-T8    	|    301046    	|    BioLegend    	|
-|     CD45RA     	|      1:120     	|        PE/Dazzle   594       	|     HI100    	|    304146    	|    BioLegend    	|
-
-#### Panel 4: Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|      Vendor     	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------:	|
-|      CD25      	|      1:120     	|    Brilliant   Violet 421    	|    M-A251    	|    356114    	|    BioLegend    	|
-|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|    Biolegend    	|
-|       CD4      	|      1:120     	|    Brilliant   Violet 785    	|    RPA-T4    	|    300554    	|    Biolegend    	|
-|      CD127     	|      1:120     	|       Alexa Fluor   488      	|    A019D5    	|    351313    	|    Biolegend    	|
-|     CD45RA     	|      1:120     	|        PE/Dazzle   594       	|     HI100    	|    304146    	|    Biolegend    	|
-|      CD56      	|      1:120     	|            PE/Cy7            	|    5.1H11    	|    362510    	|    Biolegend    	|
-|       CD8      	|      1:200     	|       Alexa   Fluor 647      	|    RPA-T8    	|    301062    	|    Biolegend    	|
 
 ### Receptor abundance quantitation
 
@@ -127,28 +73,5 @@ Compensation beads (Simply Cellular Compensation Standard, Bangs Labs, 550, lot#
 Both beads and cells were washed twice with PBSA. Cells were suspended in 120 µL per well PBSA, and beads to 50 uL, and analyzed using an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) with a sip time of 35 seconds and beads 30 seconds. Antibody number was calculated from fluorescence intensity by subtracting isotype control values from matched receptor stains and calibrated using the two lowest binding quantitation standards. Treg cells could not be gated in the absence of CD25, so CD4+ T cells were used as the isotype control to measure CD25 in Treg populations. Cells were gated as shown in [@Fig:gating]. Measurements were performed using four independent staining procedures over two days. Separately, the analysis was performed with anti-receptor antibodies at 3x normal concentration to verify that receptor binding was saturated.
 
 ### pSTAT5 Measurement of IL-2 and IL-15 Signaling in PBMCs
-
-### Flow Cytometry Antibodies for pSTAT5 Analysis:
-
-#### Panel 5: Gating Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|               Vendor              	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------------------------:	|
-|      Foxp3     	|      1:50      	|       Alexa   Fluor 488      	|     259D     	|    320212    	|             BioLegend             	|
-|      CD25      	|      1:120     	|    Brilliant   Violet 421    	|    M-A251    	|    356114    	|             BioLegend             	|
-|       CD4      	|      1:120     	|    Brilliant   Violet 605    	|      SK3     	|    344646    	|             BioLegend             	|
-|     CD45RA     	|      1:120     	|         PE/Dazzle594         	|     HI100    	|    304146    	|             BioLegend             	|
-|     pSTAT5     	|      1:120     	|       Alexa   Fluor 647      	|     C71E5    	|     9365     	|    Cell   Signaling Technology    	|
-
-#### Panel 6: Gating NK cells, CD56bright NK cells, and Cytotoxic T cells
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|               Vendor              	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------------------------:	|
-|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|             BioLegend             	|
-|       CD8      	|      1:120     	|       Alexa   Fluor 647      	|    RPA-T8    	|    301062    	|             BioLegend             	|
-|      CD56      	|      1:120     	|       Alexa   Fluor 488      	|    5.1H11    	|    362518    	|             BioLegend             	|
-|     pSTAT5     	|      1:120     	|              PE              	|     D4737    	|     14603    	|    Cell   Signaling Technology    	|
-
-
 
 Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 (R&D Systems, 202-IL-010) or IL-15 (R&D Systems, 247-ILB-025) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin (Fisher Scientific, SF100-4) for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in [@Fig:gating], and the median pSTAT5 level extracted for each population in each well.
