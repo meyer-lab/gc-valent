@@ -34,7 +34,6 @@ def makeFigure():
     EC50s_15 = np.zeros(len(cell_names_pstat)*len(tps)*4)
     
     for j, name in enumerate(cell_names_pstat):
-        # match cells
         assert cell_names_pstat[j] == cell_names_receptor[j]
         celltype_data_2 = IL2_data[(j * 4):((j + 1) * 4)]
         celltype_data_2b = IL2_data2[(j * 4):((j + 1) * 4)]
@@ -43,13 +42,14 @@ def makeFigure():
         data_types.append(np.tile(np.array('Predicted'), len(tps)))
         # predicted EC50
         EC50_2, EC50_15 = calculate_experimental_EC50(x0, receptor_data[j], tps_num, celltype_data_2, celltype_data_15)
-        if j >=4:
-            EC50_2b, EC50_15b = calculate_experimental_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
         for l, item in enumerate(EC50_2):
             EC50s_2[(2*len(tps)*j)+l] = item
-            EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+l] = EC50_2b[l]
             EC50s_15[(2*len(tps)*j)+l] = EC50_15[l]
-            EC50s_15[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+l] = EC50_15b[l]
+        if j >=4:
+            EC50_2b, EC50_15b = calculate_experimental_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
+            for m, item in enumerate(EC50_2b):
+                EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = item
+                EC50s_15[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = EC50_15b[m]
         # experimental EC50
         for i, _ in enumerate(tps):
             timepoint_data_2 = celltype_data_2[i]
@@ -57,9 +57,10 @@ def makeFigure():
             timepoint_data_15 = celltype_data_15[i]
             timepoint_data_15b = celltype_data_15b[i]
             EC50s_2[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2)
-            EC50s_2[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2b)
             EC50s_15[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
-            EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
+            if j >= 4:
+                EC50s_2[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2b)
+                EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
         data_types.append(np.tile(np.array('Experimental'), len(tps)))
         cell_types.append(np.tile(np.array(name), len(tps)*2)) # for both experimental and predicted
     
@@ -68,11 +69,9 @@ def makeFigure():
     data_types = np.tile(np.array(data_types).reshape(80,), 4) #for IL2 and IL15, 2 replicates
     cell_types = np.tile(np.array(cell_types).reshape(80,), 4)
     IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat)*len(tps)*4), np.tile(np.array('IL15'), len(cell_names_pstat)*len(tps)*4)), axis=None)
-    print(np.tile(np.array(tps), len(cell_names_pstat)*8).shape, IL.shape, EC50.shape)
     data = {'Time Point':np.tile(np.array(tps), len(cell_names_pstat)*8), 'IL':IL, 'Cell Type':cell_types.reshape(320,), 'Data Type':data_types.reshape(320,), 'EC-50':EC50}
-    df = pd.DataFrame(data) 
-    
-    print(df.loc[(df['Time Point'] == '30 mins') & (df["IL"] == 'IL2'), "Data Type"])
+    df = pd.DataFrame(data)
+    df = df.loc[df['EC-50'] != -4.] #delete cells that did not have a valid replicate
     
     catplot_comparison(ax, df, tps)
 
@@ -106,6 +105,13 @@ def calculate_experimental_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pst
         avg_EC50_2[i] = total_EC50_2 / IL2_activity.shape[1]
         avg_EC50_15[i] = total_EC50_15 / IL15_activity.shape[1]
     return avg_EC50_2, avg_EC50_15
+
+
+#def replicate_EC50(celltype_data_2, celltype_data_15):
+#    for i, cell_name in enumerate(cell_names_pstat):
+#        if celltype_data_2b[i]
+#        
+#    EC50_2b, EC50_15b = calculate_experimental_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
 
 
 def nllsq(x0, xdata, ydata):
