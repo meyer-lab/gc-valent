@@ -31,7 +31,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
 
-
     if Traf:
         trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_model_results'), bmodel.M)
     else:
@@ -185,7 +184,7 @@ def import_pstat():
         # Subtract the zero treatment plates before assigning to returned arrays
         if i <= 4:
             zero_treatment = data[12 * (i + 1), 13]
-            zero_treatment2 = data[8 + (12 * i), 30] #TODO: check that zero treatment inconsistency in original data is accurate
+            zero_treatment2 = data[8 + (12 * i), 30]  # TODO: check that zero treatment inconsistency in original data is accurate
         else:
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
