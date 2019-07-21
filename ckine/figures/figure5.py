@@ -3,8 +3,6 @@ This creates Figure 5. CP decomposition of measured pSTAT data.
 """
 import string
 import numpy as np
-import matplotlib.cm as cm
-import seaborn as sns
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import plot_R2X, factors_activity
@@ -17,7 +15,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7.5, 5), (2, 4))
-    for ii in range(5,8):
+    for ii in range(5, 8):
         ax[ii].axis('off')
 
     # Add subplot labels
@@ -62,7 +60,7 @@ def correlation_cells(ax, experimental, predicted, n_comps):
     for ii in range(n_comps):
         for jj in range(n_comps):
             idx.append((ii+1, jj+1))
-            coefficients.append(pearsonr(experimental[:,ii], predicted[:,ii])[0])
+            coefficients.append(pearsonr(experimental[:, ii], predicted[:, ii])[0])
     ax.bar(np.arange(len(coefficients)), np.array(coefficients), align="center")
     ax.set_xticklabels(idx)
     ax.set_xlabel("Component Number (Experimental, Predicted)")

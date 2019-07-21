@@ -66,9 +66,9 @@ def makeFigure():
 
     return f
 
-def catplot_receptors(ax, data):
+def catplot_receptors(ax, datas):
     """Plot Bar graph for Receptor Expression Data. """
-    sns.catplot(x="Cell Type", y="Count", hue="Receptor", data=data, ci=68, ax=ax, kind="point", join=False, scale=0.5, dodge=True, estimator=sp.stats.gmean)
+    sns.catplot(x="Cell Type", y="Count", hue="Receptor", data=datas, ci=68, ax=ax, kind="point", join=False, scale=0.5, dodge=True, estimator=sp.stats.gmean)
     ax.set_ylabel("Surface Receptor [# / cell]")
     ax.set_xticklabels(ax.get_xticklabels(),
                        rotation=25, rotation_mode="anchor", ha="right",
@@ -77,19 +77,19 @@ def catplot_receptors(ax, data):
     ax.set_ylim(bottom=1)
 
 
-def PCA_receptor(ax, cell_names, data):
+def PCA_receptor(ax, cell_name, datas):
     """Plot PCA scores and loadings for Receptor Expression Data. """
     pca = PCA(n_components=2)
-    data = stats.zscore(data[:, [0, 1, 2, 4]], axis=0)
+    data = stats.zscore(datas[:, [0, 1, 2, 4]], axis=0)
     scores = pca.fit_transform(data)  # 11 cells by n_comp
     loadings = pca.components_  # n_comp by 7 receptors
     expVar = pca.explained_variance_ratio_
 
-    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
+    colors = cm.rainbow(np.linspace(0, 1, len(cell_name)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
 
     for ii in range(scores.shape[0]):
-        ax[0].scatter(scores[ii, 0], scores[ii, 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
+        ax[0].scatter(scores[ii, 0], scores[ii, 1], c=[colors[ii]], marker=markersCells[ii], label=cell_name[ii])
 
     for jj in range(loadings.shape[1]):
         if jj == 3:
