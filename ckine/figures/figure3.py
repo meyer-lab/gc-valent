@@ -20,19 +20,18 @@ values, _, mat, _, _ = make_tensor()
 values = z_score_values(tl.tensor(values), cell_dim)
 logging.info("Done constructing tensor.")
 
+logging.info("Starting decomposition.")
+data, numpy_data, cell_names = import_Rexpr()
+factors_activity = []
+for jj in range(4):
+    factors = perform_decomposition(values, jj + 1)
+    factors_activity.append(factors)
+logging.info("Decomposition finished.")
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 4: 2})
-
-    logging.info("Starting decomposition.")
-    data, numpy_data, cell_names = import_Rexpr()
-    factors_activity = []
-    for jj in range(4):
-        factors = perform_decomposition(values, jj + 1)
-        factors_activity.append(factors)
-    logging.info("Decomposition finished.")
 
     n_comps = 2
     factors_activ = factors_activity[n_comps - 1]
@@ -66,7 +65,6 @@ def makeFigure():
     plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'mut IL-2', 'IL-15', 'IL-7'])
 
     return f
-
 
 def catplot_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
