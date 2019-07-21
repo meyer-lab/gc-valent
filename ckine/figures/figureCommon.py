@@ -143,7 +143,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ILs = np.flip(ILs)
     colors = sns.color_palette()
     legend_shape = []
-    markers = ['^', '.', 'd']
+    markers = ['.', '^', 'd', '*']
 
     for ii, name in enumerate(ligand_names):
         legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle='')) # Make ligand legend elements
@@ -162,7 +162,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
                     ax.plot(ILs, factors[idx, ii], color=colors[ii])
                 ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
-    ax.add_artist(ax.legend(handles=legend_shape, loc=4))
+    ax.add_artist(ax.legend(handles=legend_shape, loc=2))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')

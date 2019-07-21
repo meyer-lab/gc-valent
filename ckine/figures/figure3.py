@@ -63,7 +63,7 @@ def makeFigure():
     
     ax[7].get_legend().remove()
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'])
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['WT IL-2', 'mut IL-2','WT IL-15', 'WT IL-7'])
 
     return f
 
