@@ -80,8 +80,8 @@ def catplot_receptors(ax, datas):
 def PCA_receptor(ax, cell_name, datas):
     """Plot PCA scores and loadings for Receptor Expression Data. """
     pca = PCA(n_components=2)
-    data = stats.zscore(datas[:, [0, 1, 2, 4]], axis=0)
-    scores = pca.fit_transform(data)  # 11 cells by n_comp
+    recep_data = stats.zscore(datas[:, [0, 1, 2, 4]], axis=0)
+    scores = pca.fit_transform(recep_data)  # 11 cells by n_comp
     loadings = pca.components_  # n_comp by 7 receptors
     expVar = pca.explained_variance_ratio_
 
@@ -91,10 +91,10 @@ def PCA_receptor(ax, cell_name, datas):
     for ii in range(scores.shape[0]):
         ax[0].scatter(scores[ii, 0], scores[ii, 1], c=[colors[ii]], marker=markersCells[ii], label=cell_name[ii])
 
-    for jj in range(loadings.shape[1]):
-        if jj == 3:
+    for kk in range(loadings.shape[1]):
+        if kk == 3:
             ax[1].scatter(0, 0, s=16, label='IL-15Ra')
-        ax[1].scatter(loadings[0, jj], loadings[1, jj], s=16)
+        ax[1].scatter(loadings[0, kk], loadings[1, kk], s=16)
 
     ax[0].set_title('Scores')
     set_bounds(ax[0])
