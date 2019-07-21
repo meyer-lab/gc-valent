@@ -59,7 +59,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
     return (ax, f)
 
 
-def set_bounds(ax, compNum):
+def set_bounds(ax):
     """ Set bounds of component plots. """
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim()))) * 1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim()))) * 1.1
@@ -117,7 +117,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     ax.set_title('Cells')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    set_bounds(ax, component_x)
+    set_bounds(ax)
     ax.legend()
 
 
