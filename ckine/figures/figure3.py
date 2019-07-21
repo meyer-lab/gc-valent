@@ -99,11 +99,11 @@ def PCA_receptor(ax, cell_names, data):
         ax[1].scatter(loadings[0, jj], loadings[1, jj], s=16)
 
     ax[0].set_title('Scores')
-    set_bounds(ax[0], 1)
+    set_bounds(ax[0])
     ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
     ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
 
     ax[1].set_title('Loadings')
-    set_bounds(ax[1], 1)
+    set_bounds(ax[1])
     ax[1].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
     ax[1].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
