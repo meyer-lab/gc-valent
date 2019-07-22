@@ -5,7 +5,7 @@ import string
 import numpy as np
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from .figure3 import plot_R2X, factors_activity
+from .figure3 import plot_R2X, factors_activity as predicted_factors
 from ..tensor import perform_decomposition, z_score_values
 from ..imports import import_pstat
 
@@ -15,13 +15,12 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7.5, 5), (2, 4))
-    for ii in range(5, 8):
-        ax[ii].axis('off')
+    ax[5].axis('off')
+    ax[6].axis('off')
+    ax[7].axis('off')
 
     # Add subplot labels
     axLabel = ax.copy()
-    del axLabel[5]
-    del axLabel[6]
     for ii, item in enumerate(axLabel):
         subplotLabel(item, string.ascii_uppercase[ii])
 
@@ -35,32 +34,32 @@ def makeFigure():
     measured_tensor = np.reshape(concat, (len(cell_names), 5, IL2.shape[1] * 2))
     measured_tensor = z_score_values(measured_tensor, cell_dim)
 
-    factor_activity = []
+    experimental_factors = []
     for jj in range(5):
         factors = perform_decomposition(measured_tensor, jj + 1)
-        factor_activity.append(factors)
+        experimental_factors.append(factors)
 
-    plot_R2X(ax[0], measured_tensor, factor_activity)
+    plot_R2X(ax[0], measured_tensor, experimental_factors)
 
     n_comps = 2
-    factors_activ = factor_activity[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.
-    plot_timepoints(ax[1], np.array([0.0, 0.5, 1., 2., 4.]) * 60., factors_activ[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
-    plot_cells(ax[2], factors_activ[0], 1, 2, cell_names)
-    plot_ligands(ax[3], factors_activ[2], ligand_names=['IL-2', 'IL-15'])
+    experimental_decomposition = experimental_factors[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.
+    plot_timepoints(ax[1], np.array([0.0, 0.5, 1., 2., 4.]) * 60., experimental_decomposition[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
+    plot_cells(ax[2], experimental_decomposition[0], 1, 2, cell_names)
+    plot_ligands(ax[3], experimental_decomposition[2], ligand_names=['IL-2', 'IL-15'])
 
     #Predicted tensor
-    factors_predicted = factors_activity[n_comps - 1]
-    correlation_cells(ax[4], factors_activ[0], factors_predicted[1], 2)
+    predicted_cell_factors = predicted_factors[n_comps - 1]
+    correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
     return f
 
-def correlation_cells(ax, experimental, predicted, n_comps):
+def correlation_cells(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Pearson Correlation Coefficients."""
     coefficients = []
     idx = []
-    for ii in range(n_comps):
-        for jj in range(n_comps):
-            idx.append((ii+1, jj+1))
-            coefficients.append(pearsonr(experimental[:, ii], predicted[:, ii])[0])
+    for ii in range(experimental.shape[1]):
+        for jj in range(predicted.shape[1]):
+            idx.append(str((ii+1, jj+1)))
+            coefficients.append(pearsonr(experimental[:, ii], predicted[:, jj])[0])
     ax.bar(np.arange(len(coefficients)), np.array(coefficients), align="center")
     ax.set_xticklabels(idx)
     ax.set_xlabel("Component Number (Experimental, Predicted)")
