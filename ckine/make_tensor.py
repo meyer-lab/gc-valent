@@ -23,12 +23,13 @@ def n_lig(mut):
         nlig = 4
     return nlig
 
-def ySolver(matIn, ts):
+def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
     matIn = np.squeeze(matIn)
     rxn = rxntfR.copy()
 
-    rxn[22:30] = matIn[6:14]  # Receptor expression
+    if tensor:
+        rxn[22:30] = matIn[6:14]  # Receptor expression
     rxn[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
     temp, retVal = runCkineU(ts, rxntfR)
@@ -62,7 +63,7 @@ def ySolver_IL2_mut(matIn, ts, mut):
 
 
 def meshprep(mut):
-    """Prepares the initial conditions for the tensor. The mutant condition here includes mutant IL-2 binding with each of IL-2Ra and IL-2Rb. The mutant IL-2Ra however is included in the IL-2, IL-15, IL-7 tensor regardless."""
+    """ Prepares the initial conditions for the tensor. The mutant condition here includes IL-2 mutein binding. """
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
     ILs, _, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
