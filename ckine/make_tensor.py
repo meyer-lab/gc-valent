@@ -32,7 +32,7 @@ def ySolver(matIn, ts, tensor=True):
         rxn[22:30] = matIn[6:14]  # Receptor expression
     rxn[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
-    temp, retVal = runCkineU(ts, rxntfR)
+    temp, retVal = runCkineU(ts, rxn)
     assert retVal >= 0
 
     return temp
