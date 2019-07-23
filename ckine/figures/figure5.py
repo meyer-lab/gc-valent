@@ -20,8 +20,7 @@ def makeFigure():
     ax[7].axis('off')
 
     # Add subplot labels
-    axLabel = ax.copy()
-    for ii, item in enumerate(axLabel):
+    for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, cell_names, IL2_data, IL15_data, _, _ = import_pstat()
