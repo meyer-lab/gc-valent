@@ -75,10 +75,10 @@ def IL2Rb_perc(ax, unkVec):
         plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod")
 
     # label axes and titles
-    ax[1].set(xlabel="Time (min)", ylabel=("Surface IL-2Rβ (%)"), title="500 nM")
+    ax[1].set(xlabel="time (min)", ylabel=("surface IL-2Rβ (%)"), title="500 nM")
     ax[1].set_ylim(0, 115)
     ax[1].set_xticks(np.arange(0, 105, step=15))
-    ax[0].set(xlabel="Time (min)", ylabel=("Surface IL-2Rβ (%)"), title="1 nM")
+    ax[0].set(xlabel="time (min)", ylabel=("surface IL-2Rβ (%)"), title="1 nM")
     ax[0].set_ylim(0, 115)
     ax[0].set_xticks(np.arange(0, 105, step=15))
 
@@ -97,7 +97,7 @@ def gc_perc(ax, unkVec):
     plot_conf_int(ax, ts, output.T, "darkorchid")
 
     # label axes and titles
-    ax.set(xlabel="Time (min)", ylabel=r"Surface $\gamma_{c}$ (%)", title="1000 nM")
+    ax.set(xlabel="time (min)", ylabel=r"surface $\gamma_{c}$ (%)", title="1000 nM")
     ax.set_ylim(0, 115)
     ax.set_xticks(np.arange(0, 300, step=60))
 
@@ -133,7 +133,7 @@ def pstat_act(ax, unkVec, scales):
     ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
     ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
     ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
-    ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
+    ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'cytokine conc. (log$_{10}$[nM])', title='YT-1 Cell Activity')
     ax.set_xticks(np.arange(-3.3, 3.7, step=2))
 
 
@@ -152,14 +152,14 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     col_list = ["violet", "violet", "grey", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
-    a.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    a.set(title="Receptor Expression", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
 
     if Traf:
         traf.columns = traf_names()
         b = sns.violinplot(data=np.log10(traf), ax=ax[1], linewidth=0.5, color="grey")
         b.set_xticklabels(b.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
-        b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
+        b.set(title="Trafficking Parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
@@ -167,7 +167,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
     c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
-    c.set(ylabel="value", title="Miscellaneous parameters")
+    c.set(ylabel="value", title="Misc. Parameters")
 
 
 def rateComp(ax, unkVec):
@@ -221,4 +221,4 @@ def rateComp(ax, unkVec):
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
     a.scatter(1.1, np.log10(kfbnd * 468), color='goldenrod')  # overlay point for k14rev
     a.set_xticklabels(a.get_xticklabels(), fontsize=6.2)
-    a.set_title("Analogous reverse reaction rates")
+    a.set_title("Analogous Dissociation Rates")
