@@ -23,12 +23,13 @@ def n_lig(mut):
         nlig = 4
     return nlig
 
-def ySolver(matIn, ts, tensor=True):
+def ySolver(matIn, ts):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
     matIn = np.squeeze(matIn)
-    if tensor:
-        rxntfR[22:30] = matIn[6:14]  # Receptor expression
-    rxntfR[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
+    rxn = rxntfR.copy()
+
+    rxn[22:30] = matIn[6:14]  # Receptor expression
+    rxn[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
     temp, retVal = runCkineU(ts, rxntfR)
     assert retVal >= 0
@@ -36,19 +37,19 @@ def ySolver(matIn, ts, tensor=True):
     return temp
 
 
-def ySolver_IL2_mut(matIn, ts, mut='a'):
+def ySolver_IL2_mut(matIn, ts, mut):
     """ This generates all the solutions of the tensor. """
-    matIn = np.squeeze(matIn)
-    kfwd = 0.004475761
-    k4rev = 8.543317686
-    k5rev = 0.12321939
-    if mut == 'a':
-        k1rev = 0.6 * 10.0 * 0.01  # 100x more binding to IL2Ra
-        k2rev = 0.6 * 144.0
-    elif mut == 'b':
-        k1rev = 0.6 * 10.0
-        k2rev = 0.6 * 144.0 * 0.01  # 100x more bindng to IL2Rb
+    matIn = np.squeeze(matIn).copy()
+    kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
+    k1rev = 0.6 * 10.0
+    k2rev = 0.6 * 144.0
     k11rev = 63.0 * k5rev / 1.5
+
+    if mut == 'a':
+        k2rev *= 10.0  # 10x weaker binding to IL2Rb
+    elif mut == 'b':
+        k2rev *= 0.01  # 100x more bindng to IL2Rb
+
     rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
                        matIn[6], matIn[7], matIn[8],  # IL2Ra, IL2Rb, gc
                        k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])
