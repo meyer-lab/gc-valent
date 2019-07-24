@@ -70,8 +70,11 @@ def makeFigure():
     cell_types = np.tile(np.array(cell_types).reshape(80,), 4)
     IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat)*len(tps)*4), np.tile(np.array('IL15'), len(cell_names_pstat)*len(tps)*4)), axis=None)
     data = {'Time Point':np.tile(np.array(tps), len(cell_names_pstat)*8), 'IL':IL, 'Cell Type':cell_types.reshape(320,), 'Data Type':data_types.reshape(320,), 'EC-50':EC50}
+    print(data)
     df = pd.DataFrame(data)
     df = df.loc[df['EC-50'] != -4.] #delete cells that did not have a valid replicate
+    print('==========')
+    print(df)
     
     catplot_comparison(ax, df, tps)
 
@@ -89,7 +92,7 @@ def catplot_comparison(ax, df, tps):
         ax[i].set_ylabel('IL2 log[EC50] ('+tp+')')
         ax[4+i].set_ylabel('IL15 log[EC50] ('+tp+')')
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
-        ax[4+i].set_xticklabels(ax[2*i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+        ax[4+i].set_xticklabels(ax[4+i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
 
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
