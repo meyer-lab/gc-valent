@@ -46,10 +46,18 @@ def makeFigure():
             EC50s_2[(2*len(tps)*j)+l] = item
             EC50s_15[(2*len(tps)*j)+l] = EC50_15[l]
         if j <= 1 or j >=4:
-            EC50_2b, EC50_15b = calculate_predicted_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
-            for m, item in enumerate(EC50_2b):
-                EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = item
-                EC50s_15[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = EC50_15b[m]
+            # handle cases with missing IL15 measurements
+            if j == 0 or j == 1:
+                celltype_data_15b[0, 10] = celltype_data_15b[0, 11] = 0
+                EC50_2b, EC50_15b = calculate_predicted_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
+                for o, item in enumerate(EC50_2b):
+                    EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+o] = item
+                    EC50s_15[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+o] = EC50_15b[o]
+            else:
+                EC50_2b, EC50_15b = calculate_predicted_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
+                for m, item in enumerate(EC50_2b):
+                    EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = item
+                    EC50s_15[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = EC50_15b[m]
         # experimental EC50
         for i, _ in enumerate(tps):
             timepoint_data_2 = celltype_data_2[i]
@@ -60,7 +68,7 @@ def makeFigure():
             EC50s_15[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
             if j <= 1 or j >= 4:
                 # handle cases with missing IL15 measurements
-                if j == 1 or j == 2 and i == 0:
+                if j == 0 or j == 1 and i == 0:
                     timepoint_data_15b_mod = np.delete(timepoint_data_15b, [10, 11])
                     ckineConc_mod = np.delete(ckineConc, [10, 11])
                     EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc_mod.astype(np.float)*10**4), timepoint_data_15b_mod)
@@ -76,11 +84,8 @@ def makeFigure():
     cell_types = np.tile(np.array(cell_types).reshape(80,), 4)
     IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat)*len(tps)*4), np.tile(np.array('IL15'), len(cell_names_pstat)*len(tps)*4)), axis=None)
     data = {'Time Point':np.tile(np.array(tps), len(cell_names_pstat)*8), 'IL':IL, 'Cell Type':cell_types.reshape(320,), 'Data Type':data_types.reshape(320,), 'EC-50':EC50}
-    print(data)
     df = pd.DataFrame(data)
     df = df.loc[df['EC-50'] != -4.] #delete cells that did not have a valid replicate
-    print('==========')
-    print(df)
     
     catplot_comparison(ax, df, tps)
 
@@ -91,10 +96,13 @@ def catplot_comparison(ax, df, tps):
     """ Construct EC50 catplots for each time point for IL2 and IL15. """
     for i, tp in enumerate(tps):
         sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL2')], legend=False, ax=ax[i])
+        ax[i].get_legend().set_visible(False)
         if i == 3:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=True, legend_out=True, ax=ax[4+i])
+            ax[4+i].legend(bbox_to_anchor=(1.05, 1), loc='right')
         else:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4+i])
+            ax[4+i].get_legend().set_visible(False)
         ax[i].set_ylabel('IL2 log[EC50] ('+tp+')')
         ax[4+i].set_ylabel('IL15 log[EC50] ('+tp+')')
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)

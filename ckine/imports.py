@@ -192,6 +192,6 @@ def import_pstat():
         IL2_data[4 * i:4 * (i + 1), :] = np.flip(data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
         IL2_data2[4 * i:4 * (i + 1), :] = np.flip(data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
         IL15_data[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL15_data2[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment2, 0)
+        IL15_data2[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
 
     return ckineConc, cell_names, IL2_data, IL15_data, IL2_data2, IL15_data2
