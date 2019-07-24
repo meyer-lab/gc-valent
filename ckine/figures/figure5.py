@@ -24,8 +24,6 @@ def makeFigure():
 
     IL2 = np.flip(IL2_data, axis=1)  # Makes in ascending stimulation concentration
     IL15 = np.flip(IL15_data, axis=1)  # Makes in ascending stimulation concentration
-    print(IL2)
-    print(IL15)
     IL2 = np.insert(IL2, range(0, IL2.shape[0], 4), 0.0, axis=0)  # add in a zero value for the activity at t=0
     IL15 = np.insert(IL15, range(0, IL15.shape[0], 4), 0.0, axis=0)  # add in a zero value for the activity at t=0
     concat = np.concatenate((IL2, IL15), axis=1)  # Prepare for tensor reshaping
