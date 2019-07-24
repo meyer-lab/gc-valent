@@ -45,7 +45,7 @@ def makeFigure():
         for l, item in enumerate(EC50_2):
             EC50s_2[(2*len(tps)*j)+l] = item
             EC50s_15[(2*len(tps)*j)+l] = EC50_15[l]
-        if j >=4:
+        if j <= 1 or j >=4:
             EC50_2b, EC50_15b = calculate_predicted_EC50(x0, receptor_data[j], tps_num, celltype_data_2b, celltype_data_15b)
             for m, item in enumerate(EC50_2b):
                 EC50s_2[(len(tps)*len(cell_names_pstat)*2)+(2*len(tps)*j)+m] = item
@@ -58,9 +58,15 @@ def makeFigure():
             timepoint_data_15b = celltype_data_15b[i]
             EC50s_2[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2)
             EC50s_15[len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15)
-            if j >= 4:
+            if j <= 1 or j >= 4:
+                # handle cases with missing IL15 measurements
+                if j == 1 or j == 2 and i == 0:
+                    timepoint_data_15b_mod = np.delete(timepoint_data_15b, [10, 11])
+                    ckineConc_mod = np.delete(ckineConc, [10, 11])
+                    EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc_mod.astype(np.float)*10**4), timepoint_data_15b_mod)
+                else:
+                    EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15b)
                 EC50s_2[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_2b)
-                EC50s_15[(len(tps)*len(cell_names_pstat)*2)+len(tps)+(2*len(tps)*j)+i] = nllsq(x0, np.log10(ckineConc.astype(np.float)*10**4), timepoint_data_15b)
         data_types.append(np.tile(np.array('Experimental'), len(tps)))
         cell_types.append(np.tile(np.array(name), len(tps)*2)) # for both experimental and predicted
     
