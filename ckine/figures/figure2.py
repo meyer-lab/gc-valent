@@ -30,14 +30,14 @@ def makeFigure():
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
-    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
+    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-Talk pSTAT Inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
     misc_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
     surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, r"Cross-talk: $\mathrm{k_{endo,a} = k_{endo}}$")
+    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, r"Cross-Talk: $\mathrm{k_{endo,a} = k_{endo}}$")
 
     relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
@@ -104,7 +104,7 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine Conc. (log$_{10}$[nM])', title='PBMC Activity')
+    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine Conc. (log$_{10}$[nM])', title='Activity')
 
 
 def traf_violin(ax, unkVec):
