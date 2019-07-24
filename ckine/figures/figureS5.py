@@ -35,10 +35,10 @@ def makeFigure():
         IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4):((i + 1) * 4)], IL15_data[(i * 4):((i + 1) * 4)])
         if axis == 9:  # only plot the legend for the last entry
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity,
-                                       cell_names_receptor[i], tps, ckineConc, legend=True)
+                               cell_names_receptor[i], tps, ckineConc, legend=True)
         else:
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity,
-                                       cell_names_receptor[i], tps, ckineConc)
+                               cell_names_receptor[i], tps, ckineConc)
         plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
         plot_scaled_pstat(ax[axis + 10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
         axis = axis + 1
@@ -65,7 +65,7 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
             rxntfr2[ii, 0] = rxntfr15[ii, 1] = cytokC[i]  # assign concs for each cytokine
         # handle case of IL-2
         yOut, retVal = runCkineUP(tps, rxntfr2)
-        assert retVal >= 0  # make sure solver is working     
+        assert retVal >= 0  # make sure solver is working
         activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         # handle case of IL-15
         yOut, retVal = runCkineUP(tps, rxntfr15)
