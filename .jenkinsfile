@@ -12,7 +12,7 @@ pipeline {
         stage('Test C++') {
           steps {
             sh 'make testcpp'
-            junit allowEmptyResults: false, testResults: 'testResults.xml'
+            archiveArtifacts artifacts: 'testResults.xml'
           }
         }
         stage('Test') {
