@@ -59,7 +59,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
     return (ax, f)
 
 
-def set_bounds(ax, compNum):
+def set_bounds(ax):
     """ Set bounds of component plots. """
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim()))) * 1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim()))) * 1.1
@@ -117,7 +117,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     ax.set_title('Cells')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    set_bounds(ax, component_x)
     ax.legend()
 
 
@@ -143,7 +142,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ILs = np.flip(ILs)
     colors = sns.color_palette()
     legend_shape = []
-    markers = ['^', '.', 'd']
+    markers = ['.', '^', 'd', '*']
 
     for ii, name in enumerate(ligand_names):
         legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle=''))  # Make ligand legend elements
@@ -156,13 +155,13 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
             # If the component value never gets over cutoff, then don't plot the line
             if np.max(factors[idx, ii]) > cutoff:
                 if componentLabel:
-                    ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
+                    ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Cmp. ' + str(ii + 1))
                     componentLabel = False
                 else:
                     ax.plot(ILs, factors[idx, ii], color=colors[ii])
                 ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
-    ax.add_artist(ax.legend(handles=legend_shape, loc=4))
+    ax.add_artist(ax.legend(handles=legend_shape, loc=2))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
