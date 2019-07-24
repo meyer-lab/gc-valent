@@ -24,7 +24,7 @@ if __name__ == '__main__':
         overlayCartoon(fdir + 'figure1.svg',
                        './graph_all.svg', 1, 12, scalee=0.34, scale_x=1.07, scale_y=0.97)  # scalee was 0.35, y was 15
         overlayCartoon(fdir + 'figure1.svg',
-                       './ckine/data/cell_legend.svg', 245, 105, scalee=0.12)  # scalee was 0.35, y was 15
+                       './ckine/data/cell_legend.svg', 245, 105, scalee=0.18)  # scalee was 0.35, y was 15
 
     if sys.argv[1] == '2':
         # Overlay Figure 2 cartoon
@@ -34,6 +34,6 @@ if __name__ == '__main__':
     if sys.argv[1] == '3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figure3.svg',
-                       './ckine/data/tensor3D.svg', 16, 180, scalee=1.6)
+                       './ckine/data/tensor3D.svg', 16, 160, scalee=1.1)
 
     logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
