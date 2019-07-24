@@ -56,7 +56,6 @@ def makeFigure():
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
-
     plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 2, 3, cell_names)
 
     legend = ax[7].get_legend()
