@@ -71,7 +71,7 @@ test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
 
 testcover: venv ckine/ckine.so
-	. venv/bin/activate && pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
 	ckine/cppcheck
