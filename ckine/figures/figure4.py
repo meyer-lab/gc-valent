@@ -19,7 +19,7 @@ _, receptor_data, cell_names_receptor = import_Rexpr()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 4), multz={0: 1, 2: 1, 4: 1, 6: 1, 8: 1, 10: 1, 12: 1, 14: 1})
+    ax, f = getSetup((7, 6), (4, 4), multz={0: 1, 2: 1, 4: 1, 6: 1, 8: 1, 10: 1, 12: 1, 14: 1}) #2 across, 4 down
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -134,10 +134,7 @@ def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat)
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
     lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
-    y = hill_equation(xdata, lsq_res.x)
-    y_halfMax = np.amax(y) / 2
-    halfMaxConc = fsolve(hill_equation, 2, args=(lsq_res.x, y_halfMax))
-    return halfMaxConc
+    return lsq_res.x[0]
 
 
 def hill_equation(x, x0, solution=0):
