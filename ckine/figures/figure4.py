@@ -108,8 +108,8 @@ def catplot_comparison(ax, df, tps):
         else:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4 + i])
             ax[4 + i].get_legend().set_visible(False)
-        ax[i].set(ylabel=('IL2 log[EC50] (' + tps_str[i] + ')'), ylim=(-3., 3.))
-        ax[4 + i].set(ylabel=('IL15 log[EC50] (' + tps_str[i] + ')'), ylim=(-3., 3.))
+        ax[i].set(title=("IL-2 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
+        ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
         ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
 
