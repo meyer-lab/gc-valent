@@ -7,9 +7,9 @@ import scipy as sp
 import pandas as pds
 from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
-from .model import nParams
 
 path_here = os.path.dirname(os.path.dirname(__file__))
+n_params = 30
 
 
 def import_Rexpr():
@@ -30,7 +30,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     if tensor:
         np.random.seed(79)
     bmodel = build_model_2_15(traf=Traf)
-    n_params = nParams()
 
 
     if Traf:
@@ -82,7 +81,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
 def import_samples_4_7(ret_trace=False, N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
-    n_params = nParams()
 
     trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL4-7_model_results'), bmodel.M)
 
@@ -125,7 +123,6 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
     from .fit_visterra import build_model as build_model_visterra
 
     bmodel = build_model_visterra(traf=Traf)
-    n_params = nParams()
 
     if Traf:
         trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_visterra_results'), bmodel.M)
