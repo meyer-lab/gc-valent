@@ -124,7 +124,6 @@ def runCkineU_IL2(tps, rxntfr):
 
 def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
-    # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
 
     kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
