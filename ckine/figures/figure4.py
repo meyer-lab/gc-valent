@@ -12,7 +12,7 @@ from .figureS5 import calc_dose_response
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL15_data, IL2_data2, IL15_data2 = import_pstat()
-unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
+unkVec_2_15, scales = import_samples_2_15(N=1)  # use all rates
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
 
@@ -117,18 +117,13 @@ def catplot_comparison(ax, df, tps):
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
     """ Calculate average EC50 from model predictions. """
     IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, cell_receptor_data, tps, ckineConc, IL2_pstat, IL15_pstat)
-    avg_EC50_2 = np.zeros(len(tps))
-    avg_EC50_15 = np.zeros(len(tps))
+    EC50_2 = np.zeros(len(tps))
+    EC50_15 = EC50_2.copy()
+    # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
     for i, _ in enumerate(tps):
-        # take average for all samples
-        total_EC50_2 = 0
-        total_EC50_15 = 0
-        for j in range(IL2_activity.shape[1]):
-            total_EC50_2 = total_EC50_2 + nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[:, j, i])
-            total_EC50_15 = total_EC50_15 + nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[:, j, i])
-        avg_EC50_2[i] = total_EC50_2 / IL2_activity.shape[1]
-        avg_EC50_15[i] = total_EC50_15 / IL15_activity.shape[1]
-    return avg_EC50_2, avg_EC50_15
+        EC50_2[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[:, 0, i])
+        EC50_15[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[:, 0, i])
+    return EC50_2, EC50_15
 
 
 def nllsq_EC50(x0, xdata, ydata):
