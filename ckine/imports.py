@@ -153,7 +153,8 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0],
+                                  rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., 0., 0., 0., 0., 0., 0.])  # set Rexprs to 0
 
     if N is not None:

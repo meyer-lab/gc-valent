@@ -4,9 +4,6 @@ A file that includes the model and important helper functions.
 import os
 import ctypes as ct
 import numpy as np
-from .imports import import_samples_2_15
-
-rxntfR = np.squeeze(import_samples_2_15(N=1, tensor=True)[0])
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
@@ -120,35 +117,6 @@ def runCkineU_IL2(tps, rxntfr):
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
     return (yOut, retVal)
-
-
-def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
-    """ Version to focus on IL2Ra/Rb affinity adjustment. """
-    tps = np.array([500.0])
-
-    kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
-
-    k1rev = 0.6 * 10 * input_params[0]
-    k2rev = 0.6 * 144 * input_params[1]
-    k11rev = 63.0 * k5rev / 1.5 * input_params[1]
-    IL2Ra, IL2Rb, gc = rxntfR[22] * CD25, rxntfR[23], rxntfR[24]
-
-    # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb,
-                       gc, k1rev * input_params[2], k2rev * input_params[2],
-                       k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]])
-    # input_params[2] represents endosomal binding affinity relative to surface affinity
-
-    yOut, retVal = runCkineU_IL2(tps, rxntfr)
-
-    assert retVal == 0
-
-    if ligandDegradation:
-        # rate of ligand degradation
-        return ligandDeg(yOut[0], sortF=rxntfR[19], kDeg=rxntfR[21], cytokineIDX=0)
-
-    active = getTotalActiveCytokine(0, np.squeeze(yOut))
-    return active
 
 
 def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
