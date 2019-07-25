@@ -82,9 +82,9 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(ax, letter, hstretch=1):
+def subplotLabel(ax, letter, hstretch=1, ystretch=1):
     """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
+    ax.text(-0.2 / hstretch, 1.2 / ystretch, letter, transform=ax.transAxes,
             fontsize=16, fontweight='bold', va='top')
 
 

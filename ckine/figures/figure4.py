@@ -19,10 +19,10 @@ _, receptor_data, cell_names_receptor = import_Rexpr()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 4), multz={0: 1, 2: 1, 4: 1, 6: 1, 8: 1, 10: 1, 12: 1, 14: 1}) #2 across, 4 down
+    ax, f = getSetup((7, 6), (4, 2)) #2 across, 4 down
 
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=3.25, ystretch=0.8)
 
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
 
@@ -108,8 +108,8 @@ def catplot_comparison(ax, df, tps):
         else:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4 + i])
             ax[4 + i].get_legend().set_visible(False)
-        ax[i].set(ylabel=('IL2 log[EC50] (' + tps_str[i] + ')'), ylim=(-3., 1.))
-        ax[4 + i].set(ylabel=('IL15 log[EC50] (' + tps_str[i] + ')'), ylim=(-3., 1.))
+        ax[i].set(ylabel=('IL2 log[EC50] (' + tps_str[i] + ')'), ylim=(-3., 3.))
+        ax[4 + i].set(ylabel=('IL15 log[EC50] (' + tps_str[i] + ')'), ylim=(-3., 3.))
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
         ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
 
