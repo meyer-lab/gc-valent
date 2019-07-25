@@ -37,7 +37,7 @@ def import_muteins():
 
     # Subtract off the minimum signal
     data['RFU'] = data['RFU'] - data.groupby(["Cells", "Replicate"])['RFU'].transform('min')
-    
+
     # Each replicate varies in its sensitivity, so correct for that
     replAvg = data[data['Time'] > 0.6].groupby(["Replicate"]).mean()
     ratio = replAvg.loc[2, 'RFU'] / replAvg.loc[1, 'RFU']
@@ -46,12 +46,11 @@ def import_muteins():
     # Take the average across replicates
     dataMean = data.groupby(["Cells", "Ligand", "Time", "Concentration"]).mean()
     dataMean.drop('Replicate', axis=1, inplace=True)
-    
+
     # Make a data tensor. Dimensions correspond to groupby above
     dataTensor = np.reshape(dataMean['RFU'].values, (9, 4, 4, 12))
 
     return dataMean, dataTensor
-
 
 
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
@@ -60,7 +59,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
         np.random.seed(79)
     bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
-
 
     if Traf:
         trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_model_results'), bmodel.M)
