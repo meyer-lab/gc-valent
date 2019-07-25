@@ -6,9 +6,7 @@ import numpy as np
 from .figureCommon import subplotLabel, getSetup
 from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
 from ..imports import import_samples_2_15
-
-
-rxntfR = np.squeeze(import_samples_2_15(N=1, tensor=True)[0])
+from ..make_tensor import rxntfR
 
 
 def makeFigure():
