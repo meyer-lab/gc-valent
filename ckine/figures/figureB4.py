@@ -3,9 +3,7 @@ This creates Figure 4.
 """
 import string
 import logging
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from ckine.imports import import_muteins
 from ckine.tensor import perform_decomposition, find_R2X, z_score_values
 from ckine.figures.figureCommon import plot_cells
