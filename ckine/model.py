@@ -4,6 +4,9 @@ A file that includes the model and important helper functions.
 import os
 import ctypes as ct
 import numpy as np
+from .imports import import_samples_2_15
+
+rxntfR = np.squeeze(import_samples_2_15(N=1, tensor=True)[0])
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
@@ -124,17 +127,17 @@ def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
 
-    kfwd = 0.00449
+    kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
+
     k1rev = 0.6 * 10 * input_params[0]
     k2rev = 0.6 * 144 * input_params[1]
-    k4rev = 8.6677
-    k5rev = 0.1233
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
     IL2Ra = 3.8704 * CD25
     IL2Rb = 0.734
     gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2],
+    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb,
+                       gc, k1rev * input_params[2], k2rev * input_params[2],
                        k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]])
     # input_params[2] represents endosomal binding affinity relative to surface affinity
 
@@ -143,8 +146,8 @@ def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
     assert retVal == 0
 
     if ligandDegradation:
-        ligDeg = ligandDeg(yOut[0], sortF=0.1458139959859, kDeg=0.006544333, cytokineIDX=0)
-        return ligDeg  # rate of ligand degradation
+        # rate of ligand degradation
+        return ligandDeg(yOut[0], sortF=rxntfR[19], kDeg=rxntfR[21], cytokineIDX=0)
 
     active = getTotalActiveCytokine(0, np.squeeze(yOut))
     return active
