@@ -19,7 +19,7 @@ _, receptor_data, cell_names_receptor = import_Rexpr()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 2)) #2 across, 4 down
+    ax, f = getSetup((7, 6), (4, 2))  # 2 across, 4 down
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii], hstretch=3.25, ystretch=0.8)
