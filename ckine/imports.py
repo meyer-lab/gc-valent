@@ -26,6 +26,34 @@ def import_Rexpr():
     return data, numpy_data, cell_names
 
 
+def import_muteins():
+    """ Import mutein data and return a normalized DataFrame and tensor. """
+    data = pds.read_csv(join(path_here, 'ckine/data/2019-07-mutein-timecourse.csv'))
+
+    # Concentrations are across columns, so melt
+    data = pds.melt(data, id_vars=['Cells', 'Ligand', 'Time', 'Replicate'], var_name='Concentration', value_name='RFU')
+
+    # Make the concentrations numeric
+    data['Concentration'] = pds.to_numeric(data['Concentration'])
+
+    # Subtract off the minimum signal
+    data['RFU'] = data['RFU'] - data.groupby(["Cells", "Replicate"])['RFU'].transform('min')
+
+    # Each replicate varies in its sensitivity, so correct for that
+    replAvg = data[data['Time'] > 0.6].groupby(["Replicate"]).mean()
+    ratio = replAvg.loc[2, 'RFU'] / replAvg.loc[1, 'RFU']
+    data.loc[data['Replicate'] == 1, 'RFU'] *= ratio
+
+    # Take the average across replicates
+    dataMean = data.groupby(["Cells", "Ligand", "Time", "Concentration"]).mean()
+    dataMean.drop('Replicate', axis=1, inplace=True)
+
+    # Make a data tensor. Dimensions correspond to groupby above
+    dataTensor = np.reshape(dataMean['RFU'].values, (9, 4, 4, 12))
+
+    return dataMean, dataTensor
+
+
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     if tensor:
@@ -44,37 +72,30 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
 
     scales = trace.get_values('scales')
     num = scales.size
-    kfwd = trace.get_values('kfwd')
-    rxn = trace.get_values('rxn')
-    Rexpr_2Ra = trace.get_values('Rexpr_2Ra')
-    Rexpr_2Rb = trace.get_values('Rexpr_2Rb')
-    Rexpr_15 = trace.get_values('Rexpr_15Ra')
-
-    if Traf:
-        endo = trace.get_values('endo')
-        activeEndo = trace.get_values('activeEndo')
-        sortF = trace.get_values('sortF')
-        kRec = trace.get_values('kRec')
-        kDeg = trace.get_values('kDeg')
-        Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
-    else:
-        endo = activeEndo = sortF = np.zeros((num))
-        kRec = np.zeros((num))
-        kDeg = np.zeros((num))
-        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
 
     unkVec = np.zeros((n_params, num))
-    for ii in range(num):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2Ra[ii], Rexpr_2Rb[ii], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
+    unkVec[6, :] = np.squeeze(trace.get_values('kfwd'))
+    unkVec[7:13, :] = np.squeeze(trace.get_values('rxn')).T
+    unkVec[13:17, :] = 1.0
+
+    unkVec[22, :] = np.squeeze(trace.get_values('Rexpr_2Ra'))
+    unkVec[23, :] = np.squeeze(trace.get_values('Rexpr_2Rb'))
+    unkVec[25, :] = np.squeeze(trace.get_values('Rexpr_15Ra'))
+
+    if Traf:
+        unkVec[17, :] = np.squeeze(trace.get_values('endo'))
+        unkVec[18, :] = np.squeeze(trace.get_values('activeEndo'))
+        unkVec[19, :] = np.squeeze(trace.get_values('sortF'))
+        unkVec[20, :] = np.squeeze(trace.get_values('kRec'))
+        unkVec[21, :] = np.squeeze(trace.get_values('kDeg'))
+
+    unkVec[24, :] = np.squeeze(find_gc(Traf, unkVec[17, :], unkVec[20, :], unkVec[19, :], unkVec[21, :]))
 
     if N is not None:
-        if 0 < N < num:  # return a subsample if the user specified the number of samples
-            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            unkVec, scales = unkVec[:, idx], scales[idx, :]
-        else:
-            print("The N specified is out of bounds.")
-            raise ValueError
+        assert 0 < N < num, "The N specified is out of bounds."
+
+        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+        unkVec, scales = unkVec[:, idx], scales[idx, :]
 
     return unkVec, scales
 
@@ -110,12 +131,10 @@ def import_samples_4_7(ret_trace=False, N=None):
                                   activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
 
     if N is not None:
-        if 0 < N < num:  # return a subsample if the user specified the number of samples
-            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            unkVec, scales = unkVec[:, idx], scales[idx, :]
-        else:
-            print("The N specified is out of bounds.")
-            raise ValueError
+        assert 0 < N < num, "The N specified is out of bounds."
+
+        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+        unkVec, scales = unkVec[:, idx], scales[idx, :]
 
     return unkVec, scales
 
@@ -137,35 +156,29 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
         return trace
 
     scales = trace.get_values('scales')
-    kfwd = trace.get_values('kfwd')
-    num = kfwd.size
-    rxn = trace.get_values('rxn')
-
-    if Traf:
-        endo = trace.get_values('endo')
-        activeEndo = trace.get_values('activeEndo')
-        sortF = trace.get_values('sortF')
-        kRec = trace.get_values('kRec')
-        kDeg = trace.get_values('kDeg')
-    else:
-        endo = np.zeros((num))
-        activeEndo = np.zeros((num))
-        sortF = np.zeros((num))
-        kRec = np.zeros((num))
-        kDeg = np.zeros((num))
+    num = trace.get_values('kfwd').size
 
     unkVec = np.zeros((n_params, num))
-    for ii in range(num):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., 0., 0., 0., 0., 0., 0.])  # set Rexprs to 0
+    unkVec[6, :] = np.squeeze(trace.get_values('kfwd'))
+    unkVec[7:13, :] = np.squeeze(trace.get_values('rxn')).T
+    unkVec[13:17, :] = 1.0
+
+    unkVec[22, :] = np.squeeze(trace.get_values('Rexpr_2Ra'))
+    unkVec[23, :] = np.squeeze(trace.get_values('Rexpr_2Rb'))
+    unkVec[25, :] = np.squeeze(trace.get_values('Rexpr_15Ra'))
+
+    if Traf:
+        unkVec[17, :] = np.squeeze(trace.get_values('endo'))
+        unkVec[18, :] = np.squeeze(trace.get_values('activeEndo'))
+        unkVec[19, :] = np.squeeze(trace.get_values('sortF'))
+        unkVec[20, :] = np.squeeze(trace.get_values('kRec'))
+        unkVec[21, :] = np.squeeze(trace.get_values('kDeg'))
 
     if N is not None:
-        if 0 < N < num:  # return a subsample if the user specified the number of samples
-            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-            unkVec, scales = unkVec[:, idx], scales[idx, :]
-        else:
-            print("The N specified is out of bounds.")
-            raise ValueError
+        assert 0 < N < num, "The N specified is out of bounds."
+
+        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+        unkVec, scales = unkVec[:, idx], scales[idx, :]
 
     return unkVec, scales
 
