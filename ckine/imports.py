@@ -110,56 +110,29 @@ def import_samples_4_7(ret_trace=False, N=None):
     if ret_trace:
         return trace
 
-    kfwd = trace.get_values("kfwd")
-    k27rev = trace.get_values("k27rev")
-    k33rev = trace.get_values("k33rev")
-    endo = trace.get_values("endo")
-    activeEndo = trace.get_values("activeEndo")
-    sortF = trace.get_values("sortF")
-    kRec = trace.get_values("kRec")
-    kDeg = trace.get_values("kDeg")
+    endo = np.squeeze(trace.get_values("endo"))
+    activeEndo = np.squeeze(trace.get_values("activeEndo"))
+    sortF = np.squeeze(trace.get_values("sortF"))
+    kRec = np.squeeze(trace.get_values("kRec"))
+    kDeg = np.squeeze(trace.get_values("kDeg"))
     scales = trace.get_values("scales")
-    GCexpr = (328.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-    IL7Raexpr = (2591.0 * endo[0]) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-    IL4Raexpr = (254.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
     num = scales.shape[0]
 
     unkVec = np.zeros((n_params, num))
-    for ii in range(num):
-        unkVec[:, ii] = np.array(
-            [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                kfwd[ii],
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                k27rev[ii],
-                1.0,
-                k33rev[ii],
-                1.0,
-                endo[ii],
-                activeEndo[ii],
-                sortF[ii],
-                kRec[ii],
-                kDeg[ii],
-                0.0,
-                0.0,
-                GCexpr[ii],
-                0.0,
-                IL7Raexpr[ii],
-                0.0,
-                IL4Raexpr[ii],
-                0.0,
-            ]
-        )
+    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
+    unkVec[7:17, :] = 1.0
+    unkVec[13, :] = np.squeeze(trace.get_values("k27rev"))
+    unkVec[15, :] = np.squeeze(trace.get_values("k33rev"))
+    unkVec[17, :] = endo
+    unkVec[18, :] = activeEndo
+    unkVec[19, :] = sortF
+    unkVec[20, :] = kRec
+    unkVec[21, :] = kDeg
+
+    # Constant according to measured number per cell
+    unkVec[24, :] = (328.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # gc
+    unkVec[26, :] = (2591.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # IL-7R
+    unkVec[28, :] = (254.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # IL-4R
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
