@@ -97,9 +97,9 @@ def plot_corrcoef(ax, df, cell_types):
             corr_coefs[j * len(cell_types) + i] = corr_coef[0]
 
     x_pos = np.arange(len(cell_types))
-    ax.bar(x_pos - 0.15, np.absolute(corr_coefs[0:len(cell_types)]), width=0.3, color='r', label='IL2', tick_label=cell_types)
-    ax.bar(x_pos + 0.15, np.absolute(corr_coefs[len(cell_types):(2 * len(cell_types))]), width=0.3, color='g', label='IL15', tick_label=cell_types)
-    ax.set(ylabel=("Abs(Correlation Coefficient)"), ylim=(0., 1.))
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='r', label='IL2', tick_label=cell_types)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='g', label='IL15', tick_label=cell_types)
+    ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0), fontsize=6.5)
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
 
