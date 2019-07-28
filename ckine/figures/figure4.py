@@ -63,8 +63,6 @@ def makeFigure():
 
     catplot_comparison(ax, df, tps)
     plot_corrcoef(ax[8], df, cell_names_pstat)
-    #plot_corrcoef(ax[9], df, cell_names_pstat)
-    #plot_corrcoef(ax[10], df, cell_names_pstat)
 
     return f
 
@@ -77,7 +75,7 @@ def catplot_comparison(ax, df, tps):
         ax[i].get_legend().set_visible(False)
         if i == 3:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=True, legend_out=True, ax=ax[4 + i])
-            ax[4 + i].legend(bbox_to_anchor=(1., 1.), loc='right')
+            ax[4 + i].legend(bbox_to_anchor=(1., 1.), loc='upper right')
         else:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4 + i])
             ax[4 + i].get_legend().set_visible(False)
@@ -85,24 +83,25 @@ def catplot_comparison(ax, df, tps):
         ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
         ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
-        
-def plot_corrcoef(ax, df, cell_types, IL='Combined'):
+
+
+def plot_corrcoef(ax, df, cell_types):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
-    x_pos = np.zeros(len(cell_types))
-    corr_coefs = np.zeros(len(cell_types))
+    corr_coefs = np.zeros(2 * len(cell_types))
+    ILs = np.array(['IL2', 'IL15'])
     for i, name in enumerate(cell_types):
-        if IL == 'Combined':
-            experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name), "EC-50"])
-            predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name), "EC-50"])
-        else:
+        for j, IL in enumerate(ILs):
             experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
             predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-        corr_coef = pearsonr(experimental_data, predicted_data)
-        corr_coefs[i] = corr_coef[0]
-        x_pos[i] = i
-    ax.bar(x_pos, np.absolute(corr_coefs), tick_label=cell_types)
-    ax.set(ylabel=("Abs(Correlation Coefficient),\n" + IL), ylim=(0,1.))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
+            corr_coef = pearsonr(experimental_data, predicted_data)
+            corr_coefs[j * len(cell_types) + i] = corr_coef[0]
+
+    x_pos = np.arange(len(cell_types))
+    ax.bar(x_pos - 0.15, np.absolute(corr_coefs[0:len(cell_types)]), width=0.3, color='r', label='IL2', tick_label=cell_types)
+    ax.bar(x_pos + 0.15, np.absolute(corr_coefs[len(cell_types):(2 * len(cell_types))]), width=0.3, color='g', label='IL15', tick_label=cell_types)
+    ax.set(ylabel=("Abs(Correlation Coefficient)"), ylim=(0., 1.))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0), fontsize=6.5)
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
