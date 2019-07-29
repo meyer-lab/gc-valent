@@ -79,6 +79,9 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
     for j in range(len(scales)):
         guess = np.array([scales[j, 0], np.maximum(np.max(exp_data_2), np.max(exp_data_15))])  # scaling factors are sigmoidal and linear, respectively
         scale1, scale2 = optimize_scale(guess, total_activity2[:, j, :], total_activity15[:, j, :], exp_data_2, exp_data_15)  # find optimal constants
+        print(j)
+        print(scale1)
+        print(scale2)
         total_activity2[:, j, :] = scale2 * total_activity2[:, j, :] / (total_activity2[:, j, :] + scale1)  # adjust activity for this sample
         total_activity15[:, j, :] = scale2 * total_activity15[:, j, :] / (total_activity15[:, j, :] + scale1)  # adjust activity for this sample
 
