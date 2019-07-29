@@ -23,7 +23,7 @@ def makeFigure():
     ax, f = getSetup((7, 6), (3, 3))
 
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=3.25, ystretch=0.8)
+        subplotLabel(item, string.ascii_uppercase[ii])
 
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
 
@@ -83,6 +83,8 @@ def catplot_comparison(ax, df, tps):
         ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
         ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
+        ax[i].set_xlabel("")
+        ax[4 + i].set_xlabel("")
 
 
 def plot_corrcoef(ax, df, cell_types):
