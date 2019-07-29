@@ -1,7 +1,83 @@
 using ForwardDiff
 
 # https://github.com/meyer-lab/type-I-ckine-model/commit/425a16c7ac0f7b8804e02c2798b30ec79116c675
+const active_species_IDX = [8, 9, 15, 16, 19, 22, 25, 28]
+const Nspecies = 62 # number of complexes in surface + endosome + free ligand
+const halfL = 28 # number of complexes on surface alone
+const internalV = 623.0 # Same as that used in TAM model
+const internalFrac = 0.5 # Same as that used in TAM model
+const recIDX = [1, 2, 3, 10, 17, 20, 23, 26]
 
+const Nparams = 30 # number of unknowns for the full model
+const NIL2params = 10 # number of unknowns for the IL2 model
+const Nlig = 6 # Number of ligands
+const kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
+
+# p[1:4] is kfwd, k1rev, k2rev, k4rev
+# p[5:8] is k5rev, k10rev, k11rev, k13rev
+# p[9:12] is k14rev, k16rev, k17rev, k22rev
+# p[13:14] is k23rev, k24rev
+
+function fullDeriv(du, u, p, t)
+    ILs, surface, endosome, trafP = fullParam(params)
+
+    fullModel(du, u, surface, endosome, trafP, ILs)
+end
+
+
+function IL2Deriv(du::Vector, u::Vector, p::Vector, t)
+    ILs, surface, endosome, trafP = IL2param(params)
+
+    fullModel(du, u, surface, endosome, trafP, ILs)
+end
+
+
+function fullParam(rxntfR)
+    ILs = rxntfR[1:6]
+    surface = Array{eltype(rxntfR)}(undef, 21)
+    surface[[1, 4, 5]] = view(rxntfR, 7:9)
+    surface[2] = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
+    surface[3] = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
+    surface[6] = 12.0 * surface[5] / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    surface[7] = 63.0 * surface[5] / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    surface[8] = kfbnd * 0.065 # based on the multiple papers suggesting 30-100 pM
+    surface[9] = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
+    surface[10:13] = rxntfR[10:13]
+    surface[14] = kfbnd * 59 # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+    surface[[15, 17, 19, 21]] = view(rxntfR, 14:17)
+    surface[16] = kfbnd * 0.1 # DOI:10.1073/pnas.89.12.5690, ~100 pM
+    surface[18] = kfbnd * 1.0 # DOI: 10.1126/scisignal.aal1253 (human)
+    surface[20] = kfbnd * 0.07 # DOI: 10.1126/scisignal.aal1253 (human)
+
+    trafP = view(rxntfR, 18:Nparams)
+
+    @assert trafP[3] < 1.0
+
+    # all reverse rates are same in the endosome
+    return ILs, surface, surface, trafP
+end
+
+
+function IL2param(rxntfR::Vector)
+    ILs = fill(zeros(promote_type(eltype(rxntfR), Float64)), Nlig)
+    ILs[1] = rxntfR[1]
+    surface = fill(ones(promote_type(eltype(rxntfR), Float64)), 21)
+    surface[1:6] = rxntfR[2:7]
+
+    # These are probably measured in the literature
+    surface[6] = 12.0 * surface[5] / 1.5 # doi:10.1016/j.jmb.2004.04.038
+
+    trafP = fill(zeros(promote_type(eltype(rxntfR), Float64)), 13)
+    trafP[1:5] = [0.08, 1.46, 0.18, 0.15, 0.017]
+    trafP[6:8] = rxntfR[8:10]
+
+    endosome = surface
+    endosome[2:21] *= 5.0
+
+    @assert trafP[3] < 1.0
+
+    return ILs, surface, endosome, trafP
+end
 
 
 function dYdT(du, u, p::Vector, ILs)
