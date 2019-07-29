@@ -77,7 +77,7 @@ def plot_R2X(ax, tensor, factors_list):
     ax.plot(range(1, len(factors_list) + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
-    ax.set_ylim(0, 1)
+    ax.set_ylim(0, 1.05)
     ax.set_xticks(np.arange(1, len(factors_list) + 1))
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
