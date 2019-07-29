@@ -184,13 +184,6 @@ def plot_timepoints(ax, ts, factors):
     ax.legend()
 
 
-def kfwd_info(unkVec):
-    """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
-    mean = np.mean(unkVec[6])
-    std = np.std(unkVec[6])
-    return mean, std
-
-
 def legend_2_15(ax, location="center right"):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
