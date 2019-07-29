@@ -27,7 +27,7 @@ def makeFigure():
     unkVec, scales = import_samples_2_15(Traf=False, N=100)
     full_unkVec, full_scales = import_samples_2_15(Traf=False)
     pstat_act(ax[0], unkVec, scales)
-    rateComp(ax[1], full_unkVec)
+    rateComp(ax[1], full_unkVec, fsize=8)
     violinPlots(ax[3:5], full_unkVec, full_scales, Traf=False)
 
     return f

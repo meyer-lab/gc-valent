@@ -168,7 +168,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     c.set(ylabel="Value", title="Misc. Parameters")
 
 
-def rateComp(ax, unkVec):
+def rateComp(ax, unkVec, fsize=6.2):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
     # assign values from unkVec
     k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
@@ -218,5 +218,5 @@ def rateComp(ax, unkVec):
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
     a.scatter(1.1, np.log10(kfbnd * 468), color='goldenrod')  # overlay point for k14rev
-    a.set_xticklabels(a.get_xticklabels(), fontsize=6.2)
+    a.set_xticklabels(a.get_xticklabels(), fontsize=fsize)
     a.set_title("Analogous Dissociation Rates")
