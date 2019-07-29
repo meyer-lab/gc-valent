@@ -9,11 +9,8 @@ pipeline {
     stage('Venv') { steps { sh 'make venv' } }
     stage('Run') {
       parallel {
-        stage('Test C++') {
-          steps {
-            sh 'make testcpp'
-            archiveArtifacts artifacts: 'testResults.xml'
-          }
+        stage('Test Julia') {
+          steps { sh 'julia -e \'include("ckine/check.jl")\'' }
         }
         stage('Test') {
           steps {

@@ -130,7 +130,7 @@ function fullModel(du, u, pSurf, pEndo, trafP, ILs)
     du[62] = -sum(view(du, halfL+27:halfL+28)) / internalV
 
     # Actually calculate the trafficking
-    for ii in range(1, halfL)
+    for ii in range(1, stop=halfL)
         if findfirst(isequal(ii), active_species_IDX) != nothing
             du[ii] += -u[ii]*(trafP[1] + trafP[2]) # Endocytosis
             du[ii+halfL] += u[ii]*(trafP[1] + trafP[2])/internalFrac - trafP[5]*u[ii+halfL] # Endocytosis, degradation
@@ -156,9 +156,10 @@ function solveAutocrine(r)
     y0 = zeros(eltype(r), Nspecies)
 
     # Check if we're working with the no trafficking model
-    if r[1] == 0.0:
+    if r[1] == 0.0
         y0[recIDX] = view(r, range(5, length=length(recIDX)))
         return y0
+    end
 
     # Expand out trafficking terms
     kRec = r[4] * (1 - r[3])

@@ -1,4 +1,5 @@
 using DifferentialEquations
+using Sundials
 	
 include("reaction.jl")
 
