@@ -5,7 +5,7 @@ pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filte
 
 flist = 1 2 3 4 5 S1 S2 S4 S5 B1 B2 B3 B4 B5
 
-.PHONY: clean test all testprofile testcover doc testcpp autopep spell leaks profilecpp
+.PHONY: clean test all testprofile testcover autopep spell
 
 all: Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
@@ -16,7 +16,7 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
+$(fdir)/figure%.svg: venv genFigures.py graph_all.svg ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' ./genFigures.py $*
 
@@ -47,8 +47,7 @@ autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
-	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
-	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
+	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf $(fdir)/figure* profile.p* stats.dat .coverage nosetests.xml coverage.xml
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
 
@@ -60,13 +59,6 @@ test: venv
 
 testcover: venv
 	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
-
-cprofile.svg: venv ckine/cppcheck
-	valgrind --tool=callgrind ckine/cppcheck
-	. venv/bin/activate && gprof2dot -f callgrind -n 1.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
 	
 pylint.log: venv common/pylintrc
 	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
-
-doc:
-	doxygen Doxyfile
