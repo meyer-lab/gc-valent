@@ -13,7 +13,7 @@ from .figureS5 import calc_dose_response
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
-unkVec_2_15, scales = import_samples_2_15(N=1)  # use all rates
+unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
 
@@ -83,7 +83,7 @@ def catplot_comparison(ax, df, tps):
         ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
         ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
-        ax[i].set_xlabel("")
+        ax[i].set_xlabel("")  # remove "Cell Type" from xlabel
         ax[4 + i].set_xlabel("")
 
 
@@ -99,8 +99,8 @@ def plot_corrcoef(ax, df, cell_types):
             corr_coefs[j * len(cell_types) + i] = corr_coef[0]
 
     x_pos = np.arange(len(cell_types))
-    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='r', label='IL2', tick_label=cell_types)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='g', label='IL15', tick_label=cell_types)
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
     ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0), fontsize=6.5)
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
