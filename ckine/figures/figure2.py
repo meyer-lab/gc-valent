@@ -171,8 +171,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
         ligands[pre_cytokine] = pre_conc  # pretreatment ligand stays in system
         unkVec2 = np.transpose(unkVec2).copy()  # transpose the matrix (save view as a new copy)
 
-        returnn, retVal = runCkineUP(ts, unkVec2, preT=ts, prestim=ligands)
-        assert retVal >= 0
+        returnn = runCkineUP(ts, unkVec2, preT=ts, prestim=ligands)
         ret = np.zeros((returnn.shape[0]))
         for ii in range(returnn.shape[0]):
             ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii]))  # only look at active species associated with the active cytokine
@@ -190,8 +189,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(ts, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(ts, unkVec)
         return np.dot(returnn, activity)
 
     # run simulation with just one cytokine
@@ -264,8 +262,7 @@ def calc_surf_gc(t, cytokC_pg, unkVec):
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(t, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(t, unkVec)
         return np.dot(returnn, gc_species_IDX)
 
     # calculate IL4 stimulation
