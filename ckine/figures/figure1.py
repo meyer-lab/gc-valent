@@ -160,7 +160,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     col_list = ["violet", "violet", "grey", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
-    a.set(title="Receptor Expression", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    a.set(title="Receptor Expression", ylabel=r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
 
     if Traf:

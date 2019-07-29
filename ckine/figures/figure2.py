@@ -130,7 +130,7 @@ def rexpr_violin(ax, unkVec):
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.03))
-    a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
     a.set_title("Receptor Expression")
 
 
