@@ -17,11 +17,15 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7.5, 6), (3, 4), multz={0: 2, 10: 1}, empts=[2])
 
-    real_mults = [0, 8]  # subplots in ax that are actually mults
     ax[0].axis('off')  # blank out first axis for cartoon
 
     for ii, item in enumerate(ax):
-        h = 3.25 if ii in real_mults else 1
+        if ii == 0:  # hstretch for 3 panels
+            h = 3.8
+        elif ii == 8:
+            h = 3.25  # hstretch for 2 panels
+        else:
+            h = 1  # standard hstretch
         subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
