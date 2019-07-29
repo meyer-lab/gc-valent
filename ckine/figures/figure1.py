@@ -143,8 +143,14 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
     scaless = scales[:, 0] / np.max(scales)
     kfwd = unkVec[:, 6] / np.max(unkVec[:, 6])
-    misc = np.vstack((scaless, unkVec[:, 19], kfwd))
-    misc = pd.DataFrame(misc.T)
+    if Traf:  # include sortF
+        misc = np.vstack((scaless, unkVec[:, 19], kfwd))
+        misc = pd.DataFrame(misc.T)
+        misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
+    else:  # ignore sortF
+        misc = np.vstack((scaless, kfwd))
+        misc = pd.DataFrame(misc.T)
+        misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\mathrm{γ_{c}}$', 'IL-15Rα']
     col_list = ["violet", "violet", "grey", "goldenrod"]
@@ -162,7 +168,6 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
-    misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
     c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
     c.set(ylabel="Value", title="Misc. Parameters")
