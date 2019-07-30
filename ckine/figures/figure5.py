@@ -3,6 +3,7 @@ This creates Figure 5. CP decomposition of measured pSTAT data.
 """
 import string
 import numpy as np
+import pandas as pds
 import seaborn as sns
 from matplotlib.patches import Patch
 from scipy.stats import pearsonr
@@ -55,7 +56,7 @@ def makeFigure():
     correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
     legend = ax[4].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[5].legend(legend.legendHandles, labels, loc='upper left', title="Model Component #")
+    ax[5].legend(legend.legendHandles, labels, loc='upper left', title="Predicted Cmp#")
     ax[4].get_legend().remove()
 
     return f
@@ -63,23 +64,9 @@ def makeFigure():
 
 def correlation_cells(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Pearson Correlation Coefficients."""
-    colors = sns.color_palette()
-    coefficients = []
-    idx = []
-    bar_color = []
-    x_label = []
-    legend_elements = []
+    corr_df = pds.DataFrame(columns = ['Experimental Cmp#', 'Predicted Cmp#', 'Coefficient'])
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
-            idx.append(str((ii + 1, jj + 1)))
-            coefficients.append(pearsonr(experimental[:, ii], predicted[:, jj])[0])
-            x_label.append(ii+1)
-            bar_color.append(colors[jj])
-            if ii<=0:
-                legend_elements.append(Patch(color=colors[jj], label=str(jj+1)))
-    ax.bar(np.arange(len(coefficients)), np.array(coefficients), color=bar_color)
-    ax.legend(handles=legend_elements)
-    ax.set_xticks(np.arange(len(coefficients)))
-    ax.set_xticklabels(x_label)
-    ax.set_xlabel("Experimental Component #")
-    ax.set_ylabel("Pearson Correlation Coefficient")
+            corr_df = corr_df.append({'Experimental Cmp#': ii+1, 'Predicted Cmp#': jj+1, 'Coefficient': pearsonr(experimental[:, ii], predicted[:, jj])[0]}, ignore_index=True)
+    corr_df = corr_df.astype({'Experimental Cmp#':int, 'Predicted Cmp#':int})
+    sns.catplot(x='Experimental Cmp#', y='Coefficient', hue='Predicted Cmp#', data=corr_df, kind='bar', ax=ax)
