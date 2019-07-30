@@ -3,6 +3,8 @@ This creates Figure 5. CP decomposition of measured pSTAT data.
 """
 import string
 import numpy as np
+import seaborn as sns
+from matplotlib.patches import Patch
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import plot_R2X, n_pred_comps, factors_activity as predicted_factors
@@ -22,7 +24,8 @@ def makeFigure():
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        if ii<5:
+            subplotLabel(item, string.ascii_uppercase[ii])
 
     _, cell_names, IL2_data, IL15_data = import_pstat()
 
@@ -50,19 +53,33 @@ def makeFigure():
     # Predicted tensor
     predicted_cell_factors = predicted_factors[n_pred_comps - 1]
     correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
+    legend = ax[4].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[5].legend(legend.legendHandles, labels, loc='upper left', title="Model Component #")
+    ax[4].get_legend().remove()
+
     return f
 
 
 def correlation_cells(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Pearson Correlation Coefficients."""
+    colors = sns.color_palette()
     coefficients = []
     idx = []
+    bar_color = []
+    x_label = []
+    legend_elements = []
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
             idx.append(str((ii + 1, jj + 1)))
             coefficients.append(pearsonr(experimental[:, ii], predicted[:, jj])[0])
-    ax.bar(np.arange(len(coefficients)), np.array(coefficients))
+            x_label.append(ii+1)
+            bar_color.append(colors[jj])
+            if ii<=0:
+                legend_elements.append(Patch(color=colors[jj], label=str(jj+1)))
+    ax.bar(np.arange(len(coefficients)), np.array(coefficients), color=bar_color)
+    ax.legend(handles=legend_elements)
     ax.set_xticks(np.arange(len(coefficients)))
-    ax.set_xticklabels(idx, rotation=40, rotation_mode="anchor", ha="right", position=(0, 0.02))
-    ax.set_xlabel("Component Number (Experimental, Predicted)")
+    ax.set_xticklabels(x_label)
+    ax.set_xlabel("Experimental Component #")
     ax.set_ylabel("Pearson Correlation Coefficient")
