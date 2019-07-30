@@ -20,11 +20,10 @@ function runCkine(tps, params, sensi, IL2case)
 		prob = ODEProblem(f, u0, (0.0, maximum(tps)), params)
 	end
 
-	sol = solve(prob, CVODE_BDF())
+	sol = solve(prob, CVODE_BDF(linear_solver=:Dense))
 
 	if sensi
-		# TODO: Fix tps handling
-		return extract_local_sensitivities(sol, tps[2])
+		return adjoint_sensitivities(sol, alg, dg, tps)
 	else
 		return sol(tps), nothing
 	end

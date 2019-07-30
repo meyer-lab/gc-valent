@@ -19,14 +19,14 @@ const kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
 # p[13:14] is k23rev, k24rev
 
 function fullDeriv(du, u, p, t)
-    ILs, surface, endosome, trafP = fullParam(params)
+    ILs, surface, endosome, trafP = fullParam(p)
 
     fullModel(du, u, surface, endosome, trafP, ILs)
 end
 
 
 function IL2Deriv(du::Vector, u::Vector, p::Vector, t)
-    ILs, surface, endosome, trafP = IL2param(params)
+    ILs, surface, endosome, trafP = IL2param(p)
 
     fullModel(du, u, surface, endosome, trafP, ILs)
 end
@@ -173,5 +173,5 @@ function solveAutocrine(r)
     return y0
 end
 
-# Initial autocrine sensitivities - DONE
+
 solveAutocrineS = x -> ForwardDiff.jacobian(solveAutocrine, x);
