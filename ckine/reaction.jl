@@ -51,10 +51,13 @@ function fullParam(rxntfR)
 
     trafP = view(rxntfR, 18:Nparams)
 
+    endosome = copy(surface)
+    endosome[2:21] *= 5.0
+
     @assert trafP[3] < 1.0
 
     # all reverse rates are same in the endosome
-    return ILs, surface, surface, trafP
+    return ILs, surface, endosome, trafP
 end
 
 
@@ -71,7 +74,7 @@ function IL2param(rxntfR::Vector)
     trafP[1:5] = [0.08, 1.46, 0.18, 0.15, 0.017]
     trafP[6:8] = rxntfR[8:10]
 
-    endosome = surface
+    endosome = copy(surface)
     endosome[2:21] *= 5.0
 
     @assert trafP[3] < 1.0
