@@ -121,7 +121,7 @@ function fullModel(du, u, pSurf, pEndo, trafP, ILs)
 
     # Calculate cell surface and endosomal reactions
     dYdT(du, u, pSurf, ILs)
-    dYdT(view(du, halfL:2*halfL), view(u, halfL:2*halfL), pEndo, view(u, halfL*2:Nspecies))
+    dYdT(view(du, halfL+1:2*halfL), view(u, halfL+1:2*halfL), pEndo, view(u, halfL*2:Nspecies))
 
     # Handle endosomal ligand balance.
     # Must come before trafficking as we only calculate this based on reactions balance
