@@ -8,7 +8,7 @@ from .imports import import_Rexpr, import_pstat
 from .fit import commonTraf
 
 
-class pSTAT_activity:
+class pSTAT_activity:  # pylint: disable=too-few-public-methods
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in distinct cell lines from Visterra. """
 
     def __init__(self):
