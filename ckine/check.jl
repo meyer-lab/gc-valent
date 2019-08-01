@@ -10,11 +10,8 @@ params[20] = tanh(params[20])*0.9
 
 tps = [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]
 
-out, Sout = runCkine(tps, params, false, false)
+out, Sout = runCkine(tps, params, true, false)
 
-### Check that runCkinePretreat can run
-postStim = [rand(LogNormal(0.1, 0.25)) for i=1:6]
-
-out = runCkinePretreat(10.0, 10.0, params, postStim)
+print(Sout)
 
 ### Check that at long times we come to equilibrium
