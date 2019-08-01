@@ -57,34 +57,39 @@ def makeFigure():
     EC50 = EC50 - 4  # account for 10^4 multiplication
     data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
     cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
-    IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
+    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax, df, tps)
-    plot_corrcoef(ax[8], df, cell_names_pstat)
+    catplot_comparison(ax[0], df, tps)
+    #plot_corrcoef(ax[8], df, cell_names_pstat)
 
     return f
 
 
 def catplot_comparison(ax, df, tps):
     """ Construct EC50 catplots for each time point for IL2 and IL15. """
-    tps_str = ['30 mins', '1 hr', '2 hrs', '4 hrs']
-    for i, tp in enumerate(tps):
-        sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL2')], legend=False, ax=ax[i])
-        ax[i].get_legend().set_visible(False)
-        if i == 3:
-            sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=True, legend_out=True, ax=ax[4 + i])
-            ax[4 + i].legend(bbox_to_anchor=(1., 1.), loc='upper right')
-        else:
-            sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4 + i])
-            ax[4 + i].get_legend().set_visible(False)
-        ax[i].set(title=("IL-2 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
-        ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
-        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
-        ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
-        ax[i].set_xlabel("")  # remove "Cell Type" from xlabel
-        ax[4 + i].set_xlabel("")
+    # set a manual color palette
+    col_list = ["violet", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    sns.set_palette(col_list_palette)
+    # plot predicted EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL", 
+                data=df.loc[(df['Time Point'] == '1 hr') & (df["Data Type"] == 'Predicted')], 
+                legend=True,
+                legend_out=True,
+                ax=ax,
+                #scatter_kws={"marker": "o"}
+               )
+    # plot experimental EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == '1 hr') & (df["Data Type"] == 'Experimental')],
+                legend=False, legend_out=False, ax=ax,
+                #scatter_kws={"marker": "x"}
+               )
+    #ax.get_legend().set_visible(True)
+    ax.legend()
+    ax.set_xlabel("")  # remove "Cell Type" from xlabel
 
 
 def plot_corrcoef(ax, df, cell_types):
