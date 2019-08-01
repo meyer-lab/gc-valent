@@ -15,3 +15,5 @@ out, Sout = runCkine(tps, params, true, false)
 print(Sout)
 
 ### Check that at long times we come to equilibrium
+
+## Run two times and check solutions are identical with/without sensitivity, pretreatment, IL2param
