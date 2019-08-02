@@ -1,10 +1,9 @@
-using DifferentialEquations
-using Sundials
+using OrdinaryDiffEq
 using DiffEqSensitivity
-    
+
 include("reaction.jl")
 
-function runCkine(tps, params, sensi, IL2case)
+function runCkine(tps, params, IL2case)
     if IL2case
         _, _, _, trafP = IL2param(params)
         f = IL2Deriv
@@ -15,17 +14,11 @@ function runCkine(tps, params, sensi, IL2case)
 
     u0 = solveAutocrine(trafP)
 
-    if sensi
-        prob = ODELocalSensitivityProblem(f, u0, (0.0, maximum(tps)), params)
-    else
-        prob = ODEProblem(f, u0, (0.0, maximum(tps)), params)
-    end
+    prob = ODEProblem(f, u0, (0.0, maximum(tps)), params)
 
-    sol = solve(prob, Vern9())
+    sol = solve(prob, Rodas5())
 
-    if sensi
-        return extract_local_sensitivities(sol, tps)
-    else
-        return sol(tps), nothing
-    end
+    adjsol = adjoint_sensitivities(sol, Rodas5(), adjG, nothing, adjGd)
+
+    return sol(tps)
 end

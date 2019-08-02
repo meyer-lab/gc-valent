@@ -1,6 +1,3 @@
-using ForwardDiff
-
-# https://github.com/meyer-lab/type-I-ckine-model/commit/425a16c7ac0f7b8804e02c2798b30ec79116c675
 const active_species_IDX = [8, 9, 15, 16, 19, 22, 25, 28]
 const Nspecies = 62 # number of complexes in surface + endosome + free ligand
 const halfL = 28 # number of complexes on surface alone
@@ -29,6 +26,16 @@ function IL2Deriv(du::Vector, u::Vector, p::Vector, t)
     ILs, surface, endosome, trafP = IL2param(p)
 
     fullModel(du, u, surface, endosome, trafP, ILs)
+end
+
+
+function adjG(u, p, t)
+    sum(u)
+end
+
+
+function adjGd(out, u, p, t)
+    fill!(out, 1.0)
 end
 
 
@@ -144,10 +151,12 @@ function fullModel(du, u, pSurf, pEndo, trafP, ILs)
     end
 
     # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-    du[recIDX] += view(trafP, 6:13)
+    du[recIDX] += trafP[6:13]
 
     # Degradation does lead to some clearance of ligand in the endosome
-    du[(halfL*2 + 1):(halfL*2 + 6)] -= view(u, (halfL*2 + 1):(halfL*2 + 6)) * trafP[5]
+    for ii in range(halfL*2 + 1, stop=halfL*2 + 6)
+        du[ii] -= u[ii] * trafP[5]
+    end
 
     return nothing
 end
@@ -175,6 +184,3 @@ function solveAutocrine(r)
 
     return y0
 end
-
-
-solveAutocrineS = x -> ForwardDiff.jacobian(solveAutocrine, x);

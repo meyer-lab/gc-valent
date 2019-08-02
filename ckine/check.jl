@@ -5,15 +5,21 @@ include("model.jl")
 
 ### Check that runCkine can run
 params = [rand(LogNormal(0.1, 0.25)) for i=1:Nparams]
+params[20] = tanh(params[20])
 
-params[20] = tanh(params[20])*0.9
+IL2params = [rand(LogNormal(0.1, 0.25)) for i=1:NIL2params]
 
 tps = [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]
 
-out, Sout = runCkine(tps, params, true, false)
+#@benchmark runCkine(tps, params, false)
 
-print(Sout)
+out = runCkine(tps, params, false)
+outTwo = runCkine(tps, params, false)
 
-### Check that at long times we come to equilibrium
+@assert out == outTwo
+
+print(out)
+
+print(IL2params)
 
 ## Run two times and check solutions are identical with/without sensitivity, pretreatment, IL2param
