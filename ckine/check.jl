@@ -1,4 +1,5 @@
 using Distributions
+using ForwardDiff
 using BenchmarkTools
 
 include("model.jl")
@@ -18,8 +19,14 @@ outTwo = runCkine(tps, params, false)
 
 @assert out == outTwo
 
-print(out)
 
-print(IL2params)
+fout = ForwardDiff.jacobian(x -> runCkine(tps, x, false)[1], params)
+
+@benchmark ForwardDiff.jacobian(x -> runCkine(tps, x, false)[1], params)
+
+#print(out[1])
+#print("\n\n\n\n")
+
+#print(fout)
 
 ## Run two times and check solutions are identical with/without sensitivity, pretreatment, IL2param

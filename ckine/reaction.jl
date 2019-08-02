@@ -29,16 +29,6 @@ function IL2Deriv(du::Vector, u::Vector, p::Vector, t)
 end
 
 
-function adjG(u, p, t)
-    sum(u)
-end
-
-
-function adjGd(out, u, p, t)
-    fill!(out, 1.0)
-end
-
-
 function fullParam(rxntfR)
     ILs = rxntfR[1:6]
     surface = Array{eltype(rxntfR)}(undef, 21)

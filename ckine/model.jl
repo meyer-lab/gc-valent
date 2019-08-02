@@ -16,9 +16,7 @@ function runCkine(tps, params, IL2case)
 
     prob = ODEProblem(f, u0, (0.0, maximum(tps)), params)
 
-    sol = solve(prob, Rodas5())
+    sol = solve(prob, TRBDF2())
 
-    adjsol = adjoint_sensitivities(sol, Rodas5(), adjG, nothing, adjGd)
-
-    return sol(tps)
+    return sol(tps).u
 end
