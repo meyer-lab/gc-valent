@@ -60,7 +60,7 @@ def makeFigure():
     IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
-
+    
     catplot_comparison(ax[0], df, tps)
     #plot_corrcoef(ax[8], df, cell_names_pstat)
 
@@ -75,16 +75,12 @@ def catplot_comparison(ax, df, tps):
     sns.set_palette(col_list_palette)
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL", 
-                data=df.loc[(df['Time Point'] == '1 hr') & (df["Data Type"] == 'Predicted')], 
-                legend=True,
-                legend_out=True,
-                ax=ax)
-    #scatter_kws={"marker": "o"}
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')], 
+                legend=True, legend_out=True, ax=ax, scatter_kws={"marker": "o"})
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == '1 hr') & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax)
-    #scatter_kws={"marker": "x"}
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                legend=False, legend_out=False, ax=ax, scatter_kws={"marker": "x"})
     #ax.get_legend().set_visible(True)
     ax.legend()
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
