@@ -76,11 +76,11 @@ def catplot_comparison(ax, df, tps):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL", 
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')], 
-                legend=True, legend_out=True, ax=ax, scatter_kws={"marker": "o"})
+                legend=True, legend_out=True, ax=ax, marker='o')
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, scatter_kws={"marker": "x"})
+                legend=False, legend_out=False, ax=ax, marker='^')
     #ax.get_legend().set_visible(True)
     ax.legend()
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
