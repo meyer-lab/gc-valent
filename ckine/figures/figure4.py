@@ -74,8 +74,8 @@ def catplot_comparison(ax, df, tps):
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
     # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL", 
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')], 
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
                 legend=False, legend_out=False, ax=ax, marker='o')
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
