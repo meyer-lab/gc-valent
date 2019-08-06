@@ -60,9 +60,9 @@ def makeFigure():
     IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
-    
+
     catplot_comparison(ax[0], df, tps)
-    #plot_corrcoef(ax[8], df, cell_names_pstat)
+    plot_corrcoef(ax[8], df, cell_names_pstat)
 
     return f
 
