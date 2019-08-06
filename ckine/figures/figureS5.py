@@ -5,7 +5,7 @@ import string
 import numpy as np
 import matplotlib.cm as cm
 from scipy.optimize import least_squares
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_pstat
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 from ..imports import import_Rexpr, import_pstat, import_samples_2_15
 
@@ -37,8 +37,8 @@ def makeFigure():
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc, legend=True)
         else:
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc)
-        plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4) : ((i + 1) * 4)])
-        plot_scaled_pstat(ax[axis + 10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4) : ((i + 1) * 4)])
+        plot_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4) : ((i + 1) * 4)])
+        plot_pstat(ax[axis + 10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4) : ((i + 1) * 4)])
         axis = axis + 1
 
     return f
