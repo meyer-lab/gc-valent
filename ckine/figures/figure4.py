@@ -17,7 +17,8 @@ _, _, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
-pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(np.float)), axis=None), 'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))), np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
+pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(
+    np.float)), axis=None), 'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))), np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
 pstat_df = pd.DataFrame(data=pstat_data)
 
 
@@ -64,12 +65,13 @@ def makeFigure():
     IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
-    
+
     catplot_comparison(ax[0], df, tps)
     compare_experimental_data(ax[1], pstat_df)
     #plot_corrcoef(ax[8], df, cell_names_pstat)
 
     return f
+
 
 def compare_experimental_data(ax, df):
     df.dropna(axis=0, how='any', inplace=True)
@@ -86,8 +88,8 @@ def catplot_comparison(ax, df, tps):
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
     # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL", 
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')], 
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
                 legend=True, legend_out=True, ax=ax, marker='o')
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
