@@ -61,13 +61,13 @@ def makeFigure():
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax[0], df, tps)
+    catplot_comparison(ax[0], df)
     plot_corrcoef(ax[1], df, cell_names_pstat)
 
     return f
 
 
-def catplot_comparison(ax, df, tps):
+def catplot_comparison(ax, df):
     """ Construct EC50 catplots for each time point for IL2 and IL15. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
