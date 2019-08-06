@@ -83,6 +83,7 @@ def catplot_comparison(ax, df, tps):
                 legend=False, legend_out=False, ax=ax, marker='^')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
 
 
 def plot_corrcoef(ax, df, cell_types):
