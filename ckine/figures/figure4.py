@@ -81,8 +81,8 @@ def catplot_comparison(ax, df, tps):
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
                 legend=False, legend_out=False, ax=ax, marker='^')
-    #ax.get_legend().set_visible(True)
     ax.legend()
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
 
 
