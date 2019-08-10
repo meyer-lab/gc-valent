@@ -193,17 +193,6 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     return (yOut, retVal, sensV)
 
 
-def fullModel(y, t, rxntfr):
-    """ Implement the full model based on dydt, trafficking, expression. """
-    assert rxntfr.size == __nParams
-
-    yOut = np.zeros_like(y)
-
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return yOut
-
-
 __active_species_IDX = np.zeros(__halfL, dtype=np.bool)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 

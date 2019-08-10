@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg
+from ..model import getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg
 from ..figures.figureB1 import runIL2simple
 
 
@@ -54,77 +54,6 @@ class TestModel(unittest.TestCase):
         self.tfargs[2] = np.tanh(self.tfargs[2]) * 0.9
 
         self.rxntfR = np.concatenate((self.args, self.tfargs))
-
-    @given(y0=harrays(np.float, nSpecies(), elements=floats(1, 10)))
-    def test_conservation_full(self, y0):
-        """In the absence of trafficking, mass balance should hold in both compartments."""
-        rxntfR = self.rxntfR.copy()
-        rxntfR[17:30] = 0.0
-
-        dy = fullModel(y0, 0.0, rxntfR)
-
-        # Check for conservation of each surface receptor
-        for idxs in conservation_IDX:
-            self.assertConservation(dy, 0.0, idxs)
-
-        # Check for conservation of each endosomal receptor
-        for idxs in conservation_IDX:
-            self.assertConservation(dy, 0.0, idxs + 28)
-
-    def test_equlibrium(self):
-        """System should still come to equilibrium after being stimulated with ligand"""
-        t = np.array([0.0, 100000.0])
-        rxn = self.rxntfR.copy()
-        rxn[0:6] = 0.0  # set ligands to 0
-        rxnIL2, rxnIL15, rxnIL7, rxnIL9, rxnIL4, rxnIL21 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
-        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3], rxnIL4[5], rxnIL21[6] = 100.0, 100.0, 100.0, 100.0, 100.0, 100.0
-
-        # runCkine to get yOut
-        yOut_2, retVal = runCkineU(t, rxnIL2)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_15, retVal = runCkineU(t, rxnIL15)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_7, retVal = runCkineU(t, rxnIL7)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_9, retVal = runCkineU(t, rxnIL9)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_4, retVal = runCkineU(t, rxnIL4)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_21, retVal = runCkineU(t, rxnIL21)
-        self.assertGreaterEqual(retVal, 0)
-
-        # check that dydt is ~0
-        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2))
-        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15))
-        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7))
-        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9))
-        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4))
-        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21))
-
-    def test_fullModel(self):
-        """ Assert that we're at autocrine steady-state at t=0. """
-        yOut, _ = runCkineU(np.array([0.0]), self.rxntfR)
-        yOut = np.squeeze(yOut)
-
-        rxnNoLigand = self.rxntfR
-        rxnNoLigand[0:6] = 0.0
-
-        # Autocrine condition assumes no cytokine present, and so no activity
-        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
-
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, rxnNoLigand))
-
-    @given(y0=harrays(np.float, nSpecies(), elements=floats(0, 10)))
-    def test_reproducible(self, y0):
-        """ Make sure full model is reproducible under same conditions. """
-
-        dy1 = fullModel(y0, 0.0, self.rxntfR)
-
-        # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 1.0, self.rxntfR)), 1e-8)
-
-        # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 2.0, self.rxntfR)), 1e-8)
 
     @given(vec=harrays(np.float, 30, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
