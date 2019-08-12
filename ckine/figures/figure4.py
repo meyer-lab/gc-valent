@@ -25,7 +25,7 @@ pstat_df = pd.DataFrame(data=pstat_data)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3))
+    ax, f = getSetup((7, 6), (2, 2))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -66,9 +66,9 @@ def makeFigure():
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax[0], df, tps)
+    catplot_comparison(ax[0], df)
     compare_experimental_data(ax[1], pstat_df)
-    #plot_corrcoef(ax[8], df, cell_names_pstat)
+    plot_corrcoef(ax[2], df, cell_names_pstat)
 
     return f
 
@@ -81,7 +81,7 @@ def compare_experimental_data(ax, df):
     sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
 
 
-def catplot_comparison(ax, df, tps):
+def catplot_comparison(ax, df):
     """ Construct EC50 catplots for each time point for IL2 and IL15. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
@@ -90,20 +90,22 @@ def catplot_comparison(ax, df, tps):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=True, legend_out=True, ax=ax, marker='o')
+                legend=False, legend_out=False, ax=ax, marker='o')
+
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
                 legend=False, legend_out=False, ax=ax, marker='^')
-    ax.legend()
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
 
 
 def plot_corrcoef(ax, df, cell_types):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_types))
-    ILs = np.array(['IL2', 'IL15'])
+    ILs = np.array(['IL-2', 'IL-15'])
     for i, name in enumerate(cell_types):
         for j, IL in enumerate(ILs):
             experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
@@ -115,7 +117,7 @@ def plot_corrcoef(ax, df, cell_types):
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
     ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0), fontsize=6.5)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
