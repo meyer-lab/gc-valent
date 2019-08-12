@@ -77,6 +77,7 @@ def compare_experimental_data(ax, df):
     df.dropna(axis=0, how='any', inplace=True)
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
+    ax.set_aspect('equal', 'box')
 
 
 def catplot_comparison(ax, df):
