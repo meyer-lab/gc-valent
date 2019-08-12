@@ -3,7 +3,6 @@ A file that includes the model and important helper functions.
 """
 import os
 import numpy as np
-import julia
 from julia import gcSolver
 
 
