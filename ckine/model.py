@@ -2,37 +2,10 @@
 A file that includes the model and important helper functions.
 """
 import os
-import ctypes as ct
 import numpy as np
+import julia
+from julia import gcSolver
 
-
-filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
-libb = ct.cdll.LoadLibrary(filename)
-libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineS.argtypes = (
-    ct.POINTER(ct.c_double),
-    ct.c_uint,
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_bool,
-    ct.c_double,
-    ct.POINTER(ct.c_double),
-)
-libb.runCkineSParallel.argtypes = (
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_uint,
-    ct.c_uint,
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_double,
-    ct.POINTER(ct.c_double),
-)
 
 __nSpecies = 62
 

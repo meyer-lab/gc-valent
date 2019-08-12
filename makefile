@@ -12,7 +12,7 @@ all: Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	julia -e "using Pkg; Pkg.update(); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
+	julia -e "using Pkg; Pkg.update(); Pkg.add("PyCall"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	test -d venv || virtualenv --system-site-packages venv
 	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
