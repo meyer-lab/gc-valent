@@ -8,19 +8,11 @@ import numpy as np
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
-libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineSParallel.argtypes = (
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_uint,
-    ct.c_uint,
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_double,
-    ct.POINTER(ct.c_double),
-)
+pcd = ct.POINTER(ct.c_double)
+libb.fullModel_C.argtypes = (pcd, ct.c_double, pcd, pcd)
+libb.runCkine.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_bool, ct.c_double, pcd)
+libb.runCkineParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, ct.c_double, pcd)
+libb.runCkineSParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, pcd, pcd, ct.c_double, pcd)
 
 __nSpecies = 62
 
