@@ -74,10 +74,9 @@ def makeFigure():
 
 
 def compare_experimental_data(ax, df):
+    """ Compare both pSTAT5 replicates. """
     df.dropna(axis=0, how='any', inplace=True)
-    col_list = ["violet", "goldenrod"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
+    sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
 
 
