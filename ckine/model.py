@@ -60,16 +60,13 @@ def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0  # Check that sortF won't throw
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
-
     if preT != 0.0:
         assert preT > 0.0
         assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, preT, prestim)
+    yOut = gcSolver.runckine(tps, params)
 
-    return (yOut, retVal)
+    return yOut
 
 
 def runCkineS(tps, rxntfr, condense):
