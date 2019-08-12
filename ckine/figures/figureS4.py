@@ -18,7 +18,7 @@ cell_dim = 1  # For this figure, the cell dimension is along the second [python 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
-    ax, f = getSetup((7.5, 5), (x, y))
+    ax, f = getSetup((7.5, 4.5), (x, y))
 
     _, _, cell_names = import_Rexpr()
     for ii, item in enumerate(ax):
