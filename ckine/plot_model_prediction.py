@@ -80,7 +80,7 @@ class pstat:
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
         actVec = actVec / (actVec + scale)
 
-        return actVec / actVec.amax(axis=1, keepdims=True)  # normalize by the max value of each row
+        return actVec / actVec.max(axis=1, keepdims=True)  # normalize by the max value of each row
 
 
 class surf_gc:
