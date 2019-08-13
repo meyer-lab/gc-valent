@@ -105,4 +105,6 @@ class surf_gc:
         # calculate IL2 stimulation
         a = parallelCalc(unkVecIL2RaMinus, 0, 1000.0, t, self.gc_species_IDX)
 
-        return a / a[np.newaxis, 0]  # normalize by a[0] for each row
+        for ii in range(K):
+	        a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
+	    return a
