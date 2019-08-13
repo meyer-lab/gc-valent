@@ -45,7 +45,11 @@ class surf_IL2Rb:
         h = parallelCalc(unkVecIL2RaMinus, 1, 500.0, t, self.IL2Rb_species_IDX)
 
         catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)
-        return catVec / a[np.newaxis, 0]  # normalize by a[0] for each row
+
+        for ii in range(K):
+            catVec[ii] = catVec[ii] / a[ii, 0]  # normalize by a[0] for each row
+
+        return catVec
 
 
 class pstat:
