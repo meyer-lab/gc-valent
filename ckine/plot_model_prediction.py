@@ -106,5 +106,5 @@ class surf_gc:
         a = parallelCalc(unkVecIL2RaMinus, 0, 1000.0, t, self.gc_species_IDX)
 
         for ii in range(K):
-	        a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
-	    return a
+            a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
+        return a
