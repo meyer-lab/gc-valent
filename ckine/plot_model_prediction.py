@@ -26,12 +26,11 @@ class surf_IL2Rb:
     def calc(self, unkVec, t):
         """This function uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
-        N = len(t)
         K = unkVec.shape[1]
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
+        unkVecIL2RaMinus[22, :] = 0.0
 
         # calculate IL2 stimulation
         a = parallelCalc(unkVec, 0, 1.0, t, self.IL2Rb_species_IDX)
@@ -99,15 +98,14 @@ class surf_gc:
     def calc(self, unkVec, t):
         """This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
-        N = len(t)
         K = unkVec.shape[1]
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22, :] = np.zeros((K))
+        unkVecIL2RaMinus[22, :] = 0.0
 
         # calculate IL2 stimulation
-        a = self.parallelCalc(unkVecIL2RaMinus, 0, 1000.0, t, self.gc_species_IDX)
+        a = parallelCalc(unkVecIL2RaMinus, 0, 1000.0, t, self.gc_species_IDX)
 
         for ii in range(K):
             a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
