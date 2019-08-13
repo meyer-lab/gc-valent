@@ -4,11 +4,11 @@ This file includes various methods for flow cytometry analysis.
 # import FlowCytometryTools
 
 # Import all necessary packages to run functions
-import numpy as np
-import pandas
-
 import pathlib
 from pathlib import Path
+
+import numpy as np
+import pandas
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -44,7 +44,6 @@ def importF(pathname):
         z += 1
     importF.sample = sample
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
-    
     return sample
 
 
@@ -58,7 +57,6 @@ def treg():
     treg1 = QuadGate((7.063e03, 3.937e03), ("BL1-H", "VL1-H"), region="top left", name="treg1")
     treg2 = QuadGate((5.412e03, 6.382e03), ("BL1-H", "VL1-H"), region="bottom right", name="treg2")
     treg_gate = treg1 & treg2
-    
     return treg_gate
 
 
@@ -68,7 +66,6 @@ def nonTreg():
     nonTreg1 = QuadGate((5.233e03, 1.731e03), ("BL1-H", "VL1-H"), region="top left", name="nonTreg1")
     nonTreg2 = QuadGate((2.668e03, 5.692e03), ("BL1-H", "VL1-H"), region="bottom right", name="nonTreg2")
     nonTreg_gate = nonTreg1 & nonTreg2
-    
     return nonTreg_gate
 
 
@@ -78,7 +75,6 @@ def nk():
     nk1 = QuadGate((6.468e03, 4.861e03), ("BL1-H", "VL4-H"), region="top left", name="nk1")
     nk2 = QuadGate((5.550e03, 5.813e03), ("BL1-H", "VL4-H"), region="bottom right", name="nk2")
     nk_gate = nk1 & nk2
-    
     return nk_gate
 
 
@@ -88,7 +84,6 @@ def bnk():
     bnk1 = QuadGate((7.342e03, 4.899e03), ("BL1-H", "VL4-H"), region="top left", name="bnk1")
     bnk2 = QuadGate((6.533e03, 5.751e03), ("BL1-H", "VL4-H"), region="bottom right", name="bnk2")
     bnk_gate = bnk1 & bnk2
-    
     return bnk_gate 
 
 
@@ -98,13 +93,12 @@ def cd():
     cd1 = QuadGate((9.016e03, 5.976e03), ("RL1-H", "VL4-H"), region="top left", name="cd1")
     cd2 = QuadGate((6.825e03, 7.541e03), ("RL1-H", "VL4-H"), region="bottom right", name="cd2")
     cd_gate = cd1 & cd2
-    
     return cd_gate
 
 
 def cellCount(sample_i, gate):
-    """Function for returning the count of cells in a single .fcs. file of a single cell file 
-    Arguments: single sample/.fcs file and the gate of the desired cell output"""
+    """Function for returning the count of cells in a single .fcs. file of a single cell file"""
+    """Arguments: single sample/.fcs file and the gate of the desired cell output"""
     # Import single file and save data to a variable --> transform to logarithmic scale
     smpl = sample_i.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "RL1-H"])
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
@@ -112,26 +106,24 @@ def cellCount(sample_i, gate):
     # Number of events (AKA number of cells)
     cell_count = cells.get_data().shape[0]
     # print('Number of Treg cells:' + str(treg_count))
-    
     return cell_count
 
 
 def rawData(sample_i, gate):
-    """Function that returns the raw data of certain cell population in a given file
-    Arguments: sample_i is a single entry/.fcs file and the gate of the desired cell population"""
+    """Function that returns the raw data of certain cell population in a given file"""
+    """Arguments: sample_i is a single entry/.fcs file and the gate of the desired cell population"""
     smpl = sample_i.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "RL1-H"])
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
     # Get raw data of t reg cells in file
     cell_data = cells.get_data()
-    
     return cell_data
 
 
 def tcells(sample_i, treg_gate, nonTreg_gate, i):
-    """Function that is used to plot the Treg and NonTreg gates
-    Treg (yellow) and Non Treg (green)
-    sample_i is an indivual flow cytommetry file/data"""
+    """Function that is used to plot the Treg and NonTreg gates"""
+    """Treg (yellow) and Non Treg (green)"""
+    """sample_i is an indivual flow cytommetry file/data"""
     # Assign data of current file for analysis to variable smpl and transform to log scale
     smpl = sample_i.transform("hlog", channels=["BL1-H", "VL1-H"])
     # CD25 v. Foxp33: VL1 v. BL1
@@ -160,10 +152,10 @@ def tcells(sample_i, treg_gate, nonTreg_gate, i):
 
 
 def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
-    """Function that plots the graph of NK and Bright NK cells (both are determined by same x, y-axis)
-    Arguemnt 1: current sample (a single file)
-    Argument 2: the gate for NK
-    Argument 3: the gate for bright NK"""
+    """Function that plots the graph of NK and Bright NK cells (both are determined by same x, y-axis)"""
+    """Arguemnt 1: current sample (a single file)"""
+    """Argument 2: the gate for NK"""
+    """Argument 3: the gate for bright NK"""
     smpl = sample_i.transform("hlog", channels=["BL1-H", "VL4-H", "RL1-H"])
 
     # CD3 v. CD56: VL4 v. BL1
@@ -188,11 +180,11 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
 
 # ????????????????????????????????: how to deal with unused argument (blank should be the second gate)
 def cd_plot(sample_i, cd_gate, blank, i):
-    """Function that plots the graph of CD cells
-    Argument 1: current sample (a single file)
-    Argument 2: the gate for CD cells
-    Argument 3: gate, but leave it blank! Do not need two, but for sake of the use of a function need input
-    Argument 4: the value of the current i in a for loop --> use when plotting multiple files"""
+    """Function that plots the graph of CD cells"""
+    """Argument 1: current sample (a single file)"""
+    """Argument 2: the gate for CD cells"""
+    """Argument 3: gate, but leave it blank! Do not need two, but for sake of the use of a function need input"""
+    """Argument 4: the value of the current i in a for loop --> use when plotting multiple files"""
     smpl = sample_i.transform("hlog", channels=["BL1-H", "VL4-H", "RL1-H"])
     # CD3 v. CD8: VL4 v. RL1
     # CD3+CD8+
@@ -210,8 +202,8 @@ def cd_plot(sample_i, cd_gate, blank, i):
 
 
 def count_data(sampleType, gate):
-    """Used to count the number of cells and store the data of all of these cells in a folder with multiple files --> automates the process
-    sampleType is NK or T cell data, gate is the desired cell population"""
+    """Used to count the number of cells and store the data of all of these cells in a folder with multiple files --> automates the process"""
+    """sampleType is NK or T cell data, gate is the desired cell population"""
     # declare the arrays to store the data
     count_array = []
     data_array = []
@@ -221,14 +213,13 @@ def count_data(sampleType, gate):
         count_array.append(cellCount(sample, gate))
         data_array.append(rawData(sample, gate))
     # returns the array for count of cells and the array where each entry is the data for the specific cell population in that .fcs file
-    
     return count_array, data_array
 
 
 def plotAll(sampleType, check, gate1, gate2):
-    """Ask the user to input 't' for t cell, 'n' for nk cell, and 'c' for cd cell
-    checks are used to determine if user input a T-cell, NK-cell, or CD-cell gate
-    automates the process for plotting multiple files"""
+    """Ask the user to input 't' for t cell, 'n' for nk cell, and 'c' for cd cell"""
+    """checks are used to determine if user input a T-cell, NK-cell, or CD-cell gate"""
+    """automates the process for plotting multiple files"""
     
     if check == "t":
         for i, sample in enumerate(sampleType):
@@ -254,7 +245,6 @@ def sampleT(smpl):
     data = tform.data[["BL1-H", "VL1-H", "VL4-H", "BL3-H"]][0:]
     # Save pSTAT5 data
     pstat = tform.data[["RL1-H"]][0:]
-    
     return data, pstat, features
 
 
@@ -269,7 +259,6 @@ def sampleNK(smpl):
     # Assign data of three protein channels AND pSTAT5
     data = tform.data[["VL4-H", "RL1-H", "BL1-H"]][0:]
     pstat = tform.data[["BL2-H"]][0:]
-
     return data, pstat, features
 
 
@@ -288,7 +277,6 @@ def appPCA(data, features):
     xf = pca.fit(xs).transform(xs)
     # creates the loading array (equation is defintion of loading)
     loading = pca.components_.T * np.sqrt(pca.explained_variance_)
-
     return xf, loading
 
 
@@ -302,8 +290,8 @@ def pcaPltCat(xf, pstat, loading, features, i):
         name = "NK Cells"
         
     # Setting x and y values from xf
-    x = xf[:,0]
-    y = xf[:,1]
+    x = xf[:, 0]
+    y = xf[:, 1]
     # Working with pSTAT5 data --> setting min and max values
     pstat_data = pstat.values
 
@@ -356,3 +344,4 @@ def loadingPlot(loading, features, i):
                 feature = "CD56"
         plt.annotate(str(feature), xy=(x_load[z], y_load[z]))
     ax.set_title(name + " - Loading - File " + str(i), fontsize=20)
+    
