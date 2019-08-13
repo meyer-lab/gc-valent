@@ -45,9 +45,7 @@ class surf_IL2Rb:
         h = parallelCalc(unkVecIL2RaMinus, 1, 500.0, t, self.IL2Rb_species_IDX)
 
         catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)
-        for ii in range(K):
-            catVec[ii] = catVec[ii] / a[ii, 0]  # normalize by a[0] for each row
-        return catVec
+        return catVec / a[np.newaxis, 0]  # normalize by a[0] for each row
 
 
 class pstat:
@@ -82,10 +80,7 @@ class pstat:
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
         actVec = actVec / (actVec + scale)
 
-        for ii in range(K):
-            actVec[ii] = actVec[ii] / np.max(actVec[ii])  # normalize by the max value of each row
-
-        return actVec
+        return actVec / actVec.amax(axis=1, keepdims=True)  # normalize by the max value of each row
 
 
 class surf_gc:
@@ -107,6 +102,4 @@ class surf_gc:
         # calculate IL2 stimulation
         a = parallelCalc(unkVecIL2RaMinus, 0, 1000.0, t, self.gc_species_IDX)
 
-        for ii in range(K):
-            a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
-        return a
+        return a / a[np.newaxis, 0]  # normalize by a[0] for each row
