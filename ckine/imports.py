@@ -143,6 +143,7 @@ def import_samples_4_7(ret_trace=False, N=None):
     return unkVec, scales
 
 
+<<<<<<< HEAD
 def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
     """ Imports the sampling results from fitting to visterra data in fit_visterra.py. """
     from .fit_visterra import build_model as build_model_visterra
@@ -187,6 +188,8 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
     return unkVec, scales
 
 
+=======
+>>>>>>> b8b0475677c909a868f63776aedcb8b5b1189078
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
