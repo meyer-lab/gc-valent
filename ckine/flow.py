@@ -3,7 +3,32 @@ This file includes various methods for flow cytometry analysis.
 """
 #import FlowCytometryTools
 
-#*********************************** Gating Fxns *******************************************
+### Import all necessary packages to run functions
+import matplotlib
+import numpy as np
+import pandas
+import scipy
+import FlowCytometryTools
+import pylab
+import sys
+import pathlib
+import pylab
+import sklearn
+import math
+from matplotlib import pyplot as plt
+from pathlib import Path
+from FlowCytometryTools import test_data_dir, test_data_file
+from FlowCytometryTools import FCMeasurement
+from matplotlib.backends.backend_pdf import PdfPages
+from FlowCytometryTools import ThresholdGate, PolyGate, QuadGate
+from matplotlib.legend_handler import HandlerLine2D
+from matplotlib.patches import Rectangle
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+
+# Please note: if trying to display plots in jupyternotebook, must use: %matplotlib inline
+
 # Import FCS files. Variable input: name of path name to file. 
 def importF(pathname):
     # Declare arrays and int
@@ -22,8 +47,9 @@ def importF(pathname):
     importF.sample = sample
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
     return sample
-# Treg and NonTreg
 
+#*********************************** Gating Fxns *******************************************
+# Treg and NonTreg
 # Function for creating and returning the T reg gate
 def treg():
     # T reg: Take quad gates for T reg cells and combine them to create single, overall T reg gate
@@ -39,32 +65,33 @@ def nonTreg():
     nonTreg2 = QuadGate((2.668e+03, 5.692e+03), ('BL1-H', 'VL1-H'), region='bottom right', name='nonTreg2')
     nonTreg_gate = nonTreg1 & nonTreg2
     return nonTreg_gate
-
+# Function for creating and returning the NK gate
 def nk():
     # NK cells: Take quad gates for NK cells and combine them to create single, overall NK gate
     nk1 = QuadGate((6.468e+03, 4.861e+03), ('BL1-H', 'VL4-H'), region='top left', name='nk1')
     nk2 = QuadGate((5.550e+03, 5.813e+03), ('BL1-H', 'VL4-H'), region='bottom right', name='nk2')
     nk_gate = nk1 & nk2
     return nk_gate
-
+# Function for creating and returning the BNK gate
 def bnk():
     # Bright NK cells: Take quad gates for bright NK cells and combine them to create single, overall bright NK gate
     bnk1 = QuadGate((7.342e+03, 4.899e+03), ('BL1-H', 'VL4-H'), region='top left', name='bnk1')
     bnk2 = QuadGate((6.533e+03, 5.751e+03), ('BL1-H', 'VL4-H'), region='bottom right', name='bnk2')
     bnk_gate = bnk1 & bnk2
     return bnk_gate
-
+# Function for creating and returning the CD gate
 def cd():
     # CD cells: Take quad gates for CD cells and combine them to create single, overall CD gate
     cd1 = QuadGate((9.016e+03, 5.976e+03), ('RL1-H', 'VL4-H'), region='top left', name='cd1')
     cd2 = QuadGate((6.825e+03, 7.541e+03), ('RL1-H', 'VL4-H'), region='bottom right', name='cd2')
     cd_gate = cd1 & cd2
     return cd_gate
-
+# Function for returning the count of cells in a single .fcs. file of a single cell file
+# input is a single sample/.fcs file and the gate of the desired cell output
 def cellCount(sample_i, gate):
     # Import single file and save data to a variable --> transform to logarithmic scale
     smpl = sample_i.transform('hlog', channels=['BL1-H','VL1-H','VL4-H','RL1-H'])
-    # Apply T reg gate to overall data --> step that detrmines which cells are T reg
+    # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
     # Number of events (AKA number of cells)
     cell_count = cells.get_data().shape[0]
@@ -72,9 +99,10 @@ def cellCount(sample_i, gate):
     return cell_count
 
 # Function that returns the raw data of certain cell population in a given file
+# Arguments: sample_i is a single entry/.fcs file and the gate of the desired cell population
 def rawData(sample_i, gate):
     smpl = sample_i.transform('hlog', channels=['BL1-H','VL1-H','VL4-H','RL1-H'])
-    # Apply T reg gate to overall data --> step that detrmines which cells are T reg
+    # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)  
     # Get raw data of t reg cells in file
     cell_data = cells.get_data()
@@ -83,7 +111,7 @@ def rawData(sample_i, gate):
 # Function that is used to plot the Treg and NonTreg gates
 # Treg (yellow) and Non Treg (green)
 # sample_i is an indivual flow cytommetry file/data
-def tcells(sample_i, treg_gate, nonTreg_gate):
+def tcells(sample_i, treg_gate, nonTreg_gate, i):
     # Assign data of current file for analysis to variable smpl and transform to log scale
     smpl = sample_i.transform('hlog', channels=['BL1-H','VL1-H'])
     # CD25 v. Foxp33: VL1 v. BL1
@@ -101,20 +129,20 @@ def tcells(sample_i, treg_gate, nonTreg_gate):
     # Plot the non Treg gate
     nonTreg.plot(['BL1-H','VL1-H'], color = 'g')
     # Plot all of the cells in the file
+    print(i)
     ax.set_title('T Reg + Non T Reg - Gating - File ' + str(i), fontsize = 20)
     smpl.plot(['BL1-H','VL1-H'])
       
     bar_T = ax.bar(np.arange(0,10), np.arange(1,11), color="y")
     bar_NT = ax.bar(np.arange(0,10), np.arange(30,40), bottom=np.arange(1,11), color="g")
     ax.legend([bar_T, bar_NT], ("T Reg", "Non T Reg"), loc='upper left')
-    
+    plt.show()
 # Function that plots the graph of NK and Bright NK cells (both are determined by same x, y-axis)
 # Arguemnt 1: current sample (a single file)
 # Argument 2: the gate for NK
 # Argument 3: the gate for bright NK 
 
-#combine to use NKcells, use cd_gate as argument
-def nk_bnk_plot(sample_i, nk_gate, bnk_gate):
+def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     smpl = sample_i.transform('hlog', channels=['BL1-H','VL4-H','RL1-H'])
 
     # CD3 v. CD56: VL4 v. BL1
@@ -134,11 +162,14 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate):
     bar_NK = ax1.bar(np.arange(0,10), np.arange(1,11), color="y")
     bar_BNK = ax1.bar(np.arange(0,10), np.arange(30,40), bottom=np.arange(1,11), color="g")
     ax1.legend([bar_NK, bar_BNK], ("NK", "Bright NK"), loc='upper left')
+    plt.show()
     
 # Function that plots the graph of CD cells
 # Argument 1: current sample (a single file)
 # Argument 2: the gate for CD cells
-def cd_plot(sample_i, cd_gate):
+# Argument 3: gate, but leave it blank! Do not need two, but for sake of the use of a function need input
+# Argument 4: the value of the current in in a for loop --> use when plotting multiple files
+def cd_plot(sample_i, cd_gate, blank, i):
     smpl = sample_i.transform('hlog', channels=['BL1-H','VL4-H','RL1-H'])
     #CD3 v. CD8: VL4 v. RL1
     #CD3+CD8+
@@ -151,7 +182,36 @@ def cd_plot(sample_i, cd_gate):
     smpl.plot(['RL1-H','VL4-H'])
     
     bar_CD = ax2.bar(np.arange(0,10), np.arange(1,11), color='b')
-    ax2.legend([bar_CD], ('CD3+8+'), loc='upper left')
+    ax2.legend([bar_CD], ('CD3+8+'), loc='upper left') 
+    plt.show()
+
+# sampleType is NK or T cell data!
+# Used to count the number of cells and store the data of all of these cells in a folder with multiple files --> automates the process
+def count_data(sampleType, gate):
+    # declare the arrays to store the data
+    count_array = [] 
+    data_array = []
+    # create the for loop to file through the data and save to the arrays
+    # using the functions created above for a singular file
+    for i, sample in enumerate(sampleType):
+        count_array.append(cellCount(sample, gate))
+        data_array.append(rawData(sample, gate))
+    # returns the array for count of cells and the array where each entry is the data for the specific cell population in that .fcs file
+    return count_array, data_array
+
+# Ask the user to input 't' for t cell, 'n' for nk cell, and 'c' for cd cell
+def plotAll(sampleType, check, gate1, gate2):
+    # checks are used to determine if user input a T-cell, NK-cell, or CD-cell gate
+    # automates the process for plotting multiple files
+    if check == 't':
+        for i, sample in enumerate(sampleType):
+            tcells(sample, gate1, gate2, i)
+    elif check == 'n':
+        for i, sample in enumerate(sampleType):
+            nk_bnk_plot(sample, gate1, gate2, i)
+    elif check == 'c':
+        for i, sample in enumerate(sampleType):
+            cd_plot(sample, gate1, gate2, i)
     
 #********************************** PCA Functions****************************************************
 def sampleT(smpl): 
