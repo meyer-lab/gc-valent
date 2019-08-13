@@ -97,6 +97,7 @@ class surf_gc:
     def calc(self, unkVec, t):
         """This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
+        K = unkVec.shape[1]
 
         # set IL2 concentrations
         unkVecIL2RaMinus = unkVec.copy()
