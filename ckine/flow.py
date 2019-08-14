@@ -302,8 +302,8 @@ def pcaPlt(xf, pstat, features, i):
     # This is the scatter plot of the cell clusters colored by pSTAT5 data
     # lighter --> darker = less --> more pSTAT5 present
     plt.scatter(x, y, s=0.1, c=np.squeeze(pstat_data), cmap="Greens")
-
     
+
 def loadingPlot(loading, features, i):
     """Plot the loading data"""
     # Loading
@@ -340,4 +340,42 @@ def loadingPlot(loading, features, i):
                 feature = "CD56"
         plt.annotate(str(feature), xy=(x_load[z], y_load[z]))
     ax.set_title(name + " - Loading - File " + str(i), fontsize=20)
+
     
+def pcaAll(sampleType, check):
+    """
+    Use to plot the score and loading graphs for PCA. Assign protein and pstat5 arrays AND score and loading arrays
+    This is all the data for each file.
+    Want to use for both T and NK cells? Use it twice!
+    sampleType is importF for T or NK
+    check == "t" for T cells OR check == "n" for NK cells
+    """
+    # declare the arrays to store the data
+    data_array = []
+    pstat_array = []
+    xf_array = []
+    loading_array = []
+    # create the for loop to file through the data and save to the arrays
+    # using the functions created above for a singular file
+    if check == "t":
+        for i, sample in enumerate(sampleType):
+            data, pstat, features = sampleT(sample)
+            data_array.append(data)
+            pstat_array.append(pstat)
+            
+            xf, loading = appPCA(data, features)
+            xf_array.append(xf)
+            loading_array.append(loading)
+            pcaPltCat(xf, pstat, loading, features, i)
+            loadingPlot(loading, features, i)
+    elif check == "n":
+        for i, sample in enumerate(sampleType):
+            data, pstat, features = sampleNK(sample)
+            data_array.append(data)
+            pstat_array.append(pstat)
+            
+            xf, loading = appPCA(data, features)
+            pcaPltCat(xf, pstat, loading, features, i)
+            loadingPlot(loading, features, i)
+    plt.show()
+    return data_array, pstat_array, xf_array, loading_array
