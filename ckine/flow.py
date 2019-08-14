@@ -132,7 +132,7 @@ def tcells(sample_i, treg_gate, nonTreg_gate, i):
     nonTreg_cells = smpl.gate(nonTreg_gate)
 
     # Declare figure and axis
-    fig, ax = plt.subplots() # ???????? unused fig, but need to leave there to make sure right assignment for ax?
+    _, ax = plt.subplots() # ???????? unused fig, but need to leave there to make sure right assignment for ax?
     # Plot the treg gate
     treg_cells.plot(["BL1-H", "VL1-H"], color="y")
     # Plot the non Treg gate
@@ -163,7 +163,7 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     # Apply Bright NK gate to overall data --> step that determines which cells are Bright NK
     bnk_cells = smpl.gate(bnk_gate)
 
-    fig1, ax1 = plt.subplots()
+    _, ax1 = plt.subplots()
     ax1.set_title("CD56 BrightNK + NK - Gating - File " + str(i), fontsize=20)
     nk_cells.plot(["BL1-H", "VL4-H"], color="y", label="NK")
     bnk_cells.plot(["BL1-H", "VL4-H"], color="g", label="Bright NK")
@@ -175,11 +175,10 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     plt.show()
 
 
-# ????????????????????????????????: how to deal with unused argument (blank should be the second gate)
-def cd_plot(sample_i, cd_gate, blank, i):
+def cd_plot(sample_i, cd_gate, i):
     """
-    Function that plots the graph of CD cells. Argument 1: current sample (a single file). Argument 2: the gate for CD cells. Argument 3: gate, but
-    leave it blank! Do not need two, but for sake of the use of a function need input. Argument 4: the value of the current i in a for loop --> use
+    Function that plots the graph of CD cells. Argument 1: current sample (a single file). Argument 2: the gate for CD cells. Argument 3: the value 
+    of the current i in a for loop --> use
     when plotting multiple files.
     """
     smpl = sample_i.transform("hlog", channels=["BL1-H", "VL4-H", "RL1-H"])
@@ -188,7 +187,7 @@ def cd_plot(sample_i, cd_gate, blank, i):
     # Apply CD cell gate to overall data --> step that determines which cells are CD
     cd_cells = smpl.gate(cd_gate)
 
-    fig2, ax2 = plt.subplots()
+    _, ax2 = plt.subplots()
     ax2.set_title("CD3+CD8+ - Gating - File " + str(i), fontsize=20)
     cd_cells.plot(["RL1-H", "VL4-H"], color="b")
     smpl.plot(["RL1-H", "VL4-H"])
@@ -208,7 +207,7 @@ def count_data(sampleType, gate):
     data_array = []
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
-    for i, sample in enumerate(sampleType):
+    for _, sample in enumerate(sampleType):
         count_array.append(cellCount(sample, gate))
         data_array.append(rawData(sample, gate))
     # returns the array for count of cells and the array where each entry is the data for the specific cell population in that .fcs file
@@ -220,7 +219,6 @@ def plotAll(sampleType, check, gate1, gate2):
     Ask the user to input 't' for t cell, 'n' for nk cell, and 'c' for cd cell checks are used to determine if user input a T-cell, NK-cell, or
     CD-cell gate automates the process for plotting multiple files.
     """
-    
     if check == "t":
         for i, sample in enumerate(sampleType):
             tcells(sample, gate1, gate2, i)
@@ -282,13 +280,11 @@ def appPCA(data, features):
 
 def pcaPltCat(xf, pstat, features, i):
     """Used to plot the loading graph and the score graph. Both are important for using and displaying PCA"""
-    
     # PCA
     if len(features) == 4:
         name = "T Cells"
     elif len(features) == 3:
-        name = "NK Cells"
-        
+        name = "NK Cells"  
     # Setting x and y values from xf
     x = xf[:, 0]
     y = xf[:, 1]
@@ -307,7 +303,7 @@ def pcaPltCat(xf, pstat, features, i):
     # lighter --> darker = less --> more pSTAT5 present
     plt.scatter(x, y, s=0.1, c=np.squeeze(pstat_data), cmap="Greens")
     
-    
+
 def loadingPlot(loading, features, i):
     """Plot the loading data"""
     # Loading
