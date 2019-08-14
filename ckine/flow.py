@@ -302,8 +302,7 @@ def pcaPlt(xf, pstat, features, i):
     # This is the scatter plot of the cell clusters colored by pSTAT5 data
     # lighter --> darker = less --> more pSTAT5 present
     plt.scatter(x, y, s=0.1, c=np.squeeze(pstat_data), cmap="Greens")
-    
-    
+
 def loadingPlot(loading, features, i):
     """Plot the loading data"""
     # Loading
@@ -340,8 +339,8 @@ def loadingPlot(loading, features, i):
                 feature = "CD56"
         plt.annotate(str(feature), xy=(x_load[z], y_load[z]))
     ax.set_title(name + " - Loading - File " + str(i), fontsize=20)
-    
-    
+
+
 def pcaAll(sampleType, check):
     """
     Use to plot the score and loading graphs for PCA. Assign protein and pstat5 arrays AND score and loading arrays
