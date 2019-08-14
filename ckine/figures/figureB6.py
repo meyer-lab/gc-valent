@@ -24,9 +24,9 @@ def makeFigure():
             axis = i*9+j
             if axis == 17:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend='full')
-                ax[axis].legend(loc='lower right')
+                ax[axis].legend(loc='lower right', title="time (hours)")
             else:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend=False)
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
-            
+
     return f
