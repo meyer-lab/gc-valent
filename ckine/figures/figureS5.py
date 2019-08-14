@@ -37,8 +37,8 @@ def makeFigure():
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc, legend=True)
         else:
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc)
-        plot_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4) : ((i + 1) * 4)])
-        plot_pstat(ax[axis + 10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4) : ((i + 1) * 4)])
+        plot_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4): ((i + 1) * 4)])
+        plot_pstat(ax[axis + 10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4): ((i + 1) * 4)])
         axis = axis + 1
 
     return f
