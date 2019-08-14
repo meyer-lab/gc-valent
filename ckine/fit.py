@@ -6,7 +6,7 @@ import pymc3 as pm
 import theano.tensor as T
 import numpy as np
 import pandas as pds
-from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, getSurfaceGCSpecies, receptor_expression
+from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, getSurfaceGCSpecies
 from .differencing_op import runCkineDoseOp
 
 
