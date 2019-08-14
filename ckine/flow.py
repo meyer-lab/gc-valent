@@ -365,7 +365,7 @@ def pcaAll(sampleType, check):
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPlt(xf, pstat, loading, features, i)
+            pcaPlt(xf, pstat, features, i)
             loadingPlot(loading, features, i)
     elif check == "n":
         for i, sample in enumerate(sampleType):
@@ -373,7 +373,7 @@ def pcaAll(sampleType, check):
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            pcaPlt(xf, pstat, loading, features, i)
+            pcaPlt(xf, pstat, features, i)
             loadingPlot(loading, features, i)
     plt.show()
     return data_array, pstat_array, xf_array, loading_array
