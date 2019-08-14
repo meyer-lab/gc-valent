@@ -38,7 +38,7 @@ def importF(pathname):
 # *********************************** Gating Fxns *******************************************
 # Treg and NonTreg
 
-
+# add which channels relate to the proteins
 def treg():
     """Function for creating and returning the T reg gate"""
     # T reg: Take quad gates for T reg cells and combine them to create single, overall T reg gate
@@ -197,6 +197,7 @@ def count_data(sampleType, gate):
     """
     Used to count the number of cells and store the data of all of these cells in a folder with multiple files --> automates the process sampleType
     is NK or T cell data, gate is the desired cell population.
+    Sample type: is the overall importF assignment for T or NK (all the T cell files, all NK cell files)
     """
     # declare the arrays to store the data
     count_array = []
@@ -274,8 +275,11 @@ def appPCA(data, features):
     return xf, loading
 
 
-def pcaPltCat(xf, pstat, features, i):
-    """Used to plot the loading graph and the score graph. Both are important for using and displaying PCA"""
+def pcaPlt(xf, pstat, features, i):
+    """
+    Used to plot the score graph.
+    Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
+    """
     # PCA
     if len(features) == 4:
         name = "T Cells"
@@ -299,6 +303,7 @@ def pcaPltCat(xf, pstat, features, i):
     # lighter --> darker = less --> more pSTAT5 present
     plt.scatter(x, y, s=0.1, c=np.squeeze(pstat_data), cmap="Greens")
 
+    
 def loadingPlot(loading, features, i):
     """Plot the loading data"""
     # Loading
