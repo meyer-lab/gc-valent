@@ -8,31 +8,11 @@ import numpy as np
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
-libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineS.argtypes = (
-    ct.POINTER(ct.c_double),
-    ct.c_uint,
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_bool,
-    ct.c_double,
-    ct.POINTER(ct.c_double),
-)
-libb.runCkineSParallel.argtypes = (
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_uint,
-    ct.c_uint,
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.POINTER(ct.c_double),
-    ct.c_double,
-    ct.POINTER(ct.c_double),
-)
+pcd = ct.POINTER(ct.c_double)
+libb.fullModel_C.argtypes = (pcd, ct.c_double, pcd, pcd)
+libb.runCkine.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_bool, ct.c_double, pcd)
+libb.runCkineParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, ct.c_double, pcd)
+libb.runCkineSParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, pcd, pcd, ct.c_double, pcd)
 
 __nSpecies = 62
 
@@ -82,50 +62,6 @@ def nRxn():
     return __nRxn
 
 
-def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
-    """ Standard version of solver that returns species abundances given times and unknown rates. """
-    rxntfr = rxntfr.copy()
-    assert rxntfr.size == __nParams
-    assert rxntfr[19] < 1.0  # Check that sortF won't throw
-
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
-
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
-
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, preT, prestim)
-
-    return (yOut, retVal)
-
-
-def runCkineS(tps, rxntfr, condense):
-    """ Standard version of solver that returns species abundances given times and unknown rates. """
-    rxntfr = rxntfr.copy()
-    assert rxntfr.size == __nParams
-    assert rxntfr[19] < 1.0  # Check that sortF won't throw
-
-    assert condense.size == __nSpecies
-
-    yOut = np.zeros((tps.size), dtype=np.float64)
-    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order="C")
-
-    retVal = libb.runCkineS(
-        tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.size,
-        yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-        sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        condense.ctypes.data_as(ct.POINTER(ct.c_double)),
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-        False,
-        0.0,
-        None,
-    )
-
-    return (yOut, retVal, sensV)
-
-
 def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
@@ -135,7 +71,14 @@ def runCkineU_IL2(tps, rxntfr):
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
-    return (yOut, retVal)
+    assert retVal >= 0  # make sure solver worked
+
+    return yOut
+
+
+def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
+    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
 
 
 def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):

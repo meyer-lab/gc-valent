@@ -32,7 +32,7 @@ def makeFigure():
     for i, _ in enumerate(cell_names_pstat):
         # plot matching experimental and predictive pSTAT data for the same cell type
         assert cell_names_pstat[i] == cell_names_receptor[i]
-        IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4) : ((i + 1) * 4)], IL15_data[(i * 4) : ((i + 1) * 4)])
+        IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4): ((i + 1) * 4)], IL15_data[(i * 4): ((i + 1) * 4)])
         if axis == 9:  # only plot the legend for the last entry
             plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc, legend=True)
         else:

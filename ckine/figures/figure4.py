@@ -12,15 +12,19 @@ from .figureCommon import subplotLabel, getSetup
 from .figureS5 import calc_dose_response
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
-ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
+ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
+
+pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(
+    np.float)), axis=None), 'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))), np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
+pstat_df = pd.DataFrame(data=pstat_data)
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3))
+    ax, f = getSetup((7, 6), (2, 2))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -57,40 +61,50 @@ def makeFigure():
     EC50 = EC50 - 4  # account for 10^4 multiplication
     data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
     cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
-    IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
+    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax, df, tps)
-    plot_corrcoef(ax[8], df, cell_names_pstat)
+    catplot_comparison(ax[0], df)
+    compare_experimental_data(ax[1], pstat_df)
+    plot_corrcoef(ax[2], df, cell_names_pstat)
 
     return f
 
 
-def catplot_comparison(ax, df, tps):
+def compare_experimental_data(ax, df):
+    """ Compare both pSTAT5 replicates. """
+    df.dropna(axis=0, how='any', inplace=True)
+    sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
+    sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
+    ax.set_aspect('equal', 'box')
+
+
+def catplot_comparison(ax, df):
     """ Construct EC50 catplots for each time point for IL2 and IL15. """
-    tps_str = ['30 mins', '1 hr', '2 hrs', '4 hrs']
-    for i, tp in enumerate(tps):
-        sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL2')], legend=False, ax=ax[i])
-        ax[i].get_legend().set_visible(False)
-        if i == 3:
-            sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=True, legend_out=True, ax=ax[4 + i])
-            ax[4 + i].legend(bbox_to_anchor=(1., 1.), loc='upper right')
-        else:
-            sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4 + i])
-            ax[4 + i].get_legend().set_visible(False)
-        ax[i].set(title=("IL-2 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
-        ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
-        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
-        ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
-        ax[i].set_xlabel("")  # remove "Cell Type" from xlabel
-        ax[4 + i].set_xlabel("")
+    # set a manual color palette
+    col_list = ["violet", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    sns.set_palette(col_list_palette)
+    # plot predicted EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
+                legend=False, legend_out=False, ax=ax, marker='o')
+
+    # plot experimental EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                legend=False, legend_out=False, ax=ax, marker='^')
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+    ax.set_xlabel("")  # remove "Cell Type" from xlabel
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
 
 
 def plot_corrcoef(ax, df, cell_types):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_types))
-    ILs = np.array(['IL2', 'IL15'])
+    ILs = np.array(['IL-2', 'IL-15'])
     for i, name in enumerate(cell_types):
         for j, IL in enumerate(ILs):
             experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
@@ -102,7 +116,7 @@ def plot_corrcoef(ax, df, cell_types):
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
     ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0), fontsize=6.5)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
