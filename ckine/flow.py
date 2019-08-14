@@ -5,14 +5,10 @@ This file includes various methods for flow cytometry analysis.
 
 # Import all necessary packages to run functions
 from pathlib import Path
-
 import numpy as np
-
 from matplotlib import pyplot as plt
-
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate
-
 import sklearn
 from sklearn.decomposition import PCA
 
@@ -20,7 +16,7 @@ from sklearn.decomposition import PCA
 
 
 def importF(pathname):
-    """Import FCS files. Variable input: name of path name to file."""
+    """Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format"""
     # Declare arrays and int
     file = []
     sample = []
@@ -76,7 +72,7 @@ def bnk():
     bnk1 = QuadGate((7.342e03, 4.899e03), ("BL1-H", "VL4-H"), region="top left", name="bnk1")
     bnk2 = QuadGate((6.533e03, 5.751e03), ("BL1-H", "VL4-H"), region="bottom right", name="bnk2")
     bnk_gate = bnk1 & bnk2
-    return bnk_gate 
+    return bnk_gate
 
 
 def cd():
@@ -177,7 +173,7 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
 
 def cd_plot(sample_i, cd_gate, i):
     """
-    Function that plots the graph of CD cells. Argument 1: current sample (a single file). Argument 2: the gate for CD cells. Argument 3: the value 
+    Function that plots the graph of CD cells. Argument 1: current sample (a single file). Argument 2: the gate for CD cells. Argument 3: the value
     of the current i in a for loop --> use
     when plotting multiple files.
     """
@@ -227,7 +223,7 @@ def plotAll(sampleType, check, gate1, gate2):
             nk_bnk_plot(sample, gate1, gate2, i)
     elif check == "c":
         for i, sample in enumerate(sampleType):
-            cd_plot(sample, gate1, gate2, i)
+            cd_plot(sample, gate1, i)
 
 
 # ********************************** PCA Functions****************************************************
@@ -284,7 +280,7 @@ def pcaPltCat(xf, pstat, features, i):
     if len(features) == 4:
         name = "T Cells"
     elif len(features) == 3:
-        name = "NK Cells"  
+        name = "NK Cells"
     # Setting x and y values from xf
     x = xf[:, 0]
     y = xf[:, 1]
@@ -302,7 +298,6 @@ def pcaPltCat(xf, pstat, features, i):
     # This is the scatter plot of the cell clusters colored by pSTAT5 data
     # lighter --> darker = less --> more pSTAT5 present
     plt.scatter(x, y, s=0.1, c=np.squeeze(pstat_data), cmap="Greens")
-    
 
 def loadingPlot(loading, features, i):
     """Plot the loading data"""
