@@ -74,22 +74,22 @@ def calc_dose_response_mutein(unkVec, scales, cell_data, tps, muteinC, exp_data_
     return total_activity1, total_activity2
 
 
-def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, cytokC, legend=False):
-    """ Plots both IL2 and IL15 activity in different plots where each plot has multiple timepoints and cytokine concentrations. """
+def plot_dose_response(ax1, ax2, mutein1_activity, mutein2_activity, cell_type, tps, muteinC, mutein_name, legend=False):
+    """ Plots both mutein activity in different plots where each plot has multiple timepoints and mutein concentrations. """
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
-        plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt])  # never a legend for IL-2
+        plot_conf_int(ax1, np.log10(muteinC.astype(np.float)), activity1[:, :, tt], colors[tt])  # never a legend for first mutein
         if legend:
-            plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
-            ax15.legend(title="time (hours)")
+            plot_conf_int(ax2, np.log10(muteinC.astype(np.float)), activity2[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
+            ax2.legend(title="time (hours)")
         else:
-            plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt])
+            plot_conf_int(ax2, np.log10(muteinC.astype(np.float)), activity2[:, :, tt], colors[tt])
 
     # plots for input cell type
-    ax2.set(xlabel=r"[IL-2] (log$_{10}$[nM])", ylabel="Activity", title=cell_type)
-    ax15.set(xlabel=r"[IL-15] (log$_{10}$[nM])", ylabel="Activity", title=cell_type)
+    ax1.set(xlabel=mutein_name[0] + "(log$_{10}$[nM])", ylabel="Activity", title=cell_type)
+    ax2.set(xlabel=mutein_name[1] + "(log$_{10}$[nM])", ylabel="Activity", title=cell_type)
 
 
 def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
