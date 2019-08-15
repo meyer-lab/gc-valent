@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
-from scipy.stats import pearsonr
+from scipy.spatial.distance import cosine
 from .figureCommon import subplotLabel, getSetup
 from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
@@ -71,7 +71,7 @@ def makeFigure():
     df = pd.DataFrame(data)
 
     catplot_comparison(ax[7], df)  # compare experiments to model predictions
-    plot_corrcoef(ax[8], df, cell_names_pstat)  # find correlation coefficients
+    plot_cosine_sim(ax[8], df, cell_names_pstat)  # find correlation coefficients
 
     return f
 
@@ -105,21 +105,20 @@ def catplot_comparison(ax, df):
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
 
 
-def plot_corrcoef(ax, df, cell_types):
+def plot_cosine_sim(ax, df, cell_types):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
-    corr_coefs = np.zeros(2 * len(cell_types))
+    cosine_sim = np.zeros(2 * len(cell_types))
     ILs = np.array(['IL-2', 'IL-15'])
     for i, name in enumerate(cell_types):
         for j, IL in enumerate(ILs):
             experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
             predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-            corr_coef = pearsonr(experimental_data, predicted_data)
-            corr_coefs[j * len(cell_types) + i] = corr_coef[0]
+            cosine_sim[j * len(cell_types) + i] = 1.0 - cosine(experimental_data, predicted_data)
 
     x_pos = np.arange(len(cell_types))
-    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
-    ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
+    ax.bar(x_pos - 0.15, cosine_sim[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
+    ax.bar(x_pos + 0.15, cosine_sim[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
+    ax.set(ylabel=("Cosine Similarity"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
 

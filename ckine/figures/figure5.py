@@ -52,7 +52,7 @@ def makeFigure():
 
     # Predicted tensor
     predicted_cell_factors = predicted_factors[n_pred_comps - 1]
-    correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
+    cell_cosine_sim(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
     legend = ax[4].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[5].legend(legend.legendHandles, labels, loc='upper left', title="Predicted Cmp#")
@@ -61,7 +61,7 @@ def makeFigure():
     return f
 
 
-def correlation_cells(ax, experimental, predicted):
+def cell_cosine_sim(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Cosine Similarity."""
     corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Cosine Similarity'])
     for ii in range(experimental.shape[1]):
