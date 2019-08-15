@@ -33,7 +33,7 @@ def makeFigure():
     cell_specific_fits(ax[1:7])  # NK, CD8+, and Treg subplots taken from fig S5
 
     
-    
+    # main routine for EC-50 analysis
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
 
     x0 = [1, 2., 1000.]
@@ -70,8 +70,8 @@ def makeFigure():
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax[7], df)
-    plot_corrcoef(ax[8], df, cell_names_pstat)
+    catplot_comparison(ax[7], df)  # compare experiments to model predictions
+    plot_corrcoef(ax[8], df, cell_names_pstat)  # find correlation coefficients
 
     return f
 
