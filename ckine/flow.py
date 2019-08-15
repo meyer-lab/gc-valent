@@ -271,7 +271,7 @@ def appPCA(data, features):
     # NOTE: score == xf
     xf = pca.fit(xs).transform(xs)
     # creates the loading array (equation is defintion of loading)
-    loading = pca.components_.T * np.sqrt(pca.explained_variance_)
+    loading = pca.components_.T
     return xf, loading
 
 
