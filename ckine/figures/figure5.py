@@ -5,7 +5,7 @@ import string
 import numpy as np
 import pandas as pds
 import seaborn as sns
-from sklearn.metrics.pairwise import cosine_similarity
+from scipy.spatial.distance import cosine
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import plot_R2X, n_pred_comps, factors_activity as predicted_factors
 from ..tensor import perform_decomposition, z_score_values
@@ -66,6 +66,6 @@ def correlation_cells(ax, experimental, predicted):
     corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Coefficient'])
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
-            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Coefficient': cosine_similarity(experimental[:, ii].reshape(-1, 1), predicted[:, jj].reshape(-1, 1))}, ignore_index=True)
+            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Coefficient': cosine(experimental[:, ii], predicted[:, jj])}, ignore_index=True)
     corr_df = corr_df.astype({'Experimental Cmp#': int, 'Predicted Cmp#': int})
     sns.catplot(x='Experimental Cmp#', y='Coefficient', hue='Predicted Cmp#', data=corr_df, kind='bar', ax=ax)
