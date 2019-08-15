@@ -62,10 +62,10 @@ def makeFigure():
 
 
 def correlation_cells(ax, experimental, predicted):
-    """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Pearson Correlation Coefficients."""
-    corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Coefficient'])
+    """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Cosine Similarity."""
+    corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Cosine Similarity'])
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
-            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Coefficient': 1.0 - cosine(experimental[:, ii], predicted[:, jj])}, ignore_index=True)
+            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Cosine Similarity': 1.0 - cosine(experimental[:, ii], predicted[:, jj])}, ignore_index=True)
     corr_df = corr_df.astype({'Experimental Cmp#': int, 'Predicted Cmp#': int})
-    sns.catplot(x='Experimental Cmp#', y='Coefficient', hue='Predicted Cmp#', data=corr_df, kind='bar', ax=ax)
+    sns.catplot(x='Experimental Cmp#', y='Cosine Similarity', hue='Predicted Cmp#', data=corr_df, kind='bar', ax=ax)
