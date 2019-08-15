@@ -24,8 +24,8 @@ def makeFigure():
 
 
 def plot_exp_v_pred(ax, cell_subset=None):
-    """ Perform main routine for plotting all the cell predictions vs. experimental values. 
-    The default argument of cell_subset is an empty list which ends up plotting all 10 cell types; 
+    """ Perform main routine for plotting all the cell predictions vs. experimental values.
+    The default argument of cell_subset is an empty list which ends up plotting all 10 cell types;
     if one wishes to one plot a subset of cells they must be noted in list format. """
     _, receptor_data, cell_names_receptor = import_Rexpr()
     unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
@@ -34,8 +34,8 @@ def plot_exp_v_pred(ax, cell_subset=None):
     # Scale all the data down so we don't have a bunch of zeros on our axes
     IL2_data = IL2_data / 1000.0
     IL15_data = IL15_data / 1000.0
-    
-    if cell_subset == None:
+
+    if cell_subset is None:
         cell_subset = []
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
