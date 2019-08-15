@@ -1,9 +1,6 @@
 """
 This file includes various methods for flow cytometry analysis.
 """
-# import FlowCytometryTools
-
-# Import all necessary packages to run functions
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -141,7 +138,6 @@ def tcells(sample_i, treg_gate, nonTreg_gate, i):
     bar_T = ax.bar(np.arange(0, 10), np.arange(1, 11), color="y")
     bar_NT = ax.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="g")
     ax.legend([bar_T, bar_NT], ("T Reg", "Non T Reg"), loc="upper left")
-    plt.show()
 
 
 def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
@@ -168,7 +164,6 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     bar_NK = ax1.bar(np.arange(0, 10), np.arange(1, 11), color="y")
     bar_BNK = ax1.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="g")
     ax1.legend([bar_NK, bar_BNK], ("NK", "Bright NK"), loc="upper left")
-    plt.show()
 
 
 def cd_plot(sample_i, cd_gate, i):
@@ -190,7 +185,6 @@ def cd_plot(sample_i, cd_gate, i):
 
     bar_CD = ax2.bar(np.arange(0, 10), np.arange(1, 11), color="b")
     ax2.legend([bar_CD], ("CD3+8+"), loc="upper left")
-    plt.show()
 
 
 def count_data(sampleType, gate):
@@ -374,5 +368,4 @@ def pcaAll(sampleType, check):
             xf, loading = appPCA(data, features)
             pcaPlt(xf, pstat, features, i)
             loadingPlot(loading, features, i)
-    plt.show()
     return data_array, pstat_array, xf_array, loading_array
