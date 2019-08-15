@@ -157,7 +157,7 @@ def residuals(x0, x, y):
 
 
 def cell_specific_fits(ax):
-    """ Compare model predictions to experimental data from NK, Treg, and CD8+ cells. These plots can also be found in Figure S5. """
+    """ Compare model predictions to experimental data from NK, Treg, and CD8+ cells for both IL-2 and -15. These plots can also be found in Figure S5. """
     _, receptor_data, cell_names_receptor = import_Rexpr()
     unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
