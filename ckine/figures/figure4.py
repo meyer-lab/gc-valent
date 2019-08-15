@@ -8,8 +8,8 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, plot_scaled_pstat
-from .figureS5 import calc_dose_response, plot_dose_response
+from .figureCommon import subplotLabel, getSetup
+from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
@@ -28,11 +28,10 @@ def makeFigure():
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
-    
-    compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
-    cell_specific_fits(ax[1:7])  # NK, CD8+, and Treg subplots taken from fig S5
 
-    
+    compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
+    plot_exp_v_pred(ax[1:7], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
+
     # main routine for EC-50 analysis
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
 
@@ -154,32 +153,3 @@ def hill_equation(x, x0, solution=0):
 def residuals(x0, x, y):
     """ Residual function for Hill Equation. """
     return hill_equation(x, x0) - y
-
-
-def cell_specific_fits(ax):
-    """ Compare model predictions to experimental data from NK, Treg, and CD8+ cells for both IL-2 and -15. These plots can also be found in Figure S5. """
-    _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
-    ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
-
-    # Scale all the data down so we don't have a bunch of zeros on our axes
-    IL2_data = IL2_data / 1000.0
-    IL15_data = IL15_data / 1000.0
-
-    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
-    axis = 0
-    cell_subset = ["NK", "CD8+", "T-reg"]
-
-    for i, name in enumerate(cell_names_pstat):
-        if name in cell_subset:
-            # plot matching experimental and predictive pSTAT data for the same cell type
-            assert cell_names_pstat[i] == cell_names_receptor[i]
-            IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4): ((i + 1) * 4)], IL15_data[(i * 4): ((i + 1) * 4)])
-            if axis == 2:  # only plot the legend for the last entry
-                plot_dose_response(ax[axis], ax[axis + 3], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc, legend=True)
-            else:
-                plot_dose_response(ax[axis], ax[axis + 3], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc)
-            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4): ((i + 1) * 4)])
-            plot_scaled_pstat(ax[axis + 3], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4): ((i + 1) * 4)])
-            axis = axis + 1
-
