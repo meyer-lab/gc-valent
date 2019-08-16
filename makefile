@@ -29,7 +29,7 @@ $(fdir)/figure%pdf: $(fdir)/figure%svg
 $(fdir)/figure%eps: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f eps $< -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
+Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
 	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
