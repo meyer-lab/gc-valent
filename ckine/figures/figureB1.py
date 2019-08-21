@@ -98,7 +98,7 @@ def halfMax_IL2RbAff_highIL2Ra(ax):
     ax.legend(title="CD25 rel expr")
 
 
-def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), ligandDegradation=False):
+def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), input_receptors=[0.,0.,0.,], adj_receptors=False, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
 
     kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
@@ -106,7 +106,13 @@ def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), ligandDegrad
     k1rev = 0.6 * 10 * input_params[0]
     k2rev = 0.6 * 144 * input_params[1]
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
-    IL2Ra, IL2Rb, gc = rxntfR[22] * CD25, rxntfR[23], rxntfR[24]
+    
+    if adj_receptors:
+        IL2Ra = input_receptors[0]
+        IL2Rb = input_receptors[1]
+        gc = input_receptors[2]
+    else:
+        IL2Ra, IL2Rb, gc = rxntfR[22] * CD25, rxntfR[23], rxntfR[24]
 
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array(

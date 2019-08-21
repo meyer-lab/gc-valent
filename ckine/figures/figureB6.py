@@ -1,15 +1,18 @@
 """
 This creates Figure 6.
 """
+import string
 import numpy as np
 import seaborn as sns
 from .figureB1 import runIL2simple
 from .figureCommon import subplotLabel, getSetup
-from ..imports import import_muteins
+from ..imports import import_muteins, import_Rexpr
 
 dataMean, _ = import_muteins()
 dataMean.reset_index(inplace=True)
 dataMean['Concentration'] = np.log10(dataMean['Concentration'])
+data, _, _ = import_Rexpr()
+data.reset_index(inplace=True)
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -19,42 +22,65 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
     
+    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.
+    muteinC = dataMean.Concentration.unique()
     axis = 0
     
     first_group_ligands = ['IL2-060', 'IL2-062']
+    first_group_params = np.array([[0.145, 0.027, 5.], [0.080, 0.060, 5.]]) # scaling factors relative to wt kd
+    
+    print(data.Receptor.unique())
     
     for i, ligand_name in enumerate(first_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
-            axis = i*9+j
-            if axis == 17:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend='full')
-                ax[axis].legend(loc='lower right', title="time (hours)")
-            else:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend=False)
-                ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
-
+            if cell_name != 'CD56bright NK cells':
+                print(cell_name)
+                IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
+                IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+                gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+                cell_receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
+                print(cell_receptors)
+                print(first_group_params[i])
+                predicted1, predicted2 = calc_dose_response_mutein(first_group_params, tps, muteinC, cell_receptors)
+                axis = i*9+j
+                if axis == 17:
+                    sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend='full')
+                    ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
+                    ax[axis].legend(loc='lower right', title="time (hours)")
+                else:
+                    sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend=False)
+                    ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
     return f
 
-def calc_dose_response_mutein(input_params, cell_data, tps, muteinC, exp_data_1, exp_data_2):
+def calc_dose_response_mutein(input_params, tps, muteinC, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
+    
+    total_activity1 = np.zeros((len(muteinC), len(tps)))
+    total_activity2 = total_activity1.copy()
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
         # handle case of first mutein
-        yOut = runIL2simple(input_params[0], conc, tps=tps)
+        yOut = runIL2simple(input_params[0], conc, tps=tps[0], input_receptors=cell_receptors, adj_receptors=True)
+        print(yOut.shape)
         activity1 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         # handle case of second mutein
-        yOut = runIL2simple(input_params[1], conc, tps=tps)
+        yOut = runIL2simple(input_params[1], conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True)
         activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+        print(activity2.shape)
 
-        total_activity1[i, :, :] = np.reshape(activity1, (-1, 4))  # save the activity from this concentration for all 4 tps
-        total_activity2[i, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
+        total_activity1[i, :] = np.reshape(activity1, (-1, 4))  # save the activity from this concentration for all 4 tps
+        total_activity2[i, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
+    
+    print(total_activity1)
 
+    """
     # scale receptor/cell measurements to pSTAT activity for each sample
     for j in range(len(scales)):
         scale1, scale2 = optimize_scale(total_activity1[:, j, :], total_activity2[:, j, :], exp_data_1, exp_data_2)  # find optimal constants
         total_activity1[:, j, :] = scale2 * total_activity1[:, j, :] / (total_activity1[:, j, :] + scale1)  # adjust activity for this sample
         total_activity2[:, j, :] = scale2 * total_activity2[:, j, :] / (total_activity2[:, j, :] + scale1)  # adjust activity for this sample
+    """
 
     return total_activity1, total_activity2
 
