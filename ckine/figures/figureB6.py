@@ -39,8 +39,6 @@ def makeFigure():
                 IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
                 gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
                 cell_receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
-                print(cell_receptors)
-                print(first_group_params[i])
                 predicted1, predicted2 = calc_dose_response_mutein(first_group_params, tps, muteinC, cell_receptors)
                 axis = i*9+j
                 if axis == 17:
@@ -61,11 +59,11 @@ def calc_dose_response_mutein(input_params, tps, muteinC, cell_receptors):
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
         # handle case of first mutein
-        yOut = runIL2simple(input_params[0], conc, tps=tps[0], input_receptors=cell_receptors, adj_receptors=True)
+        yOut = runIL2simple(input_params[0], conc, tps=np.array([30.]), input_receptors=cell_receptors, adj_receptors=True)
         print(yOut.shape)
         activity1 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         # handle case of second mutein
-        yOut = runIL2simple(input_params[1], conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True)
+        yOut = runIL2simple(input_params[1], conc, tps=np.array([30.]), input_receptors=cell_receptors, adj_receptors=True)
         activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         print(activity2.shape)
 

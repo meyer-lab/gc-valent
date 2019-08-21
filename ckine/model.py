@@ -69,7 +69,7 @@ def runCkineU_IL2(tps, rxntfr):
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
     
-    print(yOut.shape)
+    print('yOut:', yOut.shape)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
@@ -190,7 +190,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    print(yVec)
+    print('yVec:', yVec.shape)
     assert yVec.ndim == 1
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL: __halfL * 2])
 
