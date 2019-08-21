@@ -3,8 +3,8 @@ This creates Figure 6.
 """
 import numpy as np
 import seaborn as sns
+from .figureB1 import runIL2simple
 from .figureCommon import subplotLabel, getSetup
-from ..model import runCkineSP
 from ..imports import import_muteins
 
 dataMean, _ = import_muteins()
@@ -35,31 +35,16 @@ def makeFigure():
 
     return f
 
-def calc_dose_response_mutein(unkVec, scales, cell_data, tps, muteinC, exp_data_1, exp_data_2):
+def calc_dose_response_mutein(input_params, cell_data, tps, muteinC, exp_data_1, exp_data_2):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
-    PTS = cytokC.shape[0]  # number of cytokine concentrations
-
-    rxntfr1 = unkVec.T.copy()
-    total_activity1 = np.zeros((PTS, rxntfr1.shape[0], tps.size))
-    total_activity2 = total_activity1.copy()
-
-    # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-    rxntfr1[:, 22] = receptor_expression(cell_data[0], rxntfr1[:, 17], rxntfr1[:, 20], rxntfr1[:, 19], rxntfr1[:, 21])
-    rxntfr1[:, 23] = receptor_expression(cell_data[1], rxntfr1[:, 17], rxntfr1[:, 20], rxntfr1[:, 19], rxntfr1[:, 21])
-    rxntfr1[:, 24] = receptor_expression(cell_data[2], rxntfr1[:, 17], rxntfr1[:, 20], rxntfr1[:, 19], rxntfr1[:, 21])
-    rxntfr1[:, 25] = 0.0  # We never observed any IL-15Ra
-
-    rxntfr2 = rxntfr1.copy()
 
     # loop for each mutein concentration
-    for i in range(PTS):
-        rxntfr1[:, 0] = rxntfr2[:, 1] = cytokC[i]  # assign concs for each mutein
-
+    for i, conc in enumerate(muteinC):
         # handle case of first mutein
-        yOut = runCkineSP(tps, rxntfr1)
+        yOut = runIL2simple(input_params[0], conc, tps=tps)
         activity1 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         # handle case of second mutein
-        yOut = runCkineSP(tps, rxntfr2)
+        yOut = runIL2simple(input_params[1], conc, tps=tps)
         activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
 
         total_activity1[i, :, :] = np.reshape(activity1, (-1, 4))  # save the activity from this concentration for all 4 tps

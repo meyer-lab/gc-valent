@@ -26,7 +26,7 @@ def makeFigure():
 def dRespon(input_params, CD25=1.0):
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-3.0, 3.0)
-    activee = np.array([runIL2simple(input_params, ii, CD25) for ii in ILs])
+    activee = 1
 
     return ILs, activee
 
@@ -98,9 +98,8 @@ def halfMax_IL2RbAff_highIL2Ra(ax):
     ax.legend(title="CD25 rel expr")
 
 
-def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
+def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
-    tps = np.array([500.0])
 
     kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
 
