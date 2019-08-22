@@ -14,7 +14,7 @@ from ..make_tensor import rxntfR
 dataMean, _ = import_muteins()
 dataMean.reset_index(inplace=True)
 dataMean['Concentration'] = np.log10(dataMean['Concentration'])
-data, _, _ = import_Rexpr() #TODO: verify w/ Ali that okay to change this
+data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
 
 def makeFigure():
@@ -33,20 +33,19 @@ def makeFigure():
         
     for i, ligand_name in enumerate(first_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
-            if cell_name != 'CD56bright NK cells':
-                IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
-                IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
-                gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
-                cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
-                predicted = calc_dose_response_mutein([1., 1., 5.], tps, muteinC, cell_receptors) #TODO: Verify keeping 5x weaker endosomal assumption
-                axis = i*9+j
-                if axis == 17:
-                    sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend='full')
-                    ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
-                    ax[axis].legend(loc='lower right', title="time (hours)")
-                else:
-                    sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend=False)
-                    ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
+            print(cell_name)
+            IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"]
+            IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+            gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+            cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
+            predicted = calc_dose_response_mutein([1., 1., 5.], tps, muteinC, cell_receptors) #TODO: Verify keeping 5x weaker endosomal assumption
+            axis = i*9+j
+            if axis == 17:
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend='full')
+                ax[axis].legend(loc='lower right', title="time (hours)")
+            else:
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend=False)
+            ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
     return f
 
 def calc_dose_response_mutein(input_params, tps, muteinC, cell_receptors):
@@ -56,16 +55,10 @@ def calc_dose_response_mutein(input_params, tps, muteinC, cell_receptors):
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
-        # handle case of first mutein
         yOut = runIL2simple(input_params, conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True) #see if can do mult. tps
-        print(yOut.shape)
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-        print(activity.shape)
-
         total_activity[i, :] = np.reshape(activity1, (-1, 4))  # save the activity from this concentration for all 4 tps
     
-    print(total_activity)
-
     """
     # scale receptor/cell measurements to pSTAT activity for each sample
     for j in range(len(scales)):
@@ -83,12 +76,12 @@ def plot_dose_response(ax1, ax2, mutein1_activity, mutein2_activity, cell_type, 
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
-        plot_conf_int(ax1, np.log10(muteinC.astype(np.float)), activity1[:, :, tt], colors[tt])  # never a legend for first mutein
+        plot_conf_int(ax1, np.log10(muteinC.astype(np.float)), activity1[:, tt], colors[tt])  # never a legend for first mutein
         if legend:
-            plot_conf_int(ax2, np.log10(muteinC.astype(np.float)), activity2[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
+            plot_conf_int(ax2, np.log10(muteinC.astype(np.float)), activity2[:, tt], colors[tt], (tps[tt] / 60.0).astype(str))
             ax2.legend(title="time (hours)")
         else:
-            plot_conf_int(ax2, np.log10(muteinC.astype(np.float)), activity2[:, :, tt], colors[tt])
+            plot_conf_int(ax2, np.log10(muteinC.astype(np.float)), activity2[:, tt], colors[tt])
 
     # plots for input cell type
     ax1.set(xlabel=mutein_name[0] + "(log$_{10}$[nM])", ylabel="Activity", title=cell_type)
