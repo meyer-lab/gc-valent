@@ -48,7 +48,7 @@ def import_muteins():
     dataMean.drop("Replicate", axis=1, inplace=True)
 
     # Make a data tensor. Dimensions correspond to groupby above
-    dataTensor = np.reshape(dataMean["RFU"].values, (9, 4, 4, 12))
+    dataTensor = np.reshape(dataMean["RFU"].values, (8, 4, 4, 12))
 
     return dataMean, dataTensor
 
