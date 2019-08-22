@@ -108,7 +108,7 @@ def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), input_recept
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
     
     if adj_receptors:
-        IL2Ra = input_receptors[0]
+        IL2Ra = input_receptors[0] * CD25
         IL2Rb = input_receptors[1]
         gc = input_receptors[2]
     else:

@@ -4,14 +4,17 @@ This creates Figure 6.
 import string
 import numpy as np
 import seaborn as sns
-from .figureB1 import runIL2simple
 from .figureCommon import subplotLabel, getSetup
+from .figureB1 import runIL2simple
+from ..model import receptor_expression
 from ..imports import import_muteins, import_Rexpr
+from ..make_tensor import rxntfR
+
 
 dataMean, _ = import_muteins()
 dataMean.reset_index(inplace=True)
 dataMean['Concentration'] = np.log10(dataMean['Concentration'])
-data, _, _ = import_Rexpr()
+data, _, _ = import_Rexpr() #TODO: verify w/ Ali that okay to change this
 data.reset_index(inplace=True)
 
 def makeFigure():
@@ -22,24 +25,20 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
     
-    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.
+    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
     axis = 0
     
     first_group_ligands = ['IL2-060', 'IL2-062']
-    first_group_params = np.array([[0.145, 0.027, 5.], [0.080, 0.060, 5.]]) # scaling factors relative to wt kd
-    
-    print(data.Receptor.unique())
-    
+        
     for i, ligand_name in enumerate(first_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
             if cell_name != 'CD56bright NK cells':
-                print(cell_name)
                 IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
                 IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
                 gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
-                cell_receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
-                predicted1, predicted2 = calc_dose_response_mutein(first_group_params, tps, muteinC, cell_receptors)
+                cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
+                predicted = calc_dose_response_mutein([1., 1., 5.], tps, muteinC, cell_receptors) #TODO: Verify keeping 5x weaker endosomal assumption
                 axis = i*9+j
                 if axis == 17:
                     sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, legend='full')
@@ -53,24 +52,19 @@ def makeFigure():
 def calc_dose_response_mutein(input_params, tps, muteinC, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
     
-    total_activity1 = np.zeros((len(muteinC), len(tps)))
-    total_activity2 = total_activity1.copy()
+    total_activity = np.zeros((len(muteinC), len(tps)))
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
         # handle case of first mutein
-        yOut = runIL2simple(input_params[0], conc, tps=np.array([30.]), input_receptors=cell_receptors, adj_receptors=True)
+        yOut = runIL2simple(input_params, conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True) #see if can do mult. tps
         print(yOut.shape)
-        activity1 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-        # handle case of second mutein
-        yOut = runIL2simple(input_params[1], conc, tps=np.array([30.]), input_receptors=cell_receptors, adj_receptors=True)
-        activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-        print(activity2.shape)
+        activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+        print(activity.shape)
 
-        total_activity1[i, :] = np.reshape(activity1, (-1, 4))  # save the activity from this concentration for all 4 tps
-        total_activity2[i, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
+        total_activity[i, :] = np.reshape(activity1, (-1, 4))  # save the activity from this concentration for all 4 tps
     
-    print(total_activity1)
+    print(total_activity)
 
     """
     # scale receptor/cell measurements to pSTAT activity for each sample
@@ -80,7 +74,7 @@ def calc_dose_response_mutein(input_params, tps, muteinC, cell_receptors):
         total_activity2[:, j, :] = scale2 * total_activity2[:, j, :] / (total_activity2[:, j, :] + scale1)  # adjust activity for this sample
     """
 
-    return total_activity1, total_activity2
+    return total_activity
 
 
 def plot_dose_response(ax1, ax2, mutein1_activity, mutein2_activity, cell_type, tps, muteinC, mutein_name, legend=False):

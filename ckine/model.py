@@ -69,8 +69,6 @@ def runCkineU_IL2(tps, rxntfr):
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
     
-    print('yOut:', yOut.shape)
-
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
     assert retVal >= 0  # make sure solver worked
