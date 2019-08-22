@@ -26,7 +26,7 @@ def makeFigure():
 def dRespon(input_params, CD25=1.0):
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-3.0, 3.0)
-    activee = 1
+    activee = np.array([runIL2simple(input_params, ii, CD25) for ii in ILs])
 
     return ILs, activee
 
