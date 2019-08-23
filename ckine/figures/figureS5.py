@@ -101,19 +101,19 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
     ax15.set(xlabel=r"[IL-15] (log$_{10}$[nM])", ylabel="Activity", title=cell_type)
 
 
-def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
+def optimize_scale(model_act1, model_act2, exp_act1, exp_act2):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-    exp_act2 = exp_act2.T  # transpose to match model_act
-    exp_act15 = exp_act15.T
-
+    exp_act1 = exp_act1.T  # transpose to match model_act
+    exp_act2 = exp_act2.T
+    
     # scaling factors are sigmoidal and linear, respectively
-    guess = np.array([100.0, np.mean(exp_act2 + exp_act15) / np.mean(model_act2 + model_act15)])
+    guess = np.array([100.0, np.mean(exp_act1 + exp_act2) / np.mean(model_act1 + model_act2)])
 
     def calc_res(sc):
         """ Calculate the residuals. This is the function we minimize. """
+        scaled_act1 = sc[1] * model_act1 / (model_act1 + sc[0])
         scaled_act2 = sc[1] * model_act2 / (model_act2 + sc[0])
-        scaled_act15 = sc[1] * model_act15 / (model_act15 + sc[0])
-        err = np.hstack((exp_act2 - scaled_act2, exp_act15 - scaled_act15))
+        err = np.hstack((exp_act1 - scaled_act1, exp_act2 - scaled_act2))
         return np.reshape(err, (-1,))
 
     # find result of minimization where both params are >= 0

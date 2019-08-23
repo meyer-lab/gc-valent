@@ -125,5 +125,11 @@ def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), input_recept
     if ligandDegradation:
         # rate of ligand degradation
         return ligandDeg(yOut[0], sortF=rxntfR[19], kDeg=rxntfR[21], cytokineIDX=0)
+    
+    active_ckine = np.zeros(yOut.shape[0])
+    
+    # calculate for each time point
+    for i in range(yOut.shape[0]):
+        active_ckine[i] = getTotalActiveCytokine(0, yOut[i, :])
 
-    return getTotalActiveCytokine(0, np.squeeze(yOut))
+    return active_ckine
