@@ -98,10 +98,10 @@ def halfMax_IL2RbAff_highIL2Ra(ax):
     ax.legend(title="CD25 rel expr")
 
 
-def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), input_receptors=[0.,0.,0.,], adj_receptors=False, ligandDegradation=False):
+def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=np.array([500.0]), input_receptors=[0.,0.,0.,], adj_receptors=False, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
 
-    kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
+    kfwd, k4rev, k5rev = unkVec[6], unkVec[7], unkVec[8]
 
     k1rev = 0.6 * 10 * input_params[0]
     k2rev = 0.6 * 144 * input_params[1]
@@ -112,13 +112,11 @@ def runIL2simple(input_params, IL, CD25=1.0, tps=np.array([500.0]), input_recept
         IL2Rb = input_receptors[1]
         gc = input_receptors[2]
     else:
-        IL2Ra, IL2Rb, gc = rxntfR[22] * CD25, rxntfR[23], rxntfR[24]
+        IL2Ra, IL2Rb, gc = unkVec[22] * CD25, unkVec[23], unkVec[24]
 
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array(
-        [IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2], k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]]
-    )
-    # input_params[2] represents endosomal binding affinity relative to surface affinity
+        [IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2], k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]]) # input_params[2] represents endosomal binding affinity relative to surface affinity
 
     yOut = runCkineU_IL2(tps, rxntfr)
 
