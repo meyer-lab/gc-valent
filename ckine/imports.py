@@ -56,7 +56,7 @@ def import_samples_2_15(N=None):
 
     trace = pds.read_csv(join(path_here, "ckine/data/fits/IL2_model_results/chain-0.csv"))
 
-    scales = trace["scales__0"]
+    scales = trace["scales__0"].values
     num = scales.size
 
     unkVec = np.zeros((n_params, num))
@@ -64,16 +64,16 @@ def import_samples_2_15(N=None):
     unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
     unkVec[13:17, :] = 1.0
 
-    unkVec[22, :] = trace["Rexpr_2Ra__0"]
-    unkVec[23, :] = trace["Rexpr_2Rb__0"]
-    unkVec[24, :] = trace["Rexpr_gc__0"]
-    unkVec[25, :] = trace["Rexpr_15Ra__0"]
+    unkVec[22, :] = trace["Rexpr_2Ra__0"].values
+    unkVec[23, :] = trace["Rexpr_2Rb__0"].values
+    unkVec[24, :] = trace["Rexpr_gc__0"].values
+    unkVec[25, :] = trace["Rexpr_15Ra__0"].values
 
-    unkVec[17, :] = trace["endo__0"]
-    unkVec[18, :] = trace["activeEndo__0"]
-    unkVec[19, :] = trace["sortF__0"]
-    unkVec[20, :] = trace["kRec__0"]
-    unkVec[21, :] = trace["kDeg__0"]
+    unkVec[17, :] = trace["endo__0"].values
+    unkVec[18, :] = trace["activeEndo__0"].values
+    unkVec[19, :] = trace["sortF__0"].values
+    unkVec[20, :] = trace["kRec__0"].values
+    unkVec[21, :] = trace["kDeg__0"].values
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
