@@ -12,10 +12,10 @@ all: Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	julia -e "using Pkg; Pkg.update(); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	test -d venv || virtualenv --system-site-packages venv
 	. venv/bin/activate && pip install -Ur requirements.txt
 	. venv/bin/activate && python3 -c "import julia; julia.install()"
+	. venv/bin/activate && julia -e "using Pkg; Pkg.update(); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	touch venv/bin/activate
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
@@ -58,10 +58,10 @@ spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
 test: venv
-	. venv/bin/activate && pytest
+	. venv/bin/activate && python -m pytest
 
 testcover: venv
-	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 pylint.log: venv common/pylintrc
 	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
