@@ -52,16 +52,12 @@ def import_muteins():
     return dataMean, dataTensor
 
 
-def import_samples_2_15(ret_trace=False, N=None):
+def import_samples_2_15(N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     bmodel = build_model_2_15(traf=True)
     n_params = nParams()
 
     trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
 
     scales = trace.get_values("scales")
     num = scales.size
