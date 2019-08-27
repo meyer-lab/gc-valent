@@ -61,7 +61,7 @@ def import_samples_2_15(N=None):
 
     unkVec = np.zeros((n_params, num))
     unkVec[6, :] = trace["kfwd__0"]
-    unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values
+    unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
     unkVec[13:17, :] = 1.0
 
     unkVec[22, :] = trace["Rexpr_2Ra__0"]
