@@ -52,17 +52,12 @@ def import_muteins():
     return dataMean, dataTensor
 
 
-def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
+def import_samples_2_15(ret_trace=False, N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    if tensor:
-        np.random.seed(79)
-    bmodel = build_model_2_15(traf=Traf)
+    bmodel = build_model_2_15(traf=True)
     n_params = nParams()
 
-    if Traf:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
-    else:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_15_no_traf"), bmodel.M)
+    trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:
@@ -81,12 +76,11 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     unkVec[24, :] = np.squeeze(trace.get_values("Rexpr_gc"))
     unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
 
-    if Traf:
-        unkVec[17, :] = np.squeeze(trace.get_values("endo"))
-        unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
-        unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
-        unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
-        unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
+    unkVec[17, :] = np.squeeze(trace.get_values("endo"))
+    unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
+    unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
+    unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
+    unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
