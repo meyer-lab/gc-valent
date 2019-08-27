@@ -79,7 +79,7 @@ def import_samples_2_15(N=None):
         assert 0 < N < num, "The N specified is out of bounds."
 
         idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
+        unkVec, scales = unkVec[:, idx], scales[idx]
 
     return unkVec, scales
 
