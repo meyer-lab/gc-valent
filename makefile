@@ -18,7 +18,7 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && julia -e "using Pkg; Pkg.update(); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so ckine/figures/figure%.py
+$(fdir)/figure%.svg: venv genFigures.py ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate && ./genFigures.py $*
 

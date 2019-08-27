@@ -3,9 +3,6 @@ A file that includes the model and important helper functions.
 """
 import os
 import numpy as np
-from julia.api import Julia
-
-jl = Julia(compiled_modules=False)
 from julia import Main
 from julia import gcSolver
 
@@ -63,14 +60,7 @@ def runCkineU_IL2(tps, rxntfr):
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
 
-    Main.tps = tps
-    Main.params = rxntfr
-
-    Main.eval("yOut = gcSolver.runCkine(tps, params)")
-
-    yOut = Main.yOut
-
-    return yOut
+    return gcSolver.runCkine(tps, rxntfr)
 
 
 def runCkineU(tps, rxntfr):
