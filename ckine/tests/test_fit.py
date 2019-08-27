@@ -12,9 +12,3 @@ class TestFit(unittest.TestCase):
         from ..fit import build_model
         M = build_model()
         M.build()
-
-    def test_fitIL4_7(self):
-        """ Test that the IL4/7 model can build. """
-        from ..fit_others import build_model
-        M = build_model()
-        M.build()
