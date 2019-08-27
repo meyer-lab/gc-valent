@@ -119,7 +119,7 @@ def tcells(sample_i, treg_gate, nonTreg_gate, i, title):
     Function that is used to plot the Treg and NonTreg gates in CD4+ cells. Treg (yellow) and Non Treg (green). sample_i is an indivual flow cytommetry file/data.
     """
     # Data to use is on CD4+ cells
-    # Apply new T reg and Non treg gate 
+    # Apply new T reg and Non treg gate
     # Assign data of current file for analysis to variable smpl and transform to log scale
     smpl = sample_i.transform('hlog', channels=["VL4-H", "BL1-H", "VL1-H"])
     # Create data set to only include CD4 cells
@@ -150,8 +150,8 @@ def tcells(sample_i, treg_gate, nonTreg_gate, i, title):
     bar_NT = ax.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="cyan")
     ax.legend([bar_T, bar_NT], ("T Reg", "Non T Reg"), loc="upper left")
     plt.show()
-    
 
+    
 def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     """
     Function that plots the graph of NK and Bright NK cells (both are determined by same x, y-axis). Arguemnt 1: current sample (a single file).
@@ -308,24 +308,22 @@ def pcaPlt(xf, pstat, features, i, title):
     print("mean pStat activity: ", pstat_mean)
     # Creating a data from of x, y, and pSTAT5 in order to graph using seaborn
     combined = np.stack((x, y, pstat)).T
-    df = pd.DataFrame(combined, columns = ["PC1","PC2", "pSTAT5"])
-    
+    df=pd.DataFrame(combined, columns = ["PC1", "PC2", "pSTAT5"])
     # Creating plot using seaborn. Cool note: virdis is visible for individuals who are colorblind.
-    fig, ax = plt.subplots(figsize=(8,8))
+    fig, ax = plt.subplots(figsize=(8, 8))
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
-    fig = sns.scatterplot(x="PC1", y="PC2", hue = "pSTAT5", palette="viridis", data=df, s = 5, ax = ax, legend = False, hue_norm = (3000, 7000));
+    fig=sns.scatterplot(x="PC1", y="PC2", hue = "pSTAT5", palette="viridis", data=df, s = 5, ax = ax, legend = False, hue_norm = (3000, 7000));
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
-    
     # Graph the Points
-    points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis",  vmin = 3000, vmax = 7000) #set style options
+    points=plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin = 3000, vmax = 7000) #set style options
     #add a color bar
-    norm = [0,1]
+    norm = [0, 1]
     plt.colorbar(points)
     
-
+    
 def loadingPlot(loading, features, i, title):
     """Plot the loading data"""
     # Loading
@@ -378,7 +376,6 @@ def pcaAll(sampleType, check, titles):
     pstat_array = []
     xf_array = []
     loading_array = []
-    
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     if check == "t":
@@ -423,12 +420,12 @@ def sampleT(smpl):
     pstat = tform.data[["RL1-H"]][0:]
     # Create a section for assigning colors to each data point of each cell population --> in this case, T cells
     colmat = []*(len(data)+1)
-    for  i in range (len(data)):
-        if data.iat[i,0] > 4.814e+03 and data.iat [i,0] <6.258e+03 and data.iat[i,1] > 3.229e+03 and data.iat[i,1] <5.814e+03:
+    for  i in range(len(data)):
+        if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] <6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] <5.814e+03:
             colmat.append('r') #Treg
             tregd.append (data.iloc[[i]])
             tregp.append(pstat.iloc[[i]])
-        elif data.iat[i,0] > 2.586e+03 and data.iat [i,0] <5.115e+03 and data.iat[i,1] > 3.470e+02 and data.iat[i,1] <5.245e+03:
+        elif data.iat[i, 0] > 2.586e+03 and data.iat [i, 0] <5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] <5.245e+03:
             colmat.append('g') # non Treg
         else:
             colmat.append('c')
@@ -505,8 +502,7 @@ def pcaAllCellType(sampleType, check, titles):
     data_array = []
     pstat_array = []
     xf_array = []
-    loading_array = []
-    
+    loading_array = [] 
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     if check == "t":
