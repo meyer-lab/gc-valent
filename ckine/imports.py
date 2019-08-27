@@ -1,7 +1,6 @@
 """File that deals with everything about importing and sampling."""
 import os
 from os.path import join
-import pymc3 as pm
 import numpy as np
 import scipy as sp
 import pandas as pds
