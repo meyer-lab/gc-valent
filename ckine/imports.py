@@ -98,50 +98,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     return unkVec, scales
 
 
-def import_samples_4_7(ret_trace=False, N=None):
-    """ This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. """
-    bmodel = build_model_4_7()
-    n_params = nParams()
-
-    trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL4-7_model_results"), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
-
-    endo = np.squeeze(trace.get_values("endo"))
-    activeEndo = np.squeeze(trace.get_values("activeEndo"))
-    sortF = np.squeeze(trace.get_values("sortF"))
-    kRec = np.squeeze(trace.get_values("kRec"))
-    kDeg = np.squeeze(trace.get_values("kDeg"))
-    scales = trace.get_values("scales")
-    num = scales.shape[0]
-
-    unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:17, :] = 1.0
-    unkVec[13, :] = np.squeeze(trace.get_values("k27rev"))
-    unkVec[15, :] = np.squeeze(trace.get_values("k33rev"))
-    unkVec[17, :] = endo
-    unkVec[18, :] = activeEndo
-    unkVec[19, :] = sortF
-    unkVec[20, :] = kRec
-    unkVec[21, :] = kDeg
-
-    # Constant according to measured number per cell
-    unkVec[24, :] = (328.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # gc
-    unkVec[26, :] = (2591.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # IL-7R
-    unkVec[28, :] = (254.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # IL-4R
-
-    if N is not None:
-        assert 0 < N < num, "The N specified is out of bounds."
-
-        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
-
-    return unkVec, scales
-
-
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
