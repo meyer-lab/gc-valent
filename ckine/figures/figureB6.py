@@ -32,7 +32,9 @@ def makeFigure():
     axis = 0
     first_group_ligands = ['IL2-060', 'IL2-062']
     
-    pred_data = np.zeros((len(muteinC), len(tps), unkVec.shape[1])) # make empty array for predicted data at each concentration, tp, and parameter sample
+    pred_data = np.zeros((len(muteinC), len(tps), 3)) # make empty array for predicted data at each concentration, tp, and parameter sample
+    
+    print(unkVec.shape)
         
     for i, ligand_name in enumerate(first_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
@@ -40,7 +42,7 @@ def makeFigure():
             IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
             gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
             exp_data = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name), "RFU"]).reshape((12, 4))
-            for k in range(unkVec.shape[1]):
+            for k in range(3):
                 cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec[17, k], unkVec[20, k], unkVec[19, k], unkVec[21, k])
                 pred_data[:, :, k] = calc_dose_response_mutein(unkVec[:, k], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data) #TODO: Verify keeping 5x weaker endosomal assumptions
             axis = i*8+j

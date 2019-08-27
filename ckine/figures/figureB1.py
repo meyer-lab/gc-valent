@@ -5,7 +5,6 @@ import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
 from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
-from ..make_tensor import rxntfR
 
 
 def makeFigure():
@@ -107,7 +106,7 @@ def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=np.array([500.0]), inpu
     k2rev = 0.6 * 144 * input_params[1]
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
     
-    if adj_receptors:
+    if adj_receptors:`
         IL2Ra = input_receptors[0] * CD25
         IL2Rb = input_receptors[1]
         gc = input_receptors[2]
@@ -122,7 +121,7 @@ def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=np.array([500.0]), inpu
 
     if ligandDegradation:
         # rate of ligand degradation
-        return ligandDeg(yOut[0], sortF=rxntfR[19], kDeg=rxntfR[21], cytokineIDX=0)
+        return ligandDeg(yOut[0], sortF=rxntfr[19], kDeg=rxntfr[21], cytokineIDX=0)
     
     active_ckine = np.zeros(yOut.shape[0])
     
