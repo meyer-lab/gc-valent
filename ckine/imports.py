@@ -6,7 +6,6 @@ import numpy as np
 import scipy as sp
 import pandas as pds
 from .fit import build_model as build_model_2_15
-from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
 path_here = os.path.dirname(os.path.dirname(__file__))
