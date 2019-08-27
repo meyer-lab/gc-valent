@@ -47,17 +47,17 @@ class build_model:
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra, Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
             unkVec_2Ra_minus = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, T.zeros(1, dtype=np.float64), Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
 
-            Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
+            Y_15 = unkVec  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Normal('fitD_15', sd=sd_15, observed=Y_15)  # experimental-derived stderr is used
 
-            Y_int = self.IL2Rb.calc(unkVec)  # fitting the data based on IL2Rb surface data
+            Y_int = unkVec  # fitting the data based on IL2Rb surface data
             sd_int = T.minimum(T.std(Y_int), 0.02)  # Add bounds for the stderr to help force the fitting solution
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
             pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
 
-            Y_gc = self.gc.calc(unkVec_2Ra_minus)  # fitting the data using IL2Ra- cells
+            Y_gc = unkVec  # fitting the data using IL2Ra- cells
             sd_gc = T.minimum(T.std(Y_gc), 0.02)  # Add bounds for the stderr to help force the fitting solution
             pm.Deterministic('Y_gc', T.sum(T.square(Y_gc)))
             pm.Normal('fitD_gc', sd=sd_gc, observed=Y_gc)
