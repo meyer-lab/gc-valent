@@ -5,7 +5,7 @@ pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filte
 
 flist = B1 B2 B3 B4 B5
 
-.PHONY: clean test all testprofile testcover testcpp autopep spell leaks profilecpp
+.PHONY: clean test all testprofile testcover testcpp autopep spell
 
 all: Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
@@ -20,7 +20,7 @@ venv/bin/activate: requirements.txt
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
-	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' ./genFigures.py $*
+	. venv/bin/activate && ./genFigures.py $*
 
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f pdf $< -o $@
@@ -48,7 +48,7 @@ autopep:
 clean:
 	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/figure* profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
-	rm -rf html ckine/*.dSYM doxy.log graph_all.svg venv
+	rm -rf html doxy.log graph_all.svg venv
 	find -iname "*.pyc" -delete
 
 spell: Manuscript/Text/*.md
@@ -58,7 +58,7 @@ test: venv
 	. venv/bin/activate && python -m pytest
 
 testcover: venv
-	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate && python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 pylint.log: venv common/pylintrc
 	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
