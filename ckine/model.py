@@ -63,39 +63,22 @@ def runCkineU_IL2(tps, rxntfr):
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
 
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
+    Main.tps = tps
+    Main.params = rxntfr
 
-    yOut = gcSolver.runckine(tps, params)
+    Main.eval("yOut = gcSolver.runCkine(tps, params)")
 
-    return yOut
-
-
-def runCkineS(tps, rxntfr, condense):
-    """ Standard version of solver that returns species abundances given times and unknown rates. """
-    rxntfr = rxntfr.copy()
-    assert rxntfr.size == __nParams
-    assert rxntfr[19] < 1.0  # Check that sortF won't throw
-
-    assert condense.size == __nSpecies
-
-    yOut = np.zeros((tps.size), dtype=np.float64)
-    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order="C")
-
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
-
-    assert retVal >= 0  # make sure solver worked
+    yOut = Main.yOut
 
     return yOut
 
 
-def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
+def runCkineU(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
-    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
+    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()))
 
 
-def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
+def runCkineUP(tps, rxntfr):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
@@ -104,50 +87,14 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
-    yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
+    yy = list()
 
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
+    for ii in range(rxntfr.shape[0]):
+        yy.append(gcSolver.runCkine(tps, rxntfr[ii, :]))
 
-    retVal = libb.runCkineParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
-    )
-
-    assert retVal >= 0  # make sure solver worked
+    yOut = np.vstack(yy)
 
     return yOut
-
-
-def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
-    """ Version of runCkine that runs in parallel. """
-    tps = np.array(tps)
-    assert rxntfr.size % __nParams == 0
-    assert rxntfr.shape[1] == __nParams
-    assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
-
-    yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
-
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
-
-    retVal = libb.runCkineSParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.size,
-        rxntfr.shape[0],
-        yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-        sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        actV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        preT,
-        prestim,
-    )
-
-    return (yOut, retVal, sensV)
 
 
 __active_species_IDX = np.zeros(__halfL, dtype=np.bool)
