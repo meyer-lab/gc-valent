@@ -69,8 +69,7 @@ class TestModel(unittest.TestCase):
         """ Test to check that no active species is present when gamma chain is not expressed. """
         rxntfR = self.rxntfR.copy()
         rxntfR[24] = 0.0  # set expression of gc to 0.0
-        yOut, retVal = runCkineU(self.ts, rxntfR)
-        self.assertGreaterEqual(retVal, 0)
+        yOut = runCkineU(self.ts, rxntfR)
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut[1]), 0.0, places=5)  # IL2
         self.assertAlmostEqual(getTotalActiveCytokine(1, yOut[1]), 0.0, places=5)  # IL15
         self.assertAlmostEqual(getTotalActiveCytokine(2, yOut[1]), 0.0, places=5)  # IL7
@@ -108,18 +107,12 @@ class TestModel(unittest.TestCase):
         rxntfR_6[5] = 1000.0
 
         # first element is t=0 and second element is t=10**5
-        yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_2, retVal = runCkineU(self.ts, rxntfR_2)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_3, retVal = runCkineU(self.ts, rxntfR_3)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_5, retVal = runCkineU(self.ts, rxntfR_5)
-        self.assertGreaterEqual(retVal, 0)
-        yOut_6, retVal = runCkineU(self.ts, rxntfR_6)
-        self.assertGreaterEqual(retVal, 0)
+        yOut_1 = runCkineU(self.ts, rxntfR_1)
+        yOut_2 = runCkineU(self.ts, rxntfR_2)
+        yOut_3 = runCkineU(self.ts, rxntfR_3)
+        yOut_4 = runCkineU(self.ts, rxntfR_4)
+        yOut_5 = runCkineU(self.ts, rxntfR_5)
+        yOut_6 = runCkineU(self.ts, rxntfR_6)
 
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
@@ -158,9 +151,9 @@ class TestModel(unittest.TestCase):
         rxntfr_loose[1] = 10.0 ** -5  # "looser" dimerization occurs when kfwd is small
 
         # find yOut vectors for both rxntfr's
-        y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)
-        y_loose, _ = runCkineU_IL2(self.ts, rxntfr_loose)
-        y_gc, _ = runCkineU_IL2(self.ts, rxntfr_gc)
+        y_reg = runCkineU_IL2(self.ts, rxntfr_reg)
+        y_loose = runCkineU_IL2(self.ts, rxntfr_loose)
+        y_gc = runCkineU_IL2(self.ts, rxntfr_gc)
 
         # get total amount of IL-2 derived active species at end of experiment (t=100000)
         active_reg = getTotalActiveCytokine(0, y_reg[1, :])
@@ -173,7 +166,7 @@ class TestModel(unittest.TestCase):
     def test_ligandDeg_All(self):
         """ Verify that ligand degradation increases when sortF and kDeg increase. """
         # case for IL2
-        y, _ = runCkineU_IL2(self.ts, np.ones(15))
+        y = runCkineU_IL2(self.ts, np.ones(15))
         sortF, kDeg = 0.5, 1.0
         reg = ligandDeg(y[1, :], sortF, kDeg, 0)
         high_sortF = ligandDeg(y[1, :], 0.9, kDeg, 0)
@@ -185,7 +178,7 @@ class TestModel(unittest.TestCase):
         self.assertGreater(reg, low_kDeg)
 
         # case for IL15
-        y, _ = runCkineU(self.ts, self.rxntfR)
+        y = runCkineU(self.ts, self.rxntfR)
         reg = ligandDeg(y[1, :], sortF, kDeg, 1)
         high_kDeg = ligandDeg(y[1, :], sortF, kDeg * 10, 1)
         self.assertGreater(high_kDeg, reg)
@@ -194,7 +187,7 @@ class TestModel(unittest.TestCase):
         """ Make sure no endosomal species are found when endo=0. """
         rxntfR = self.rxntfR.copy()
         rxntfR[17:19] = 0.0  # set endo and activeEndo to 0.0
-        yOut, _ = runCkineU(self.ts, rxntfR)
+        yOut = runCkineU(self.ts, rxntfR)
         tot_endo = np.sum(yOut[1, 28::])
         self.assertEqual(tot_endo, 0.0)
 

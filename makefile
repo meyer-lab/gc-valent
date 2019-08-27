@@ -3,7 +3,7 @@ fdir = ./Manuscript/Figures
 tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-flist = 1 2 3 4 5 S1 S2 S4 S5 B1 B2 B3 B4 B5
+flist = B1 B2 B3 B4 B5
 
 .PHONY: clean test all testprofile testcover testcpp autopep spell leaks profilecpp
 
@@ -18,7 +18,7 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && julia -e "using Pkg; Pkg.update(); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
+$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' ./genFigures.py $*
 
@@ -28,10 +28,7 @@ $(fdir)/figure%pdf: $(fdir)/figure%svg
 $(fdir)/figure%eps: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f eps $< -o $@
 
-graph_all.svg: ckine/data/graph_all.gv
-	dot $< -Tsvg -o $@
-
-Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
+Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
 	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))

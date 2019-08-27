@@ -5,7 +5,7 @@ import pymc3 as pm
 import numpy as np
 import scipy as sp
 import pandas as pds
-from .fit import build_model as build_model_2_15, find_gc
+from .fit import build_model as build_model_2_15
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
@@ -79,6 +79,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
 
     unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
     unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
+    unkVec[24, :] = np.squeeze(trace.get_values("Rexpr_gc"))
     unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
 
     if Traf:
@@ -87,8 +88,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
         unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
         unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
         unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
-
-    unkVec[24, :] = np.squeeze(find_gc(Traf, unkVec[17, :], unkVec[20, :], unkVec[19, :], unkVec[21, :]))
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
@@ -143,51 +142,7 @@ def import_samples_4_7(ret_trace=False, N=None):
     return unkVec, scales
 
 
-def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
-    """ Imports the sampling results from fitting to visterra data in fit_visterra.py. """
-    from .fit_visterra import build_model as build_model_visterra
-
-    bmodel = build_model_visterra(traf=Traf)
-    n_params = nParams()
-
-    if Traf:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_visterra_results"), bmodel.M)
-    else:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_15_no_traf_visterra"), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
-
-    scales = trace.get_values("scales")
-    num = trace.get_values("kfwd").size
-
-    unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:13, :] = np.squeeze(trace.get_values("rxn")).T
-    unkVec[13:17, :] = 1.0
-
-    unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
-    unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
-    unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
-
-    if Traf:
-        unkVec[17, :] = np.squeeze(trace.get_values("endo"))
-        unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
-        unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
-        unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
-        unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
-
-    if N is not None:
-        assert 0 < N < num, "The N specified is out of bounds."
-
-        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
-
-    return unkVec, scales
-
-
-def import_pstat():
+def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
     data = np.array(pds.read_csv(join(path, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
@@ -208,10 +163,13 @@ def import_pstat():
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
         # order of increasing time by cell type
-        IL2_data[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL2_data2[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
-        IL15_data[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL15_data2[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL2_data[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL2_data2[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL15_data[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL15_data2[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+
+    if combine_samples is False:
+        return ckineConc, cell_names, IL2_data, IL2_data2, IL15_data, IL15_data2
 
     for i in range(IL2_data.shape[0]):
         for j in range(IL2_data.shape[1]):
