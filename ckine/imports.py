@@ -5,7 +5,6 @@ import pymc3 as pm
 import numpy as np
 import scipy as sp
 import pandas as pds
-from .fit import build_model as build_model_2_15
 from .model import nParams
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -54,29 +53,28 @@ def import_muteins():
 
 def import_samples_2_15(N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    bmodel = build_model_2_15(traf=True)
     n_params = nParams()
 
-    trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
+    trace = pds.read_csv(join(path_here, "ckine/data/fits/IL2_model_results/chain-0.csv"))
 
-    scales = trace.get_values("scales")
+    scales = trace["scales__0"]
     num = scales.size
 
     unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:13, :] = np.squeeze(trace.get_values("rxn")).T
+    unkVec[6, :] = trace["kfwd__0"]
+    unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values
     unkVec[13:17, :] = 1.0
 
-    unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
-    unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
-    unkVec[24, :] = np.squeeze(trace.get_values("Rexpr_gc"))
-    unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
+    unkVec[22, :] = trace["Rexpr_2Ra__0"]
+    unkVec[23, :] = trace["Rexpr_2Rb__0"]
+    unkVec[24, :] = trace["Rexpr_gc__0"]
+    unkVec[25, :] = trace["Rexpr_15Ra__0"]
 
-    unkVec[17, :] = np.squeeze(trace.get_values("endo"))
-    unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
-    unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
-    unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
-    unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
+    unkVec[17, :] = trace["endo__0"]
+    unkVec[18, :] = trace["activeEndo__0"]
+    unkVec[19, :] = trace["sortF__0"]
+    unkVec[20, :] = trace["kRec__0"]
+    unkVec[21, :] = trace["kDeg__0"]
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
