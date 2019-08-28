@@ -49,7 +49,7 @@ def makeFigure():
             gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
             for l in range(unkVec.shape[1]):
                 cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec[17, l], unkVec[20, l], unkVec[19, l], unkVec[21, l])
-                pred_data[:, :, l] = calc_dose_response_mutein(unkVec[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)  # TODO: Verify keeping 5x weaker endosomal assumptions
+                pred_data[:, :, l] = calc_dose_response_mutein(unkVec[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)
 
             # plot experimental and predicted date with a legend for the last subplot
             axis = i * 8 + j
