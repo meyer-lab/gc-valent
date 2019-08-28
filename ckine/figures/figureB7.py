@@ -6,7 +6,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup
-from .figureB6 import calc_dose_response_mutein, plot_dose_response, optimize_scale
+from .figureB6 import calc_dose_response_mutein, plot_dose_response
 from ..model import receptor_expression
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15
 
@@ -38,7 +38,7 @@ def makeFigure():
     for i, ligand_name in enumerate(second_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
 
-                        # organize experimental pstat data
+            # organize experimental pstat data
             exp_data = np.zeros((12, 4))
             for k, conc in enumerate(dataMean.Concentration.unique()):
                 exp_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
@@ -60,7 +60,7 @@ def makeFigure():
             else:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
                                                                                           & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
-            plot_dose_response(ax[axis], pred_data, cell_name, tps, muteinC, ligand_name)
+            plot_dose_response(ax[axis], pred_data, tps, muteinC)
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
     return f
