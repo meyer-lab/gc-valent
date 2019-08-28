@@ -39,6 +39,13 @@ def importF(pathname):
 # Treg and NonTreg
 
 # add which channels relate to the proteins
+def cd4():
+    cd41 = ThresholdGate(6.514e+03, ('VL4-H'), region="above", name='cd41')
+    cd42 = ThresholdGate(7.646e+03, ('VL4-H'), region="below", name='cd42')
+    cd4_gate = cd41 & cd42
+    return cd4_gate
+
+
 def treg():
     """Function for creating and returning the T reg gate on CD4+ cells"""
     treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
@@ -114,7 +121,7 @@ def rawData(sample_i, gate):
     return cell_data
 
 
-def tcells(sample_i, treg_gate, nonTreg_gate, i, title):
+def tcells(sample_i, treg_gate, nonTreg_gate, title):
     """
     Function that is used to plot the Treg and NonTreg gates in CD4+ cells. Treg (yellow) and Non Treg (green). sample_i is an indivual flow cytommetry file/data.
     """
@@ -143,14 +150,13 @@ def tcells(sample_i, treg_gate, nonTreg_gate, i, title):
     ax.set_title("T Reg + Non T Reg - Gating - " + str(title), fontsize=12)
     cd4_cells.plot(["BL1-H", "VL1-H"])
     plt.xlabel("Foxp3", fontsize=12)
-    plt.ylabel("CD25", fontsize=12)
-    
+    plt.ylabel("CD25", fontsize=12)    
     # Set values for legend
     bar_T = ax.bar(np.arange(0, 10), np.arange(1, 11), color="teal")
     bar_NT = ax.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="cyan")
     ax.legend([bar_T, bar_NT], ("T Reg", "Non T Reg"), loc="upper left")
     plt.show()
-
+    
     
 def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     """
@@ -219,20 +225,27 @@ def count_data(sampleType, gate):
     return count_array, data_array
 
 
-def plotAll(sampleType, check, gate1, gate2):
+def plotAll(sampleType, check, gate1, gate2, titles):
     """
     Ask the user to input 't' for t cell, 'n' for nk cell, and 'c' for cd cell checks are used to determine if user input a T-cell, NK-cell, or
     CD-cell gate automates the process for plotting multiple files.
     """
     if check == "t":
         for i, sample in enumerate(sampleType):
-            tcells(sample, gate1, gate2, i)
+            title = titles[i].split("/")
+            title = title[len(title)-1]
+            tcells(sample, gate1, gate2, i, title)
+            
     elif check == "n":
         for i, sample in enumerate(sampleType):
-            nk_bnk_plot(sample, gate1, gate2, i)
+            title = titles[i].split("/")
+            title = title[len(title)-1]
+            nk_bnk_plot(sample, gate1, gate2, i, title)
     elif check == "c":
         for i, sample in enumerate(sampleType):
-            cd_plot(sample, gate1, i)
+            title = titles[i].split("/")
+            title = title[len(title)-1]
+            cd_plot(sample, gate1, i, title)
 
 
 # ********************************** PCA Functions****************************************************
@@ -283,7 +296,7 @@ def appPCA(data, features):
     return xf, loading
 
 
-def pcaPlt(xf, pstat, features, i, title):
+def pcaPlt(xf, pstat, features, title):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
@@ -308,21 +321,20 @@ def pcaPlt(xf, pstat, features, i, title):
     print("mean pStat activity: ", pstat_mean)
     # Creating a data from of x, y, and pSTAT5 in order to graph using seaborn
     combined = np.stack((x, y, pstat)).T
-    df=pd.DataFrame(combined, columns = ["PC1", "PC2", "pSTAT5"])
+    df = pandas.DataFrame(combined, columns=["PC1", "PC2", "pSTAT5"])
     # Creating plot using seaborn. Cool note: virdis is visible for individuals who are colorblind.
-    fig, ax = plt.subplots(figsize=(8, 8))
+    _, ax = plt.subplots(figsize=(8, 8))
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
-    fig=sns.scatterplot(x="PC1", y="PC2", hue = "pSTAT5", palette="viridis", data=df, s = 5, ax = ax, legend = False, hue_norm = (3000, 7000));
+    fig = sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(3000, 7000));
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
     # Graph the Points
-    points=plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin = 3000, vmax = 7000) #set style options
+    points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
     #add a color bar
-    norm = [0, 1]
-    plt.colorbar(points)
-    
+    plt.colorbar(points)    
+
     
 def loadingPlot(loading, features, i, title):
     """Plot the loading data"""
@@ -406,7 +418,7 @@ def pcaAll(sampleType, check, titles):
 
 #************************PCA by color (gating+PCA)******************************
 
-def sampleT(smpl):
+def sampleTcolor(smpl):
     """Output is the T cells data (the protein channels related to T cells)"""
     # Features are the protein channels of interest when analyzing T cells
     features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
@@ -432,7 +444,7 @@ def sampleT(smpl):
     return data, pstat, features, colmat
 
 
-def sampleNK(smpl):
+def sampleNKcolor(smpl):
     """Output is the NK cells data (the protein channels related to NK cells)"""
     # For NK, the data consists of different channels so the data var. output will be different
     # Output is data specific to NK cells
@@ -455,7 +467,7 @@ def sampleNK(smpl):
     return data, pstat, features, colmat
 
 
-def pcaPlt(xf, pstat, features, i, title, colormat):
+def pcaPltColor(xf, pstat, features, i, title, colormat):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
