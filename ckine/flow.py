@@ -6,9 +6,11 @@ This file includes various methods for flow cytometry analysis.
 # Import all necessary packages to run functions
 from pathlib import Path
 import numpy as np
+import pandas as pd
+import seaborn as sns
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
-from FlowCytometryTools import QuadGate
+from FlowCytometryTools import QuadGate, ThresholdGate
 import sklearn
 from sklearn.decomposition import PCA
 
@@ -321,13 +323,13 @@ def pcaPlt(xf, pstat, features, title):
     print("mean pStat activity: ", pstat_mean)
     # Creating a data from of x, y, and pSTAT5 in order to graph using seaborn
     combined = np.stack((x, y, pstat)).T
-    df = pandas.DataFrame(combined, columns=["PC1", "PC2", "pSTAT5"])
+    df = pd.DataFrame(combined, columns=["PC1", "PC2", "pSTAT5"])
     # Creating plot using seaborn. Cool note: virdis is visible for individuals who are colorblind.
     _, ax = plt.subplots(figsize=(8, 8))
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
-    fig = sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(3000, 7000));
+    fig = sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(3000, 7000))
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
     # Graph the Points
@@ -400,7 +402,7 @@ def pcaAll(sampleType, check, titles):
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPlt(xf, pstat, features, i, title)
+            pcaPlt(xf, pstat, features, title)
             loadingPlot(loading, features, i, title)
             plt.show()
     elif check == "n":
@@ -411,7 +413,7 @@ def pcaAll(sampleType, check, titles):
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            pcaPlt(xf, pstat, features, i, title)
+            pcaPlt(xf, pstat, features, title)
             loadingPlot(loading, features, i, title)
             plt.show()
     return data_array, pstat_array, xf_array, loading_array
@@ -467,7 +469,7 @@ def sampleNKcolor(smpl):
     return data, pstat, features, colmat
 
 
-def pcaPltColor(xf, pstat, features, i, title, colormat):
+def pcaPltColor(xf, pstat, features, title, colormat):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
@@ -490,7 +492,7 @@ def pcaPltColor(xf, pstat, features, i, title, colormat):
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel("Principal Component 1", fontsize=12)
     ax.set_ylabel("Principal Component 2", fontsize=12)
-    #ax.set_title(name + " - PCA - " + str(title), fontsize=20)
+    ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     ax.set(xlim=(-5, 5), ylim=(-5, 5))
     # This is the scatter plot of the cell clusters colored cell type
     colormat = np.array(colormat)
@@ -499,7 +501,6 @@ def pcaPltColor(xf, pstat, features, i, title, colormat):
     plt.scatter(x[colormat == "g"], y[colormat == "g"], s = .15, c = "g", label = "NonTreg", alpha = 0.5)
     plt.scatter(x[colormat == "r"], y[colormat == "r"], s = .15, c = "r", label = "TReg", alpha = 0.5)
     plt.legend()
-    plt.savefig('type'+str(i)+'.png')
     
     
 def pcaAllCellType(sampleType, check, titles):
@@ -527,7 +528,7 @@ def pcaAllCellType(sampleType, check, titles):
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPlt(xf, pstat, features, i, title, colormat) #changed
+            pcaPltColor((xf, pstat, features, title, colormat) #changed
             loadingPlot(loading, features, i, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
@@ -537,7 +538,7 @@ def pcaAllCellType(sampleType, check, titles):
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            pcaPlt(xf, pstat, features, i, title, colormat)
+            pcaPltColor((xf, pstat, features, title, colormat)
             loadingPlot(loading, features, i, title)
     plt.show()
     return data_array, pstat_array, xf_array, loading_array
