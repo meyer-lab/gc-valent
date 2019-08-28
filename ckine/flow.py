@@ -528,7 +528,7 @@ def pcaAllCellType(sampleType, check, titles):
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPltColor((xf, pstat, features, title, colormat) #changed
+            pcaPltColor(xf, pstat, features, title, colormat) #changed
             loadingPlot(loading, features, i, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
@@ -538,7 +538,8 @@ def pcaAllCellType(sampleType, check, titles):
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            pcaPltColor((xf, pstat, features, title, colormat)
+            xf_array.append(xf)
+            pcaPltColor(xf, pstat, features, title, colormat)
             loadingPlot(loading, features, i, title)
     plt.show()
     return data_array, pstat_array, xf_array, loading_array
