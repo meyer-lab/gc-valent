@@ -102,7 +102,7 @@ def optimize_scale(model_act, exp_act):
         """ Calculate the residuals. This is the function we minimize. """
         scaled_act = sc[1] * model_act / (model_act + sc[0])
         err = exp_act - scaled_act
-        return np.reshape(err, (-1,))
+        return err.flatten()
 
     # find result of minimization where both params are >= 0
     res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
