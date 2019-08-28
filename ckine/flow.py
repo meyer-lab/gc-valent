@@ -158,7 +158,7 @@ def tcells(sample_i, treg_gate, nonTreg_gate, title):
     plt.show()
     
     
-def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
+def nk_bnk_plot(sample_i, nk_gate, bnk_gate, title):
     """
     Function that plots the graph of NK and Bright NK cells (both are determined by same x, y-axis). Arguemnt 1: current sample (a single file).
     Argument 2: the gate for NK. Argument 3: the gate for bright NK.
@@ -174,7 +174,7 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     bnk_cells = smpl.gate(bnk_gate)
 
     _, ax1 = plt.subplots()
-    ax1.set_title("CD56 BrightNK + NK - Gating - File " + str(i), fontsize=20)
+    ax1.set_title("CD56 BrightNK + NK - Gating - " + str(title), fontsize=12)
     nk_cells.plot(["BL1-H", "VL4-H"], color="y", label="NK")
     bnk_cells.plot(["BL1-H", "VL4-H"], color="g", label="Bright NK")
     smpl.plot(["BL1-H", "VL4-H"])
@@ -185,7 +185,7 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, i):
     plt.show()
 
 
-def cd_plot(sample_i, cd_gate, i):
+def cd_plot(sample_i, cd_gate, title):
     """
     Function that plots the graph of CD cells. Argument 1: current sample (a single file). Argument 2: the gate for CD cells. Argument 3: the value
     of the current i in a for loop --> use
@@ -198,7 +198,7 @@ def cd_plot(sample_i, cd_gate, i):
     cd_cells = smpl.gate(cd_gate)
 
     _, ax2 = plt.subplots()
-    ax2.set_title("CD3+CD8+ - Gating - File " + str(i), fontsize=20)
+    ax2.set_title("CD3+CD8+ - Gating - " + str(title), fontsize=20)
     cd_cells.plot(["RL1-H", "VL4-H"], color="b")
     smpl.plot(["RL1-H", "VL4-H"])
 
@@ -234,18 +234,18 @@ def plotAll(sampleType, check, gate1, gate2, titles):
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            tcells(sample, gate1, gate2, i, title)
+            tcells(sample, gate1, gate2, title)
             
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            nk_bnk_plot(sample, gate1, gate2, i, title)
+            nk_bnk_plot(sample, gate1, gate2, title)
     elif check == "c":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            cd_plot(sample, gate1, i, title)
+            cd_plot(sample, gate1, title)
 
 
 # ********************************** PCA Functions****************************************************
