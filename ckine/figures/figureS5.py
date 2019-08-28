@@ -105,7 +105,7 @@ def optimize_scale(model_act1, model_act2, exp_act1, exp_act2):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
     exp_act1 = exp_act1.T  # transpose to match model_act
     exp_act2 = exp_act2.T
-    
+
     # scaling factors are sigmoidal and linear, respectively
     guess = np.array([100.0, np.mean(exp_act1 + exp_act2) / np.mean(model_act1 + model_act2)])
 

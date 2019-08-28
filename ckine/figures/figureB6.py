@@ -15,56 +15,60 @@ dataMean, _ = import_muteins()
 dataMean.reset_index(inplace=True)
 data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
-unkVec, _ = import_samples_2_15()
+unkVec, _ = import_samples_2_15(N=100)
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7, 6), (4, 4))
-    
+
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
-    
+
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
-    dataMean["Concentration"] = np.log10(dataMean["Concentration"]) # logscale for plotting
-    
+    dataMean["Concentration"] = np.log10(dataMean["Concentration"])  # logscale for plotting
+
     axis = 0
     first_group_ligands = ['IL2-060', 'IL2-062']
-    
-    pred_data = np.zeros((len(muteinC), len(tps), 3)) # make empty array for predicted data at each concentration, tp, and parameter sample
-    
-    print(unkVec.shape)
-        
+
+    pred_data = np.zeros((len(muteinC), len(tps), unkVec.shape[1]))  # make empty array for predicted data at each concentration, tp, and parameter sample
+
     for i, ligand_name in enumerate(first_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
             IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
             IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
             gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
-            exp_data = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name), "RFU"]).reshape((12, 4))
-            for k in range(3):
-                cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec[17, k], unkVec[20, k], unkVec[19, k], unkVec[21, k])
-                pred_data[:, :, k] = calc_dose_response_mutein(unkVec[:, k], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data) #TODO: Verify keeping 5x weaker endosomal assumptions
-            axis = i*8+j
+            exp_data = np.zeros((12, 4))
+            for k, conc in enumerate(dataMean.Concentration.unique()):
+                exp_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
+            for l in range(unkVec.shape[1]):
+                cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec[17, l], unkVec[20, l], unkVec[19, l], unkVec[21, l])
+                pred_data[:, :, l] = calc_dose_response_mutein(unkVec[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)  # TODO: Verify keeping 5x weaker endosomal assumptions
+            axis = i * 8 + j
             if axis == 15:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) &
+                                                                                          (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
                 plot_dose_response(ax[axis], pred_data, cell_name, tps, muteinC, ligand_name)
                 ax[axis].legend(loc='lower right', title="time (hours)")
             else:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
+                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
                 plot_dose_response(ax[axis], pred_data, cell_name, tps, muteinC, ligand_name)
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
     return f
 
+
 def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors, exp_data):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
-    
+
     total_activity = np.zeros((len(muteinC), len(tps)))
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
         active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True)
-        total_activity[i, :] = np.reshape(active_ckine, (-1, 4)) # save the activity from this concentration for all 4 tps
+        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
 
     # scale receptor/cell measurements to pSTAT activity for each sample
     scale1, scale2 = optimize_scale(total_activity[:, :], exp_data)  # find optimal constants
@@ -76,7 +80,7 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors
 def plot_dose_response(ax, mutein_activity, cell_type, tps, muteinC, mutein_name):
     """ Plots both mutein activity in different plots where each plot has multiple timepoints and mutein concentrations. """
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
-    
+
     for tt in range(tps.size):
         plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt])
 
