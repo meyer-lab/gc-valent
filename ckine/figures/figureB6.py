@@ -35,28 +35,35 @@ def makeFigure():
 
     pred_data = np.zeros((len(muteinC), len(tps), unkVec.shape[1]))  # make empty array for predicted data at each concentration, tp, and parameter sample
 
+    # loop for each mutein and cell type
     for i, ligand_name in enumerate(first_group_ligands):
         for j, cell_name in enumerate(dataMean.Cells.unique()):
-            IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
-            IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
-            gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+
+            # organize experimental pstat data
             exp_data = np.zeros((12, 4))
             for k, conc in enumerate(dataMean.Concentration.unique()):
                 exp_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
+
+            # calculate predicted dose response
+            IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
+            IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+            gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
             for l in range(unkVec.shape[1]):
                 cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec[17, l], unkVec[20, l], unkVec[19, l], unkVec[21, l])
                 pred_data[:, :, l] = calc_dose_response_mutein(unkVec[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)  # TODO: Verify keeping 5x weaker endosomal assumptions
+
+            # plot experimental and predicted date with a legend for the last subplot
             axis = i * 8 + j
             if axis == 15:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) &
                                                                                           (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
-                plot_dose_response(ax[axis], pred_data, cell_name, tps, muteinC, ligand_name)
                 ax[axis].legend(loc='lower right', title="time (hours)")
             else:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
                                                                                           & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
-                plot_dose_response(ax[axis], pred_data, cell_name, tps, muteinC, ligand_name)
+            plot_dose_response(ax[axis], pred_data, cell_name, tps, muteinC, ligand_name)
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
+
     return f
 
 
