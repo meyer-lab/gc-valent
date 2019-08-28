@@ -5,6 +5,7 @@ import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
 from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
+from ..make_tensor import rxntfR
 
 
 def makeFigure():
@@ -25,7 +26,7 @@ def makeFigure():
 def dRespon(input_params, CD25=1.0):
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-3.0, 3.0)
-    activee = np.array([runIL2simple(input_params, ii, CD25) for ii in ILs])
+    activee = np.array([runIL2simple(rxntfR, input_params, ii, CD25) for ii in ILs]).squeeze()
 
     return ILs, activee
 
@@ -121,7 +122,7 @@ def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=np.array([500.0]), inpu
 
     if ligandDegradation:
         # rate of ligand degradation
-        return ligandDeg(yOut[0], sortF=rxntfr[19], kDeg=rxntfr[21], cytokineIDX=0)
+        return ligandDeg(yOut[0], sortF=unkVec[19], kDeg=unkVec[21], cytokineIDX=0)
 
     active_ckine = np.zeros(yOut.shape[0])
 
