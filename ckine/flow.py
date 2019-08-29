@@ -247,9 +247,7 @@ def plotAll(sampleType, check, gate1, gate2, titles):
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            cd_plot(sample, gate1, title)
-
-            
+            cd_plot(sample, gate1, title)            
 # ********************************** PCA Functions****************************************************
 
 
