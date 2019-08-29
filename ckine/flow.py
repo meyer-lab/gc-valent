@@ -159,8 +159,8 @@ def tcells(sample_i, treg_gate, nonTreg_gate, title):
     bar_NT = ax.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="cyan")
     ax.legend([bar_T, bar_NT], ("T Reg", "Non T Reg"), loc="upper left")
     plt.show()
-    return
-    
+
+
 def nk_bnk_plot(sample_i, nk_gate, bnk_gate, title):
     """
     Function that plots the graph of NK and Bright NK cells (both are determined by same x, y-axis). Arguemnt 1: current sample (a single file).
@@ -186,7 +186,7 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, title):
     bar_BNK = ax1.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="g")
     ax1.legend([bar_NK, bar_BNK], ("NK", "Bright NK"), loc="upper left")
     plt.show()
-    return
+
 
 def cd_plot(sample_i, cd_gate, title):
     """
@@ -208,7 +208,7 @@ def cd_plot(sample_i, cd_gate, title):
     bar_CD = ax2.bar(np.arange(0, 10), np.arange(1, 11), color="b")
     ax2.legend([bar_CD], ("CD3+8+"), loc="upper left")
     plt.show()
-    return
+
 
 def count_data(sampleType, gate):
     """
@@ -237,7 +237,7 @@ def plotAll(sampleType, check, gate1, gate2, titles):
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            tcells(sample, gate1, gate2, title)        
+            tcells(sample, gate1, gate2, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
@@ -248,8 +248,8 @@ def plotAll(sampleType, check, gate1, gate2, titles):
             title = titles[i].split("/")
             title = title[len(title)-1]
             cd_plot(sample, gate1, title)
-    return
 
+            
 # ********************************** PCA Functions****************************************************
 
 
@@ -336,8 +336,8 @@ def pcaPlt(xf, pstat, features, title):
     points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
     #add a color bar
     plt.colorbar(points)
-    return
-    
+
+
 def loadingPlot(loading, features, i, title):
     """Plot the loading data"""
     # Loading
@@ -375,7 +375,7 @@ def loadingPlot(loading, features, i, title):
         plt.annotate(str(feature), xy=(x_load[z], y_load[z]))
         plt.savefig('loading'+str(i)+'.png')
     ax.set_title(name + " - Loading - " + str(title), fontsize=20)
-    return
+
 
 def pcaAll(sampleType, check, titles):
     """
@@ -437,9 +437,9 @@ def sampleTcolor(smpl):
     for  i in range(len(data)):
         if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03:
             colmat.append('r') #Treg
-            tregd.append (data.iloc[[i]])
+            tregd.append(data.iloc[[i]])
             tregp.append(pstat.iloc[[i]])
-        elif data.iat[i, 0] > 2.586e+03 and data.iat [i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
+        elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
             colmat.append('g') # non Treg
         else:
             colmat.append('c')
@@ -459,10 +459,10 @@ def sampleNKcolor(smpl):
     pstat = tform.data[["BL2-H"]][0:]
     # Create a section for assigning colors to each data point of each cell population --> in this case NK cells
     colmat = []*(len(data)+1)
-    for  i in range (len(data)):
-        if data.iat[i, 0] > 5.550e03 and data.iat [i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
+    for i in range(len(data)):
+        if data.iat[i, 0] > 5.550e03 and data.iat[i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
             colmat.append('r') #nk
-        elif data.iat[i, 0] > 6.533e03 and data.iat [i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
+        elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
             colmat.append('g') #bnk
         else:
             colmat.append('c')
@@ -496,11 +496,10 @@ def pcaPltColor(xf, pstat, features, title, colormat):
     ax.set(xlim=(-5, 5), ylim=(-5, 5))
     # This is the scatter plot of the cell clusters colored cell type
     colormat = np.array(colormat)
-    plt.scatter(x[colormat=="c"], y[colormat=="c"], s=.15, c="c", label="Other", alpha=0.5)
-    plt.scatter(x[colormat=="g"], y[colormat=="g"], s=.15, c="g", label="NonTreg", alpha=0.5)
-    plt.scatter(x[colormat=="r"], y[colormat=="r"], s=.15, c="r", label="TReg", alpha=0.5)
+    plt.scatter(x[colormat == "c"], y[colormat == "c"], s=.15, c="c", label="Other", alpha=0.5)
+    plt.scatter(x[colormat == "g"], y[colormat == "g"], s=.15, c="g", label="NonTreg", alpha=0.5)
+    plt.scatter(x[colormat == "r"], y[colormat == "r"], s=.15, c="r", label="TReg", alpha=0.5)
     plt.legend()
-    return
 
 
 def pcaAllCellType(sampleType, check, titles):
