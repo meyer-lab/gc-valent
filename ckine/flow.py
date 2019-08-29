@@ -247,10 +247,10 @@ def plotAll(sampleType, check, gate1, gate2, titles):
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            cd_plot(sample, gate1, title)            
-# ********************************** PCA Functions****************************************************
+            cd_plot(sample, gate1, title)
 
 
+#********************************** PCA Functions****************************************************
 def sampleT(smpl):
     """Output is the T cells data (the protein channels related to T cells)"""
     # Features are the protein channels of interest when analyzing T cells
