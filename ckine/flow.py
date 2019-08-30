@@ -1,7 +1,6 @@
 """
 This file includes various methods for flow cytometry analysis.
 """
-# import FlowCytometryTools
 
 # Import all necessary packages to run functions
 from pathlib import Path
@@ -32,7 +31,7 @@ def importF(pathname):
         path_in_str = str(path)
         file.append(path_in_str)
     file.sort()
-# Go through each file and assign the file contents to entry in the array sample
+    # Go through each file and assign the file contents to entry in the array sample
     for entry in file:
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1

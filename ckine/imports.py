@@ -1,12 +1,9 @@
 """File that deals with everything about importing and sampling."""
 import os
 from os.path import join
-import pymc3 as pm
 import numpy as np
 import scipy as sp
 import pandas as pds
-from .fit import build_model as build_model_2_15, find_gc
-from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -22,7 +19,7 @@ def import_Rexpr():
     numpy_data = pds.Series(df["Count"]).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
     numpy_data = numpy_data[:, [2, 3, 0, 1, 4]]  # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
     numpy_data = numpy_data[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2], :]  # Reorder to match cells
-    return data, numpy_data, cell_names
+    return df, numpy_data, cell_names
 
 
 def import_muteins():
@@ -48,97 +45,41 @@ def import_muteins():
     dataMean.drop("Replicate", axis=1, inplace=True)
 
     # Make a data tensor. Dimensions correspond to groupby above
-    dataTensor = np.reshape(dataMean["RFU"].values, (9, 4, 4, 12))
+    dataTensor = np.reshape(dataMean["RFU"].values, (8, 4, 4, 12))
 
     return dataMean, dataTensor
 
 
-def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
+def import_samples_2_15(N=None):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    if tensor:
-        np.random.seed(79)
-    bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
 
-    if Traf:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
-    else:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_15_no_traf"), bmodel.M)
+    trace = pds.read_csv(join(path_here, "ckine/data/fits/IL2_model_results/chain-0.csv"))
 
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
-
-    scales = trace.get_values("scales")
+    scales = trace["scales__0"].values
     num = scales.size
 
     unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:13, :] = np.squeeze(trace.get_values("rxn")).T
+    unkVec[6, :] = trace["kfwd__0"]
+    unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
     unkVec[13:17, :] = 1.0
 
-    unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
-    unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
-    unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
+    unkVec[22, :] = trace["Rexpr_2Ra__0"].values
+    unkVec[23, :] = trace["Rexpr_2Rb__0"].values
+    unkVec[24, :] = trace["Rexpr_gc__0"].values
+    unkVec[25, :] = trace["Rexpr_15Ra__0"].values
 
-    if Traf:
-        unkVec[17, :] = np.squeeze(trace.get_values("endo"))
-        unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
-        unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
-        unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
-        unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
-
-    unkVec[24, :] = np.squeeze(find_gc(Traf, unkVec[17, :], unkVec[20, :], unkVec[19, :], unkVec[21, :]))
+    unkVec[17, :] = trace["endo__0"].values
+    unkVec[18, :] = trace["activeEndo__0"].values
+    unkVec[19, :] = trace["sortF__0"].values
+    unkVec[20, :] = trace["kRec__0"].values
+    unkVec[21, :] = trace["kDeg__0"].values
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
 
         idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
-
-    return unkVec, scales
-
-
-def import_samples_4_7(ret_trace=False, N=None):
-    """ This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. """
-    bmodel = build_model_4_7()
-    n_params = nParams()
-
-    trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL4-7_model_results"), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
-
-    endo = np.squeeze(trace.get_values("endo"))
-    activeEndo = np.squeeze(trace.get_values("activeEndo"))
-    sortF = np.squeeze(trace.get_values("sortF"))
-    kRec = np.squeeze(trace.get_values("kRec"))
-    kDeg = np.squeeze(trace.get_values("kDeg"))
-    scales = trace.get_values("scales")
-    num = scales.shape[0]
-
-    unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:17, :] = 1.0
-    unkVec[13, :] = np.squeeze(trace.get_values("k27rev"))
-    unkVec[15, :] = np.squeeze(trace.get_values("k33rev"))
-    unkVec[17, :] = endo
-    unkVec[18, :] = activeEndo
-    unkVec[19, :] = sortF
-    unkVec[20, :] = kRec
-    unkVec[21, :] = kDeg
-
-    # Constant according to measured number per cell
-    unkVec[24, :] = (328.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # gc
-    unkVec[26, :] = (2591.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # IL-7R
-    unkVec[28, :] = (254.0 * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))  # IL-4R
-
-    if N is not None:
-        assert 0 < N < num, "The N specified is out of bounds."
-
-        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
+        unkVec, scales = unkVec[:, idx], scales[idx]
 
     return unkVec, scales
 
