@@ -18,7 +18,10 @@ from sklearn.decomposition import PCA
 
 
 def importF(pathname):
-    """Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format"""
+    """
+    Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format
+    Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
+    """
     # Declare arrays and int
     file = []
     sample = []
@@ -28,13 +31,15 @@ def importF(pathname):
     for path in pathlist:
         path_in_str = str(path)
         file.append(path_in_str)
+    file.sort()
+    
     # Go through each file and assign the file contents to entry in the array sample
     for entry in file:
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     importF.sample = sample
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
-    return sample
+    return sample, file
 
 
 # *********************************** Gating Fxns *******************************************
