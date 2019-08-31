@@ -51,9 +51,7 @@ def treg():
     """Function for creating and returning the T reg gate on CD4+ cells"""
     treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
     treg2 = QuadGate((6.258e+03, 5.814e+03), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
-    cd41 = ThresholdGate(6.514e+03, ('VL4-H'), region="above", name='cd41')
-    cd42 = ThresholdGate(7.646e+03, ('VL4-H'), region="below", name='cd42')
-    treg_gate = treg1 & treg2 & cd41 & cd42
+    treg_gate = treg1 & treg2 & cd4()
     return treg_gate
 
 
@@ -61,9 +59,7 @@ def nonTreg():
     """Function for creating and returning the non T reg gate on CD4+ cells"""
     nontreg1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='nontreg1')
     nontreg2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='nontreg2')
-    cd41 = ThresholdGate(6.514e+03, ('VL4-H'), region="above", name='cd41')
-    cd42 = ThresholdGate(7.646e+03, ('VL4-H'), region="below", name='cd42')
-    nonTreg_gate = nontreg1 & nontreg2 & cd41 & cd42
+    nonTreg_gate = nontreg1 & nontreg2 & cd4()
     return nonTreg_gate
 
 
@@ -156,7 +152,6 @@ def tcells(sample_i, treg_gate, nonTreg_gate, title):
     bar_T = ax.bar(np.arange(0, 10), np.arange(1, 11), color="teal")
     bar_NT = ax.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="cyan")
     ax.legend([bar_T, bar_NT], ("T Reg", "Non T Reg"), loc="upper left")
-    plt.show()
 
 
 def nk_bnk_plot(sample_i, nk_gate, bnk_gate, title):
@@ -183,7 +178,6 @@ def nk_bnk_plot(sample_i, nk_gate, bnk_gate, title):
     bar_NK = ax1.bar(np.arange(0, 10), np.arange(1, 11), color="y")
     bar_BNK = ax1.bar(np.arange(0, 10), np.arange(30, 40), bottom=np.arange(1, 11), color="g")
     ax1.legend([bar_NK, bar_BNK], ("NK", "Bright NK"), loc="upper left")
-    plt.show()
 
 
 def cd_plot(sample_i, cd_gate, title):
@@ -205,7 +199,6 @@ def cd_plot(sample_i, cd_gate, title):
 
     bar_CD = ax2.bar(np.arange(0, 10), np.arange(1, 11), color="b")
     ax2.legend([bar_CD], ("CD3+8+"), loc="upper left")
-    plt.show()
 
 
 def count_data(sampleType, gate):
@@ -536,5 +529,4 @@ def pcaAllCellType(sampleType, check, titles):
             xf_array.append(xf)
             pcaPltColor(xf, pstat, features, title, colormat)
             loadingPlot(loading, features, i, title)
-    plt.show()
     return data_array, pstat_array, xf_array, loading_array
