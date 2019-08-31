@@ -62,6 +62,7 @@ def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
+    assert np.all(rxntfr >= 0.0)
 
     return gcSolver.runCkine(tps, rxntfr)
 

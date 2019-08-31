@@ -3,6 +3,7 @@ This creates Figure 1.
 """
 import string
 import numpy as np
+from scipy.optimize import brenth
 from .figureCommon import subplotLabel, getSetup
 from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
 from ..make_tensor import rxntfR
@@ -26,14 +27,16 @@ def makeFigure():
 def dRespon(input_params, CD25=1.0):
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-3.0, 3.0)
-    activee = np.array([runIL2simple(input_params, ii, CD25) for ii in ILs])
+    activee = np.array([runIL2simple(rxntfR, input_params, ii, CD25) for ii in ILs]).squeeze()
 
     return ILs, activee
 
 
-def IC50global(x, y):
+def IC50global(input_params, CD25=1.0):
     """ Calculate half-maximal concentration w.r.t. wt. """
-    return np.interp(20.0, y, x)
+    halfResponse = 20.0
+
+    return brenth(lambda x: runIL2simple(rxntfR, input_params, x, CD25) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
 changesA = np.logspace(-1, 1.5, num=20)
@@ -47,8 +50,7 @@ def halfMax_IL2RaAff(ax):
     changesB_a = np.array([1.0, 2.0, 5.0, 10.0, 20.0])
     for i, itemA in enumerate(changesA_a):
         for j, itemB in enumerate(changesB_a):
-            ILs, BB = dRespon([itemA, itemB, 5.0])
-            output[i, j] = IC50global(ILs, BB)
+            output[i, j] = IC50global([itemA, itemB, 5.0])
     for ii in range(output.shape[1]):
         ax.loglog(changesA_a, output[:, ii], label=str(changesB_a[ii]))
     ax.loglog([0.01, 10.0], [0.17, 0.17], "k-")
@@ -71,8 +73,7 @@ def halfMax_IL2RbAff(ax):
     """ Plots half maximal IL2 concentration across decreasing IL2Rb affinity for varied IL2Ra expression levels using wild type IL2Ra affinity. """
     for i, itemA in enumerate(changesA):
         for j, itemB in enumerate(changesB):
-            ILs, BB = dRespon([1.0, itemA, 5.0], CD25=itemB)
-            output[i, j] = IC50global(ILs, BB)
+            output[i, j] = IC50global([1.0, itemA, 5.0], CD25=itemB)
 
     for ii in range(output.shape[1]):
         ax.loglog(changesA, output[:, ii], label=str(changesB[ii]))
@@ -87,8 +88,7 @@ def halfMax_IL2RbAff_highIL2Ra(ax):
     increased IL2Ra affinity. """
     for i, itemA in enumerate(changesA):
         for j, itemB in enumerate(changesB):
-            ILs, BB = dRespon([0.1, itemA, 5.0], CD25=itemB)
-            output[i, j] = IC50global(ILs, BB)
+            output[i, j] = IC50global([0.1, itemA, 5.0], CD25=itemB)
 
     for ii in range(output.shape[1]):
         ax.loglog(changesA, output[:, ii], label=str(changesB[ii]))
@@ -98,16 +98,24 @@ def halfMax_IL2RbAff_highIL2Ra(ax):
     ax.legend(title="CD25 rel expr")
 
 
-def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
+def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=None, input_receptors=None, adj_receptors=False, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
-    tps = np.array([500.0])
 
-    kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
+    if tps is None:
+        tps = np.array([500.0])
+
+    kfwd, k4rev, k5rev = unkVec[6], unkVec[7], unkVec[8]
 
     k1rev = 0.6 * 10 * input_params[0]
     k2rev = 0.6 * 144 * input_params[1]
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
-    IL2Ra, IL2Rb, gc = rxntfR[22] * CD25, rxntfR[23], rxntfR[24]
+
+    if adj_receptors:
+        IL2Ra = input_receptors[0] * CD25
+        IL2Rb = input_receptors[1]
+        gc = input_receptors[2]
+    else:
+        IL2Ra, IL2Rb, gc = unkVec[22] * CD25, unkVec[23], unkVec[24]
 
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array(
@@ -119,6 +127,12 @@ def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
 
     if ligandDegradation:
         # rate of ligand degradation
-        return ligandDeg(yOut[0], sortF=rxntfR[19], kDeg=rxntfR[21], cytokineIDX=0)
+        return ligandDeg(yOut[0], sortF=unkVec[19], kDeg=unkVec[21], cytokineIDX=0)
 
-    return getTotalActiveCytokine(0, np.squeeze(yOut))
+    active_ckine = np.zeros(yOut.shape[0])
+
+    # calculate for each time point
+    for i in range(yOut.shape[0]):
+        active_ckine[i] = getTotalActiveCytokine(0, yOut[i, :])
+
+    return active_ckine
