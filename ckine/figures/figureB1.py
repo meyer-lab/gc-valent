@@ -36,9 +36,7 @@ def IC50global(input_params, CD25=1.0):
     """ Calculate half-maximal concentration w.r.t. wt. """
     halfResponse = 20.0
 
-    roott, outt = brenth(lambda x: runIL2simple(rxntfR, input_params, x, CD25) - halfResponse, 0, 1000.0, rtol=1e-5, full_output=True)
-
-    return roott
+    return brenth(lambda x: runIL2simple(rxntfR, input_params, x, CD25) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
 changesA = np.logspace(-1, 1.5, num=20)
