@@ -1,8 +1,6 @@
 """
 This file includes various methods for flow cytometry analysis.
 """
-
-# Import all necessary packages to run functions
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -12,8 +10,6 @@ from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
 import sklearn
 from sklearn.decomposition import PCA
-
-# Please note: if trying to display plots in jupyternotebook, must use: %matplotlib inline
 
 
 def importF(pathname):
@@ -35,7 +31,6 @@ def importF(pathname):
     for entry in file:
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
-    importF.sample = sample
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
     return sample, file
 
