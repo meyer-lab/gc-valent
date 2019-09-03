@@ -1,0 +1,166 @@
+"""
+This creates Figure 8. Comparison of Experimental verus Predicted Activity across IL2 and IL15 concentrations.
+"""
+
+import string
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+from scipy.optimize import least_squares
+from scipy.stats import pearsonr
+from .figureCommon import subplotLabel, getSetup
+from .figureB6 import calc_dose_response_mutein
+from ..imports import import_muteins, import_Rexpr, import_samples_2_15
+
+dataMean,_ =import_muteins()
+dataMean.reset_index(inplace=True)
+data, _, cellNames =import_Rexpr()
+data, reset_index(inplace=True)
+
+
+ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
+_, _, IL2_data_avg, IL15_data_avg = import_pstat(combine_samples=True)
+unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
+_, receptor_data, cell_names_receptor = import_Rexpr()
+
+pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(np.float)), axis=None),
+              'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))),
+                                    np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
+pstat_df = pd.DataFrame(data=pstat_data)
+
+
+def makeFigure():
+    """Get a list of the axis objects and create a figure"""
+    # Get list of axis objects
+    ax, f = getSetup((7, 6), (3, 3))
+
+    for ii, item in enumerate(ax):
+        subplotLabel(item, string.ascii_uppercase[ii])
+        
+    ligand_order = ['IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
+    cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
+
+    # main routine for EC-50 analysis
+    df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
+
+    x0 = [1, 2., 1000.]
+    tps = np.array([0.5, 1., 2., 4.]) * 60.
+    data_types = []
+    cell_types = []
+    EC50s = np.zeros(len(cell_order) * len(tps) * 2 * 4)
+
+    for i, cell_name in enumerate(cell_order):
+        for j, mutein_name in enumerate(ligand_order):
+            
+            celltype_data = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)])
+            data_types.append(np.tile(np.array('Predicted'), len(tps)))
+            # predicted EC50
+            EC50 = calculate_predicted_EC50(x0, receptor_data[i], tps, celltype_data_2, celltype_data_15)
+            for j, item in enumerate(EC50):
+                EC50s[(2 * len(tps) * i) + j] = item
+            # experimental EC50
+            for k, _ in enumerate(tps):
+                timepoint_data = celltype_data[k]
+                EC50s[len(tps) + (2 * len(tps) * i) + k] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), timepoint_data)
+            data_types.append(np.tile(np.array('Experimental'), len(tps)))
+            cell_types.append(np.tile(np.array(name), len(tps) * 2))  # for both experimental and predicted
+
+    EC50 = np.concatenate((EC50s), axis=None)
+    EC50 = EC50 - 4  # account for 10^4 multiplication
+    data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
+    cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
+    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
+    data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
+    df = pd.DataFrame(data)
+
+    catplot_comparison(ax[1], df)  # compare experiments to model predictions
+    plot_corrcoef(ax[2], tps)  # find correlation coefficients
+    global_legend(ax[2]) # add legend subplots A-C
+
+    plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
+
+    return f
+
+
+
+def catplot_comparison(ax, df):
+    """ Construct EC50 catplots for each time point for IL2 and IL15. """
+    # set a manual color palette
+    col_list = ["violet", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    sns.set_palette(col_list_palette)
+    # plot predicted EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
+                legend=False, legend_out=False, ax=ax, marker='^')
+
+    # plot experimental EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                legend=False, legend_out=False, ax=ax, marker='o')
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+    ax.set_xlabel("")  # remove "Cell Type" from xlabel
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    ax.get_legend().remove()
+
+
+def plot_corrcoef(ax, tps):
+    """ Plot correlation coefficients between predicted and experimental data for all cell types. """
+    corr_coefs = np.zeros(2 * len(cell_names_receptor))
+    for i, _ in enumerate(cell_names_receptor):
+        assert cell_names_receptor[i] == cell_names_pstat[i]
+        experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
+        experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
+        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, experimental_2, experimental_15)
+        corr_coef2 = pearsonr(experimental_2.flatten(), np.squeeze(predicted_2).T.flatten())
+        corr_coef15 = pearsonr(experimental_15.flatten(), np.squeeze(predicted_15).T.flatten())
+        corr_coefs[i] = corr_coef2[0]
+        corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
+
+    x_pos = np.arange(len(cell_names_receptor))
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
+    ax.set(ylabel=("Correlation"), ylim=(0., 1.))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+
+
+def global_legend(ax):
+    """ Create legend for colors and markers in subplots A-C. """
+    purple = mpatches.Patch(color='darkorchid', label='IL-2')
+    yellow = mpatches.Patch(color='goldenrod', label='IL-15')
+    circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+
+
+def calculate_predicted_EC50(x0, cell_receptor_data, tps, pstat):
+    """ Calculate average EC50 from model predictions. """
+    activity = calc_dose_response_mutein(unkVec_2_15, [1., 1., 5.], tps, muteinC, cell_receptors, pstat)
+    EC50 = np.zeros(len(tps))
+    # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
+    for i, _ in enumerate(tps):
+        EC50[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4),activity[:, 0, i])
+    return EC50
+
+
+def nllsq_EC50(x0, xdata, ydata):
+    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
+    return lsq_res.x[0]
+
+
+def hill_equation(x, x0, solution=0):
+    """ Calculates EC50 from Hill Equation. """
+    k = x0[0]
+    n = x0[1]
+    A = x0[2]
+    xk = np.power(x / k, n)
+    return (A * xk / (1.0 + xk)) - solution
+
+
+def residuals(x0, x, y):
+    """ Residual function for Hill Equation. """
+    return hill_equation(x, x0) - y
