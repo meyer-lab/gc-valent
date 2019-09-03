@@ -12,23 +12,18 @@ from scipy.optimize import least_squares
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
 from .figureB6 import calc_dose_response_mutein
+from ..model import receptor_expression
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15
 
 dataMean,_ =import_muteins()
 dataMean.reset_index(inplace=True)
 data, _, cellNames =import_Rexpr()
-data, reset_index(inplace=True)
+data.reset_index(inplace=True)
 
 
-ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
-_, _, IL2_data_avg, IL15_data_avg = import_pstat(combine_samples=True)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
-_, receptor_data, cell_names_receptor = import_Rexpr()
-
-pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(np.float)), axis=None),
-              'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))),
-                                    np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
-pstat_df = pd.DataFrame(data=pstat_data)
+receptor_data, _, cell_names_receptor = import_Rexpr()
+muteinC = dataMean.Concentration.unique()
 
 
 def makeFigure():
@@ -41,45 +36,50 @@ def makeFigure():
         
     ligand_order = ['IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
-
+    
     # main routine for EC-50 analysis
-    df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
+    df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'Mutein', 'Data Type', 'EC50'])
 
     x0 = [1, 2., 1000.]
     tps = np.array([0.5, 1., 2., 4.]) * 60.
     data_types = []
     cell_types = []
-    EC50s = np.zeros(len(cell_order) * len(tps) * 2 * 4)
+    mutein_types = []
+    EC50s = np.zeros(len(cell_order) * len(tps) * 2 * 4) # EC50 for all cell types, tps, muteins, and expr/pred
 
     for i, cell_name in enumerate(cell_order):
+        
+        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
+        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+        cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec_2_15[17], unkVec_2_15[20], unkVec_2_15[19], unkVec_2_15[21])
+            
         for j, mutein_name in enumerate(ligand_order):
             
-            celltype_data = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)])
-            data_types.append(np.tile(np.array('Predicted'), len(tps)))
+            celltype_data = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == mutein_name)])
+
             # predicted EC50
-            EC50 = calculate_predicted_EC50(x0, receptor_data[i], tps, celltype_data_2, celltype_data_15)
-            for j, item in enumerate(EC50):
-                EC50s[(2 * len(tps) * i) + j] = item
+            data_types.append(np.tile(np.array('Predicted'), len(tps)))
+            EC50 = calculate_predicted_EC50(x0, cell_receptors, tps, celltype_data)
+            for k, item in enumerate(EC50):
+                EC50s[(2 * len(tps) * i * j) + k] = item
             # experimental EC50
-            for k, _ in enumerate(tps):
-                timepoint_data = celltype_data[k]
-                EC50s[len(tps) + (2 * len(tps) * i) + k] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), timepoint_data)
+            for l, _ in enumerate(tps):
+                timepoint_data = celltype_data[l]
+                EC50s[len(tps) + (2 * len(tps) * i) + l] = nllsq_EC50(x0, np.log10(muteinC * 10**4), timepoint_data)
             data_types.append(np.tile(np.array('Experimental'), len(tps)))
-            cell_types.append(np.tile(np.array(name), len(tps) * 2))  # for both experimental and predicted
+            cell_types.append(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
+            mutein_types.append(np.tile(np.array(mutein_name), len(tps) * 2))
 
     EC50 = np.concatenate((EC50s), axis=None)
     EC50 = EC50 - 4  # account for 10^4 multiplication
-    data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
-    cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
-    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
-    data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
+    print(data_types.shape)
+    data_types = np.tile(np.array(data_types).reshape(80,), 4)  # for IL2 and IL15
+    cell_types = np.tile(np.array(cell_types).reshape(80,), 4)
+    dataframe = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 8), 'Mutein': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
     catplot_comparison(ax[1], df)  # compare experiments to model predictions
-    plot_corrcoef(ax[2], tps)  # find correlation coefficients
-    global_legend(ax[2]) # add legend subplots A-C
-
-    plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
     return f
 
@@ -114,7 +114,7 @@ def plot_corrcoef(ax, tps):
         assert cell_names_receptor[i] == cell_names_pstat[i]
         experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
         experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
-        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, experimental_2, experimental_15)
+        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, muteinC, experimental_2, experimental_15)
         corr_coef2 = pearsonr(experimental_2.flatten(), np.squeeze(predicted_2).T.flatten())
         corr_coef15 = pearsonr(experimental_15.flatten(), np.squeeze(predicted_15).T.flatten())
         corr_coefs[i] = corr_coef2[0]
@@ -138,11 +138,11 @@ def global_legend(ax):
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, pstat):
     """ Calculate average EC50 from model predictions. """
-    activity = calc_dose_response_mutein(unkVec_2_15, [1., 1., 5.], tps, muteinC, cell_receptors, pstat)
+    activity = calc_dose_response_mutein(unkVec_2_15, [1., 1., 5.], tps, muteinC, cell_receptor_data, pstat)
     EC50 = np.zeros(len(tps))
     # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
     for i, _ in enumerate(tps):
-        EC50[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4),activity[:, 0, i])
+        EC50[i] = nllsq_EC50(x0, np.log10(muteinC.astype(np.float) * 10**4), activity[:, 0, i])
     return EC50
 
 
