@@ -287,7 +287,7 @@ def appPCA(data, features):
     return xf, loading
 
 
-def pcaPlt(xf, pstat, features, title):
+def pcaPlt(xf, pstat, features, title, tplate = True):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
@@ -318,11 +318,14 @@ def pcaPlt(xf, pstat, features, title):
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
-    sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(3000, 7000))
+    if tplate:
+        fig = sns.scatterplot(x="PC1", y="PC2", hue = "pSTAT5", palette="viridis", data=df, s = 10, ax = ax, legend = False, hue_norm = (3000, 7000));
+        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis",  vmin = 3000, vmax = 7000) #set style options
+    else:
+        fig = sns.scatterplot(x="PC1", y="PC2", hue = "pSTAT5", palette="viridis", data=df, s = 10, ax = ax, legend = False, hue_norm = (0, 5000));
+        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis",  vmin = 0, vmax = 5000) #set style options
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
-    # Graph the Points
-    points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
     #add a color bar
     plt.colorbar(points)
 
@@ -366,7 +369,7 @@ def loadingPlot(loading, features, i, title):
     ax.set_title(name + " - Loading - " + str(title), fontsize=20)
 
 
-def pcaAll(sampleType, check, titles):
+def pcaAll(sampleType, check, titles, tplate = True):
     """
     Use to plot the score and loading graphs for PCA. Assign protein and pstat5 arrays AND score and loading arrays
     This is all the data for each file.
@@ -391,7 +394,7 @@ def pcaAll(sampleType, check, titles):
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPlt(xf, pstat, features, title)
+            pcaPlt(xf, pstat, features, title, tplate = True)
             loadingPlot(loading, features, i, title)
             plt.show()
     elif check == "n":
@@ -402,7 +405,7 @@ def pcaAll(sampleType, check, titles):
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            pcaPlt(xf, pstat, features, title)
+            pcaPlt(xf, pstat, features, title, tplate = False)
             loadingPlot(loading, features, i, title)
             plt.show()
     return data_array, pstat_array, xf_array, loading_array
