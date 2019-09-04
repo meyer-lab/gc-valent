@@ -33,60 +33,83 @@ def makeFigure():
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
     dataMean["Concentration"] = np.log10(dataMean["Concentration"])  # logscale for plotting
-    
-    print(dataMean.loc[(dataMean["Cells"] == 'T-reg') & (dataMean["Ligand"] == 'IL2-097')])
 
-    axis = 0
+    axis = 0 # track axis for plotting
     ligand_order = ['IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
     pred_data = np.zeros((len(muteinC), len(tps), unkVec_2_15.shape[1]))  # make empty array for predicted data at each concentration, tp, and parameter sample for a single cell type
-    df = pd.DataFrame(columns=['Mutein', 'Activity Type', 'Cell Type', 'Time Point', 'Concentration', 'Replicate', 'Activity']) # make empty dataframe for all cell types
+    avg_pred_data = np.zeros((len(muteinC), len(tps)))
+    df = pd.DataFrame(columns=['Mutein', 'Activity Type', 'Cell Type', 'Time Point', 'Concentration', 'Activity']) # make empty dataframe for all cell types
     
     iter = len(tps) * len(muteinC)
 
     # loop for each mutein and cell type
-    for i, ligand_name in enumerate(ligand_order):
-        for j, cell_name in enumerate(cell_order):
+    for j, cell_name in enumerate(cell_order):
+        
+        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
+        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+            
+        for i, ligand_name in enumerate(ligand_order):
             
             # organize experimental pstat data
             exp_data = np.zeros((12, 4))
             mutein_conc = np.zeros(48,)
             for k, conc in enumerate(dataMean.Concentration.unique()):
                 exp_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
-                mutein_conc[(k * 4):((k + 1) * 4)] = conc
-                
-            df2 = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), iter), 'Activity Type':np.tile(np.array('experimental'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Replicate': np.zeros(iter), 'Activity':exp_data.reshape(iter,)})
-            #print(df2)
-            df = df.append(df2, ignore_index=True)
+            
+            df_exp = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), iter), 'Activity Type':np.tile(np.array('experimental'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Activity':exp_data.reshape(iter,)})
+            df = df.append(df_exp, ignore_index=True)
 
             # calculate predicted dose response
-            IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
-            IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
-            gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
             for l in range(unkVec_2_15.shape[1]):
                 cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec_2_15[17, l], unkVec_2_15[20, l], unkVec_2_15[19, l], unkVec_2_15[21, l])
                 pred_data[:, :, l] = calc_dose_response_mutein(unkVec_2_15[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)
-                df3 = pd.DataFrame({"Activity Type":np.tile(np.array('predicted'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Replicate':np.tile(np.array(1 + l), iter), 'Activity':pred_data[:, :, l].reshape(iter,)})
-                df = df.append(df3, ignore_index=True)
+            
+            avg_pred_data = np.mean(pred_data, axis=2)
+            df_pred = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), iter), 'Activity Type':np.tile(np.array('predicted'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Activity':avg_pred_data.reshape(iter,)})
+            print(df_pred)
+            df = df.append(df_pred, ignore_index=True)
                             
 
             # plot experimental and predicted date with a legend for the last subplot
             axis = i * 8 + j
             if axis == 15:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) &
-                                                                                          (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
+                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
                 ax[axis].legend(loc='lower right', title="time (hours)")
             else:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) 
                                                                                           & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
-            plot_dose_response(ax[axis], pred_data, tps, muteinC)
-            ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
+        
+        df_scaled, scales = mutein_scaling(df)
+        
+        if cell_name in ['T-reg', 'Mem Treg', 'Naive Treg']:
+            plot_dose_response(ax[axis], scales[0, 0] * pred_data / (pred_data + scales[0, 1]), tps, muteinC)
+        if cell_name in ['T-helper', 'Mem Th', 'Naive Th']:
+            plot_dose_response(ax[axis], scales[1, 0] * pred_data / (pred_data + scales[1, 1]), tps, muteinC)
+        if cell_name in ['NK', 'CD8+']:
+            plot_dose_response(ax[axis], scales[2, 0] * pred_data / (pred_data + scales[2, 1]), tps, muteinC)
+        ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
     return f
 
 def mutein_scaling(df):
-    return 0
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK', 'CD8+']]
+    scales = np.zeros((3, 2))
+    print(df)
+    for i, cells in enumerate(cell_groups):
+        print(cells)
+        print(df['Cell Type'].isin(cells))
+        subset_df = df[df['Cell Type'].isin(cells)]
+        print(subset_df)
+        scale1, scale2 = optimize_scale(subset_df.loc[(subset_df["Activity Type"] == 'predicted')], subset_df.loc[(subset_df["Activity Type"] == 'experimental')])
+        scales[i, :] = [scale1, scale2]
+        subset_df['Activity'] = scale2 * subset_df['Activity'] / (subset_df['Activity'], + scale1)
+        df_scaled = df_scaled.append(subset_df, ignore_index=True)
+        
+    return df_scaled, scales
 
 
 def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors, exp_data):
