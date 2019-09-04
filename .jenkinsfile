@@ -28,9 +28,4 @@ pipeline {
       cleanWs cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
     }
   }
-  post {
-    always {
-      cleanWs cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
-    }
-	}
 }
