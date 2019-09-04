@@ -60,22 +60,21 @@ def makeFigure():
                 celltype_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
                             
             # predicted EC50
-            EC50 = calculate_predicted_EC50(x0, cell_receptors, tps, celltype_data)
-            for l, item in enumerate(EC50):
-                EC50s[(8 * j) * (32 * i) + l] = item
+            pred_EC50 = calculate_predicted_EC50(x0, cell_receptors, tps, celltype_data)
+            for l, item in enumerate(pred_EC50):
+                EC50s[(8 * j) + (32 * i) + l] = item
             data_types.extend(np.tile(np.array('Predicted'), len(tps)))
 
             # experimental EC50
             for m, _ in enumerate(tps):
                 timepoint_data = celltype_data[:, m]
-                EC50s[(8 * j) * (32 * i) + len(tps) + m] = nllsq_EC50(x0, np.log10(muteinC * 10**4), timepoint_data)
+                EC50s[(8 * j) + (32 * i) + len(tps) + m] = nllsq_EC50(x0, np.log10(muteinC * 10**4), timepoint_data)
             data_types.extend(np.tile(np.array('Experimental'), len(tps)))
             cell_types.extend(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
             mutein_types.extend(np.tile(np.array(ligand_name), len(tps) * 2))
 
-    EC50 = np.concatenate((EC50s), axis=None)
-    EC50 = EC50 - 4  # account for 10^4 multiplication
-    dataframe = {'Time Point': np.tile(np.array(tps), len(cell_order) * 8), 'Mutein':mutein_types, 'Cell Type':cell_types, 'Data Type':data_types, 'EC-50': EC50}
+    EC50s = EC50s - 4  # account for 10^4 multiplication
+    dataframe = {'Time Point':np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein':mutein_types, 'Cell Type':cell_types, 'Data Type':data_types, 'EC-50':EC50s}
     df = pd.DataFrame(dataframe)
 
     catplot_comparison(ax[0], df)  # compare experiments to model predictions

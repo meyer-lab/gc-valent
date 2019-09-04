@@ -57,7 +57,6 @@ def makeFigure():
                 mutein_conc[(k * 4):((k + 1) * 4)] = conc
                 
             df2 = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), iter), 'Activity Type':np.tile(np.array('experimental'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Replicate': np.zeros(iter), 'Activity':exp_data.reshape(iter,)})
-            #print(df2)
             df = df.append(df2, ignore_index=True)
 
             # calculate predicted dose response
@@ -102,11 +101,9 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
 
     # scale receptor/cell measurements to pSTAT activity for each sample
-    #scale1, scale2 = optimize_scale(total_activity[:, :], exp_data)  # find optimal constants
-    #total_activity[:, :] = scale2 * total_activity[:, :] / (total_activity[:, :] + scale1)  # adjust activity
+    scale1, scale2 = optimize_scale(total_activity[:, :], exp_data)  # find optimal constants
+    total_activity[:, :] = scale2 * total_activity[:, :] / (total_activity[:, :] + scale1)  # adjust activity
     
-    print('total_activity.shape: ', total_activity.shape)
-
     return total_activity
 
 
