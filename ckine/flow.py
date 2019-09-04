@@ -419,20 +419,27 @@ def sampleTcolor(smpl):
     tregd = []
     tregp = []
     # Transform to put on log scale
+    cd45dat = smpl[["BL3-H"]]
+    cd45dat = cd45dat.iloc[:,0]
+    cd45dat = np.log10(cd45dat)
     tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H", "RL1-H"])
     # Save the data of each column of the protein channels
     data = tform.data[["BL1-H", "VL1-H", "VL4-H", "BL3-H"]][0:]
     # Save pSTAT5 data
     pstat = tform.data[["RL1-H"]][0:]
-    # Create a section for assigning colors to each data point of each cell population --> in this case, T cells
     colmat = []*(len(data)+1)
-    for  i in range(len(data)):
-        if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03:
-            colmat.append('r') #Treg
-            tregd.append(data.iloc[[i]])
-            tregp.append(pstat.iloc[[i]])
-        elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
-            colmat.append('g') # non Treg
+    for  i in range (len(data)):
+        if data.iat[i,0] > 4.814e+03 and data.iat [i,0] <6.258e+03 and data.iat[i,1] > 3.229e+03 and data.iat[i,1] <5.814e+03:
+            if cd45dat [i] > 5:
+                colmat.append('r') #Treg naive
+            else:
+                colmat.append('darkorange') #Treg mem
+        elif data.iat[i,0] > 2.586e+03 and data.iat [i,0] <5.115e+03 and data.iat[i,1] > 3.470e+02 and data.iat[i,1] <5.245e+03:
+            if cd45dat [i] > 5:
+                colmat.append('g') #Thelp naive
+            else:
+                colmat.append('darkorchid') #Thelp mem
+                
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -461,7 +468,7 @@ def sampleNKcolor(smpl):
     return data, pstat, features, colmat
 
 
-def pcaPltColor(xf, pstat, features, title, colormat):
+def pcaPltColor(xf, pstat, features, i, title, colormat, treg = True):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
@@ -482,16 +489,26 @@ def pcaPltColor(xf, pstat, features, title, colormat):
     # Creating a figure for both scatter and mesh plots for PCA
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlabel("Principal Component 1", fontsize=12)
-    ax.set_ylabel("Principal Component 2", fontsize=12)
+    ax.set_xlabel("Principal Component 1", fontsize=15)
+    ax.set_ylabel("Principal Component 2", fontsize=15)
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     ax.set(xlim=(-5, 5), ylim=(-5, 5))
-    # This is the scatter plot of the cell clusters colored cell type
+    # This is the scatter plot of the cell clusters colored by pSTAT5 data
+    # lighter --> darker = less --> more pSTAT5 present
     colormat = np.array(colormat)
-    plt.scatter(x[colormat == "c"], y[colormat == "c"], s=.15, c="c", label="Other", alpha=0.5)
-    plt.scatter(x[colormat == "g"], y[colormat == "g"], s=.15, c="g", label="NonTreg", alpha=0.5)
-    plt.scatter(x[colormat == "r"], y[colormat == "r"], s=.15, c="r", label="TReg", alpha=0.5)
-    plt.legend()
+    colormat.transpose
+    if treg:                     
+        plt.scatter(x[colormat == "c"], y[colormat == "c"], s = 1, c = "c", label = "Other", alpha = 0.5)
+        plt.scatter(x[colormat == "g"], y[colormat == "g"], s = 1, c = "g", label = "T Helper Naive", alpha = 0.5)
+        plt.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s = 1, c = "darkorchid", label = "T Helper Memory", alpha = 0.5)
+        plt.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s = 1, c = "darkorange", label = "T Reg Memory", alpha = 0.5)
+        plt.scatter(x[colormat == "r"], y[colormat == "r"], s = 1, c = "r", label = "T Reg Naive", alpha = 0.5)
+        plt.legend()
+    else:
+        plt.scatter(x[colormat == "c"], y[colormat == "c"], s = 1, c = "c", label = "Other", alpha = 0.5)
+        plt.scatter(x[colormat == "g"], y[colormat == "g"], s = 1, c = "g", label = "BNK", alpha = 0.5)
+        plt.scatter(x[colormat == "r"], y[colormat == "r"], s = 1, c = "r", label = "NK", alpha = 0.5)
+        plt.legend()
 
 
 def pcaAllCellType(sampleType, check, titles):
@@ -507,29 +524,30 @@ def pcaAllCellType(sampleType, check, titles):
     pstat_array = []
     xf_array = []
     loading_array = []
+    
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     if check == "t":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            data, pstat, features, colormat = sampleTcolor(sample)
+            data, pstat, features, colormat = sampleT(sample)
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPltColor(xf, pstat, features, title, colormat) #changed
+            pcaPlt(xf, pstat, features, i, title, colormat) #changed
             loadingPlot(loading, features, i, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
             title = title[len(title)-1]
-            data, pstat, features, colormat = sampleNKcolor(sample)
+            data, pstat, features, colormat = sampleNK(sample)
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            xf_array.append(xf)
-            pcaPltColor(xf, pstat, features, title, colormat)
+            pcaPlt(xf, pstat, features, i, title, colormat)
             loadingPlot(loading, features, i, title)
+    plt.show()
     return data_array, pstat_array, xf_array, loading_array
