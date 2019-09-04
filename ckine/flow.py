@@ -319,11 +319,11 @@ def pcaPlt(xf, pstat, features, title, tplate=True):
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
     if tplate:
-        sns.scatterplot(x="PC1", y="PC2", hue ="pSTAT5", palette="viridis", data=df, s = 10, ax = ax, legend = False, hue_norm = (3000, 7000))
-        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis",  vmin = 3000, vmax=7000) #set style options
+        sns.scatterplot(x="PC1", y="PC2", hue ="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(3000, 7000))
+        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
     else:
-        sns.scatterplot(x="PC1", y="PC2", hue ="pSTAT5", palette="viridis", data=df, s = 10, ax = ax, legend = False, hue_norm = (0, 5000))
-        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis",  vmin=0, vmax=5000) #set style options
+        sns.scatterplot(x="PC1", y="PC2", hue ="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(0, 5000))
+        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=0, vmax=5000) #set style options
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
     #add a color bar
@@ -426,17 +426,17 @@ def sampleTcolor(smpl):
     # Save pSTAT5 data
     pstat = tform.data[["RL1-H"]][0:]
     colmat = []*(len(data)+1)
-    for i in range (len(data)):
-        if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] <5.814e+03:
-            if cd45dat [i] > 5:
+    for i in range(len(data)):
+        if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03:
+            if cd45dat[i] > 5:
                 colmat.append('r') #Treg naive
             else:
                 colmat.append('darkorange') #Treg mem
-        elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] <5.245e+03:
+        elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
             if cd45dat[i] > 5:
                 colmat.append('g') #Thelp naive
             else:
-                colmat.append('darkorchid') #Thelp mem  
+                colmat.append('darkorchid') #Thelp mem
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -494,16 +494,16 @@ def pcaPltColor(xf, pstat, features, title, colormat, tregc=True):
     # lighter --> darker = less --> more pSTAT5 present
     colormat = np.array(colormat)
     if tregc:
-        plt.scatter(x[colormat=="c"], y[colormat=="c"], s=1, c="c", label = "Other", alpha=0.5)
-        plt.scatter(x[colormat=="g"], y[colormat=="g"], s=1, c ="g", label="T Helper Naive", alpha=0.5)
-        plt.scatter(x[colormat=="darkorchid"], y[colormat=="darkorchid"], s=1, c="darkorchid", label="T Helper Memory", alpha=0.5)
-        plt.scatter(x[colormat=="darkorange"], y[colormat=="darkorange"], s=1, c="darkorange", label="T Reg Memory", alpha=0.5)
-        plt.scatter(x[colormat=="r"], y[colormat=="r"], s=1, c="r", label="T Reg Naive", alpha=0.5)
+        plt.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
+        plt.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="T Helper Naive", alpha=0.5)
+        plt.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=1, c="darkorchid", label="T Helper Memory", alpha=0.5)
+        plt.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=1, c="darkorange", label="T Reg Memory", alpha=0.5)
+        plt.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="T Reg Naive", alpha=0.5)
         plt.legend()
     else:
-        plt.scatter(x[colormat=="c"], y[colormat=="c"], s=1, c="c", label="Other", alpha=0.5)
-        plt.scatter(x[colormat=="g"], y[colormat=="g"], s=1, c="g", label="BNK", alpha=0.5)
-        plt.scatter(x[colormat=="r"], y[colormat=="r"], s=1, c="r", label="NK", alpha=0.5)
+        plt.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
+        plt.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="BNK", alpha=0.5)
+        plt.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.5)
         plt.legend()
 
 
@@ -533,7 +533,7 @@ def pcaAllCellType(sampleType, check, titles):
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPltcolor(xf, pstat, features, title, colormat) #changed
+            pcaPltColor(xf, pstat, features, title, colormat) #changed
             loadingPlot(loading, features, i, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
@@ -543,7 +543,7 @@ def pcaAllCellType(sampleType, check, titles):
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
-            pcaPltcolor(xf, pstat, features, title, colormat)
+            pcaPltColor(xf, pstat, features, title, colormat)
             loadingPlot(loading, features, i, title)
     plt.show()
     return data_array, pstat_array, xf_array, loading_array
