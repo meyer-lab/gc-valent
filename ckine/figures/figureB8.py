@@ -19,17 +19,17 @@ dataMean,_ =import_muteins()
 dataMean.reset_index(inplace=True)
 data, _, cellNames =import_Rexpr()
 data.reset_index(inplace=True)
-
-
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 receptor_data, _, cell_names_receptor = import_Rexpr()
 muteinC = dataMean.Concentration.unique()
+tps = np.array([0.5, 1., 2., 4.]) * 60.
+
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3))
+    ax, f = getSetup((7, 6), (3, 3), multz={0:2})
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -41,46 +41,44 @@ def makeFigure():
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'Mutein', 'Data Type', 'EC50'])
 
     x0 = [1, 2., 1000.]
-    tps = np.array([0.5, 1., 2., 4.]) * 60.
     data_types = []
     cell_types = []
     mutein_types = []
-    EC50s = np.zeros(len(cell_order) * len(tps) * 2 * 4) # EC50 for all cell types, tps, muteins, and expr/pred
-
+    EC50s = np.zeros(len(cell_order) * len(tps) * 4 * 2) # EC50 for all cell types, tps, muteins, and expr/pred
+    
     for i, cell_name in enumerate(cell_order):
-        
+                
         IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
         IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
         gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
         cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec_2_15[17], unkVec_2_15[20], unkVec_2_15[19], unkVec_2_15[21])
-            
-        for j, mutein_name in enumerate(ligand_order):
+
+        for j, ligand_name in enumerate(ligand_order):
             
             celltype_data = np.zeros((12, 4))
             for k, conc in enumerate(dataMean.Concentration.unique()):
-                celltype_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == mutein_name) & (dataMean["Concentration"] == conc), "RFU"])
-
+                celltype_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
+                            
             # predicted EC50
-            data_types.append(np.tile(np.array('Predicted'), len(tps)))
             EC50 = calculate_predicted_EC50(x0, cell_receptors, tps, celltype_data)
             for l, item in enumerate(EC50):
-                EC50s[(2 * len(tps) * i * j) + l] = item
+                EC50s[(8 * j) * (32 * i) + l] = item
+            data_types.extend(np.tile(np.array('Predicted'), len(tps)))
+
             # experimental EC50
             for m, _ in enumerate(tps):
                 timepoint_data = celltype_data[:, m]
-                EC50s[len(tps) + (2 * len(tps) * i) + m] = nllsq_EC50(x0, np.log10(muteinC * 10**4), timepoint_data)
-            data_types.append(np.tile(np.array('Experimental'), len(tps)))
-            cell_types.append(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
-            mutein_types.append(np.tile(np.array(mutein_name), len(tps) * 2))
+                EC50s[(8 * j) * (32 * i) + len(tps) + m] = nllsq_EC50(x0, np.log10(muteinC * 10**4), timepoint_data)
+            data_types.extend(np.tile(np.array('Experimental'), len(tps)))
+            cell_types.extend(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
+            mutein_types.extend(np.tile(np.array(ligand_name), len(tps) * 2))
 
     EC50 = np.concatenate((EC50s), axis=None)
     EC50 = EC50 - 4  # account for 10^4 multiplication
-    dataframe = {'Time Point': np.tile(np.array(tps), len(cell_order) * 8), 'Mutein':mutein_types, 'Cell Type': cell_types, 'Data Type': data_types, 'EC-50': EC50}
-    print(np.tile(np.array(tps), len(cell_order) * 8).shape, len(mutein_types), len(cell_types), len(data_types), EC50.shape)
+    dataframe = {'Time Point': np.tile(np.array(tps), len(cell_order) * 8), 'Mutein':mutein_types, 'Cell Type':cell_types, 'Data Type':data_types, 'EC-50': EC50}
     df = pd.DataFrame(dataframe)
-    
 
-    catplot_comparison(ax[1], df)  # compare experiments to model predictions
+    catplot_comparison(ax[0], df)  # compare experiments to model predictions
 
     return f
 
@@ -94,17 +92,16 @@ def catplot_comparison(ax, df):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=False, legend_out=False, ax=ax, marker='^')
+                legend=True, legend_out=False, ax=ax, marker='^')
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='o')
+                legend=True, legend_out=False, ax=ax, marker='o')
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    ax.get_legend().remove()
 
 
 def plot_corrcoef(ax, tps):
@@ -140,7 +137,7 @@ def calculate_predicted_EC50(x0, cell_receptor_data, tps, pstat):
     """ Calculate average EC50 from model predictions. """
     activity = calc_dose_response_mutein(unkVec_2_15, [1., 1., 5.], tps, muteinC, cell_receptor_data, pstat)
     EC50 = np.zeros(len(tps))
-    # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
+    # calculate EC50 for each timepoint
     for i, _ in enumerate(tps):
         EC50[i] = nllsq_EC50(x0, np.log10(muteinC.astype(np.float) * 10**4), activity[:, i])
     return EC50

@@ -64,8 +64,10 @@ def makeFigure():
             IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
             IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
             gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+            
             for l in range(unkVec_2_15.shape[1]):
-                 
+                
+                cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec_2_15[17, l], unkVec_2_15[20, l], unkVec_2_15[19, l], unkVec_2_15[21, l]) 
                 pred_data[:, :, l] = calc_dose_response_mutein(unkVec_2_15[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)
                 df3 = pd.DataFrame({"Activity Type":np.tile(np.array('predicted'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Replicate':np.tile(np.array(1 + l), iter), 'Activity':pred_data[:, :, l].reshape(iter,)})
                 df = df.append(df3, ignore_index=True)
@@ -102,6 +104,8 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors
     # scale receptor/cell measurements to pSTAT activity for each sample
     #scale1, scale2 = optimize_scale(total_activity[:, :], exp_data)  # find optimal constants
     #total_activity[:, :] = scale2 * total_activity[:, :] / (total_activity[:, :] + scale1)  # adjust activity
+    
+    print('total_activity.shape: ', total_activity.shape)
 
     return total_activity
 
