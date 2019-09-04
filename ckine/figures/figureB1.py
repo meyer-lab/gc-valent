@@ -4,7 +4,7 @@ This creates Figure 1.
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
-from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
+from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine, receptor_expression
 from ..make_tensor import rxntfR
 from ..imports import import_Rexpr
 
@@ -25,7 +25,7 @@ def makeFigure():
         IL2Ra = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='IL-2R$\\alpha$'), "Count"].item()
         IL2Rb = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='IL-2R$\\beta$'), "Count"].item()
         gc = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='$\\gamma_{c}$'), "Count"].item()
-        cellReceptors[i, :] = np.array([IL2Ra, IL2Rb, gc])
+        cellReceptors[i, :] = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
     
     halfMax_IL2RaAff(ax[0])
     activeReceptorComplexes(ax[1])
@@ -91,7 +91,7 @@ def halfMax_IL2RbAff(ax, cellName, receptorExpr):
         ax.loglog(changesA, output[:, ii], label=str(cellName[ii]))
 
     ax.loglog([0.1, 10.0], [0.17, 0.17], "k-")
-    ax.set(ylabel="Half-Maximal IL2 Concentration [nM]", xlabel="IL2Rb-IL2 Kd (relative to wt)") # ylim=(0.001, 10), xlim=(0.1, 10)
+    ax.set(ylabel="Half-Maximal IL2 Concentration [nM]", xlabel="IL2Rb-IL2 Kd (relative to wt)", xlim=(0.1, 10))
     ax.legend(title="Cell Type")
 
 
@@ -101,14 +101,14 @@ def halfMax_IL2RbAff_highIL2Ra(ax, cellName, receptorExpr):
     output = np.zeros((changesA.size, receptorExpr.shape[0]))
     for i, itemA in enumerate(changesA):
         for j, itemB in enumerate(receptorExpr):
-           ILs, BB = dRespon([0.1, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
-           output[i, j] = IC50global(ILs, BB)
+            ILs, BB = dRespon([0.1, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
+            output[i, j] = IC50global(ILs, BB)
 
     for ii in range(output.shape[1]):
         ax.loglog(changesA, output[:, ii], label=str(cellName[ii]))
 
     ax.loglog([0.1, 10.0], [0.17, 0.17], "k-")
-    ax.set(ylabel="Half-Maximal IL2 Concentration [nM]", xlabel="IL2Rb-IL2 Kd (relative to wt)") # ylim=(0.001, 10), xlim=(0.1, 10)
+    ax.set(ylabel="Half-Maximal IL2 Concentration [nM]", xlabel="IL2Rb-IL2 Kd (relative to wt)", xlim=(0.1, 10))
     ax.legend(title="Cell Type")
 
 
