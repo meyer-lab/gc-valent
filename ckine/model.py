@@ -3,10 +3,12 @@ A file that includes the model and important helper functions.
 """
 import os
 import numpy as np
-from julia.api import Julia
 
-jl = Julia(compiled_modules=False)
-from julia import Main
+from julia.api import LibJulia
+api = LibJulia.load()
+api.sysimage = "ckine/sys.so"
+api.init_julia()
+
 from julia import gcSolver
 
 

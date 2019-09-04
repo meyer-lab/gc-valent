@@ -12,13 +12,15 @@ all: Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	test -d venv || virtualenv --system-site-packages venv
-	. venv/bin/activate && pip install -Ur requirements.txt
-	. venv/bin/activate && python3 -c "import julia; julia.install()"
-	. venv/bin/activate && julia -e "using Pkg; Pkg.update(); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
+	test -d venv || virtualenv venv
+	. venv/bin/activate && pip install -UIr requirements.txt
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/figures/figure%.py
+ckine/sys.so: venv
+	. venv/bin/activate && python3 -m julia.sysimage ckine/sys.so
+	. venv/bin/activate && julia-py --sysimage ckine/sys.so -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
+
+$(fdir)/figure%.svg: venv genFigures.py ckine/sys.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate && ./genFigures.py $*
 
@@ -48,16 +50,16 @@ autopep:
 clean:
 	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/figure* profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
-	rm -rf html doxy.log graph_all.svg venv
+	rm -rf html doxy.log graph_all.svg venv ckine/sys.so
 	find -iname "*.pyc" -delete
 
 spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
-test: venv
+test: venv ckine/sys.so
 	. venv/bin/activate && python -m pytest
 
-testcover: venv
+testcover: venv ckine/sys.so
 	. venv/bin/activate && python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 pylint.log: venv common/pylintrc
