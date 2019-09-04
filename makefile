@@ -2,6 +2,7 @@ SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
+compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
 flist = B1 B2 B3 B4 B5 B6 B7
 
