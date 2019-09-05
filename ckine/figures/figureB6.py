@@ -97,12 +97,16 @@ def makeFigure():
 
             if cell_name in ['T-reg', 'Mem Treg', 'Naive Treg']:
                 plot_dose_response(ax[axis], scales[0, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[0, 0]), tps, muteinC)
+                ax[axis].set(ylim=(0, 50000.))
             if cell_name in ['T-helper', 'Mem Th', 'Naive Th']:
                 plot_dose_response(ax[axis], scales[1, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[1, 0]), tps, muteinC)
+                ax[axis].set(ylim=(0, 30000.))
             if cell_name == 'NK':
                 plot_dose_response(ax[axis], scales[2, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[2, 0]), tps, muteinC)
+                ax[axis].set(ylim=(0, 2500.))
             if cell_name == 'CD8+':
                 plot_dose_response(ax[axis], scales[3, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[3, 0]), tps, muteinC)
+                ax[axis].set(ylim=(0, 3500.))
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
     return f
