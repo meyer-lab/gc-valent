@@ -8,7 +8,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
-import sklearn
+from sklearn import preprocessing
 from sklearn.decomposition import PCA
 
 
@@ -271,7 +271,7 @@ def sampleNK(smpl):
 
 def fitPCA(data, features):
     """
-    Fits the PCA model to data, and returns the fit PCA model for future transformations 
+    Fits the PCA model to data, and returns the fit PCA model for future transformations
     (allows for consistent loadings plots between wells)
     """
     # Apply PCA to the data set
@@ -335,10 +335,10 @@ def pcaPlt(xf, pstat, features, title, tplate=True):
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
     if tplate:
-        sns.scatterplot(x="PC1", y="PC2", hue ="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(3000, 7000))
+        sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(3000, 7000))
         points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
     else:
-        sns.scatterplot(x="PC1", y="PC2", hue ="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(0, 5000))
+        sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(0, 5000))
         points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=0, vmax=5000) #set style options
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
@@ -397,7 +397,6 @@ def pcaAll(sampleType, check, titles):
     data_array = []
     pstat_array = []
     xf_array = []
-    loading_array = []
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     if check == "t":
@@ -573,7 +572,7 @@ def pcaAllCellType(sampleType, check, titles):
 
 #************************Dose Response by PCA******************************
 
-def PCADoseResponse (sampleType, PC1Bnds, PC2Bnds, Timepoint):
+def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, Timepoint):
     """ Given data from a time Point and two PC bounds, the dose response curve will be calculated and graphed (needs folder with FCS from one time point)"""
     dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
     Pstatvals = []
@@ -581,9 +580,9 @@ def PCADoseResponse (sampleType, PC1Bnds, PC2Bnds, Timepoint):
     for i, sample in enumerate(sampleType):
         data, pstat, features = sampleT(sample) #retrieve data
         if i == 0:
-            PCAobj, loading = fitPCA(data, features) #only fit to first set
+            PCAobj, _ = fitPCA(data, features) #only fit to first set
         xf = appPCA(data, features, PCAobj) #get PC1/2 vals
-        PC1, PC2, pstat = np.transpose(xf[:,0]), np.transpose(xf[:,1]), pstat.to_numpy()
+        PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
         PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
         PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
         PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'Pstat': PCAstat[:, 2]}) #arrange into pandas datafrome
@@ -591,12 +590,11 @@ def PCADoseResponse (sampleType, PC1Bnds, PC2Bnds, Timepoint):
         PCApd = PCApd[PCApd['PC1'] <= PC1Bnds[1]]
         PCApd = PCApd[PCApd['PC2'] >= PC2Bnds[0]]
         PCApd = PCApd[PCApd['PC2'] <= PC2Bnds[1]]
-        Pstatvals.append(PCApd.loc[:,"Pstat"].mean()) #take average Pstat activity of data fitting criteria
+        Pstatvals.append(PCApd.loc[:, "Pstat"].mean()) #take average Pstat activity of data fitting criteria
 
     _, ax = plt.subplots(figsize=(8, 8))
-    title = Timepoint
     plt.scatter(dosemat, Pstatvals)
-    ax.set_title(title + " PCA Gated Dose Response Curve", fontsize=20)
+    ax.set_title(Timepoint + " PCA Gated Dose Response Curve", fontsize=20)
     ax.set_xscale('log')
     ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
     ax.set_ylabel("Average Pstat Activity", fontsize=15)
