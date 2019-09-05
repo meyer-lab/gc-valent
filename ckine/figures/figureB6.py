@@ -42,7 +42,7 @@ def makeFigure():
     avg_pred_data = np.zeros((len(muteinC), len(tps)))
     df = pd.DataFrame(columns=['Mutein', 'Activity Type', 'Cell Type', 'Time Point', 'Concentration', 'Activity']) # make empty dataframe for all cell types
     
-    iter = len(tps) * len(muteinC)
+    num = len(tps) * len(muteinC)
 
     # loop for each mutein and cell type
     for j, cell_name in enumerate(cell_order):
@@ -59,20 +59,20 @@ def makeFigure():
             for k, conc in enumerate(dataMean.Concentration.unique()):
                 exp_data[k, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
             
-            df_exp = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), iter), 'Activity Type':np.tile(np.array('experimental'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Activity':exp_data.reshape(iter,)})
+            df_exp = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), num), 'Activity Type':np.tile(np.array('experimental'), num), 'Cell Type':np.tile(np.array(cell_name), num), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Activity':exp_data.reshape(num,)})
             df = df.append(df_exp, ignore_index=True)
 
             # calculate predicted dose response
             for l in range(unkVec_2_15.shape[1]):
                 cell_receptors = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), unkVec_2_15[17, l], unkVec_2_15[20, l], unkVec_2_15[19, l], unkVec_2_15[21, l])
-                pred_data[:, :, l] = calc_dose_response_mutein(unkVec_2_15[:, l], [1., 1., 5.], tps, muteinC, cell_receptors, exp_data)
+                pred_data[:, :, l] = calc_dose_response_mutein(unkVec_2_15[:, l], [1., 1., 5.], tps, muteinC, cell_receptors)
                 all_pred_data[j, i, :, :, l] = pred_data[:, :, l]
             
             avg_pred_data = np.mean(pred_data, axis=2)
-            df_pred = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), iter), 'Activity Type':np.tile(np.array('predicted'), iter), 'Cell Type':np.tile(np.array(cell_name), iter), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Activity':avg_pred_data.reshape(iter,)})
+            df_pred = pd.DataFrame({'Mutein':np.tile(np.array(ligand_name), num), 'Activity Type':np.tile(np.array('predicted'), num), 'Cell Type':np.tile(np.array(cell_name), num), 'Time Point':np.tile(np.array([0.5, 1.0, 2.0, 4.0]), len(muteinC)), 'Concentration':mutein_conc, 'Activity':avg_pred_data.reshape(num,)})
             df = df.append(df_pred, ignore_index=True)
 
-    df_scaled, scales = mutein_scaling(df)
+    scales = mutein_scaling(df)
     
     for m, cell_name in enumerate(cell_order):
         for n, ligand_name in enumerate(ligand_order):
@@ -101,18 +101,15 @@ def makeFigure():
 def mutein_scaling(df):
     """ Determines scaling constants for specified cell groups for across all muteins. """
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
-    df_scaled = pd.DataFrame(columns=['Mutein', 'Activity Type', 'Cell Type', 'Time Point', 'Concentration', 'Activity'])
     scales = np.zeros((4, 2))
     for i, cells in enumerate(cell_groups):
         subset_df = df[df['Cell Type'].isin(cells)]
         scales[i, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted'), "Activity"]), np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
-        subset_df['Activity'] = scales[i, 0] * subset_df['Activity'] / (subset_df['Activity'] + scales[i, 1])
-        df_scaled = df_scaled.append(subset_df, ignore_index=True)
         
-    return df_scaled, scales
+    return scales
 
 
-def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors, exp_data):
+def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
 
     total_activity = np.zeros((len(muteinC), len(tps)))
