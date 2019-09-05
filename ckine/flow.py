@@ -269,22 +269,38 @@ def sampleNK(smpl):
     return data, pstat, features
 
 
-def appPCA(data, features):
-    """Applies the PCA algorithm to the data set"""
+def fitPCA(data, features):
+    """
+    Fits the PCA model to data, and returns the fit PCA model for future transformations 
+    (allows for consistent loadings plots between wells)
+    """
     # Apply PCA to the data set
     # setting values of data of selected features to data frame
     xi = data.loc[:, features].values
     # STANDARDIZE DATA --> very important to do before applying machine learning algorithm
-    xs = sklearn.preprocessing.scale(xi)
+    scaler = preprocessing.StandardScaler()
+    xs = scaler.fit_transform(xi)
     xs = np.nan_to_num(xs)
     # setting how many components wanted --> PC1 and PC2
     pca = PCA(n_components=2)
     # apply PCA to standardized data set
-    # NOTE: score == xf
-    xf = pca.fit(xs).transform(xs)
+    PCAobj = pca.fit(xs)
     # creates the loading array (equation is defintion of loading)
     loading = pca.components_.T
-    return xf, loading
+    return PCAobj, loading
+
+
+def appPCA(data, features, PCAobj):
+    """Applies the PCA algorithm to the data set"""
+    # setting values of data of selected features to data frame
+    xi = data.loc[:, features].values
+    # STANDARDIZE DATA --> very important to do before applying machine learning algorithm
+    scaler = preprocessing.StandardScaler()
+    xs = scaler.fit_transform(xi)
+    xs = np.nan_to_num(xs)
+    # transform to the prefit pca object
+    xf = PCAobj.transform(xs)
+    return xf
 
 
 def pcaPlt(xf, pstat, features, title, tplate=True):
@@ -391,9 +407,10 @@ def pcaAll(sampleType, check, titles):
             data, pstat, features = sampleT(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             xf_array.append(xf)
-            loading_array.append(loading)
             pcaPlt(xf, pstat, features, title, tplate=True)
             loadingPlot(loading, features, i, title)
             plt.show()
@@ -404,11 +421,13 @@ def pcaAll(sampleType, check, titles):
             data, pstat, features = sampleNK(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             pcaPlt(xf, pstat, features, title, tplate=False)
             loadingPlot(loading, features, i, title)
             plt.show()
-    return data_array, pstat_array, xf_array, loading_array
+    return data_array, pstat_array, xf_array
 
 #************************PCA by color (gating+PCA)******************************
 
@@ -530,7 +549,9 @@ def pcaAllCellType(sampleType, check, titles):
             data, pstat, features, colormat = sampleTcolor(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             xf_array.append(xf)
             loading_array.append(loading)
             pcaPltColor(xf, pstat, features, title, colormat) #changed
@@ -542,7 +563,9 @@ def pcaAllCellType(sampleType, check, titles):
             data, pstat, features, colormat = sampleNKcolor(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             pcaPltColor(xf, pstat, features, title, colormat)
             loadingPlot(loading, features, i, title)
     plt.show()
