@@ -87,22 +87,22 @@ def makeFigure():
                                                                                           & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
             
             if cell_name in ['T-reg', 'Mem Treg', 'Naive Treg']:
-                print('0')
                 plot_dose_response(ax[axis], scales[0, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[0, 0]), tps, muteinC)
             if cell_name in ['T-helper', 'Mem Th', 'Naive Th']:
-                print('1')
                 plot_dose_response(ax[axis], scales[1, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[1, 0]), tps, muteinC)
-            if cell_name in ['NK', 'CD8+']:
-                print('2')
+            if cell_name == 'NK':
                 plot_dose_response(ax[axis], scales[2, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[2, 0]), tps, muteinC)
+            if cell_name == 'CD8+':
+                plot_dose_response(ax[axis], scales[3, 1] * all_pred_data[m, n, :, :, :] / (all_pred_data[m, n, :, :, :] + scales[3, 0]), tps, muteinC)
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
     return f
 
 def mutein_scaling(df):
-    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK', 'CD8+']]
+    """ Determines scaling constants for specified cell groups for across all muteins. """
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
     df_scaled = pd.DataFrame(columns=['Mutein', 'Activity Type', 'Cell Type', 'Time Point', 'Concentration', 'Activity'])
-    scales = np.zeros((3, 2))
+    scales = np.zeros((4, 2))
     for i, cells in enumerate(cell_groups):
         subset_df = df[df['Cell Type'].isin(cells)]
         scales[i, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted'), "Activity"]), np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
@@ -121,10 +121,6 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors
     for i, conc in enumerate(muteinC):
         active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True)
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
-
-    # scale receptor/cell measurements to pSTAT activity for each sample
-    #scale1, scale2 = optimize_scale(total_activity[:, :], exp_data)  # find optimal constants
-    #total_activity[:, :] = scale2 * total_activity[:, :] / (total_activity[:, :] + scale1)  # adjust activity
 
     return total_activity
 
