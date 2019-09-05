@@ -570,3 +570,35 @@ def pcaAllCellType(sampleType, check, titles):
             loadingPlot(loading, features, i, title)
     plt.show()
     return data_array, pstat_array, xf_array, loading_array
+
+#************************Dose Response by PCA******************************
+
+def PCADoseResponse (sampleType, PC1Bnds, PC2Bnds, Timepoint):
+    """ Given data from a time Point and two PC bounds, the dose response curve will be calculated and graphed (needs folder with FCS from one time point)"""
+    dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+    Pstatvals = []
+
+    for i, sample in enumerate(sampleType):
+        data, pstat, features = sampleT(sample) #retrieve data
+        if i == 0:
+            PCAobj, loading = fitPCA(data, features) #only fit to first set
+        xf = appPCA(data, features, PCAobj) #get PC1/2 vals
+        PC1, PC2, pstat = np.transpose(xf[:,0]), np.transpose(xf[:,1]), pstat.to_numpy()
+        PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
+        PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
+        PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'Pstat': PCAstat[:, 2]}) #arrange into pandas datafrome
+        PCApd = PCApd[PCApd['PC1'] >= PC1Bnds[0]] #remove data that that is not within given PC bounds
+        PCApd = PCApd[PCApd['PC1'] <= PC1Bnds[1]]
+        PCApd = PCApd[PCApd['PC2'] >= PC2Bnds[0]]
+        PCApd = PCApd[PCApd['PC2'] <= PC2Bnds[1]]
+        Pstatvals.append(PCApd.loc[:,"Pstat"].mean()) #take average Pstat activity of data fitting criteria
+
+    _, ax = plt.subplots(figsize=(8, 8))
+    title = Timepoint
+    plt.scatter(dosemat, Pstatvals)
+    ax.set_title(title + " PCA Gated Dose Response Curve", fontsize=20)
+    ax.set_xscale('log')
+    ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
+    ax.set_ylabel("Average Pstat Activity", fontsize=15)
+    ax.set(xlim=(0.0001, 100))
+    plt.show()
