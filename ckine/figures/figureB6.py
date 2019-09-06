@@ -57,7 +57,7 @@ def makeFigure():
         for _, ligand_name in enumerate(ligand_order):
 
             # append dataframe with experimental and predicted activity
-            df = organize_expr_pred(df, dataMean, cell_name, ligand_name, receptors, muteinC, tps)
+            df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps)
 
     # determine scaling constants
     scales = mutein_scaling(df)
@@ -80,7 +80,7 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
             # plot experimental data
             if axis == 31:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
-                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')  # legend on last plot
+                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
                 ax[axis].legend(loc='lower right', title="time (hours)")
             else:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
@@ -107,7 +107,7 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
 
-def organize_expr_pred(df, pstat_df, cell_name, ligand_name, receptors, muteinC, tps):
+def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps):
     """ Appends dataframe with experimental and predicted activity for a given cell type and mutein. """
 
     num = len(tps) * len(muteinC)
@@ -115,8 +115,8 @@ def organize_expr_pred(df, pstat_df, cell_name, ligand_name, receptors, muteinC,
     # organize experimental pstat data
     exp_data = np.zeros((12, 4))
     mutein_conc = exp_data.copy()
-    for i, conc in enumerate(pstat_df.Concentration.unique()):
-        exp_data[i, :] = np.array(pstat_df.loc[(pstat_df["Cells"] == cell_name) & (pstat_df["Ligand"] == ligand_name) & (pstat_df["Concentration"] == conc), "RFU"])
+    for i, conc in enumerate(dataMean.Concentration.unique()):
+        exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
         mutein_conc[i, :] = conc
     df_exp = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
                            'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Activity': exp_data.reshape(num,)})
