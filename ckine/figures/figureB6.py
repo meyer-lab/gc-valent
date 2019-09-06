@@ -71,6 +71,8 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
 
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+    ylims = [50000., 30000., 2500., 3500.]
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
@@ -92,18 +94,10 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                     pred_data[k, l, :] = np.array(df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
                         df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp), "Activity"])
 
-            if cell_name in ['T-reg', 'Mem Treg', 'Naive Treg']:
-                plot_dose_response(ax[axis], scales[0, 1] * pred_data / (pred_data + scales[0, 0]), tps, muteinC)
-                ax[axis].set(ylim=(0, 50000.))
-            if cell_name in ['T-helper', 'Mem Th', 'Naive Th']:
-                plot_dose_response(ax[axis], scales[1, 1] * pred_data / (pred_data + scales[1, 0]), tps, muteinC)
-                ax[axis].set(ylim=(0, 30000.))
-            if cell_name == 'NK':
-                plot_dose_response(ax[axis], scales[2, 1] * pred_data / (pred_data + scales[2, 0]), tps, muteinC)
-                ax[axis].set(ylim=(0, 2500.))
-            if cell_name == 'CD8+':
-                plot_dose_response(ax[axis], scales[3, 1] * pred_data / (pred_data + scales[3, 0]), tps, muteinC)
-                ax[axis].set(ylim=(0, 3500.))
+            for m, cell_names in enumerate(cell_groups):
+                if cell_name in cell_names:
+                    plot_dose_response(ax[axis], scales[m, 1] * pred_data / (pred_data + scales[m, 0]), tps, muteinC)
+                    ax[axis].set(ylim=(0, ylims[m]))
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
 
