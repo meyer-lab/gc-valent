@@ -227,21 +227,21 @@ def plotAll(sampleType, check, gate1, gate2, titles):
     if check == "t":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             tcells(sample, gate1, gate2, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             nk_bnk_plot(sample, gate1, gate2, title)
     elif check == "c":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             cd_plot(sample, gate1, title)
 
 
-#********************************** PCA Functions****************************************************
+# ********************************** PCA Functions****************************************************
 def sampleT(smpl):
     """Output is the T cells data (the protein channels related to T cells)"""
     # Features are the protein channels of interest when analyzing T cells
@@ -322,8 +322,8 @@ def pcaPlt(xf, pstat, features, title):
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
     # Graph the Points
-    points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
-    #add a color bar
+    points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000)  # set style options
+    # add a color bar
     plt.colorbar(points)
 
 
@@ -362,7 +362,7 @@ def loadingPlot(loading, features, i, title):
             if feature == "BL1-H":
                 feature = "CD56"
         plt.annotate(str(feature), xy=(x_load[z], y_load[z]))
-        plt.savefig('loading'+str(i)+'.png')
+        plt.savefig('loading' + str(i) + '.png')
     ax.set_title(name + " - Loading - " + str(title), fontsize=20)
 
 
@@ -384,7 +384,7 @@ def pcaAll(sampleType, check, titles):
     if check == "t":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             data, pstat, features = sampleT(sample)
             data_array.append(data)
             pstat_array.append(pstat)
@@ -397,7 +397,7 @@ def pcaAll(sampleType, check, titles):
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             data, pstat, features = sampleNK(sample)
             data_array.append(data)
             pstat_array.append(pstat)
@@ -407,7 +407,8 @@ def pcaAll(sampleType, check, titles):
             plt.show()
     return data_array, pstat_array, xf_array, loading_array
 
-#************************PCA by color (gating+PCA)******************************
+# ************************PCA by color (gating+PCA)******************************
+
 
 def sampleTcolor(smpl):
     """Output is the T cells data (the protein channels related to T cells)"""
@@ -422,14 +423,14 @@ def sampleTcolor(smpl):
     # Save pSTAT5 data
     pstat = tform.data[["RL1-H"]][0:]
     # Create a section for assigning colors to each data point of each cell population --> in this case, T cells
-    colmat = []*(len(data)+1)
-    for  i in range(len(data)):
+    colmat = [] * (len(data) + 1)
+    for i in range(len(data)):
         if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03:
-            colmat.append('r') #Treg
+            colmat.append('r')  # Treg
             tregd.append(data.iloc[[i]])
             tregp.append(pstat.iloc[[i]])
         elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
-            colmat.append('g') # non Treg
+            colmat.append('g')  # non Treg
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -447,12 +448,12 @@ def sampleNKcolor(smpl):
     data = tform.data[["VL4-H", "RL1-H", "BL1-H"]][0:]
     pstat = tform.data[["BL2-H"]][0:]
     # Create a section for assigning colors to each data point of each cell population --> in this case NK cells
-    colmat = []*(len(data)+1)
+    colmat = [] * (len(data) + 1)
     for i in range(len(data)):
         if data.iat[i, 0] > 5.550e03 and data.iat[i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
-            colmat.append('r') #nk
+            colmat.append('r')  # nk
         elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
-            colmat.append('g') #bnk
+            colmat.append('g')  # bnk
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -509,19 +510,19 @@ def pcaAllCellType(sampleType, check, titles):
     if check == "t":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             data, pstat, features, colormat = sampleTcolor(sample)
             data_array.append(data)
             pstat_array.append(pstat)
             xf, loading = appPCA(data, features)
             xf_array.append(xf)
             loading_array.append(loading)
-            pcaPltColor(xf, pstat, features, title, colormat) #changed
+            pcaPltColor(xf, pstat, features, title, colormat)  # changed
             loadingPlot(loading, features, i, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
-            title = title[len(title)-1]
+            title = title[len(title) - 1]
             data, pstat, features, colormat = sampleNKcolor(sample)
             data_array.append(data)
             pstat_array.append(pstat)
