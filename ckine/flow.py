@@ -652,9 +652,9 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
     plt.plot(dosemat, ginis, ".--", color="navy")
     plt.grid()
     if gate:
-        ax.set_title(Timepoint + " Pstat Gini Coefficient for " + gate.__name__ + " cells", fontsize=20)
+        ax.set_title(Timepoint + " pSTAT Gini Coefficient for " + gate.__name__ + " cells", fontsize=20)
     else:
-        ax.set_title(Timepoint + " Pstat Gini Coefficient", fontsize=20)
+        ax.set_title(Timepoint + " pSTAT Gini Coefficient", fontsize=20)
     ax.set_xscale('log')
     ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
     ax.set_ylabel("Gini Coefficient", fontsize=15)
