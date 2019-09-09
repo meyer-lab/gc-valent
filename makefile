@@ -18,6 +18,8 @@ venv/bin/activate: requirements.txt
 	touch venv/bin/activate
 
 ckine/sys.so: venv
+	julia -e "using Pkg; Pkg.add(\"PyCall\")"
+	julia -e "using Pkg; Pkg.add(\"Conda\")"
 	. venv/bin/activate && python3 -m julia.sysimage ckine/sys.so
 	. venv/bin/activate && julia-py --sysimage ckine/sys.so -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	. venv/bin/activate && julia-py --sysimage ckine/sys.so -e "using Pkg; Pkg.add(\"PyCall\")"
