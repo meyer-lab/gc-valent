@@ -572,17 +572,23 @@ def pcaAllCellType(sampleType, check, titles):
 
 #************************Dose Response by PCA******************************
 
-def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, Timepoint):
-    """ Given data from a time Point and two PC bounds, the dose response curve will be calculated and graphed (needs folder with FCS from one time point)"""
+def PCADoseResponse (sampleType, PC1Bnds, PC2Bnds, Timepoint, Tcells=True):
+    """ 
+    Given data from a time Point and two PC bounds, the dose response curve will be calculated and graphed 
+    (needs folder with FCS from one time point)
+    """
     dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
     Pstatvals = []
 
     for i, sample in enumerate(sampleType):
-        data, pstat, features = sampleT(sample) #retrieve data
+        if Tcells:
+            data, pstat, features = sampleT(sample) #retrieve data
+        else:
+            data, pstat, features = sampleNk(sample)
         if i == 0:
-            PCAobj, _ = fitPCA(data, features) #only fit to first set
+            PCAobj, loading = fitPCA(data, features) #only fit to first set
         xf = appPCA(data, features, PCAobj) #get PC1/2 vals
-        PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
+        PC1, PC2, pstat = np.transpose(xf[:,0]), np.transpose(xf[:,1]), pstat.to_numpy()
         PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
         PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
         PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'Pstat': PCAstat[:, 2]}) #arrange into pandas datafrome
@@ -590,13 +596,68 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, Timepoint):
         PCApd = PCApd[PCApd['PC1'] <= PC1Bnds[1]]
         PCApd = PCApd[PCApd['PC2'] >= PC2Bnds[0]]
         PCApd = PCApd[PCApd['PC2'] <= PC2Bnds[1]]
-        Pstatvals.append(PCApd.loc[:, "Pstat"].mean()) #take average Pstat activity of data fitting criteria
+        Pstatvals.append(PCApd.loc[:,"Pstat"].mean()) #take average Pstat activity of data fitting criteria
 
     _, ax = plt.subplots(figsize=(8, 8))
-    plt.scatter(dosemat, Pstatvals)
+    plt.plot(dosemat, Pstatvals, ".--", color = "navy")
+    plt.grid()
     ax.set_title(Timepoint + " PCA Gated Dose Response Curve", fontsize=20)
     ax.set_xscale('log')
     ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
     ax.set_ylabel("Average Pstat Activity", fontsize=15)
     ax.set(xlim=(0.0001, 100))
     plt.show()
+    return Pstatvals, dosemat
+
+def StatGini (sampleType, Timepoint, gate, Tcells = True):
+    """ 
+    Define the Gini Coefficient of Pstat Vals Across a timepoint for either whole or gated population.
+    Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
+    """
+    ginis = []
+    alldata = []
+    dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+
+    if gate:
+        gates = gate()
+        _, alldata = count_data(sampleType,gates) #returns array of dfs in case of gate or no gate
+
+    else:
+        for i, sample in enumerate(sampleType):
+            if Tcells:
+                _, pstat, _ = sampleT(sample)
+                alldata.append(pstat)
+            else:
+                _, pstat, _ = sampleNK(sample)
+                alldata.append(pstat)
+
+    for i, sample in enumerate(sampleType):  #get pstat data and put it into list form
+        dat_array = alldata[i]
+        if Tcells:
+            stat_array = dat_array[["RL1-H"]]
+        else:
+            stat_array = dat_array[["BL2-H"]]
+        stat_array = stat_array.to_numpy()
+        stat_array = stat_array.clip(min = 0) #remove small percentage of negative pstat values
+        stat_array.tolist()                   #manipulate data to be compatible with gin calculation
+        stat_sort = np.hstack(stat_array)
+        stat_sort.sort()
+        num = stat_array.size
+        subconst = (num+1)/num
+        coef = 2/num
+        summed = sum([(j+1)*stat for j, stat in enumerate(stat_sort)])
+        ginis.append(coef*summed/(stat_sort.sum()) - subconst)
+
+    _, ax = plt.subplots(figsize=(8, 8))
+    plt.plot(dosemat, ginis, ".--", color = "navy")
+    plt.grid()
+    if gate:
+        ax.set_title(Timepoint + " Pstat Gini Coefficient for " + gate.__name__ + " cells", fontsize=20)
+    else:
+        ax.set_title(Timepoint + " Pstat Gini Coefficient", fontsize=20)
+    ax.set_xscale('log')
+    ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
+    ax.set_ylabel("Gini Coefficient", fontsize=15)
+    ax.set(xlim=(0.0001, 100))
+    plt.show()
+    return ginis, dosemat
