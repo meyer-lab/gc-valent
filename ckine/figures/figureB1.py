@@ -5,9 +5,15 @@ import string
 import numpy as np
 from scipy.optimize import brentq
 from .figureCommon import subplotLabel, getSetup
-from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
+from ..imports import import_Rexpr
+from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine, receptor_expression
 from ..make_tensor import rxntfR
 
+_, numpy_data, cell_names = import_Rexpr()
+numpy_data = receptor_expression(numpy_data, rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
+
+rxntfR[22:27] = numpy_data[1, :]
+print(cell_names[1])
 
 def makeFigure():
     """ Get a list of the axis objects and create a figure. """
@@ -32,11 +38,11 @@ def dRespon(input_params, CD25=1.0):
     return ILs, activee
 
 
-def IC50global(input_params, CD25=1.0):
+def IC50global(input_params, CD25=1.0, input_receptors=None):
     """ Calculate half-maximal concentration w.r.t. wt. """
-    halfResponse = 20.0
+    halfResponse = runIL2simple(rxntfR, [1.0, 1.0, 5.0], 5000.0, CD25, input_receptors=input_receptors) / 2.0
 
-    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, CD25) - halfResponse, 0, 1000.0, rtol=1e-5)
+    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, CD25, input_receptors=input_receptors) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
 changesA = np.logspace(-1, 1.5, num=20)
@@ -98,7 +104,7 @@ def halfMax_IL2RbAff_highIL2Ra(ax):
     ax.legend(title="CD25 rel expr")
 
 
-def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=None, input_receptors=None, adj_receptors=False, ligandDegradation=False):
+def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=None, input_receptors=None, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
 
     if tps is None:
@@ -110,7 +116,7 @@ def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=None, input_receptors=N
     k2rev = 0.6 * 144 * input_params[1]
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
 
-    if adj_receptors:
+    if input_receptors is not None:
         IL2Ra = input_receptors[0] * CD25
         IL2Rb = input_receptors[1]
         gc = input_receptors[2]
