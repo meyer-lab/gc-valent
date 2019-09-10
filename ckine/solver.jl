@@ -7,9 +7,9 @@ using gcSolver
     
     output = runCkine(tps, vecc)
     
-    outWrap = unsafe_wrap(Array{Float64, 2}, outt, gcSolver.Nspecies*nTps)
+    outWrap = unsafe_wrap(Array{Cdouble, 2}, outt, (nTps, gcSolver.Nspecies))
     
-    outWrap .= output
+    outWrap[:, :] .= output[:, :]
     
     return 0
 end
