@@ -70,7 +70,7 @@ def runCkineU_IL2(tps, rxntfr):
 
 def runCkineU(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
-    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()))
+    return libb.runCkineC(tps, np.atleast_2d(rxntfr.copy()))
 
 
 def runCkineUP(tps, rxntfr):
