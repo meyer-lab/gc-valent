@@ -4,12 +4,10 @@ A file that includes the model and important helper functions.
 import os
 import numpy as np
 
-from julia.api import LibJulia
-api = LibJulia.load()
-api.sysimage = "ckine/sys.so"
-api.init_julia()
-
-from julia import gcSolver
+filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../build_dir/solver.so")
+libb = ct.cdll.LoadLibrary(filename)
+pcd = ct.POINTER(ct.c_double)
+libb.runCkineC.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_bool, ct.c_double, pcd)
 
 
 __nSpecies = 62
