@@ -66,7 +66,7 @@ spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
 test: venv ckine/solver.so
-	. venv/bin/activate && python -m pytest
+	. venv/bin/activate && python -m pytest -s
 
 testcover: venv ckine/solver.so
 	. venv/bin/activate && python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml

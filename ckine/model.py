@@ -5,15 +5,14 @@ import os
 import ctypes as ct
 import numpy as np
 
-libb = ct.CDLL(os.path.dirname(__file__) + "/solver.so", ct.RTLD_GLOBAL)
+libpath = os.path.dirname(__file__) + "/solver.so"
+libb = ct.CDLL(libpath, ct.RTLD_GLOBAL)
 
-libb.jl_init_with_image__threading.argtypes = (ctypes.c_char_p, ctypes.c_char_p)
-libb.jl_init_with_image__threading(None, b"/PackageCompiler.jl/builddir/solver.so")
+libb.jl_init_with_image__threading.argtypes = (ct.c_char_p, ct.c_char_p)
+libb.jl_init_with_image__threading(None, libpath.encode())
 
 pcd = ct.POINTER(ct.c_double)
 libb.runCkineC.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_uint)
-
-libb.init_jl_runtime()
 
 __nSpecies = 62
 
@@ -73,7 +72,7 @@ def runCkineU_IL2(tps, rxntfr):
     assert np.all(rxntfr >= 0.0)
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float)
-    
+
     tpsP, tpsS = getPS(tps)
     rxnP, rxnS = getPS(rxntfr)
 
@@ -92,7 +91,7 @@ def runCkineU(tps, rxntfr):
     assert rxntfr[19] < 1.0  # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float)
-    
+
     tpsP, tpsS = getPS(tps)
     rxnP, rxnS = getPS(rxntfr)
 
@@ -113,9 +112,9 @@ def runCkineUP(tps, rxntfr):
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
-    
+
     for ii in range(rxntfr.shape[0]):
-        yOut[ii*tps.size : (ii+1)*tps.size, :] = runCkineU(tps, rxntfr[ii, :])
+        yOut[ii * tps.size: (ii + 1) * tps.size, :] = runCkineU(tps, rxntfr[ii, :])
 
     return yOut
 
