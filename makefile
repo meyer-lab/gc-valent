@@ -17,13 +17,9 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
 
-ckine/sys.so: venv
-	julia -e "using Pkg; Pkg.add(\"PyCall\")"
-	julia -e "using Pkg; Pkg.add(\"Conda\"); Pkg.build(\"Conda\")"
-	julia -e "using Pkg; Pkg.add(\"SpecialFunctions\"); Pkg.build(\"SpecialFunctions\")"
-	. venv/bin/activate && python3 -m julia.sysimage ckine/sys.so
-	. venv/bin/activate && julia-py --sysimage ckine/sys.so -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
-	. venv/bin/activate && julia-py --sysimage ckine/sys.so -e "using Pkg; Pkg.add(\"PyCall\")"
+ckine/sys.so:
+	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
+	julia -e "using PackageCompiler; build_shared_lib(\"ckine/solver.jl\"; optimize=3)"
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/sys.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
