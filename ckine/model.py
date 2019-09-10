@@ -2,6 +2,7 @@
 A file that includes the model and important helper functions.
 """
 import os
+import ctypes as ct
 import numpy as np
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../build_dir/solver.so")
