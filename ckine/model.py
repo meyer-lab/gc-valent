@@ -5,7 +5,7 @@ import os
 import ctypes as ct
 import numpy as np
 
-filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../build_dir/solver.so")
+filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../builddir/solver.so")
 libb = ct.cdll.LoadLibrary(filename)
 pcd = ct.POINTER(ct.c_double)
 libb.runCkineC.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_bool, ct.c_double, pcd)
