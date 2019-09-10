@@ -8,7 +8,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
-import sklearn
+from sklearn import preprocessing
 from sklearn.decomposition import PCA
 
 
@@ -269,25 +269,41 @@ def sampleNK(smpl):
     return data, pstat, features
 
 
-def appPCA(data, features):
-    """Applies the PCA algorithm to the data set"""
+def fitPCA(data, features):
+    """
+    Fits the PCA model to data, and returns the fit PCA model for future transformations
+    (allows for consistent loadings plots between wells)
+    """
     # Apply PCA to the data set
     # setting values of data of selected features to data frame
     xi = data.loc[:, features].values
     # STANDARDIZE DATA --> very important to do before applying machine learning algorithm
-    xs = sklearn.preprocessing.scale(xi)
+    scaler = preprocessing.StandardScaler()
+    xs = scaler.fit_transform(xi)
     xs = np.nan_to_num(xs)
     # setting how many components wanted --> PC1 and PC2
     pca = PCA(n_components=2)
     # apply PCA to standardized data set
-    # NOTE: score == xf
-    xf = pca.fit(xs).transform(xs)
+    PCAobj = pca.fit(xs)
     # creates the loading array (equation is defintion of loading)
     loading = pca.components_.T
-    return xf, loading
+    return PCAobj, loading
 
 
-def pcaPlt(xf, pstat, features, title):
+def appPCA(data, features, PCAobj):
+    """Applies the PCA algorithm to the data set"""
+    # setting values of data of selected features to data frame
+    xi = data.loc[:, features].values
+    # STANDARDIZE DATA --> very important to do before applying machine learning algorithm
+    scaler = preprocessing.StandardScaler()
+    xs = scaler.fit_transform(xi)
+    xs = np.nan_to_num(xs)
+    # transform to the prefit pca object
+    xf = PCAobj.transform(xs)
+    return xf
+
+
+def pcaPlt(xf, pstat, features, title, tplate=True):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
@@ -318,11 +334,14 @@ def pcaPlt(xf, pstat, features, title):
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     plt.xlim(-4, 6)
     plt.ylim(-4, 4)
-    sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(3000, 7000))
+    if tplate:
+        sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(3000, 7000))
+        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
+    else:
+        sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=10, ax=ax, legend=False, hue_norm=(0, 5000))
+        points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=0, vmax=5000) #set style options
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
-    # Graph the Points
-    points = plt.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=3000, vmax=7000) #set style options
     #add a color bar
     plt.colorbar(points)
 
@@ -378,7 +397,6 @@ def pcaAll(sampleType, check, titles):
     data_array = []
     pstat_array = []
     xf_array = []
-    loading_array = []
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     if check == "t":
@@ -388,10 +406,11 @@ def pcaAll(sampleType, check, titles):
             data, pstat, features = sampleT(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             xf_array.append(xf)
-            loading_array.append(loading)
-            pcaPlt(xf, pstat, features, title)
+            pcaPlt(xf, pstat, features, title, tplate=True)
             loadingPlot(loading, features, i, title)
             plt.show()
     elif check == "n":
@@ -401,11 +420,13 @@ def pcaAll(sampleType, check, titles):
             data, pstat, features = sampleNK(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
-            pcaPlt(xf, pstat, features, title)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
+            pcaPlt(xf, pstat, features, title, tplate=False)
             loadingPlot(loading, features, i, title)
             plt.show()
-    return data_array, pstat_array, xf_array, loading_array
+    return data_array, pstat_array, xf_array
 
 #************************PCA by color (gating+PCA)******************************
 
@@ -413,23 +434,27 @@ def sampleTcolor(smpl):
     """Output is the T cells data (the protein channels related to T cells)"""
     # Features are the protein channels of interest when analyzing T cells
     features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
-    tregd = []
-    tregp = []
     # Transform to put on log scale
+    cd45dat = smpl[["BL3-H"]]
+    cd45dat = cd45dat.iloc[:, 0]
+    cd45dat = np.log10(cd45dat)
     tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H", "RL1-H"])
     # Save the data of each column of the protein channels
     data = tform.data[["BL1-H", "VL1-H", "VL4-H", "BL3-H"]][0:]
     # Save pSTAT5 data
     pstat = tform.data[["RL1-H"]][0:]
-    # Create a section for assigning colors to each data point of each cell population --> in this case, T cells
     colmat = []*(len(data)+1)
-    for  i in range(len(data)):
+    for i in range(len(data)):
         if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03:
-            colmat.append('r') #Treg
-            tregd.append(data.iloc[[i]])
-            tregp.append(pstat.iloc[[i]])
+            if cd45dat[i] > 5:
+                colmat.append('r') #Treg naive
+            else:
+                colmat.append('darkorange') #Treg mem
         elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
-            colmat.append('g') # non Treg
+            if cd45dat[i] > 5:
+                colmat.append('g') #Thelp naive
+            else:
+                colmat.append('darkorchid') #Thelp mem
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -458,7 +483,7 @@ def sampleNKcolor(smpl):
     return data, pstat, features, colmat
 
 
-def pcaPltColor(xf, pstat, features, title, colormat):
+def pcaPltColor(xf, pstat, features, title, colormat, tregc=True):
     """
     Used to plot the score graph.
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
@@ -479,16 +504,25 @@ def pcaPltColor(xf, pstat, features, title, colormat):
     # Creating a figure for both scatter and mesh plots for PCA
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlabel("Principal Component 1", fontsize=12)
-    ax.set_ylabel("Principal Component 2", fontsize=12)
+    ax.set_xlabel("Principal Component 1", fontsize=15)
+    ax.set_ylabel("Principal Component 2", fontsize=15)
     ax.set_title(name + " - PCA - " + str(title), fontsize=20)
     ax.set(xlim=(-5, 5), ylim=(-5, 5))
-    # This is the scatter plot of the cell clusters colored cell type
+    # This is the scatter plot of the cell clusters colored by pSTAT5 data
+    # lighter --> darker = less --> more pSTAT5 present
     colormat = np.array(colormat)
-    plt.scatter(x[colormat == "c"], y[colormat == "c"], s=.15, c="c", label="Other", alpha=0.5)
-    plt.scatter(x[colormat == "g"], y[colormat == "g"], s=.15, c="g", label="NonTreg", alpha=0.5)
-    plt.scatter(x[colormat == "r"], y[colormat == "r"], s=.15, c="r", label="TReg", alpha=0.5)
-    plt.legend()
+    if tregc:
+        plt.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
+        plt.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="T Helper Naive", alpha=0.5)
+        plt.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=1, c="darkorchid", label="T Helper Memory", alpha=0.5)
+        plt.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=1, c="darkorange", label="T Reg Memory", alpha=0.5)
+        plt.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="T Reg Naive", alpha=0.5)
+        plt.legend()
+    else:
+        plt.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
+        plt.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="BNK", alpha=0.5)
+        plt.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.5)
+        plt.legend()
 
 
 def pcaAllCellType(sampleType, check, titles):
@@ -504,6 +538,7 @@ def pcaAllCellType(sampleType, check, titles):
     pstat_array = []
     xf_array = []
     loading_array = []
+
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     if check == "t":
@@ -513,7 +548,9 @@ def pcaAllCellType(sampleType, check, titles):
             data, pstat, features, colormat = sampleTcolor(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             xf_array.append(xf)
             loading_array.append(loading)
             pcaPltColor(xf, pstat, features, title, colormat) #changed
@@ -525,8 +562,102 @@ def pcaAllCellType(sampleType, check, titles):
             data, pstat, features, colormat = sampleNKcolor(sample)
             data_array.append(data)
             pstat_array.append(pstat)
-            xf, loading = appPCA(data, features)
-            xf_array.append(xf)
+            if i == 0:
+                PCAobj, loading = fitPCA(data, features)
+            xf = appPCA(data, features, PCAobj)
             pcaPltColor(xf, pstat, features, title, colormat)
             loadingPlot(loading, features, i, title)
+    plt.show()
     return data_array, pstat_array, xf_array, loading_array
+
+#************************Dose Response by PCA******************************
+
+def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, Tcells=True):
+    """
+    Given data from a time Point and two PC bounds, the dose response curve will be calculated and graphed
+    (needs folder with FCS from one time point)
+    """
+    dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+    Pstatvals = []
+
+    for i, sample in enumerate(sampleType):
+        if Tcells:
+            data, pstat, features = sampleT(sample) #retrieve data
+        else:
+            data, pstat, features = sampleNK(sample)
+        if i == 0:
+            PCAobj, _ = fitPCA(data, features) #only fit to first set
+        xf = appPCA(data, features, PCAobj) #get PC1/2 vals
+        PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
+        PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
+        PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
+        PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'Pstat': PCAstat[:, 2]}) #arrange into pandas datafrome
+        PCApd = PCApd[PCApd['PC1'] >= PC1Bnds[0]] #remove data that that is not within given PC bounds
+        PCApd = PCApd[PCApd['PC1'] <= PC1Bnds[1]]
+        PCApd = PCApd[PCApd['PC2'] >= PC2Bnds[0]]
+        PCApd = PCApd[PCApd['PC2'] <= PC2Bnds[1]]
+        Pstatvals.append(PCApd.loc[:, "Pstat"].mean()) #take average Pstat activity of data fitting criteria
+
+    _, ax = plt.subplots(figsize=(8, 8))
+    plt.plot(dosemat, Pstatvals, ".--", color="navy")
+    plt.grid()
+    ax.set_title("PCA Gated Dose Response Curve", fontsize=20)
+    ax.set_xscale('log')
+    ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
+    ax.set_ylabel("Average Pstat Activity", fontsize=15)
+    ax.set(xlim=(0.0001, 100))
+    plt.show()
+    return Pstatvals, dosemat
+
+def StatGini(sampleType, Timepoint, gate, Tcells=True):
+    """
+    Define the Gini Coefficient of Pstat Vals Across a timepoint for either whole or gated population.
+    Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
+    """
+    ginis = []
+    alldata = []
+    dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+
+    if gate:
+        gates = gate()
+        _, alldata = count_data(sampleType, gates) #returns array of dfs in case of gate or no gate
+
+    else:
+        for i, sample in enumerate(sampleType):
+            if Tcells:
+                _, pstat, _ = sampleT(sample)
+                alldata.append(pstat)
+            else:
+                _, pstat, _ = sampleNK(sample)
+                alldata.append(pstat)
+
+    for i, sample in enumerate(sampleType):  #get pstat data and put it into list form
+        dat_array = alldata[i]
+        if Tcells:
+            stat_array = dat_array[["RL1-H"]]
+        else:
+            stat_array = dat_array[["BL2-H"]]
+        stat_array = stat_array.to_numpy()
+        stat_array = stat_array.clip(min=0) #remove small percentage of negative pstat values
+        stat_array.tolist()                   #manipulate data to be compatible with gin calculation
+        stat_sort = np.hstack(stat_array)
+        stat_sort.sort()
+        num = stat_array.size
+        subconst = (num+1)/num
+        coef = 2/num
+        summed = sum([(j+1)*stat for j, stat in enumerate(stat_sort)])
+        ginis.append(coef*summed/(stat_sort.sum()) - subconst)
+
+    _, ax = plt.subplots(figsize=(8, 8))
+    plt.plot(dosemat, ginis, ".--", color="navy")
+    plt.grid()
+    if gate:
+        ax.set_title(Timepoint + " pSTAT Gini Coefficient for " + gate.__name__ + " cells", fontsize=20)
+    else:
+        ax.set_title(Timepoint + " pSTAT Gini Coefficient", fontsize=20)
+    ax.set_xscale('log')
+    ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
+    ax.set_ylabel("Gini Coefficient", fontsize=15)
+    ax.set(xlim=(0.0001, 100))
+    plt.show()
+    return ginis, dosemat
