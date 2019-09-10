@@ -2,11 +2,16 @@ SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
-compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
+
+JL_SHARE = $(shell julia -e 'print(joinpath(Sys.BINDIR, Base.DATAROOTDIR, "julia"))')
+CFLAGS   += $(shell $(JL_SHARE)/julia-config.jl --cflags)
+CXXFLAGS += $(shell $(JL_SHARE)/julia-config.jl --cflags)
+LDFLAGS  += $(shell $(JL_SHARE)/julia-config.jl --ldflags)
+LDLIBS   += $(shell $(JL_SHARE)/julia-config.jl --ldlibs)
 
 flist = B1 B2 B3 B4 B5 B6 B7
 
-.PHONY: clean test all testprofile testcover testcpp autopep spell
+.PHONY: clean test all testcover autopep spell
 
 all: Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
@@ -17,11 +22,14 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
 
-ckine/sys.so:
-	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
-	julia -e "using PackageCompiler; build_shared_lib(\"ckine/solver.jl\"; optimize=3)"
+juliac.jl:
+	wget https://raw.githubusercontent.com/JuliaLang/PackageCompiler.jl/master/juliac.jl
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/sys.so ckine/figures/figure%.py
+ckine/solver.so: juliac.jl
+	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(\"ArgParse\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
+	julia juliac.jl -vast --startup-file=no -d ./ckine ckine/solver.jl
+
+$(fdir)/figure%.svg: venv genFigures.py builddir/solver.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate && ./genFigures.py $*
 
@@ -51,16 +59,16 @@ autopep:
 clean:
 	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/figure* profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
-	rm -rf html doxy.log graph_all.svg venv ckine/sys.so
+	rm -rf html doxy.log graph_all.svg venv ckine/solver.so juliac.jl
 	find -iname "*.pyc" -delete
 
 spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
-test: venv ckine/sys.so
+test: venv ckine/solver.so
 	. venv/bin/activate && python -m pytest
 
-testcover: venv ckine/sys.so
+testcover: venv ckine/solver.so
 	. venv/bin/activate && python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 pylint.log: venv common/pylintrc

@@ -1,14 +1,13 @@
 using gcSolver
 
-@Base.ccallable Int64 function runCkineC(tps::Vector{Float64}, params::Vector{Float64}, paramsLen::Int64, outt::Ptr{Float64})::Int64
-    
-    vecc = zeros(paramsLen)
-    
-    unsafe_copyto!(Ptr(vecc), Ptr(params), paramsLen)
+
+@Base.ccallable function runCkineC(tpsIn::Ptr{Cdouble}, nTps::Csize_t, outt::Ptr{Cdouble}, params::Ptr{Cdouble}, paramsLen::Csize_t)::Cint
+    vecc = unsafe_wrap(Vector{Float64}, params, paramsLen)
+    tps = unsafe_wrap(Vector{Float64}, tpsIn, nTps)
     
     output = runCkine(tps, vecc)
     
-    unsafe_copyto!(outt, Ptr(output), gcSolver.Nspecies)
+    unsafe_copyto!(outt, Ref(output), gcSolver.Nspecies)
     
     return 0
 end

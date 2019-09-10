@@ -5,14 +5,15 @@ import os
 import ctypes as ct
 import numpy as np
 
+libb = ct.CDLL(os.path.dirname(__file__) + "/solver.so", ct.RTLD_GLOBAL)
 
-filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
-libb = ct.cdll.LoadLibrary(filename)
+libb.jl_init_with_image__threading.argtypes = (ctypes.c_char_p, ctypes.c_char_p)
+libb.jl_init_with_image__threading(None, b"/PackageCompiler.jl/builddir/solver.so")
+
 pcd = ct.POINTER(ct.c_double)
-libb.fullModel_C.argtypes = (pcd, ct.c_double, pcd, pcd)
-libb.runCkine.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_bool, ct.c_double, pcd)
-libb.runCkineParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, ct.c_double, pcd)
-libb.runCkineSParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, pcd, pcd, ct.c_double, pcd)
+libb.runCkineC.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_uint)
+
+libb.init_jl_runtime()
 
 __nSpecies = 62
 
@@ -62,27 +63,47 @@ def nRxn():
     return __nRxn
 
 
+def getPS(numpyArray):
+    return numpyArray.ctypes.data_as(ct.POINTER(ct.c_double)), numpyArray.size
+
+
 def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
-    rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
     assert np.all(rxntfr >= 0.0)
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float)
+    
+    tpsP, tpsS = getPS(tps)
+    rxnP, rxnS = getPS(rxntfr)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
+    retVal = libb.runCkineC(tpsP, tpsS, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxnP, rxnS)
 
     assert retVal >= 0  # make sure solver worked
 
     return yOut
 
 
-def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
+def runCkineU(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
-    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
+    rxntfr = rxntfr.copy()
+    assert rxntfr.size == __nParams
+    assert np.all(rxntfr >= 0.0)
+    assert rxntfr[19] < 1.0  # Check that sortF won't throw
+
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float)
+    
+    tpsP, tpsS = getPS(tps)
+    rxnP, rxnS = getPS(rxntfr)
+
+    retVal = libb.runCkineC(tpsP, tpsS, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxnP, rxnS)
+
+    assert retVal >= 0  # make sure solver worked
+
+    return yOut
 
 
-def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
+def runCkineUP(tps, rxntfr):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
@@ -92,58 +113,9 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
-
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
-
-    retVal = libb.runCkineParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
-    )
-
-    assert retVal >= 0  # make sure solver worked
-
-    return yOut
-
-
-def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
-    """ Version of runCkine that runs in parallel. """
-    tps = np.array(tps)
-    assert rxntfr.size % __nParams == 0
-    assert rxntfr.shape[1] == __nParams
-    assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
-
-    yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
-
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
-
-    retVal = libb.runCkineSParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.size,
-        rxntfr.shape[0],
-        yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-        sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        actV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        preT,
-        prestim,
-    )
-
-    return (yOut, retVal, sensV)
-
-
-def fullModel(y, t, rxntfr):
-    """ Implement the full model based on dydt, trafficking, expression. """
-    assert rxntfr.size == __nParams
-
-    yOut = np.zeros_like(y)
-
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    for ii in range(rxntfr.shape[0]):
+        yOut[ii*tps.size : (ii+1)*tps.size, :] = runCkineU(tps, rxntfr[ii, :])
 
     return yOut
 
