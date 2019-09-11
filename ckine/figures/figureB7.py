@@ -60,8 +60,7 @@ def makeFigure():
 
     EC50_df = calculate_EC50s(df, scales, cell_order, ligand_order)
 
-    palette = catplot_comparison(ax[0], EC50_df)  # compare experiments to model predictions
-    manual_legend(ax[0], palette)
+    catplot_comparison(ax[0], EC50_df)  # compare experiments to model predictions
 
     return f
 
@@ -81,12 +80,10 @@ def catplot_comparison(ax, df):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+
+    # set manual legend
     ax.get_legend().remove()
-    palette = sns.color_palette()
-    return palette.as_hex()
-
-
-def manual_legend(ax, palette):
+    palette = sns.color_palette().as_hex()
     blue = mpatches.Patch(color=palette[0], label='IL2-060')
     yellow = mpatches.Patch(color=palette[1], label='IL2-062')
     green = mpatches.Patch(color=palette[2], label='IL2-088')
