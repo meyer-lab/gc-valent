@@ -6,15 +6,16 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
-from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
 from .figureB6 import organize_expr_pred, mutein_scaling
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15
 
-dataMean,_ =import_muteins()
+dataMean, _ = import_muteins()
 dataMean.reset_index(inplace=True)
-data, _, _ =import_Rexpr()
+data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
 unkVec_2_15, _ = import_samples_2_15(N=1)  # use one rate
 muteinC = dataMean.Concentration.unique()
@@ -27,10 +28,11 @@ mutaff = {
     "IL2-097": [10., 100., 5.]  # Both
 }
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3), multz={0:2})
+    ax, f = getSetup((7, 6), (3, 3), multz={0: 2})
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -55,11 +57,12 @@ def makeFigure():
 
     # determine scaling constants
     scales = np.squeeze(mutein_scaling(df, unkVec_2_15))
-    
+
     EC50_df = calculate_EC50s(df, scales, cell_order, ligand_order)
-        
-    catplot_comparison(ax[0], EC50_df)  # compare experiments to model predictions
-    
+
+    palette = catplot_comparison(ax[0], EC50_df)  # compare experiments to model predictions
+    manual_legend(ax[0], palette)
+
     return f
 
 
@@ -68,26 +71,39 @@ def catplot_comparison(ax, df):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=True, legend_out=False, ax=ax, marker='^')
+                legend=False, ax=ax, marker='^')
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=True, legend_out=False, ax=ax, marker='o')
+                legend=False, ax=ax, marker='o')
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    ax.get_legend().remove()
+    palette = sns.color_palette()
+    return palette.as_hex()
+
+
+def manual_legend(ax, palette):
+    blue = mpatches.Patch(color=palette[0], label='IL2-060')
+    yellow = mpatches.Patch(color=palette[1], label='IL2-062')
+    green = mpatches.Patch(color=palette[2], label='IL2-088')
+    red = mpatches.Patch(color=palette[3], label='IL2-097')
+    circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    ax.legend(handles=[blue, yellow, green, red, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calculate_EC50s(df, scales, cell_order, ligand_order):
     """ Scales model predictions to experimental data for all cell types, muteins, and time points. """
-    
+
     x0 = [1, 2., 1000.]
     data_types = []
     cell_types = []
     mutein_types = []
-    EC50s = np.zeros(len(cell_order) * len(tps) * 4 * 2) # EC50 for all cell types, tps, muteins, and expr/pred
+    EC50s = np.zeros(len(cell_order) * len(tps) * 4 * 2)  # EC50 for all cell types, tps, muteins, and expr/pred
     pred_data = np.zeros((12, 4))
     expr_data = pred_data.copy()
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
@@ -105,21 +121,21 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
             for m, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
                     pred_data[:, :] = scales[m, 1] * pred_data[:, :] / (pred_data[:, :] + scales[m, 0])
-            
+
             # calculate predicted and experimental EC50s for all time points
             for n, _ in enumerate(tps):
                 EC50s[(8 * j) + (32 * i) + n] = nllsq_EC50(x0, np.log10(muteinC.astype(np.float) * 10**4), pred_data[:, n])
                 EC50s[(8 * j) + (32 * i) + len(tps) + n] = nllsq_EC50(x0, np.log10(muteinC.astype(np.float) * 10**4), expr_data[:, n])
-                
+
             data_types.extend(np.tile(np.array('Predicted'), len(tps)))
             data_types.extend(np.tile(np.array('Experimental'), len(tps)))
             cell_types.extend(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
             mutein_types.extend(np.tile(np.array(ligand_name), len(tps) * 2))
-            
+
     EC50s = EC50s - 4  # account for 10^4 multiplication
-    dataframe = {'Time Point':np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein':mutein_types, 'Cell Type':cell_types, 'Data Type':data_types, 'EC-50':EC50s}
-    df = pd.DataFrame(dataframe)      
-                                                                      
+    dataframe = {'Time Point': np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein': mutein_types, 'Cell Type': cell_types, 'Data Type': data_types, 'EC-50': EC50s}
+    df = pd.DataFrame(dataframe)
+
     return df
 
 
