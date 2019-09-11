@@ -44,7 +44,7 @@ def makeFigure():
     ligand_order = ['IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
-    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Activity'])  # make empty dataframe for all cell types
+    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
@@ -91,13 +91,16 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
-                    pred_data[k, l, :] = np.array(df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
-                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp), "Activity"])
+                    for m in range(unkVec_2_15.shape[1]):
+                        pred_data[k, l, m] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
+                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
 
-            for m, cell_names in enumerate(cell_groups):
+            for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
-                    plot_dose_response(ax[axis], scales[m, 1] * pred_data / (pred_data + scales[m, 0]), tps, muteinC)
-                    ax[axis].set(ylim=(0, ylims[m]))
+                    for o in range(unkVec_2_15.shape[1]):
+                        pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
+                    plot_dose_response(ax[axis], pred_data, tps, muteinC)
+                    ax[axis].set(ylim=(0, ylims[n]))
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
 
@@ -113,7 +116,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps):
         exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
         mutein_conc[i, :] = conc
     df_exp = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
-                           'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Activity': exp_data.reshape(num,)})
+                           'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
     df = df.append(df_exp, ignore_index=True)
 
     # calculate predicted dose response
@@ -122,13 +125,8 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps):
         cell_receptors = receptor_expression(receptors, unkVec_2_15[17, j], unkVec_2_15[20, j], unkVec_2_15[19, j], unkVec_2_15[21, j])
         pred_data[:, :, j] = calc_dose_response_mutein(unkVec_2_15[:, j], mutaff[ligand_name], tps, muteinC, cell_receptors)
         df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(
-            tps, 12), 'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Activity': pred_data[:, :, j].reshape(num,)})
+            tps, 12), 'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
-
-    avg_pred_data = np.mean(pred_data, axis=2)
-    df_avg = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
-                           'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('average'), num), 'Activity': avg_pred_data[:, :].reshape(num,)})
-    df = df.append(df_avg, ignore_index=True)
 
     return df
 
@@ -138,11 +136,12 @@ def mutein_scaling(df):
 
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
 
-    scales = np.zeros((4, 2))
+    scales = np.zeros((4, 2, unkVec_2_15.shape[1]))
     for i, cells in enumerate(cell_groups):
-        subset_df = df[df['Cells'].isin(cells)]
-        scales[i, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'average'), "Activity"]),
-                                      np.array(subset_df.loc[(subset_df['Activity Type'] == 'experimental'), "Activity"]))
+        for j in range(unkVec_2_15.shape[1]):
+            subset_df = df[df['Cells'].isin(cells)]
+            scales[i, :, j] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (subset_df["Replicate"] == (j + 1)), "Activity"]),
+                                             np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
 
     return scales
 
