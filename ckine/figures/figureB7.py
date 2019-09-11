@@ -32,7 +32,7 @@ mutaff = {
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3), multz={0: 2})
+    ax, f = getSetup((7, 6), (4, 1))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -40,7 +40,7 @@ def makeFigure():
     ligand_order = ['IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
-    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
+    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
@@ -55,31 +55,38 @@ def makeFigure():
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15)
 
-    # determine scaling constants
-    scales = np.squeeze(mutein_scaling(df, unkVec_2_15))
+    scales = np.squeeze(mutein_scaling(df, unkVec_2_15))  # determine sigmoidal scaling constants
 
-    EC50_df = calculate_EC50s(df, scales, cell_order, ligand_order)
+    EC50_df = calculate_EC50s(df, scales, cell_order, ligand_order)  # scale model predictions and calculate EC50s
 
-    catplot_comparison(ax[0], EC50_df)  # compare experiments to model predictions
+    # plot EC50s for each time point
+    catplot_comparison(ax[0], EC50_df, 30.)
+    catplot_comparison(ax[1], EC50_df, 60.)
+    catplot_comparison(ax[2], EC50_df, 120.)
+    catplot_comparison(ax[3], EC50_df, 240.)
 
     return f
 
 
-def catplot_comparison(ax, df):
-    """ Construct EC50 catplots for 1 hour time point. """
+def catplot_comparison(ax, df, tp):
+    """ Construct EC50 catplots for given time point. """
+    # make subset dataframe without points where least squares fails
+    subset_df = df[df['EC-50'] < 1.9]
+
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
+                data=subset_df.loc[(subset_df['Time Point'] == tp) & (subset_df["Data Type"] == 'Predicted')],
                 legend=False, ax=ax, marker='^')
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                data=subset_df.loc[(subset_df['Time Point'] == tp) & (subset_df["Data Type"] == 'Experimental')],
                 legend=False, ax=ax, marker='o')
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    ax.set_title(str(tp / 60.) + " hours")
 
     # set manual legend
     ax.get_legend().remove()
@@ -94,7 +101,7 @@ def catplot_comparison(ax, df):
 
 
 def calculate_EC50s(df, scales, cell_order, ligand_order):
-    """ Scales model predictions to experimental data for all cell types, muteins, and time points. """
+    """ Scales model predictions to experimental data, then calculates EC-50 for all cell types, muteins, and time points. """
 
     x0 = [1, 2., 1000.]
     data_types = []
@@ -129,7 +136,7 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
             cell_types.extend(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
             mutein_types.extend(np.tile(np.array(ligand_name), len(tps) * 2))
 
-    EC50s = np.log10(EC50s)        
+    EC50s = np.log10(EC50s)
     dataframe = {'Time Point': np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein': mutein_types, 'Cell Type': cell_types, 'Data Type': data_types, 'EC-50': EC50s}
     df = pd.DataFrame(dataframe)
 
@@ -138,7 +145,7 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
 
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10**5., 10**5, 10**5]), jac='3-point')
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10**2., 10**2., 10**16]), jac='3-point')
     return lsq_res.x[0]
 
 
