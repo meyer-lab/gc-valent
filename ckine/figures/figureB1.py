@@ -34,7 +34,7 @@ def dRespon(input_params, CD25=1.0):
 
 def IC50global(input_params, CD25=1.0):
     """ Calculate half-maximal concentration w.r.t. wt. """
-    halfResponse = 20.0
+    halfResponse = runIL2simple(rxntfR, input_params, 3000.0, CD25) / 2.0
     return brentq(lambda x: runIL2simple(rxntfR, input_params, x, CD25) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
