@@ -20,6 +20,7 @@ juliac.jl:
 	wget https://raw.githubusercontent.com/JuliaLang/PackageCompiler.jl/master/juliac.jl
 
 ckine/solver.so: juliac.jl
+	julia -e "using Pkg; Pkg.add(\"ODEInterface\")"
 	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(\"ArgParse\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	julia juliac.jl -vrast --check-bounds no --math-mode fast --inline yes --compile all --startup-file=no -d ./ckine ckine/solver.jl
 
