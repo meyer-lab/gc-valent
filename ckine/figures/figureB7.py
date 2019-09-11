@@ -121,15 +121,15 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
 
             # calculate predicted and experimental EC50s for all time points
             for n, _ in enumerate(tps):
-                EC50s[(8 * j) + (32 * i) + n] = nllsq_EC50(x0, np.log10(muteinC.astype(np.float) * 10**4), pred_data[:, n])
-                EC50s[(8 * j) + (32 * i) + len(tps) + n] = nllsq_EC50(x0, np.log10(muteinC.astype(np.float) * 10**4), expr_data[:, n])
+                EC50s[(8 * j) + (32 * i) + n] = nllsq_EC50(x0, muteinC.astype(np.float), pred_data[:, n])
+                EC50s[(8 * j) + (32 * i) + len(tps) + n] = nllsq_EC50(x0, muteinC.astype(np.float), expr_data[:, n])
 
             data_types.extend(np.tile(np.array('Predicted'), len(tps)))
             data_types.extend(np.tile(np.array('Experimental'), len(tps)))
             cell_types.extend(np.tile(np.array(cell_name), len(tps) * 2))  # for both experimental and predicted
             mutein_types.extend(np.tile(np.array(ligand_name), len(tps) * 2))
 
-    EC50s = EC50s - 4  # account for 10^4 multiplication
+    EC50s = np.log10(EC50s)        
     dataframe = {'Time Point': np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein': mutein_types, 'Cell Type': cell_types, 'Data Type': data_types, 'EC-50': EC50s}
     df = pd.DataFrame(dataframe)
 
@@ -138,7 +138,7 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
 
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10**5., 10**5, 10**5]), jac='3-point')
     return lsq_res.x[0]
 
 
