@@ -44,11 +44,10 @@ def dRespon(input_params, CD25=1.0, input_receptors=None, adj_receptors=False):
     return ILs, activee
 
 
-def IC50global(x, y):
+def IC50global(input_params, CD25=1.0, input_receptors=None, adj_receptors=False):
     """ Calculate half-maximal concentration w.r.t. wt. """
     halfResponse = 20.0
-
-    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, CD25) - halfResponse, 0, 1000.0, rtol=1e-5)
+    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, CD25, input_receptors=input_receptors, adj_receptors=adj_receptors) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
 changesA = np.logspace(-1, 1.5, num=20)
@@ -62,8 +61,7 @@ def halfMax_IL2RaAff(ax):
     output = np.zeros((changesA_a.size, changesB_a.size))
     for i, itemA in enumerate(changesA_a):
         for j, itemB in enumerate(changesB_a):
-            ILs, BB = dRespon([itemA, itemB, 5.0])
-            output[i, j] = IC50global(ILs, BB)
+            output[i, j] = IC50global([itemA, itemB, 5.0])
     for ii in range(output.shape[1]):
         ax.loglog(changesA_a, output[:, ii], label=str(changesB_a[ii]))
     ax.loglog([0.01, 10.0], [0.17, 0.17], "k-")
@@ -87,8 +85,7 @@ def halfMax_IL2RbAff(ax, cellName, receptorExpr):
     output = np.zeros((changesA.size, receptorExpr.shape[0]))
     for i, itemA in enumerate(changesA):
         for j, itemB in enumerate(receptorExpr):
-            ILs, BB = dRespon([1.0, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
-            output[i, j] = IC50global(ILs, BB)
+            output[i, j] = IC50global([1.0, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
     
     for ii in range(output.shape[1]):
         ax.loglog(changesA, output[:, ii], label=str(cellName[ii]))
@@ -104,8 +101,7 @@ def halfMax_IL2RbAff_highIL2Ra(ax, cellName, receptorExpr):
     output = np.zeros((changesA.size, receptorExpr.shape[0]))
     for i, itemA in enumerate(changesA):
         for j, itemB in enumerate(receptorExpr):
-            ILs, BB = dRespon([0.1, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
-            output[i, j] = IC50global(ILs, BB)
+            output[i, j] = IC50global([0.1, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
 
     for ii in range(output.shape[1]):
         ax.loglog(changesA, output[:, ii], label=str(cellName[ii]))
