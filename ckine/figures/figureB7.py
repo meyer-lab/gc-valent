@@ -6,21 +6,17 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
-from .figureB6 import calc_dose_response_mutein, organize_expr_pred, mutein_scaling
-from ..model import receptor_expression
+from .figureB6 import organize_expr_pred, mutein_scaling
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15
 
 dataMean,_ =import_muteins()
 dataMean.reset_index(inplace=True)
-data, _, cellNames =import_Rexpr()
+data, _, _ =import_Rexpr()
 data.reset_index(inplace=True)
-unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
-receptor_data, _, cell_names_receptor = import_Rexpr()
+unkVec_2_15, _ = import_samples_2_15(N=1)  # use one rate
 muteinC = dataMean.Concentration.unique()
 tps = np.array([0.5, 1., 2., 4.]) * 60.
 
@@ -61,7 +57,7 @@ def makeFigure():
     scales = np.squeeze(mutein_scaling(df, unkVec_2_15))
     
     EC50_df = calculate_EC50s(df, scales, cell_order, ligand_order)
-    
+        
     catplot_comparison(ax[0], EC50_df)  # compare experiments to model predictions
     
     return f
@@ -84,26 +80,6 @@ def catplot_comparison(ax, df):
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
 
 
-def plot_corrcoef(ax, tps):
-    """ Plot correlation coefficients between predicted and experimental data for all cell types. """
-    corr_coefs = np.zeros(2 * len(cell_names_receptor))
-    for i, _ in enumerate(cell_names_receptor):
-        assert cell_names_receptor[i] == cell_names_pstat[i]
-        experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
-        experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
-        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, muteinC, experimental_2, experimental_15)
-        corr_coef2 = pearsonr(experimental_2.flatten(), np.squeeze(predicted_2).T.flatten())
-        corr_coef15 = pearsonr(experimental_15.flatten(), np.squeeze(predicted_15).T.flatten())
-        corr_coefs[i] = corr_coef2[0]
-        corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
-
-    x_pos = np.arange(len(cell_names_receptor))
-    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
-    ax.set(ylabel=("Correlation"), ylim=(0., 1.))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
-
-
 def calculate_EC50s(df, scales, cell_order, ligand_order):
     """ Scales model predictions to experimental data for all cell types, muteins, and time points. """
     
@@ -121,9 +97,9 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
                     pred_data[k, l] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
-                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp), "Activity"]
+                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp), "Activity"]
                     expr_data[k, l] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
-                            df["Activity Type"] == 'experimental') & (df["Concentration"] == conc) & (df["Time Point"] == tp), "Activity"]
+                        df["Activity Type"] == 'experimental') & (df["Concentration"] == conc) & (df["Time Point"] == tp), "Activity"]
 
             # scale predicted data
             for m, cell_names in enumerate(cell_groups):
@@ -142,7 +118,7 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
             
     EC50s = EC50s - 4  # account for 10^4 multiplication
     dataframe = {'Time Point':np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein':mutein_types, 'Cell Type':cell_types, 'Data Type':data_types, 'EC-50':EC50s}
-    df = pd.DataFrame(dataframe)                                                           
+    df = pd.DataFrame(dataframe)      
                                                                       
     return df
 
