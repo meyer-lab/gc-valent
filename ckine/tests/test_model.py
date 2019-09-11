@@ -3,15 +3,9 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from hypothesis import given, settings
-from hypothesis.strategies import floats
-from hypothesis.extra.numpy import arrays as harrays
-from ..model import getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg
+from ..model import getTotalActiveCytokine, runCkineU, runCkineUP, runCkineU_IL2, ligandDeg
 from ..figures.figureB1 import runIL2simple
 
-
-settings.register_profile("ci", max_examples=1000, deadline=None)
-settings.load_profile("ci")
 
 conservation_IDX = [
     np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]),  # IL2Rb
@@ -27,14 +21,6 @@ conservation_IDX = [
 
 class TestModel(unittest.TestCase):
     """ Here are the unit tests. """
-
-    def assertPosEquilibrium(self, X, func):
-        """Assert that all species came to equilibrium."""
-        # All the species abundances should be above zero
-        self.assertGreater(np.min(X), -1.0e-7)
-
-        # Test that it came to equilibrium
-        self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1e-5)
 
     def assertConservation(self, y, y0, IDX):
         """Assert the conservation of species throughout the experiment."""
