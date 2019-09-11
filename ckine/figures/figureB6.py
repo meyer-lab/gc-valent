@@ -20,9 +20,9 @@ unkVec_2_15, _ = import_samples_2_15(N=5)
 
 mutaff = {
     "IL2-060": [1., 1., 5.],  # Wild-type, but dimer
-    "IL2-062": [1., 100., 5.],  # Weaker b-g
-    "IL2-088": [10., 1., 5.],  # Weaker CD25
-    "IL2-097": [10., 100., 5.]  # Both
+    "IL2-062": [1., 20., 5.],  # Weaker b-g
+    "IL2-088": [13., 1., 5.],  # Weaker CD25
+    "IL2-097": [13., 20., 5.]  # Both
 }
 
 
