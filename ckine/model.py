@@ -71,7 +71,7 @@ def runCkineU_IL2(tps, rxntfr):
     assert rxntfr.size == 15
     assert np.all(rxntfr >= 0.0)
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float, order='F')
 
     tpsP, tpsS = getPS(tps)
     rxnP, rxnS = getPS(rxntfr)
@@ -90,7 +90,7 @@ def runCkineU(tps, rxntfr):
     assert np.all(rxntfr >= 0.0)
     assert rxntfr[19] < 1.0  # Check that sortF won't throw
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float)
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float, order='F')
 
     tpsP, tpsS = getPS(tps)
     rxnP, rxnS = getPS(rxntfr)

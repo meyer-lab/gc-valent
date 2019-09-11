@@ -29,7 +29,7 @@ ckine/solver.so: juliac.jl
 	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(\"ArgParse\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
 	julia juliac.jl -vast --startup-file=no -d ./ckine ckine/solver.jl
 
-$(fdir)/figure%.svg: venv genFigures.py builddir/solver.so ckine/figures/figure%.py
+$(fdir)/figure%.svg: venv genFigures.py ckine/solver.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate && ./genFigures.py $*
 
