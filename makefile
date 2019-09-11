@@ -3,12 +3,6 @@ fdir = ./Manuscript/Figures
 tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-JL_SHARE = $(shell julia -e 'print(joinpath(Sys.BINDIR, Base.DATAROOTDIR, "julia"))')
-CFLAGS   += $(shell $(JL_SHARE)/julia-config.jl --cflags)
-CXXFLAGS += $(shell $(JL_SHARE)/julia-config.jl --cflags)
-LDFLAGS  += $(shell $(JL_SHARE)/julia-config.jl --ldflags)
-LDLIBS   += $(shell $(JL_SHARE)/julia-config.jl --ldlibs)
-
 flist = B1 B2 B3 B4 B5 B6 B7
 
 .PHONY: clean test all testcover autopep spell
@@ -27,7 +21,7 @@ juliac.jl:
 
 ckine/solver.so: juliac.jl
 	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(\"ArgParse\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
-	julia juliac.jl -vast --startup-file=no -d ./ckine ckine/solver.jl
+	julia juliac.jl -vrast --check-bounds no --math-mode fast --inline yes --compile all --startup-file=no -d ./ckine ckine/solver.jl
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/solver.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
