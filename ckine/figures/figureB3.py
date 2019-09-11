@@ -1,7 +1,6 @@
 """
 This creates Figure 3.
 """
-
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
@@ -12,6 +11,9 @@ from ..imports import import_Rexpr
 
 df, _, _ = import_Rexpr()
 df.reset_index(inplace=True)
+
+changesAff = np.logspace(-2, 2, num=7)
+cellNames = ["T-reg", "T-helper", "NK"]
 
 def makeFigure():
     """ Get a list of the axis objects and create a figure. """
@@ -28,12 +30,12 @@ def makeFigure():
         gc = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='$\\gamma_{c}$'), "Count"].item()
         cellReceptors[i, :] = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
 
-    for i in range(3):
-        plot_lDeg_2Ra(ax[i], CD25_input[i], cellReceptors[i, :], adj_receptors=True)
+    for i, receptors in enumerate(cellReceptors):
+        plot_lDeg_2Ra(ax[i], receptors)
         ax[i].set_title(cellNames[i])
-        plot_lDeg_2Rb(ax[3 + i], CD25_input[i], cellReceptors[i, :], adj_receptors=True)
+        plot_lDeg_2Rb(ax[3 + i], receptors)
         ax[3 + i].set_title(cellNames[i])
-        plot_lDeg_2Rb_HIGH(ax[6 + i], CD25_input[i], cellReceptors[i, :], adj_receptors=True)
+        plot_lDeg_2Rb_HIGH(ax[6 + i], receptors)
         ax[6 + i].set_title(cellNames[i])
 
     ax[0].legend(title="IL2Ra Kd vs wt")
@@ -43,42 +45,37 @@ def makeFigure():
     return f
 
 
-changesAff = np.logspace(-2, 2, num=7)
-CD25_input = [1.0, 0.1, 0.0]
-cellNames = ["T-reg", "T-helper", "NK"]
-
-
-def ligandDeg_IL2(input_params, CD25, input_receptors=None, adj_receptors=False):
+def ligandDeg_IL2(input_params, input_receptors):
     """ Calculate an IL2 degradation curve. """
     ILs = np.logspace(-4.0, 5.0)
-    ld = np.array([runIL2simple(rxntfR, input_params, ii, CD25=CD25, input_receptors=input_receptors, adj_receptors=adj_receptors, ligandDegradation=True) for ii in ILs])
+    ld = np.array([runIL2simple(rxntfR, input_params, ii, input_receptors=input_receptors, adj_receptors=True, ligandDegradation=True) for ii in ILs])
     return ILs, ld
 
 
-def plot_lDeg_2Ra(ax, CD25, input_receptors=None, adj_receptors=False):
+def plot_lDeg_2Ra(ax, input_receptors):
     """ Plots IL2 degradation curves for various IL2Ra affinities given a CD25 relative expression rate. """
     for _, itemA in enumerate(changesAff):
-        ILs, BB = ligandDeg_IL2([itemA, 1.0, 5.0], CD25, input_receptors, adj_receptors)
+        ILs, BB = ligandDeg_IL2([itemA, 1.0, 5.0], input_receptors)
         ax.semilogx(ILs, BB, label=str(round(itemA, 2)))
 
     ax.set_ylabel('Rate of IL2 Degradation')
     ax.set_xlabel('IL2 [nM]')
 
 
-def plot_lDeg_2Rb(ax, CD25, input_receptors=None, adj_receptors=False):
+def plot_lDeg_2Rb(ax, input_receptors):
     """ Plots IL2 degradation curves for various IL2Rb affinities given a CD25 relative expression rate. """
     for _, itemB in enumerate(changesAff):
-        ILs, BB = ligandDeg_IL2([1.0, itemB, 5.0], CD25, input_receptors, adj_receptors)
+        ILs, BB = ligandDeg_IL2([1.0, itemB, 5.0], input_receptors)
         ax.semilogx(ILs, BB, label=str(round(itemB, 2)))
 
     ax.set_ylabel('Rate of IL2 Degradation')
     ax.set_xlabel('IL2 [nM]')
 
 
-def plot_lDeg_2Rb_HIGH(ax, CD25, input_receptors=None, adj_receptors=False):
-    """ Plots IL2 degradation curves for various IL2Rb affinities given a CD25 relative expression rate. """
+def plot_lDeg_2Rb_HIGH(ax, input_receptors):
+    """ Plots IL2 degradation curves for various IL2Rb affinities given a CD25 relative expression rate with 10x higher IL2Ra affinity. """
     for _, itemB in enumerate(changesAff):
-        ILs, BB = ligandDeg_IL2([0.1, itemB, 5.0], CD25, input_receptors, adj_receptors)
+        ILs, BB = ligandDeg_IL2([0.1, itemB, 5.0], input_receptors)
         ax.semilogx(ILs, BB, label=str(round(itemB, 2)))
 
     ax.set_ylabel('Rate of IL2 Degradation')
