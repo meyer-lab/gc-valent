@@ -6,8 +6,6 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup
 from .figureB6 import organize_expr_pred, mutein_scaling
