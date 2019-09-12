@@ -696,26 +696,14 @@ def hill_equation(x, x0, solution=0):
     return (A * xk / (1.0 + xk)) - solution + floor
 
 
-def EC50_PC_Scan(sampleType, numpoints, Timepoint, gate, Tcells=True, PC1=True):
+def EC50_PC_Scan(sampleType, numpoints, Timepoint, minmax, gate, Tcells=True, PC1=True):
     '''Scans along one Principal component and returns EC50 for slices along that Axis'''
     x0 = [1, 2., 5000., 3000.]# would put gating here
-    EC50s = np.zeros([1, numpoints-1])
-    if Tcells: #find PCA spcae min and max to be scanned
-        data, _, features = sampleT(sampleType[0])
-    else:
-        data, _, features = sampleNK(sampleType[0])
-    PCAobj, _ = fitPCA(data, features)
-    xf = appPCA(data, features, PCAobj)
-    PC1val, PC2val = xf[:, 0], xf[:, 1]
-    if PC1:
-        PCmin, PCmax = np.amin(PC1val), np.amax(PC1val)
-    else:
-        PCmin, PCmax = np.amin(PC2val), np.amax(PC2val)
-    scanspace = np.linspace(PCmin, PCmax, num = numpoints + 1)
-    scanspace = np.linspace(-3, 3, num = numpoints + 1)
+    EC50s = np.zeros([1, numpoints])
+    scanspace = np.linspace(-minmax, minmax, num = numpoints + 1)
     axrange = np.array([-100, 100])
-    
-    for i in range(0, numpoints-1): #set bounds and calculate EC50s
+
+    for i in range(0, numpoints): #set bounds and calculate EC50s
         if PC1:
             PC1Bnds, PC2Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         else:
@@ -724,10 +712,9 @@ def EC50_PC_Scan(sampleType, numpoints, Timepoint, gate, Tcells=True, PC1=True):
         doses = np.log10(doses.astype(np.float) * 1e4)
         EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)[0]
 
-    EC50s = np.array([EC50s]) - 4 # account for 10^4 multiplication
-    EC50s = EC50s.flatten()
+    EC50s = EC50s.flatten() - 4 # account for 10^4 multiplication
     _, ax = plt.subplots(figsize=(8, 8))
-    plt.plot(scanspace[:-2], EC50s, ".--", color="navy")
+    plt.plot(scanspace[:-1] + minmax / numpoints, EC50s, ".--", color="navy")
     plt.grid()
     if gate:
         Timepoint = Timepoint + " for " + gate.__name__ + " cells"
@@ -738,5 +725,5 @@ def EC50_PC_Scan(sampleType, numpoints, Timepoint, gate, Tcells=True, PC1=True):
     ax.set_xlabel("PC Space", fontsize=15)
     ax.set_ylabel("log[EC50] (nM)", fontsize=15)
     ax.set(ylim=(-3, 3))
+    ax.set(xlim = (-minmax, minmax))
     plt.show()
-    return EC50s, scanspace
