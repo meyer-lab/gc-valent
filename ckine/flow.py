@@ -10,6 +10,7 @@ from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
+from scipy.optimize import least_squares
 
 
 def importF(pathname):
@@ -677,7 +678,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
     lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0., 0.], [10., 100., 10**5., 10**5]), jac='3-point')
-    return lsq_res.x[0], lsq_res.x[3]
+    return lsq_res.x[0]
 
 
 def residuals(x0, x, y):
@@ -698,12 +699,11 @@ def hill_equation(x, x0, solution=0):
 def EC50_PC_Scan(sampleType, numpoints, Timepoint, gate, Tcells=True, PC1=True):
     '''Scans along one Principal component and returns EC50 for slices along that Axis'''
     x0 = [1, 2., 5000., 3000.]# would put gating here
-    EC50s = np.zeros([1,numpoints-1])
-    floors = np.zeros([1,numpoints-1])
+    EC50s = np.zeros([1, numpoints-1])
     if Tcells: #find PCA spcae min and max to be scanned
-        data, pstat, features = sampleT(sampleType[0])
+        data, _, features = sampleT(sampleType[0])
     else:
-        data, pstat, features = sampleNk(sampleType[0])
+        data, _, features = sampleNK(sampleType[0])
     PCAobj, _ = fitPCA(data, features)
     xf = appPCA(data, features, PCAobj)
     PC1val, PC2val = xf[:, 0], xf[:, 1]
@@ -711,20 +711,19 @@ def EC50_PC_Scan(sampleType, numpoints, Timepoint, gate, Tcells=True, PC1=True):
         PCmin, PCmax = np.amin(PC1val), np.amax(PC1val)
     else:
         PCmin, PCmax = np.amin(PC2val), np.amax(PC2val)
-    scanspace = np.linspace(PCmin, PCmax, num=numpoints + 1)
-    scanspace = np.linspace(-2, 2, num = numpoints + 1)
-    axrange = np.array([-100,100])
-
+    scanspace = np.linspace(PCmin, PCmax, num = numpoints + 1)
+    scanspace = np.linspace(-3, 3, num = numpoints + 1)
+    axrange = np.array([-100, 100])
+    
     for i in range(0, numpoints-1): #set bounds and calculate EC50s
         if PC1:
-            PC1Bnds, PC2Bnds = np.array([scanspace[i],scanspace[i + 1]]), axrange
+            PC1Bnds, PC2Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         else:
-            PC2Bnds, PC1Bnds = np.array([scanspace[i],scanspace[i + 1]]), axrange
+            PC2Bnds, PC1Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         pSTATs, doses = PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells)
         doses = np.log10(doses.astype(np.float) * 1e4)
         EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)[0]
-        floors[0, i] = nllsq_EC50(x0, doses, pSTATs)[1]
-        
+
     EC50s = np.array([EC50s]) - 4 # account for 10^4 multiplication
     EC50s = EC50s.flatten()
     _, ax = plt.subplots(figsize=(8, 8))
@@ -733,8 +732,8 @@ def EC50_PC_Scan(sampleType, numpoints, Timepoint, gate, Tcells=True, PC1=True):
     if gate:
         Timepoint = Timepoint + " for " + gate.__name__ + " cells"
     if PC1:
-            ax.set_title("EC50s along PC1 for " + Timepoint, fontsize=20)
-    else: 
+        ax.set_title("EC50s along PC1 for " + Timepoint, fontsize=20)
+    else:
         ax.set_title("EC50s along PC2 for " + Timepoint, fontsize=20)
     ax.set_xlabel("PC Space", fontsize=15)
     ax.set_ylabel("log[EC50] (nM)", fontsize=15)
