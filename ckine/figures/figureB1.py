@@ -15,8 +15,6 @@ df.reset_index(inplace=True)
 _, numpy_data, cell_names = import_Rexpr()
 numpy_data = receptor_expression(numpy_data, rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
 
-rxntfR[22:27] = numpy_data[1, :]
-print(cell_names[1])
 
 def makeFigure():
     """ Get a list of the axis objects and create a figure. """

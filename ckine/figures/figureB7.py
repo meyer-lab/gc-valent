@@ -61,10 +61,8 @@ def makeFigure():
     return f
 
 
-def catplot_comparison(ax, df, tp):
+def catplot_comparison(ax, subset_df, tp):
     """ Construct EC50 catplots for given time point. """
-    # make subset dataframe without points where least squares fails
-    subset_df = df[df['EC-50'] < 1.9]
 
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
@@ -91,12 +89,13 @@ def catplot_comparison(ax, df, tp):
     circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
     triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
     ax.legend(handles=[blue, yellow, green, red, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+    ax.set_ylim(top=2.0)
 
 
 def calculate_EC50s(df, scales, cell_order, ligand_order):
     """ Scales model predictions to experimental data, then calculates EC-50 for all cell types, muteins, and time points. """
 
-    x0 = [1, 2., 1000.]
+    x0 = [100.0, 1.0, 9000.0]
     data_types = []
     cell_types = []
     mutein_types = []
@@ -138,7 +137,7 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
 
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10**2., 10**2., 10**16]), jac='3-point')
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 6000.], [10**6., 10**2., 10**9]), jac='3-point')
     return lsq_res.x[0]
 
 

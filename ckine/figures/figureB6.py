@@ -20,9 +20,9 @@ unkVec_2_15, _ = import_samples_2_15(N=5)
 
 mutaff = {
     "IL2-060": [1., 1., 5.],  # Wild-type, but dimer
-    "IL2-062": [1., 20., 5.],  # Weaker b-g
+    "IL2-062": [1., 15., 5.],  # Weaker b-g
     "IL2-088": [13., 1., 5.],  # Weaker CD25
-    "IL2-097": [13., 20., 5.]  # Both
+    "IL2-097": [13., 15., 5.]  # Both
 }
 
 
@@ -153,7 +153,7 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, cell_receptors
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
-        active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True)
+        active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors)
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
 
     return total_activity
