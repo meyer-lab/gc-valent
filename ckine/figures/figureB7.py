@@ -10,7 +10,7 @@ import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup
-from .figureB6 import organize_expr_pred, mutein_scaling, mutaff
+from .figureB6 import organize_expr_pred, mutein_scaling
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15
 
 dataMean, _ = import_muteins()
@@ -38,9 +38,9 @@ def makeFigure():
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
 
-        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
-        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
-        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
+        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].values[0]
+        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].values[0]
+        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].values[0]
         receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
 
         for _, ligand_name in enumerate(ligand_order):
