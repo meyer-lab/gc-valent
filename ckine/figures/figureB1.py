@@ -50,9 +50,10 @@ def dRespon(input_params, input_receptors=None):
 
 def IC50global(input_params, input_receptors=None):
     """ Calculate half-maximal concentration w.r.t. wt. """
-    halfResponse = runIL2simple(rxntfR, [1.0, 1.0, 5.0], 5000.0, input_receptors=input_receptors) / 2.0
+    tps = np.array([50000.0])
+    halfResponse = runIL2simple(rxntfR, [1.0, 1.0, 5.0], 5000.0, input_receptors=input_receptors, tps=tps) / 2.0
 
-    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, input_receptors=input_receptors) - halfResponse, 0, 1000.0, rtol=1e-5)
+    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, input_receptors=input_receptors, tps=tps) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
 def halfMax_IL2RaAff(ax):
