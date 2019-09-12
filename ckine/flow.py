@@ -696,14 +696,14 @@ def hill_equation(x, x0, solution=0):
     return (A * xk / (1.0 + xk)) - solution + floor
 
 
-def EC50_PC_Scan(sampleType, numpoints, Timepoint, minmax, gate, Tcells=True, PC1=True):
+def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True):
     '''Scans along one Principal component and returns EC50 for slices along that Axis'''
     x0 = [1, 2., 5000., 3000.]# would put gating here
     EC50s = np.zeros([1, numpoints])
-    scanspace = np.linspace(-minmax, minmax, num = numpoints + 1)
+    scanspace = np.linspace(min_max_pts[0], min_max_pts[1], num=min_max_pts[2] + 1)
     axrange = np.array([-100, 100])
 
-    for i in range(0, numpoints): #set bounds and calculate EC50s
+    for i in range(0, min_max_pts[2]): #set bounds and calculate EC50s
         if PC1:
             PC1Bnds, PC2Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         else:
@@ -714,7 +714,7 @@ def EC50_PC_Scan(sampleType, numpoints, Timepoint, minmax, gate, Tcells=True, PC
 
     EC50s = EC50s.flatten() - 4 # account for 10^4 multiplication
     _, ax = plt.subplots(figsize=(8, 8))
-    plt.plot(scanspace[:-1] + minmax / numpoints, EC50s, ".--", color="navy")
+    plt.plot(scanspace[:-1] + (min_max_pts[1] - min_max_pts[0]) / (2 * min_max_pts[2]), EC50s, ".--", color="navy")
     plt.grid()
     if gate:
         Timepoint = Timepoint + " for " + gate.__name__ + " cells"
@@ -725,5 +725,5 @@ def EC50_PC_Scan(sampleType, numpoints, Timepoint, minmax, gate, Tcells=True, PC
     ax.set_xlabel("PC Space", fontsize=15)
     ax.set_ylabel("log[EC50] (nM)", fontsize=15)
     ax.set(ylim=(-3, 3))
-    ax.set(xlim = (-minmax, minmax))
+    ax.set(xlim=(min_max_pts[0], min_max_pts[1]))
     plt.show()
