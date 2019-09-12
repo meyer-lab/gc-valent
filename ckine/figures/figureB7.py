@@ -10,7 +10,7 @@ import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup
-from .figureB6 import organize_expr_pred, mutein_scaling
+from .figureB6 import organize_expr_pred, mutein_scaling, mutaff
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15
 
 dataMean, _ = import_muteins()
@@ -21,18 +21,11 @@ unkVec_2_15, _ = import_samples_2_15(N=1)  # use one rate
 muteinC = dataMean.Concentration.unique()
 tps = np.array([0.5, 1., 2., 4.]) * 60.
 
-mutaff = {
-    "IL2-060": [1., 1., 5.],  # Wild-type, but dimer
-    "IL2-062": [1., 100., 5.],  # Weaker b-g
-    "IL2-088": [10., 1., 5.],  # Weaker CD25
-    "IL2-097": [10., 100., 5.]  # Both
-}
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 1))
+    ax, f = getSetup((7, 6), (2, 2))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
