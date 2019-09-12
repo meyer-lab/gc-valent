@@ -626,7 +626,7 @@ def PCdatTransform(xf, pstat):
     PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
     PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
     PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'pSTAT': PCAstat[:, 2]})  # arrange into pandas datafrome
-    return PCApd 
+    return PCApd
 
 
 def StatGini(sampleType, Timepoint, gate, Tcells=True):
