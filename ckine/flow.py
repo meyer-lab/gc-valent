@@ -598,11 +598,9 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
 
         if i == 0:
             PCAobj, _ = fitPCA(data, features)  # only fit to first set
+
         xf = appPCA(data, features, PCAobj)  # get PC1/2 vals
-        PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
-        PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
-        PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
-        PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'pSTAT': PCAstat[:, 2]})  # arrange into pandas datafrome
+        PCApd = PCdatTransform(xf, pstat)
         PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0]) & (PCApd['PC2'] <= PC2Bnds[1])] # remove data that that is not within given PC bounds
         pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean() # take average Pstat activity of data fitting criteria
 
@@ -620,6 +618,15 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
     ax.set(xlim=(0.0001, 100))
     plt.show()
     return pSTATvals, dosemat
+
+
+def PCdatTransform(xf, pstat):
+    '''Takes PCA Data and transforms it into a pandas dataframe (variable saver)'''
+    PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
+    PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
+    PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
+    PCApd = pd.DataFrame({'PC1': PCAstat[:, 0], 'PC2': PCAstat[:, 1], 'pSTAT': PCAstat[:, 2]})  # arrange into pandas datafrome
+    return PCApd 
 
 
 def StatGini(sampleType, Timepoint, gate, Tcells=True):
@@ -699,7 +706,7 @@ def hill_equation(x, x0, solution=0):
 def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True):
     '''Scans along one Principal component and returns EC50 for slices along that Axis'''
     x0 = [1, 2., 5000., 3000.]# would put gating here
-    EC50s = np.zeros([1, numpoints])
+    EC50s = np.zeros([1, min_max_pts[2]])
     scanspace = np.linspace(min_max_pts[0], min_max_pts[1], num=min_max_pts[2] + 1)
     axrange = np.array([-100, 100])
 
