@@ -20,9 +20,8 @@ juliac.jl:
 	wget https://raw.githubusercontent.com/JuliaLang/PackageCompiler.jl/master/juliac.jl
 
 ckine/solver.so: juliac.jl
-	julia -e "using Pkg; Pkg.add(\"ODEInterface\")"
 	julia -e "using Pkg; Pkg.add(\"PackageCompiler\"); Pkg.add(\"ArgParse\"); Pkg.add(PackageSpec(url=\"https://github.com/meyer-lab/gcSolver.jl\"))"
-	julia juliac.jl -vrast --check-bounds no --math-mode fast --inline yes --compile all --startup-file=no -d ./ckine ckine/solver.jl
+	julia juliac.jl -vrast --inline yes --compile all --startup-file=no -d ./ckine ckine/solver.jl
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/solver.so ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
@@ -64,7 +63,7 @@ test: venv ckine/solver.so
 	. venv/bin/activate && python -m pytest -s
 
 testcover: venv ckine/solver.so
-	. venv/bin/activate && python -m pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate && python -m pytest -s --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 pylint.log: venv common/pylintrc
 	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
