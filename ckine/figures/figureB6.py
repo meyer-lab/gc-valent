@@ -19,11 +19,12 @@ unkVec_2_15, _ = import_samples_2_15(N=100)
 
 
 mutaff = {
-    "IL2-060": [1., 1., 5.], # Wild-type, but dimer
-    "IL2-062": [1., 100., 5.], # Weaker b-g
-    "IL2-088": [10., 1., 5.], # Weaker CD25
-    "IL2-097": [10., 100., 5.] # Both
+    "IL2-060": [1., 1., 5.],  # Wild-type, but dimer
+    "IL2-062": [1., 100., 5.],  # Weaker b-g
+    "IL2-088": [10., 1., 5.],  # Weaker CD25
+    "IL2-097": [10., 100., 5.]  # Both
 }
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""

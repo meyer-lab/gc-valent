@@ -15,19 +15,20 @@ df.reset_index(inplace=True)
 changesAff = np.logspace(-2, 2, num=7)
 cellNames = ["T-reg", "T-helper", "NK"]
 
+
 def makeFigure():
     """ Get a list of the axis objects and create a figure. """
     ax, f = getSetup((8, 11), (3, 3))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
-        
-    cellReceptors = np.zeros((3,3))
-    
+
+    cellReceptors = np.zeros((3, 3))
+
     for i, cellName in enumerate(cellNames):
-        IL2Ra = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='IL-2R$\\alpha$'), "Count"].item()
-        IL2Rb = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='IL-2R$\\beta$'), "Count"].item()
-        gc = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='$\\gamma_{c}$'), "Count"].item()
+        IL2Ra = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
+        IL2Rb = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+        gc = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
         cellReceptors[i, :] = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
 
     for i, receptors in enumerate(cellReceptors):

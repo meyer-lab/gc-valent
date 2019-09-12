@@ -12,6 +12,7 @@ from ..imports import import_Rexpr
 df, _, _ = import_Rexpr()
 df.reset_index(inplace=True)
 
+
 def makeFigure():
     """ Get a list of the axis objects and create a figure. """
     ax, f = getSetup((11, 6), (2, 2))
@@ -20,26 +21,26 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     cellNames = ["T-reg", "T-helper"]
-    cellReceptors = np.zeros((2,3))
-    
+    cellReceptors = np.zeros((2, 3))
+
     for i, cellName in enumerate(cellNames):
-        IL2Ra = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='IL-2R$\\alpha$'), "Count"].item()
-        IL2Rb = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='IL-2R$\\beta$'), "Count"].item()
-        gc = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] =='$\\gamma_{c}$'), "Count"].item()
+        IL2Ra = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] == 'IL-2R$\\alpha$'), "Count"].item()
+        IL2Rb = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] == 'IL-2R$\\beta$'), "Count"].item()
+        gc = df.loc[(df["Cell Type"] == cellName) & (df["Receptor"] == '$\\gamma_{c}$'), "Count"].item()
         cellReceptors[i, :] = receptor_expression(np.array([IL2Ra, IL2Rb, gc]).astype(np.float), rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
-    
+
     halfMax_IL2RaAff(ax[0])
     activeReceptorComplexes(ax[1])
     halfMax_IL2RbAff(ax[2], cellNames, cellReceptors)
     halfMax_IL2RbAff_highIL2Ra(ax[3], cellNames, cellReceptors)
-    
+
     return f
 
 
 def dRespon(input_params, CD25=1.0, input_receptors=None, adj_receptors=False):
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-3.0, 3.0)
-    activee = np.array([runIL2simple(rxntfR, input_params, ii,  CD25, input_receptors=input_receptors, adj_receptors=adj_receptors) for ii in ILs]).squeeze()
+    activee = np.array([runIL2simple(rxntfR, input_params, ii, CD25, input_receptors=input_receptors, adj_receptors=adj_receptors) for ii in ILs]).squeeze()
 
     return ILs, activee
 
@@ -86,7 +87,7 @@ def halfMax_IL2RbAff(ax, cellName, receptorExpr):
     for i, itemA in enumerate(changesA):
         for j, itemB in enumerate(receptorExpr):
             output[i, j] = IC50global([1.0, itemA, 5.0], input_receptors=itemB, adj_receptors=True)
-    
+
     for ii in range(output.shape[1]):
         ax.loglog(changesA, output[:, ii], label=str(cellName[ii]))
 
@@ -113,34 +114,35 @@ def halfMax_IL2RbAff_highIL2Ra(ax, cellName, receptorExpr):
 
 def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=None, input_receptors=None, adj_receptors=False, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
-    
+
     if tps is None:
-        tps=np.array([500.0])
-    
+        tps = np.array([500.0])
+
     kfwd, k4rev, k5rev = unkVec[6], unkVec[7], unkVec[8]
-    
+
     k1rev = 0.6 * 10 * input_params[0]
     k2rev = 0.6 * 144 * input_params[1]
     k11rev = 63.0 * k5rev / 1.5 * input_params[1]
-    
+
     if adj_receptors:
         IL2Ra = input_receptors[0] * CD25
         IL2Rb = input_receptors[1]
         gc = input_receptors[2]
     else:
         IL2Ra, IL2Rb, gc = unkVec[22] * CD25, unkVec[23], unkVec[24]
-    
+
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2], k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]]) # input_params[2] represents endosomal binding affinity relative to surface affinity
+    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2],
+                       k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]])  # input_params[2] represents endosomal binding affinity relative to surface affinity
 
     yOut = runCkineU_IL2(tps, rxntfr)
 
     if ligandDegradation:
-       # rate of ligand degradation
-       return ligandDeg(yOut[0], sortF=unkVec[19], kDeg=unkVec[21], cytokineIDX=0)
+        # rate of ligand degradation
+        return ligandDeg(yOut[0], sortF=unkVec[19], kDeg=unkVec[21], cytokineIDX=0)
 
     active_ckine = np.zeros(yOut.shape[0])
-    
+
     # calculate for each time point
     for i in range(yOut.shape[0]):
         active_ckine[i] = getTotalActiveCytokine(0, yOut[i, :])
