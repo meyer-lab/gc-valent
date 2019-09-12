@@ -37,22 +37,18 @@ def makeFigure():
     return f
 
 
-def dRespon(input_params, CD25=1.0, input_receptors=None, adj_receptors=False):
+def dRespon(input_params, input_receptors=None, adj_receptors=False):
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-3.0, 3.0)
-    activee = np.array([runIL2simple(rxntfR, input_params, ii, CD25, input_receptors=input_receptors, adj_receptors=adj_receptors) for ii in ILs]).squeeze()
+    activee = np.array([runIL2simple(rxntfR, input_params, ii, input_receptors=input_receptors, adj_receptors=adj_receptors) for ii in ILs]).squeeze()
 
     return ILs, activee
 
 
-def IC50global(input_params, CD25=1.0, input_receptors=None, adj_receptors=False):
+def IC50global(input_params, input_receptors=None, adj_receptors=False):
     """ Calculate half-maximal concentration w.r.t. wt. """
     halfResponse = 20.0
-    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, CD25, input_receptors=input_receptors, adj_receptors=adj_receptors) - halfResponse, 0, 1000.0, rtol=1e-5)
-
-
-changesA = np.logspace(-1, 1.5, num=20)
-changesB = np.array([0.0, 0.1, 0.25, 0.5, 1.0])
+    return brentq(lambda x: runIL2simple(rxntfR, input_params, x, input_receptors=input_receptors, adj_receptors=adj_receptors) - halfResponse, 0, 1000.0, rtol=1e-5)
 
 
 def halfMax_IL2RaAff(ax):
@@ -79,6 +75,9 @@ def activeReceptorComplexes(ax):
     ax.semilogx(ten[0], ten[1], "r", label="10X higher/lower affinity IL2Ra/IL2Rb")
     ax.set(ylabel="Active Receptor Complexes (#/cell)", xlabel="IL2 [nM]")
     ax.legend()
+
+
+changesA = np.logspace(-1, 1.5, num=20)
 
 
 def halfMax_IL2RbAff(ax, cellName, receptorExpr):
