@@ -49,7 +49,7 @@ def makeFigure():
 def dRespon_loc(input_params, input_receptors):  # same as dRespon except with different ILs range
     """ Calculate an IL2 dose response curve. """
     ILs = np.logspace(-4.0, 3.0)
-    activee = np.array([runIL2simple(rxntfR, input_params, ii, input_receptors=input_receptors, adj_receptors=True) for ii in ILs])
+    activee = np.array([runIL2simple(rxntfR, input_params, ii, input_receptors=input_receptors) for ii in ILs])
     return ILs, activee
 
 
