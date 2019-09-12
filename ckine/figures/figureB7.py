@@ -61,35 +61,20 @@ def makeFigure():
     return f
 
 
-def catplot_comparison(ax, subset_df, tp):
+def catplot_comparison(ax, df, tp):
     """ Construct EC50 catplots for given time point. """
 
-    # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
-                data=subset_df.loc[(subset_df['Time Point'] == tp) & (subset_df["Data Type"] == 'Predicted')],
-                legend=False, ax=ax, marker='^')
+    df = df.copy()
+    df['EC-50'] += 3.0
+    subset_df = df.loc[(df['Time Point'] == tp)]
+    subset_df = subset_df.loc[(subset_df["Cell Type"] == 'T-reg')]
 
-    # plot experimental EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="Mutein",
-                data=subset_df.loc[(subset_df['Time Point'] == tp) & (subset_df["Data Type"] == 'Experimental')],
-                legend=False, ax=ax, marker='o')
+    sns.barplot(x="Mutein", y="EC-50", hue="Data Type", data=subset_df, ax=ax)
 
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
-    ax.set_xlabel("")  # remove "Cell Type" from xlabel
-    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    #ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+    ax.set_ylabel(r"EC-50 (log$_{10}$[pM])")
     ax.set_title(str(tp / 60.) + " hours")
-
-    # set manual legend
-    ax.get_legend().remove()
-    palette = sns.color_palette().as_hex()
-    blue = mpatches.Patch(color=palette[0], label='IL2-060')
-    yellow = mpatches.Patch(color=palette[1], label='IL2-062')
-    green = mpatches.Patch(color=palette[2], label='IL2-088')
-    red = mpatches.Patch(color=palette[3], label='IL2-097')
-    circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-    triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    ax.legend(handles=[blue, yellow, green, red, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
-    ax.set_ylim(top=2.0)
+    ax.set_ylim(0.0, 3.0)
 
 
 def calculate_EC50s(df, scales, cell_order, ligand_order):
