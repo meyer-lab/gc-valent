@@ -40,21 +40,6 @@ class TestModel(unittest.TestCase):
 
         self.rxntfR = np.concatenate((self.args, self.tfargs))
 
-    def test_runCkineParallel(self):
-        """ Test that we can run solving in parallel. """
-        rxntfr = np.reshape(np.tile(self.rxntfR, 20), (20, -1))
-
-        outt = runCkineUP(self.ts[1], rxntfr)
-
-        # test that all of the solutions returned are identical
-        for ii in range(rxntfr.shape[0]):
-            self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
-
-    def test_initial(self):
-        """ Test that there is at least 1 non-zero species at T=0. """
-        temp = runCkineU(self.ts, self.rxntfR)
-        self.assertGreater(np.count_nonzero(temp[0, :]), 0)
-
     def test_gc(self):
         """ Test to check that no active species is present when gamma chain is not expressed. """
         rxntfR = self.rxntfR.copy()
