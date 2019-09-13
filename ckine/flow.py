@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 from scipy.optimize import least_squares
 
 
-def importF(pathname):
+def importF(pathname, WellRow):
     """
     Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
@@ -26,7 +26,9 @@ def importF(pathname):
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
     for path in pathlist:
         path_in_str = str(path)
-        file.append(path_in_str)
+        wellID = path_in_str.split("_")[1]
+        if wellID[0] == WellRow:
+            file.append(path_in_str)
     file.sort()
     # Go through each file and assign the file contents to entry in the array sample
     for entry in file:
@@ -582,6 +584,9 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
     """
     dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
     pSTATvals = np.zeros([1, dosemat.size])
+    if gate:
+        gates = gate()
+        _, alldata = count_data(sampleType, gates)
 
     for i, sample in enumerate(sampleType):
         if Tcells:
@@ -591,8 +596,6 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
             data, pstat, features = sampleNK(sample)
             statcol = 'BL2-H'
         if gate:
-            gates = gate()
-            _, alldata = count_data(sampleType, gates)
             data = alldata[i]
             pstat = data[[statcol]]
 
@@ -601,8 +604,8 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
 
         xf = appPCA(data, features, PCAobj)  # get PC1/2 vals
         PCApd = PCdatTransform(xf, pstat)
-        PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0]) & (PCApd['PC2'] <= PC2Bnds[1])] # remove data that that is not within given PC bounds
-        pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean() # take average Pstat activity of data fitting criteria
+        PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0]) & (PCApd['PC2'] <= PC2Bnds[1])]  # remove data that that is not within given PC bounds
+        pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean()  # take average Pstat activity of data fitting criteria
 
     pSTATvals = pSTATvals.flatten()
     _, ax = plt.subplots(figsize=(8, 8))
@@ -660,7 +663,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
         stat_array = stat_array.to_numpy()
         stat_array = stat_array.clip(min=0)  # remove small percentage of negative pstat values
         stat_array.tolist()  # manipulate data to be compatible with gin calculation
-        stat_sort = sorted(np.hstack(stat_array))
+        stat_sort = np.sort(np.hstack(stat_array))
         num = stat_array.size
         subconst = (num + 1) / num
         coef = 2 / num
@@ -678,6 +681,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
     ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
     ax.set_ylabel("Gini Coefficient", fontsize=15)
     ax.set(xlim=(0.0001, 100))
+    ax.set(ylim=(0., 0.5))
     plt.show()
     return ginis, dosemat
 
@@ -705,21 +709,21 @@ def hill_equation(x, x0, solution=0):
 
 def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True):
     '''Scans along one Principal component and returns EC50 for slices along that Axis'''
-    x0 = [1, 2., 5000., 3000.]# would put gating here
+    x0 = [1, 2., 5000., 3000.]  # would put gating here
     EC50s = np.zeros([1, min_max_pts[2]])
     scanspace = np.linspace(min_max_pts[0], min_max_pts[1], num=min_max_pts[2] + 1)
     axrange = np.array([-100, 100])
 
-    for i in range(0, min_max_pts[2]): #set bounds and calculate EC50s
+    for i in range(0, min_max_pts[2]):  # set bounds and calculate EC50s
         if PC1:
             PC1Bnds, PC2Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         else:
             PC2Bnds, PC1Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         pSTATs, doses = PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells)
         doses = np.log10(doses.astype(np.float) * 1e4)
-        EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)[0]
+        EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)
 
-    EC50s = EC50s.flatten() - 4 # account for 10^4 multiplication
+    EC50s = EC50s.flatten() - 4  # account for 10^4 multiplication
     _, ax = plt.subplots(figsize=(8, 8))
     plt.plot(scanspace[:-1] + (min_max_pts[1] - min_max_pts[0]) / (2 * min_max_pts[2]), EC50s, ".--", color="navy")
     plt.grid()
