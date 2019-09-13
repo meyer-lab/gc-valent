@@ -58,11 +58,47 @@ def treg():
     return treg_gate
 
 
+def tregMem():
+    """Function for creating and returning the T reg gate on CD4+ cells"""
+    treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
+    treg2 = QuadGate((6.258e+03, 5.814e+03), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
+    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="below", name='cd45')
+    treg_gate = treg1 & treg2 & cd4() & cd45
+    return treg_gate
+
+
+def tregNaive():
+    """Function for creating and returning the T reg gate on CD4+ cells"""
+    treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
+    treg2 = QuadGate((6.258e+03, 5.814e+03), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
+    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="above", name='cd45')
+    treg_gate = treg1 & treg2 & cd4() & cd45
+    return treg_gate
+
+
 def nonTreg():
     """Function for creating and returning the non T reg gate on CD4+ cells"""
     nontreg1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='nontreg1')
     nontreg2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='nontreg2')
     nonTreg_gate = nontreg1 & nontreg2 & cd4()
+    return nonTreg_gate
+
+
+def THelpMem():
+    """Function for creating and returning the non T reg gate on CD4+ cells"""
+    nontreg1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='nontreg1')
+    nontreg2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='nontreg2')
+    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="below", name='cd45')
+    nonTreg_gate = nontreg1 & nontreg2 & cd4() & cd45
+    return nonTreg_gate
+
+
+def THelpN():
+    """Function for creating and returning the non T reg gate on CD4+ cells"""
+    nontreg1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='nontreg1')
+    nontreg2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='nontreg2')
+    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="above", name='cd45')
+    nonTreg_gate = nontreg1 & nontreg2 & cd4() & cd45
     return nonTreg_gate
 
 
@@ -604,8 +640,8 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
 
         xf = appPCA(data, features, PCAobj)  # get PC1/2 vals
         PCApd = PCdatTransform(xf, pstat)
-        PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0]) & (PCApd['PC2'] <= PC2Bnds[1])]  # remove data that that is not within given PC bounds
-        pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean()  # take average Pstat activity of data fitting criteria
+        PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0]) & (PCApd['PC2'] <= PC2Bnds[1])] # remove data that that is not within given PC bounds
+        pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean() # take average Pstat activity of data fitting criteria
 
     pSTATvals = pSTATvals.flatten()
     _, ax = plt.subplots(figsize=(8, 8))
@@ -709,12 +745,12 @@ def hill_equation(x, x0, solution=0):
 
 def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True):
     '''Scans along one Principal component and returns EC50 for slices along that Axis'''
-    x0 = [1, 2., 5000., 3000.]  # would put gating here
+    x0 = [1, 2., 5000., 3000.]# would put gating here
     EC50s = np.zeros([1, min_max_pts[2]])
     scanspace = np.linspace(min_max_pts[0], min_max_pts[1], num=min_max_pts[2] + 1)
     axrange = np.array([-100, 100])
 
-    for i in range(0, min_max_pts[2]):  # set bounds and calculate EC50s
+    for i in range(0, min_max_pts[2]): #set bounds and calculate EC50s
         if PC1:
             PC1Bnds, PC2Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
         else:
@@ -723,7 +759,7 @@ def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True
         doses = np.log10(doses.astype(np.float) * 1e4)
         EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)
 
-    EC50s = EC50s.flatten() - 4  # account for 10^4 multiplication
+    EC50s = EC50s.flatten() - 4 # account for 10^4 multiplication
     _, ax = plt.subplots(figsize=(8, 8))
     plt.plot(scanspace[:-1] + (min_max_pts[1] - min_max_pts[0]) / (2 * min_max_pts[2]), EC50s, ".--", color="navy")
     plt.grid()
