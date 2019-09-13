@@ -660,7 +660,7 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
 
 
 def PCdatTransform(xf, pstat):
-    '''Takes PCA Data and transforms it into a pandas dataframe (variable saver)'''
+    """Takes PCA Data and transforms it into a pandas dataframe (variable saver)"""
     PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
     PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
     PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
@@ -723,7 +723,9 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
 
 
 def nllsq_EC50(x0, xdata, ydata):
-    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
+    """
+    Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. 
+    """
     lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0., 0.], [10., 100., 10**5., 10**5]), jac='3-point')
     return lsq_res.x[0]
 
@@ -744,7 +746,7 @@ def hill_equation(x, x0, solution=0):
 
 
 def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True):
-    '''Scans along one Principal component and returns EC50 for slices along that Axis'''
+    """Scans along one Principal component and returns EC50 for slices along that Axis"""
     x0 = [1, 2., 5000., 3000.]# would put gating here
     EC50s = np.zeros([1, min_max_pts[2]])
     scanspace = np.linspace(min_max_pts[0], min_max_pts[1], num=min_max_pts[2] + 1)
