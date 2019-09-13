@@ -724,7 +724,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
 
 def nllsq_EC50(x0, xdata, ydata):
     """
-    Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. 
+    Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50.
     """
     lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0., 0.], [10., 100., 10**5., 10**5]), jac='3-point')
     return lsq_res.x[0]
