@@ -3,31 +3,12 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from ..model import getTotalActiveCytokine, runCkineU, runCkineUP, runCkineU_IL2, ligandDeg
+from ..model import getTotalActiveCytokine, runCkineU, runCkineU_IL2, ligandDeg
 from ..figures.figureB1 import runIL2simple
-
-
-conservation_IDX = [
-    np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]),  # IL2Rb
-    np.array([0, 3, 5, 6, 8]),  # IL2Ra
-    np.array([9, 10, 12, 13, 15]),  # IL15Ra
-    np.array([16, 17, 18]),  # IL7Ra
-    np.array([19, 20, 21]),  # IL9R
-    np.array([22, 23, 24]),  # IL4Ra
-    np.array([25, 26, 27]),  # IL21Ra
-    np.array([2, 6, 7, 8, 13, 14, 15, 18, 21, 24, 27]),
-]  # gc
 
 
 class TestModel(unittest.TestCase):
     """ Here are the unit tests. """
-
-    def assertConservation(self, y, y0, IDX):
-        """Assert the conservation of species throughout the experiment."""
-        species_delta = y - y0
-
-        # Check for conservation of species sum
-        self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, msg=str(IDX))
 
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
@@ -40,16 +21,6 @@ class TestModel(unittest.TestCase):
         self.tfargs[2] = np.tanh(self.tfargs[2]) * 0.9
 
         self.rxntfR = np.concatenate((self.args, self.tfargs))
-
-    def test_runCkineParallel(self):
-        """ Test that we can run solving in parallel. """
-        rxntfr = np.reshape(np.tile(self.rxntfR, 20), (20, -1))
-
-        outt = runCkineUP(self.ts[1], rxntfr)
-
-        # test that all of the solutions returned are identical
-        for ii in range(rxntfr.shape[0]):
-            self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
 
     def test_gc(self):
         """ Test to check that no active species is present when gamma chain is not expressed. """
@@ -168,14 +139,6 @@ class TestModel(unittest.TestCase):
         reg = ligandDeg(y[1, :], sortF, kDeg, 1)
         high_kDeg = ligandDeg(y[1, :], sortF, kDeg * 10, 1)
         self.assertGreater(high_kDeg, reg)
-
-    def test_noTraff(self):
-        """ Make sure no endosomal species are found when endo=0. """
-        rxntfR = self.rxntfR.copy()
-        rxntfR[17:19] = 0.0  # set endo and activeEndo to 0.0
-        yOut = runCkineU(self.ts, rxntfR)
-        tot_endo = np.sum(yOut[1, 28::])
-        self.assertEqual(tot_endo, 0.0)
 
     def test_IL2_endo_binding(self):
         """ Make sure that the runIL2simple works and that increasing the endosomal reverse reaction rates causes tighter binding (less ligand degradation). """
