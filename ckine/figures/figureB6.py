@@ -130,7 +130,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps):
         pred_data[:, :, j] = calc_dose_response_mutein(unkVec_2_15[:, j], mutaff[ligand_name], tps, muteinC, cell_receptors)
         df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(
             tps, 12), 'Concentration': mutein_conc.reshape(num,),
-            'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
+                                'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
 
     return df
