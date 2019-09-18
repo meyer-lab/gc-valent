@@ -10,26 +10,30 @@ from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup, plot_conf_int
 from .figureB1 import runIL2simple
 from ..model import receptor_expression
-from ..imports import import_muteins, import_Rexpr, import_samples_2_15
+from ..imports import import_muteins, import_Rexpr, import_samples_2_15, import_pstat
 
 dataMean, _ = import_muteins()
 dataMean.reset_index(inplace=True)
 data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
 unkVec_2_15, _ = import_samples_2_15(N=5)
+_, _, _, _, pstat_df = import_pstat()
+dataMean = dataMean.append(pstat_df, ignore_index=True)
 
 mutaff = {
     "IL2-060": [1., 1., 5.],  # Wild-type, but dimer
     "IL2-062": [1., 20., 5.],  # Weaker b-g
     "IL2-088": [13., 1., 5.],  # Weaker CD25
-    "IL2-097": [13., 20., 5.]  # Both
+    "IL2-097": [13., 20., 5.],  # Both
+    "IL2": [1., 1., 5.],
+    "IL15": [1., 1., 5.]
 }
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((18, 8), (4, 8))
+    ax, f = getSetup((18, 12), (6, 8))
 
     for ii, item in enumerate(ax):
         if ii < 26:
@@ -39,9 +43,9 @@ def makeFigure():
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
-    dataMean["Concentration"] = np.log10(dataMean["Concentration"])  # logscale for plotting
+    dataMean["Concentration"] = np.log10(dataMean["Concentration"].astype(np.float))  # logscale for plotting
 
-    ligand_order = ['IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
+    ligand_order = ['IL2', 'IL15', 'IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
@@ -80,7 +84,7 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
             axis = j * 8 + i
 
             # plot experimental data
-            if axis == 31:
+            if axis == 47:
                 sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
                                                                                           & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
                 ax[axis].legend(loc='lower right', title="time (hours)")
