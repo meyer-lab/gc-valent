@@ -127,10 +127,10 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
     pred_data = np.zeros((12, 4, unkVec.shape[1]))
     for j in range(unkVec.shape[1]):
         cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
-        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff[ligand_name], tps, muteinC, cell_receptors)
+        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
         df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(
             tps, 12), 'Concentration': mutein_conc.reshape(num,),
-                                'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
+            'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
 
     return df
@@ -165,7 +165,7 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, mutein_name, c
             for j in range(yOut.shape[0]):
                 active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
         else:
-            active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors, adj_receptors=True)
+            active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors)
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
 
     return total_activity
