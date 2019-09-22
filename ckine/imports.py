@@ -64,10 +64,10 @@ def import_samples_2_15(N=None):
     unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
     unkVec[13:17, :] = 1.0
 
-    unkVec[22, :] = trace["Rexpr_2Ra__0"].values
-    unkVec[23, :] = trace["Rexpr_2Rb__0"].values
-    unkVec[24, :] = trace["Rexpr_gc__0"].values
-    unkVec[25, :] = trace["Rexpr_15Ra__0"].values
+    unkVec[22, :] = 1.0 #trace["Rexpr_2Ra__0"].values
+    unkVec[23, :] = 1.0 #trace["Rexpr_2Rb__0"].values
+    unkVec[24, :] = 1.0 #trace["Rexpr_gc__0"].values
+    unkVec[25, :] = 1.0 #trace["Rexpr_15Ra__0"].values
 
     unkVec[17, :] = trace["endo__0"].values
     unkVec[18, :] = trace["activeEndo__0"].values
