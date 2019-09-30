@@ -296,7 +296,7 @@ def sampleT(smpl):
     # Features are the protein channels of interest when analyzing T cells
     features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
     # Transform to put on log scale
-    tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H", "RL1-H"])
+    tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H"])
     # Save the data of each column of the protein channels
     data = tform.data[["BL1-H", "VL1-H", "VL4-H", "BL3-H"]][0:]
     # Save pSTAT5 data
@@ -311,7 +311,7 @@ def sampleNK(smpl):
     # Features for the NK file of proteins (CD3, CD8, CD56)
     features = ["VL4-H", "RL1-H", "BL1-H"]
     # Transform all proteins (including pSTAT5)
-    tform = smpl.transform("hlog", channels=["VL4-H", "RL1-H", "BL1-H", "BL2-H"])
+    tform = smpl.transform("hlog", channels=["VL4-H", "RL1-H", "BL1-H"])
     # Assign data of three protein channels AND pSTAT5
     data = tform.data[["VL4-H", "RL1-H", "BL1-H"]][0:]
     pstat = tform.data[["BL2-H"]][0:]
@@ -490,7 +490,7 @@ def sampleTcolor(smpl):
     cd45dat = smpl[["BL3-H"]]
     cd45dat = cd45dat.iloc[:, 0]
     cd45dat = np.log10(cd45dat)
-    tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H", "RL1-H"])
+    tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H"])
     # Save the data of each column of the protein channels
     data = tform.data[["BL1-H", "VL1-H", "VL4-H", "BL3-H"]][0:]
     # Save pSTAT5 data
@@ -498,12 +498,12 @@ def sampleTcolor(smpl):
     colmat = [] * (len(data) + 1)
     for i in range(len(data)):
         if data.iat[i, 0] > 4.814e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03:
-            if cd45dat[i] > 5:
+            if cd45dat[i] > 3.8:
                 colmat.append('r')  # Treg naive
             else:
                 colmat.append('darkorange')  # Treg mem
         elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03:
-            if cd45dat[i] > 5:
+            if cd45dat[i] > 3.8:
                 colmat.append('g')  # Thelp naive
             else:
                 colmat.append('darkorchid')  # Thelp mem
@@ -519,7 +519,7 @@ def sampleNKcolor(smpl):
     # Features for the NK file of proteins (CD3, CD8, CD56)
     features = ["VL4-H", "RL1-H", "BL1-H"]
     # Transform all proteins (including pSTAT5)
-    tform = smpl.transform("hlog", channels=["VL4-H", "RL1-H", "BL1-H", "BL2-H"])
+    tform = smpl.transform("hlog", channels=["VL4-H", "RL1-H", "BL1-H"])
     # Assign data of three protein channels AND pSTAT5
     data = tform.data[["VL4-H", "RL1-H", "BL1-H"]][0:]
     pstat = tform.data[["BL2-H"]][0:]
