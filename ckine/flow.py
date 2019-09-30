@@ -62,7 +62,7 @@ def tregMem():
     """Function for creating and returning the T reg gate on CD4+ cells"""
     treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
     treg2 = QuadGate((6.258e+03, 5.814e+03), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
-    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="below", name='cd45')
+    cd45 = ThresholdGate(6300, ('BL3-H'), region="below", name='cd45')
     treg_gate = treg1 & treg2 & cd4() & cd45
     return treg_gate
 
@@ -71,7 +71,7 @@ def tregNaive():
     """Function for creating and returning the T reg gate on CD4+ cells"""
     treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
     treg2 = QuadGate((6.258e+03, 5.814e+03), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
-    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="above", name='cd45')
+    cd45 = ThresholdGate(6300, ('BL3-H'), region="above", name='cd45')
     treg_gate = treg1 & treg2 & cd4() & cd45
     return treg_gate
 
@@ -88,7 +88,7 @@ def THelpMem():
     """Function for creating and returning the non T reg gate on CD4+ cells"""
     nontreg1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='nontreg1')
     nontreg2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='nontreg2')
-    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="below", name='cd45')
+    cd45 = ThresholdGate(6300, ('BL3-H'), region="below", name='cd45')
     nonTreg_gate = nontreg1 & nontreg2 & cd4() & cd45
     return nonTreg_gate
 
@@ -97,7 +97,7 @@ def THelpN():
     """Function for creating and returning the non T reg gate on CD4+ cells"""
     nontreg1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='nontreg1')
     nontreg2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='nontreg2')
-    cd45 = ThresholdGate(1e+05, ('BL3-H'), region="above", name='cd45')
+    cd45 = ThresholdGate(6300, ('BL3-H'), region="above", name='cd45')
     nonTreg_gate = nontreg1 & nontreg2 & cd4() & cd45
     return nonTreg_gate
 
@@ -129,27 +129,37 @@ def cd():
     return cd_gate
 
 
-def cellCount(sample_i, gate):
+def cellCount(sample_i, gate, Tcells=True):
     """
     Function for returning the count of cells in a single .fcs. file of a single cell file. Arguments: single sample/.fcs file and the gate of the
     desired cell output.
     """
     # Import single file and save data to a variable --> transform to logarithmic scale
-    smpl = sample_i.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "RL1-H"])
+    if Tcells:
+        channels = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
+    else:
+        channels = ["BL1-H", "RL1-H", "VL4-H"]
+    smpl = sample_i.transform("hlog", channels=channels)
+    
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
     # Number of events (AKA number of cells)
     cell_count = cells.get_data().shape[0]
+    #print(cell_count)
     # print('Number of Treg cells:' + str(treg_count))
     return cell_count
 
 
-def rawData(sample_i, gate):
+def rawData(sample_i, gate, Tcells=True):
     """
     Function that returns the raw data of certain cell population in a given file. Arguments: sample_i is a single entry/.fcs file and the gate
     of the desired cell population.
     """
-    smpl = sample_i.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "RL1-H"])
+    if Tcells:
+        channels = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
+    else:
+        channels = ["BL1-H", "RL1-H", "VL4-H"]
+    smpl = sample_i.transform("hlog", channels=channels)
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
     # Get raw data of t reg cells in file
@@ -240,7 +250,7 @@ def cd_plot(sample_i, cd_gate, title):
     ax2.legend([bar_CD], ("CD3+8+"), loc="upper left")
 
 
-def count_data(sampleType, gate):
+def count_data(sampleType, gate, Tcells=True):
     """
     Used to count the number of cells and store the data of all of these cells in a folder with multiple files --> automates the process sampleType
     is NK or T cell data, gate is the desired cell population.
@@ -252,8 +262,8 @@ def count_data(sampleType, gate):
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
     for _, sample in enumerate(sampleType):
-        count_array.append(cellCount(sample, gate))
-        data_array.append(rawData(sample, gate))
+        count_array.append(cellCount(sample, gate, Tcells))
+        data_array.append(rawData(sample, gate, Tcells))
     # returns the array for count of cells and the array where each entry is the data for the specific cell population in that .fcs file
     return count_array, data_array
 
@@ -395,9 +405,11 @@ def loadingPlot(loading, features, i, title):
     # Create figure for the loading plot
     fig1 = plt.figure(figsize=(8, 8))
     ax = fig1.add_subplot(1, 1, 1)
+    ax.set(xlim=(-1, 1), ylim=(-1, 1))
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
     plt.scatter(x_load, y_load)
+    plt.grid()
 
     for z, feature in enumerate(features):
         # Please note: not the best logic, but there are three features in NK and four features in T cells
@@ -622,7 +634,7 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
     pSTATvals = np.zeros([1, dosemat.size])
     if gate:
         gates = gate()
-        _, alldata = count_data(sampleType, gates)
+        _, alldata = count_data(sampleType, gates, Tcells)
 
     for i, sample in enumerate(sampleType):
         if Tcells:
@@ -673,13 +685,13 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
     Define the Gini Coefficient of Pstat Vals Across a timepoint for either whole or gated population.
     Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
     """
-    ginis = []
     alldata = []
-    dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
-
+    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
+    ginis = np.zeros([1,dosemat.size])
+    
     if gate:
         gates = gate()
-        _, alldata = count_data(sampleType, gates)  # returns array of dfs in case of gate or no gate
+        _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
 
     else:
         for i, sample in enumerate(sampleType):
@@ -704,7 +716,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
         subconst = (num + 1) / num
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
-        ginis.append(coef * summed / (stat_sort.sum()) - subconst)
+        ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)
 
     _, ax = plt.subplots(figsize=(8, 8))
     plt.plot(dosemat, ginis, ".--", color="navy")
@@ -717,7 +729,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
     ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
     ax.set_ylabel("Gini Coefficient", fontsize=15)
     ax.set(xlim=(0.0001, 100))
-    ax.set(ylim=(0., 0.5))
+    ax.set(ylim=(0., 0.15))
     plt.show()
     return ginis, dosemat
 
