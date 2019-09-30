@@ -130,7 +130,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
         pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
         df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(
             tps, 12), 'Concentration': mutein_conc.reshape(num,),
-                                                    'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
+                                'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
 
     return df
@@ -160,6 +160,8 @@ def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, mutein_name, c
     for i, conc in enumerate(muteinC):
         if mutein_name == 'IL15':
             unkVec[1] = conc
+            unkVec[22:25] = cell_receptors  # set receptor expression for IL2Ra, IL2Rb, gc
+            unkVec[25] = 0.0  # we never observed any IL-15Ra
             yOut = runCkineU(tps, unkVec)
             active_ckine = np.zeros(yOut.shape[0])
             for j in range(yOut.shape[0]):
