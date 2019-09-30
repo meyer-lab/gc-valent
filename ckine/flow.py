@@ -140,7 +140,6 @@ def cellCount(sample_i, gate, Tcells=True):
     else:
         channels = ["BL1-H", "RL1-H", "VL4-H"]
     smpl = sample_i.transform("hlog", channels=channels)
-    
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
     # Number of events (AKA number of cells)
@@ -462,7 +461,7 @@ def pcaAll(sampleType, check, titles):
             xf = appPCA(data, features, PCAobj)
             xf_array.append(xf)
             pcaPlt(xf, pstat, features, title, tplate=True)
-            loadingPlot(loading, features, i, title)
+            loadingPlot(loading, features, title)
             plt.show()
     elif check == "n":
         for i, sample in enumerate(sampleType):
@@ -475,7 +474,7 @@ def pcaAll(sampleType, check, titles):
                 PCAobj, loading = fitPCA(data, features)
             xf = appPCA(data, features, PCAobj)
             pcaPlt(xf, pstat, features, title, tplate=False)
-            loadingPlot(loading, features, i, title)
+            loadingPlot(loading, features, title)
             plt.show()
     return data_array, pstat_array, xf_array
 
@@ -606,7 +605,7 @@ def pcaAllCellType(sampleType, check, titles):
             xf_array.append(xf)
             loading_array.append(loading)
             pcaPltColor(xf, pstat, features, title, colormat)  # changed
-            loadingPlot(loading, features, i, title)
+            loadingPlot(loading, features, title)
     elif check == "n":
         for i, sample in enumerate(sampleType):
             title = titles[i].split("/")
@@ -618,7 +617,7 @@ def pcaAllCellType(sampleType, check, titles):
                 PCAobj, loading = fitPCA(data, features)
             xf = appPCA(data, features, PCAobj)
             pcaPltColor(xf, pstat, features, title, colormat)
-            loadingPlot(loading, features, i, title)
+            loadingPlot(loading, features, title)
     plt.show()
     return data_array, pstat_array, xf_array, loading_array
 
@@ -687,8 +686,7 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
     """
     alldata = []
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
-    ginis = np.zeros([1,dosemat.size])
-    
+    ginis = np.zeros([1, dosemat.size])
     if gate:
         gates = gate()
         _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
