@@ -5,7 +5,7 @@ import string
 import numpy as np
 from scipy.optimize import brentq
 from .figureCommon import subplotLabel, getSetup
-from ..model import runIL2simple, ligandDeg, getTotalActiveCytokine, receptor_expression
+from ..model import runIL2simple, receptor_expression
 from ..make_tensor import rxntfR
 from ..imports import import_Rexpr
 
