@@ -408,7 +408,7 @@ def loadingPlot(loading, ax, Tcells=True):
         features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
     else:
         features = ["VL4-H", "RL1-H", "BL1-H"]
-        
+
     x_load = loading[:, 0]
     y_load = loading[:, 1]
 
