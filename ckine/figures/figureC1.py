@@ -18,16 +18,13 @@ def makeFigure():
         if i < 10:
             subplotLabel(item, string.ascii_uppercase[i])
 
-    plateRow  = "C"
     dose_ind = np.array([0., 6., 11.])
-    Tplate = "/home/brianoj/Tplate418"
-    Tsample, _ = importF(Tplate, plateRow)
+    Tsample, _ = importF("/home/brianoj/Tplate418", "C")
     _, pstat_arrayT, xf_arrayT, loadingT = pcaAll(Tsample, Tcells=True) #take out titles req
     dataT, _, _ = sampleT(Tsample[0])
     PCAobjT, _ = fitPCA(dataT, Tcells=True)
     
-    Nkplate = "/home/brianoj/Nkplate418"
-    Nksample, _ = importF(Nkplate, plateRow)
+    Nksample, _ = importF("/home/brianoj/Nkplate418", "C")
     _, pstat_arrayNk, xf_arrayNk, loadingNk = pcaAll(Nksample, Tcells=False) #take out titles req
     dataNk, _, _ = sampleNK(Nksample[0])
     PCAobjNk, _ = fitPCA(dataNk, Tcells=False)
@@ -50,6 +47,5 @@ def makeFigure():
 
     pcaPltColor(xf_arrayT[4], colormatT[4], ax=ax[8], Tcells=True)
     pcaPltColor(xf_arrayNk[4], colormatNK[4], ax=ax[9], Tcells=False)
-
 
     return f
