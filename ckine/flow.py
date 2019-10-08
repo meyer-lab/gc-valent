@@ -365,12 +365,6 @@ def pcaPlt(xf, pstat, ax, Tcells=True):
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
     """
     # PCA
-    if Tcells:
-        name = "T Cells"
-        features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
-    else:
-        name = "NK Cells"
-        features = ["VL4-H", "RL1-H", "BL1-H"]
     # Setting x and y values from xf
     x = xf[:, 0]
     y = xf[:, 1]
@@ -457,7 +451,7 @@ def pcaAll(sampleType, Tcells=True):
     # using the functions created above for a singular file
     if Tcells:
         for i, sample in enumerate(sampleType):
-            data, pstat, features = sampleT(sample)
+            data, pstat, _ = sampleT(sample)
             data_array.append(data)
             pstat_array.append(pstat)
             if i == 0:
@@ -467,7 +461,7 @@ def pcaAll(sampleType, Tcells=True):
 
     else:
         for i, sample in enumerate(sampleType):
-            data, pstat, features = sampleNK(sample)
+            data, pstat, _ = sampleNK(sample)
             data_array.append(data)
             pstat_array.append(pstat)
             if i == 0:
@@ -491,12 +485,12 @@ def sampleTcolor(smpl):
     pstat = tform.data[["RL1-H"]][0:]
     colmat = [] * (len(data) + 1)
     for i in range(len(data)):
-        if data.iat[i, 0] > 5.115e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03 and data.iat[i, 2] > 6.512e+03 and data.iat[i, 2] < 7.646e+03:
+        if data.iat[i, 0] > 5.115e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03 and data.iat[i, 2] > 6.512e+03:
             if data.iat[i, 3] > 6300:
                 colmat.append('r')  # Treg naive
             else:
                 colmat.append('darkorange')  # Treg mem
-        elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03 and data.iat[i, 2] > 6.512e+03 and data.iat[i, 2] < 7.646e+03:
+        elif data.iat[i, 0] > 2.586e+03 and data.iat[i, 0] < 5.115e+03 and data.iat[i, 1] > 3.470e+02 and data.iat[i, 1] < 5.245e+03 and data.iat[i, 2] > 6.512e+03:
             if data.iat[i, 3] > 6300:
                 colmat.append('g')  # Thelp naive
             else:
@@ -523,7 +517,7 @@ def sampleNKcolor(smpl):
         if data.iat[i, 0] > 5.550e03 and data.iat[i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
             colmat.append('r')  # nk
         elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
-            colmat.append('g')  # bnk
+            colmat.append('darkgreen')  # bnk
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -535,12 +529,6 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
     Scattered point color gradients are based on range/abundance of pSTAT5 data. Light --> Dark = Less --> More Active
     """
     # PCA
-    if Tcells:
-        name = "T Cells"
-        features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
-    else:
-        name = "NK Cells"
-        features = ["VL4-H", "RL1-H", "BL1-H"]
     # Setting x and y values from xf
     x = xf[:, 0]
     y = xf[:, 1]
@@ -561,7 +549,7 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
         ax.legend()
     else:
         ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
-        ax.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="BNK", alpha=0.5)
+        ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=1, c="g", label="BNK", alpha=0.5)
         ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.5)
         ax.legend()
 
