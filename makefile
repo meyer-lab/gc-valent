@@ -50,17 +50,18 @@ autopep:
 clean:
 	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
-	rm -rf html doxy.log graph_all.svg valgrind.xml venv
+	rm -rf html doxy.log graph_all.svg valgrind.xml venv ./ckine/data/flow
 	find -iname "*.pyc" -delete
 
 spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
-download:
-	mkdir ./ckine/data/flow
+download: venv
+	mkdir -p ./ckine/data/flow
 	. venv/bin/activate && synapse -u aarmey -p $(SYNAPSE_APIKEY) get syn20506190 --downloadLocation ./ckine/data/flow/
 	. venv/bin/activate && synapse -u aarmey -p $(SYNAPSE_APIKEY) get syn20506252 --downloadLocation ./ckine/data/flow/
-	unzip -v ./ckine/data/flow/*.zip
+	unzip -d ./ckine/data/flow/ './ckine/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate.zip'
+	unzip -d ./ckine/data/flow/ './ckine/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT.zip'
 
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
