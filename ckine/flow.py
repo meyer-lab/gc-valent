@@ -607,10 +607,10 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
 
     for i, sample in enumerate(sampleType):
         if Tcells:
-            data, pstat, features = sampleT(sample)  # retrieve data
+            data, pstat, _ = sampleT(sample)  # retrieve data
             statcol = 'RL1-H'
         else:
-            data, pstat, features = sampleNK(sample)
+            data, pstat, _ = sampleNK(sample)
             statcol = 'BL2-H'
         if gate:
             data = alldata[i]
@@ -754,4 +754,4 @@ def EC50_PC_Scan(sampleType, min_max_pts, ax, gate, Tcells=True, PC1=True):
     ax.set(xlim=(min_max_pts[0], min_max_pts[1]))
     ax.grid()
 
-    return (loading)
+    return loading

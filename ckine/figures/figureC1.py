@@ -12,8 +12,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((13, 10), (3, 4))
-    TitlesT = ["T-reg 84 nM IL-2", "T-reg 0.345 nM IL-2", "T-reg Zero Treatment"]
-    TitlesNk = ["Nk 84 nM IL-2", "Nk 0.345 nM IL-2", "Nk Zero Treatment"]
+    Titles = [" 84 nM IL-2", " 0.345 nM IL-2", " Zero Treatment"]
     ax[10].axis('off')
     ax[11].axis('off')
 
@@ -37,12 +36,12 @@ def makeFigure():
         dataT, _, _ = sampleT(Tsample[col])
         xfT = appPCA(dataT, PCAobjT, Tcells=True)
         pcaPlt(xfT, pstat_arrayT[col], ax[i], Tcells=True)
-        ax[i].set_title(TitlesT[i], fontsize=15)
+        ax[i].set_title("T-reg" + Titles[i], fontsize=15)
 
         dataNk, _, _ = sampleNK(Nksample[col])
         xfNk = appPCA(dataNk, PCAobjNk, Tcells=False)
         pcaPlt(xfNk, pstat_arrayNk[col], ax[i + 4], Tcells=False)
-        ax[i + 4].set_title(TitlesNk[i], fontsize=15)
+        ax[i + 4].set_title("Nk" + Titles[i], fontsize=15)
 
     loadingPlot(loadingT, ax=ax[3], Tcells=True)
     ax[3].set_title("T-reg Loadings", fontsize=15)
@@ -56,6 +55,7 @@ def makeFigure():
 
 
 def ColPlot(sample, ax, col, Tcells=True):
+    """Fills in an ax with a colored by gating PCA plot"""
     if Tcells:
         _, _, xf_arrayT, _ = pcaAll(sample, Tcells=True)
         _, _, _, _, colormatT = pcaAllCellType(sample, Tcells=True)
