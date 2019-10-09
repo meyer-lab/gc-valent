@@ -650,7 +650,7 @@ def PCdatTransform(xf, pstat):
     return PCApd
 
 
-def StatGini(sampleType, Timepoint, gate, Tcells=True):
+def StatGini(sampleType, ax, gate, Title, Tcells=True):
     """
     Define the Gini Coefficient of Pstat Vals Across a timepoint for either whole or gated population.
     Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
@@ -658,6 +658,8 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
     alldata = []
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
     ginis = np.zeros([1, dosemat.size])
+    invginis = np.zeros([1, dosemat.size])
+
     if gate:
         gates = gate()
         _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
@@ -678,28 +680,41 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
         else:
             stat_array = dat_array[["BL2-H"]]
         stat_array = stat_array.to_numpy()
-        stat_array = stat_array.clip(min=0)  # remove small percentage of negative pstat values
+        stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
         stat_array.tolist()  # manipulate data to be compatible with gin calculation
         stat_sort = np.sort(np.hstack(stat_array))
         num = stat_array.size
         subconst = (num + 1) / num
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
-        ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)
-
-    _, ax = plt.subplots(figsize=(8, 8))
-    plt.plot(dosemat, ginis, ".--", color="navy")
-    plt.grid()
-    if gate:
-        ax.set_title(Timepoint + " pSTAT Gini Coefficient for " + gate.__name__ + " cells", fontsize=20)
-    else:
-        ax.set_title(Timepoint + " pSTAT Gini Coefficient", fontsize=20)
+        ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)\
+        
+    for i, sample in enumerate(sampleType):  # Get inverse Ginis
+        dat_array = alldata[i]
+        if Tcells:
+            stat_array = dat_array[["RL1-H"]]
+        else:
+            stat_array = dat_array[["BL2-H"]]
+        stat_array = stat_array.to_numpy()
+        stat_array = stat_array.clip(min=1) 
+        stat_array= np.reciprocal(stat_array)
+        stat_array.tolist()  
+        stat_sort = np.sort(np.hstack(stat_array))
+        num = stat_array.size
+        subconst = (num + 1) / num
+        coef = 2 / num
+        summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
+        invginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)
+ 
+    ax.plot(dosemat, ginis, ".--", color="navy", label = "Gini Coefficients")
+    ax.plot(dosemat, invginis, ".--", color="darkorange", label = "Inverse Gini Coefficients")
+    ax.grid()
     ax.set_xscale('log')
-    ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
-    ax.set_ylabel("Gini Coefficient", fontsize=15)
+    ax.set_xlabel("Cytokine Dosage (log10[nM])")
+    ax.set_ylabel("Gini Coefficient")
     ax.set(xlim=(0.0001, 100))
-    ax.set(ylim=(0., 0.15))
-    plt.show()
+    ax.set(ylim=(0., 1))
+    ax.set_title(Title)
     return ginis, dosemat
 
 
