@@ -57,7 +57,7 @@ spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
 download:
-	mkdir -C ./ckine/data/flow
+	mkdir ./ckine/data/flow
 	. venv/bin/activate && synapse -u aarmey -p $(SYNAPSE_APIKEY) get syn20506190 --downloadLocation ./ckine/data/flow/
 	. venv/bin/activate && synapse -u aarmey -p $(SYNAPSE_APIKEY) get syn20506252 --downloadLocation ./ckine/data/flow/
 	unzip -v ./ckine/data/flow/*.zip
