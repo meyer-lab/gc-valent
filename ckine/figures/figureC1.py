@@ -55,7 +55,8 @@ def makeFigure():
 
 
 def ColPlot(sample, ax, col, Tcells=True):
-    """Fills in an ax with a colored by gating PCA plot"""
+
+    """Displays the PCA of a sample population colored by gating-determined cell types"""
     if Tcells:
         _, _, xf_arrayT, _ = pcaAll(sample, Tcells=True)
         _, _, _, _, colormatT = pcaAllCellType(sample, Tcells=True)

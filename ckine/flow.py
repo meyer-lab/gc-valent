@@ -638,7 +638,9 @@ def PCdatTransform(xf, pstat):
     return PCApd
 
 
+
 def StatGini(sampleType, ax, gate, Tcells=True):
+
     """
     Define the Gini Coefficient of Pstat Vals Across a timepoint for either whole or gated population.
     Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
@@ -700,6 +702,7 @@ def StatGini(sampleType, ax, gate, Tcells=True):
     ax.set_ylabel("Gini Coefficient")
     ax.set(xlim=(0.0001, 100))
     ax.set(ylim=(0., 1))
+ 
     return ginis, dosemat
 
 
