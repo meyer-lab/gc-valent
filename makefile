@@ -57,7 +57,7 @@ spell: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
 
 download:
-	. venv/bin/activate && set -x && synapse -u aarmey -p $SYNAPSE_APIKEY get syn20506190
+	. venv/bin/activate && set -x && synapse -u aarmey -p $(SYNAPSE_APIKEY) get syn20506190
 
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
