@@ -661,24 +661,23 @@ def StatGini(sampleType, ax, gate, Title, Tcells=True):
     invginis = np.zeros([1, dosemat.size])
 
     if gate:
-        gates = gate()
-        _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
+        gate = gate()
+        _, alldata = count_data(sampleType, gate, Tcells)  # returns array of dfs in case of gate or no gate
 
     else:
         for i, sample in enumerate(sampleType):
             if Tcells:
                 _, pstat, _ = sampleT(sample)
                 alldata.append(pstat)
+                statcol = 'RL1-H'
             else:
                 _, pstat, _ = sampleNK(sample)
                 alldata.append(pstat)
+                statcol = 'BL2-H'
 
     for i, sample in enumerate(sampleType):  # get pstat data and put it into list form
         dat_array = alldata[i]
-        if Tcells:
-            stat_array = dat_array[["RL1-H"]]
-        else:
-            stat_array = dat_array[["BL2-H"]]
+        stat_array = dat_array[[statcol]]
         stat_array = stat_array.to_numpy()
         stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
         stat_array.tolist()  # manipulate data to be compatible with gin calculation
@@ -688,26 +687,23 @@ def StatGini(sampleType, ax, gate, Title, Tcells=True):
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
         ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)\
-        
+
     for i, sample in enumerate(sampleType):  # Get inverse Ginis
         dat_array = alldata[i]
-        if Tcells:
-            stat_array = dat_array[["RL1-H"]]
-        else:
-            stat_array = dat_array[["BL2-H"]]
+        stat_array = dat_array[[statcol]]
         stat_array = stat_array.to_numpy()
-        stat_array = stat_array.clip(min=1) 
-        stat_array= np.reciprocal(stat_array)
-        stat_array.tolist()  
+        stat_array = stat_array.clip(min=1)
+        stat_array = np.reciprocal(stat_array)
+        stat_array.tolist()
         stat_sort = np.sort(np.hstack(stat_array))
         num = stat_array.size
         subconst = (num + 1) / num
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
         invginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)
- 
-    ax.plot(dosemat, ginis, ".--", color="navy", label = "Gini Coefficients")
-    ax.plot(dosemat, invginis, ".--", color="darkorange", label = "Inverse Gini Coefficients")
+
+    ax.plot(dosemat, ginis, ".--", color="navy", label="Gini Coefficients")
+    ax.plot(dosemat, invginis, ".--", color="darkorange", label="Inverse Gini Coefficients")
     ax.grid()
     ax.set_xscale('log')
     ax.set_xlabel("Cytokine Dosage (log10[nM])")

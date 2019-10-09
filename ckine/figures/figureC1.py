@@ -48,6 +48,7 @@ def makeFigure():
     return f
 
 def ColPlot(sample, ax, col, Tcells=True):
+    """Displays the PCA of a sample population colored by gating-determined cell types"""
     if Tcells:
         _, _, xf_arrayT, _ = pcaAll(sample, Tcells=True)
         _, _, _, _, colormatT = pcaAllCellType(sample, Tcells=True)
