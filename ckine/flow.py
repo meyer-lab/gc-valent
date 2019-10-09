@@ -650,17 +650,23 @@ def PCdatTransform(xf, pstat):
     return PCApd
 
 
-def StatGini(sampleType, Timepoint, gate, Tcells=True):
+def StatGini(sampleType, ax, gate, Title, Tcells=True):
     """
     Define the Gini Coefficient of Pstat Vals Across a timepoint for either whole or gated population.
     Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
     """
     alldata = []
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
-    ginis = np.zeros([1, dosemat.size])
+    ginis = np.zeros([2, dosemat.size])
+
+    if Tcells:
+        statcol = 'RL1-H'
+    else:
+        statcol = 'BL2-H'
+        
     if gate:
-        gates = gate()
-        _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
+        gate = gate()
+        _, alldata = count_data(sampleType, gate, Tcells)  # returns array of dfs in case of gate or no gate
 
     else:
         for i, sample in enumerate(sampleType):
@@ -670,36 +676,44 @@ def StatGini(sampleType, Timepoint, gate, Tcells=True):
             else:
                 _, pstat, _ = sampleNK(sample)
                 alldata.append(pstat)
+                
 
     for i, sample in enumerate(sampleType):  # get pstat data and put it into list form
         dat_array = alldata[i]
-        if Tcells:
-            stat_array = dat_array[["RL1-H"]]
-        else:
-            stat_array = dat_array[["BL2-H"]]
+        stat_array = dat_array[[statcol]]
         stat_array = stat_array.to_numpy()
-        stat_array = stat_array.clip(min=0)  # remove small percentage of negative pstat values
+        stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
         stat_array.tolist()  # manipulate data to be compatible with gin calculation
         stat_sort = np.sort(np.hstack(stat_array))
         num = stat_array.size
         subconst = (num + 1) / num
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
-        ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)
-
-    _, ax = plt.subplots(figsize=(8, 8))
-    plt.plot(dosemat, ginis, ".--", color="navy")
-    plt.grid()
-    if gate:
-        ax.set_title(Timepoint + " pSTAT Gini Coefficient for " + gate.__name__ + " cells", fontsize=20)
-    else:
-        ax.set_title(Timepoint + " pSTAT Gini Coefficient", fontsize=20)
+        ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)\
+        
+    for i, sample in enumerate(sampleType):  # Get inverse Ginis
+        dat_array = alldata[i]
+        stat_array = dat_array[[statcol]]
+        stat_array = stat_array.to_numpy()
+        stat_array = stat_array.clip(min=1) 
+        stat_array= np.reciprocal(stat_array)
+        stat_array.tolist()  
+        stat_sort = np.sort(np.hstack(stat_array))
+        num = stat_array.size
+        subconst = (num + 1) / num
+        coef = 2 / num
+        summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
+        ginis[1, i] = (coef * summed / (stat_sort.sum()) - subconst)
+ 
+    ax.plot(dosemat, np.expand_dims(ginis[0,:], axis=0), ".--", color="navy", label = "Gini Coefficients")
+    ax.plot(dosemat, np.expand_dims(ginis[1,:], axis=0), ".--", color="darkorange", label = "Inverse Gini Coefficients")
+    ax.grid()
     ax.set_xscale('log')
-    ax.set_xlabel("Cytokine Dosage (log10[nM])", fontsize=15)
-    ax.set_ylabel("Gini Coefficient", fontsize=15)
+    ax.set_xlabel("Cytokine Dosage (log10[nM])")
+    ax.set_ylabel("Gini Coefficient")
     ax.set(xlim=(0.0001, 100))
-    ax.set(ylim=(0., 0.15))
-    plt.show()
+    ax.set(ylim=(0., 1))
+    ax.set_title(Title)
     return ginis, dosemat
 
 
@@ -726,7 +740,7 @@ def hill_equation(x, x0, solution=0):
     return (A * xk / (1.0 + xk)) - solution + floor
 
 
-def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True):
+def EC50_PC_Scan(sampleType, min_max_pts, gate, Title, Tcells=True, PC1=True):
     """Scans along one Principal component and returns EC50 for slices along that Axis"""
     x0 = [1, 2., 5000., 3000.]  # would put gating here
     EC50s = np.zeros([1, min_max_pts[2]])
@@ -743,17 +757,13 @@ def EC50_PC_Scan(sampleType, Timepoint, min_max_pts, gate, Tcells=True, PC1=True
         EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)
 
     EC50s = EC50s.flatten() - 4  # account for 10^4 multiplication
-    _, ax = plt.subplots(figsize=(8, 8))
-    plt.plot(scanspace[:-1] + (min_max_pts[1] - min_max_pts[0]) / (2 * min_max_pts[2]), EC50s, ".--", color="navy")
-    plt.grid()
-    if gate:
-        Timepoint = Timepoint + " for " + gate.__name__ + " cells"
+    ax.plot(scanspace[:-1] + (min_max_pts[1] - min_max_pts[0]) / (2 * min_max_pts[2]), EC50s, ".--", color="navy")
+    ax.grid()
     if PC1:
-        ax.set_title("EC50s along PC1 for " + Timepoint, fontsize=20)
+        ax.set_xlabel("PC1 Space")
     else:
-        ax.set_title("EC50s along PC2 for " + Timepoint, fontsize=20)
-    ax.set_xlabel("PC Space", fontsize=15)
-    ax.set_ylabel("log[EC50] (nM)", fontsize=15)
+        ax.set_xlabel("PC1 Space")
+    ax.set_title(Title)
+    ax.set_ylabel("log[EC50] (nM)")
     ax.set(ylim=(-3, 3))
     ax.set(xlim=(min_max_pts[0], min_max_pts[1]))
-    plt.show()
