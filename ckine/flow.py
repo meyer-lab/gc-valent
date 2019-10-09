@@ -657,8 +657,12 @@ def StatGini(sampleType, ax, gate, Title, Tcells=True):
     """
     alldata = []
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
-    ginis = np.zeros([1, dosemat.size])
-    invginis = np.zeros([1, dosemat.size])
+    ginis = np.zeros([2, dosemat.size])
+
+    if Tcells:
+        statcol = 'RL1-H'
+    else:
+        statcol = 'BL2-H'
 
     if gate:
         gate = gate()
@@ -669,11 +673,9 @@ def StatGini(sampleType, ax, gate, Title, Tcells=True):
             if Tcells:
                 _, pstat, _ = sampleT(sample)
                 alldata.append(pstat)
-                statcol = 'RL1-H'
             else:
                 _, pstat, _ = sampleNK(sample)
                 alldata.append(pstat)
-                statcol = 'BL2-H'
 
     for i, sample in enumerate(sampleType):  # get pstat data and put it into list form
         dat_array = alldata[i]
@@ -700,10 +702,10 @@ def StatGini(sampleType, ax, gate, Title, Tcells=True):
         subconst = (num + 1) / num
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
-        invginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)
+        ginis[1, i] = (coef * summed / (stat_sort.sum()) - subconst)
 
-    ax.plot(dosemat, ginis, ".--", color="navy", label="Gini Coefficients")
-    ax.plot(dosemat, invginis, ".--", color="darkorange", label="Inverse Gini Coefficients")
+    ax.plot(dosemat, np.expand_dims(ginis[0, :], axis=0), ".--", color="navy", label="Gini Coefficients")
+    ax.plot(dosemat, np.expand_dims(ginis[1, :], axis=0), ".--", color="darkorange", label="Inverse Gini Coefficients")
     ax.grid()
     ax.set_xscale('log')
     ax.set_xlabel("Cytokine Dosage (log10[nM])")
