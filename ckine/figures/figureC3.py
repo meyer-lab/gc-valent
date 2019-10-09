@@ -3,10 +3,8 @@ This creates Figure 1 for Single Cell FC data analysis. Examples of PCA loadings
 """
 
 import string
-import numpy as np
-import matplotlib.lines as mlines
 from .figureCommon import subplotLabel, getSetup
-from ..flow import importF, sampleT, sampleNK, treg, nonTreg, nk, EC50_PC_Scan, loadingPlot
+from ..flow import importF, treg, nonTreg, nk, EC50_PC_Scan, loadingPlot
 
 
 def makeFigure():
