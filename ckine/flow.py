@@ -431,7 +431,7 @@ def loadingPlot(loading, ax, Tcells=True):
                 feature = "CD8"
             if feature == "BL1-H":
                 feature = "CD56"
-        ax.annotate(str(feature), xy=(x_load[z], y_load[z]), fontsize=10)
+        ax.annotate(str(feature), xy=(x_load[z], y_load[z]), fontsize=8)
 
 
 def pcaAll(sampleType, Tcells=True):
@@ -651,7 +651,7 @@ def StatGini(sampleType, ax, gate, Tcells=True):
         statcol = 'RL1-H'
     else:
         statcol = 'BL2-H'
-        
+
     if gate:
         gate = gate()
         _, alldata = count_data(sampleType, gate, Tcells)  # returns array of dfs in case of gate or no gate
@@ -664,7 +664,6 @@ def StatGini(sampleType, ax, gate, Tcells=True):
             else:
                 _, pstat, _ = sampleNK(sample)
                 alldata.append(pstat)
-                
 
     for i, sample in enumerate(sampleType):  # get pstat data and put it into list form
         dat_array = alldata[i]
@@ -678,23 +677,23 @@ def StatGini(sampleType, ax, gate, Tcells=True):
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
         ginis[0, i] = (coef * summed / (stat_sort.sum()) - subconst)\
-        
+
     for i, sample in enumerate(sampleType):  # Get inverse Ginis
         dat_array = alldata[i]
         stat_array = dat_array[[statcol]]
         stat_array = stat_array.to_numpy()
-        stat_array = stat_array.clip(min=1) 
-        stat_array= np.reciprocal(stat_array)
-        stat_array.tolist()  
+        stat_array = stat_array.clip(min=1)
+        stat_array = np.reciprocal(stat_array)
+        stat_array.tolist()
         stat_sort = np.sort(np.hstack(stat_array))
         num = stat_array.size
         subconst = (num + 1) / num
         coef = 2 / num
         summed = sum([(j + 1) * stat for j, stat in enumerate(stat_sort)])
         ginis[1, i] = (coef * summed / (stat_sort.sum()) - subconst)
- 
-    ax.plot(dosemat, np.expand_dims(ginis[0,:], axis=0), ".--", color="navy", label = "Gini Coefficients")
-    ax.plot(dosemat, np.expand_dims(ginis[1,:], axis=0), ".--", color="darkorange", label = "Inverse Gini Coefficients")
+
+    ax.plot(dosemat, np.expand_dims(ginis[0, :], axis=0), ".--", color="navy", label="Gini Coefficients")
+    ax.plot(dosemat, np.expand_dims(ginis[1, :], axis=0), ".--", color="darkorange", label="Inverse Gini Coefficients")
     ax.grid()
     ax.set_xscale('log')
     ax.set_xlabel("Cytokine Dosage (log10[nM])")

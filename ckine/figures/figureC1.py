@@ -7,6 +7,7 @@ import numpy as np
 from .figureCommon import subplotLabel, getSetup
 from ..flow import importF, pcaAll, pcaPlt, appPCA, fitPCA, sampleT, sampleNK, pcaPltColor, pcaAllCellType, loadingPlot
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -22,12 +23,12 @@ def makeFigure():
 
     dose_ind = np.array([0., 6., 11.])
     Tsample, _ = importF("/home/brianoj/Tplate418", "C")
-    _, pstat_arrayT, _, loadingT = pcaAll(Tsample, Tcells=True) #take out titles req
+    _, pstat_arrayT, _, loadingT = pcaAll(Tsample, Tcells=True)  # take out titles req
     dataT, _, _ = sampleT(Tsample[0])
     PCAobjT, _ = fitPCA(dataT, Tcells=True)
 
     Nksample, _ = importF("/home/brianoj/Nkplate418", "C")
-    _, pstat_arrayNk, _, loadingNk = pcaAll(Nksample, Tcells=False) #take out titles req
+    _, pstat_arrayNk, _, loadingNk = pcaAll(Nksample, Tcells=False)  # take out titles req
     dataNk, _, _ = sampleNK(Nksample[0])
     PCAobjNk, _ = fitPCA(dataNk, Tcells=False)
 
@@ -43,7 +44,7 @@ def makeFigure():
         pcaPlt(xfNk, pstat_arrayNk[col], ax[i + 4], Tcells=False)
         ax[i + 4].set_title(TitlesNk[i], fontsize=15)
 
-    loadingPlot(loadingT,  ax=ax[3], Tcells=True)
+    loadingPlot(loadingT, ax=ax[3], Tcells=True)
     ax[3].set_title("T-reg Loadings", fontsize=15)
     loadingPlot(loadingNk, ax=ax[7], Tcells=False)
     ax[7].set_title("T-reg Loadings", fontsize=15)
@@ -53,14 +54,15 @@ def makeFigure():
 
     return f
 
+
 def ColPlot(sample, ax, col, Tcells=True):
     if Tcells:
         _, _, xf_arrayT, _ = pcaAll(sample, Tcells=True)
         _, _, _, _, colormatT = pcaAllCellType(sample, Tcells=True)
         pcaPltColor(xf_arrayT[col], colormatT[col], ax=ax[8], Tcells=True)
-        ax[8].set_title( "T-reg PCA by Gating", fontsize=15)
+        ax[8].set_title("T-reg PCA by Gating", fontsize=15)
     else:
         _, _, xf_arrayNk, _ = pcaAll(sample, Tcells=False)
         _, _, _, _, colormatNk = pcaAllCellType(sample, Tcells=False)
         pcaPltColor(xf_arrayNk[col], colormatNk[col], ax=ax[9], Tcells=False)
-        ax[9].set_title( "Nk PCA by Gating", fontsize=15)
+        ax[9].set_title("Nk PCA by Gating", fontsize=15)
