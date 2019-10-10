@@ -25,14 +25,14 @@ def makeFigure():
         if i < 10:
             subplotLabel(item, string.ascii_uppercase[i])
 
-    print(join(path_here, "../data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT"))
+    print(path_here +  "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT/")
     dose_ind = np.array([0., 6., 11.])
-    Tsample, _ = importF(join(path_here, "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT"), "C")
+    Tsample, _ = importF(path_here +  "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT/", "C")
     _, pstat_arrayT, _, loadingT = pcaAll(Tsample, Tcells=True)  # take out titles req
     dataT, _, _ = sampleT(Tsample[0])
     PCAobjT, _ = fitPCA(dataT, Tcells=True)
 
-    Nksample, _ = importF(join(path_here, "/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate"), "C")
+    Nksample, _ = importF(join(path_here, "/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate/"), "C")
     _, pstat_arrayNk, _, loadingNk = pcaAll(Nksample, Tcells=False)  # take out titles req
     dataNk, _, _ = sampleNK(Nksample[0])
     PCAobjNk, _ = fitPCA(dataNk, Tcells=False)
