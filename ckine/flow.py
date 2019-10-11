@@ -18,6 +18,8 @@ def importF(pathname, WellRow):
     Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
+    print("Path being read:")
+    print(pathname)
     # Declare arrays and int
     file = []
     sample = []
