@@ -3,7 +3,7 @@ fdir = ./Manuscript/Figures
 tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-flist = B1 B2 B3 B4 B5 B6 B7 C1
+flist = B1 B2 B3 B4 B5 B6 B7 C1 C2 C3
 
 .PHONY: clean test all testprofile testcover autopep spell
 
