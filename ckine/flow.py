@@ -18,8 +18,6 @@ def importF(pathname, WellRow):
     Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
-    print("Path being read:")
-    print(pathname)
     # Declare arrays and int
     file = []
     sample = []
@@ -27,10 +25,9 @@ def importF(pathname, WellRow):
     # Read in user input for file path and assign to array file
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
     for path in pathlist:
-        path_in_str = str(path)
-        wellID = path_in_str.split("_")[1]
+        wellID = path.name.split("_")[1]
         if wellID[0] == WellRow:
-            file.append(path_in_str)
+            file.append(str(path))
     file.sort()
     assert file != []
     # Go through each file and assign the file contents to entry in the array sample
