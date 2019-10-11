@@ -3,7 +3,6 @@ This creates Figure 1 for Single Cell FC data analysis. Examples of PCA loadings
 """
 
 import os
-from os.path import join
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
