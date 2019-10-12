@@ -101,10 +101,10 @@ class build_model:
 
             Y_act, names = self.act.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
 
-            for ii in range(len(Y_act)):
-                sd_act = T.std(Y_act[ii])  # Add bounds for the stderr to help force the fitting solution
-                pm.Deterministic("Y_act_" + names[ii], T.sum(T.square(Y_act[ii])))
-                pm.Normal("fitD_act_" + names[ii], sd=sd_act, observed=Y_act[ii])  # experimental-derived stderr is used
+            for ii, Ya in enumerate(Y_act):
+                sd_act = T.std(Ya)  # Add bounds for the stderr to help force the fitting solution
+                pm.Deterministic("Y_act_" + names[ii], T.sum(T.square(Ya)))
+                pm.Normal("fitD_act_" + names[ii], sd=sd_act, observed=Ya)  # experimental-derived stderr is used
 
             # Save likelihood
             pm.Deterministic("logp", M.logpt)
