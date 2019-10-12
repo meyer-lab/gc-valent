@@ -52,7 +52,7 @@ class pSTAT_activity:  # pylint: disable=too-few-public-methods
         print(self.cell_names_pstat)
         for i, name in enumerate(self.cell_names_pstat):
             # plot matching experimental and predictive pSTAT data for the same cell type
-            j = self.cell_names_receptor.get_loc(self.cell_names_pstat[i])
+            j = self.cell_names_receptor.get_loc(name)
 
             unkVec = T.set_subtensor(unkVec[16], receptor_expression(self.receptor_data[j, 0], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Ra
             unkVec = T.set_subtensor(unkVec[17], receptor_expression(self.receptor_data[j, 1], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))  # IL2Rb
@@ -100,7 +100,7 @@ class build_model:
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates * 0.0))
 
             Y_act, names = self.act.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
-            
+
             for ii in range(len(Y_act)):
                 sd_act = T.std(Y_act[ii])  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic("Y_act_" + names[ii], T.sum(T.square(Y_act[ii])))
