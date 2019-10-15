@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.cm as cm
-from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup, plot_conf_int
 from .figureB1 import runIL2simple
 from ..model import receptor_expression, runCkineU, getTotalActiveCytokine
@@ -19,6 +18,7 @@ data.reset_index(inplace=True)
 unkVec_2_15, _ = import_samples_2_15(N=5)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True)
+
 
 mutaff = {
     "IL2-060": [1., 1., 5.],  # Wild-type, but dimer
@@ -179,20 +179,3 @@ def plot_dose_response(ax, mutein_activity, tps, muteinC):
 
     for tt in range(tps.size):
         plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt])
-
-
-def optimize_scale(model_act, exp_act):
-    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-
-    # scaling factors are sigmoidal and linear, respectively
-    guess = np.array([100.0, np.mean(exp_act) / np.mean(model_act)])
-
-    def calc_res(sc):
-        """ Calculate the residuals. This is the function we minimize. """
-        scaled_act = sc[1] * model_act / (model_act + sc[0])
-        err = exp_act - scaled_act
-        return err.flatten()
-
-    # find result of minimization where both params are >= 0
-    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
-    return res.x
