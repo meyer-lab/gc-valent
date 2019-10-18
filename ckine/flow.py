@@ -512,11 +512,14 @@ def sampleNKcolor(smpl):
     pstat = tform.data[["BL2-H"]][0:]
     # Create a section for assigning colors to each data point of each cell population --> in this case NK cells
     colmat = [] * (len(data) + 1)
+    
     for i in range(len(data)):
         if data.iat[i, 0] > 5.550e03 and data.iat[i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
             colmat.append('r')  # nk
         elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
             colmat.append('darkgreen')  # bnk
+        elif data.iat[i, 0] > 5.976e03 and data.iat[i, 0] < 7.541e03 and data.iat[i, 1] > 6.825e03 and data.iat[i, 1] < 9.016e03:
+            colmat.append('orangered') # cd8+
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -540,16 +543,17 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
     # lighter --> darker = less --> more pSTAT5 present
     colormat = np.array(colormat)
     if Tcells:
-        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
-        ax.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="T Helper Naive", alpha=0.5)
-        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=1, c="darkorchid", label="T Helper Memory", alpha=0.5)
-        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=1, c="darkorange", label="T Reg Memory", alpha=0.5)
-        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="T Reg Naive", alpha=0.5)
+        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.3)
+        ax.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="T Helper Naive", alpha=0.3)
+        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=1, c="darkorchid", label="T Helper Memory", alpha=0.3)
+        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=1, c="darkorange", label="T Reg Memory", alpha=0.3)
+        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="T Reg Naive", alpha=0.3)
         ax.legend()
     else:
-        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.5)
-        ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=1, c="g", label="BNK", alpha=0.5)
-        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.5)
+        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.3)
+        ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=1, c="g", label="BNK", alpha=0.3)
+        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.3)
+        ax.scatter(x[colormat == "orangered"], y[colormat == "orangered"], s=1, c="orangered", label="CD+", alpha=0.3)
         ax.legend()
 
 
