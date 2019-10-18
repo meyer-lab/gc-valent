@@ -519,7 +519,7 @@ def sampleNKcolor(smpl):
         elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
             colmat.append('darkgreen')  # bnk
         elif data.iat[i, 0] > 5.976e03 and data.iat[i, 0] < 7.541e03 and data.iat[i, 1] > 6.825e03 and data.iat[i, 1] < 9.016e03:
-            colmat.append('orangered') # cd8+
+            colmat.append('blueviolet') # cd8+
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -553,7 +553,7 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
         ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.3)
         ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=1, c="g", label="BNK", alpha=0.3)
         ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.3)
-        ax.scatter(x[colormat == "orangered"], y[colormat == "orangered"], s=1, c="orangered", label="CD+", alpha=0.3)
+        ax.scatter(x[colormat == "blueviolet"], y[colormat == "blueviolet"], s=1, c="blueviolet", label="CD+", alpha=0.3)
         ax.legend()
 
 
