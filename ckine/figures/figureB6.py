@@ -7,8 +7,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_conf_int
-from .figureB1 import runIL2simple
-from ..model import receptor_expression, runCkineU, getTotalActiveCytokine
 from ..mutein_activity import organize_expr_pred, mutein_scaling
 from ..imports import import_muteins, import_Rexpr, import_samples_2_15, import_pstat
 
