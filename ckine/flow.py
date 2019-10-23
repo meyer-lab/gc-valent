@@ -543,17 +543,17 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
     # lighter --> darker = less --> more pSTAT5 present
     colormat = np.array(colormat)
     if Tcells:
-        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.3)
-        ax.scatter(x[colormat == "g"], y[colormat == "g"], s=1, c="g", label="T Helper Naive", alpha=0.3)
-        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=1, c="darkorchid", label="T Helper Memory", alpha=0.3)
-        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=1, c="darkorange", label="T Reg Memory", alpha=0.3)
-        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="T Reg Naive", alpha=0.3)
+        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=0.5, c="c", label="Other", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "g"], y[colormat == "g"], s=0.5, c="g", label="T Helper Naive", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=0.5, c="darkorchid", label="T Helper Memory", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=0.5, c="darkorange", label="T Reg Memory", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=0.5, c="r", label="T Reg Naive", alpha=0.3, edgecolors='none')
         ax.legend()
     else:
-        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.3)
-        ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=1, c="g", label="NKT", alpha=0.3)
-        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.3)
-        ax.scatter(x[colormat == "blueviolet"], y[colormat == "blueviolet"], s=1, c="blueviolet", label="CD8+", alpha=0.3)
+        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=0.5, c="c", label="Other", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=0.5, c="g", label="NKT", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=0.5, c="r", label="NK", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "blueviolet"], y[colormat == "blueviolet"], s=0.5, c="blueviolet", label="CD8+", alpha=0.3, edgecolors='none')
         ax.legend()
 
 
