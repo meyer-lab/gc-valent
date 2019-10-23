@@ -553,7 +553,7 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
         ax.scatter(x[colormat == "c"], y[colormat == "c"], s=1, c="c", label="Other", alpha=0.3)
         ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=1, c="g", label="NKT", alpha=0.3)
         ax.scatter(x[colormat == "r"], y[colormat == "r"], s=1, c="r", label="NK", alpha=0.3)
-        ax.scatter(x[colormat == "blueviolet"], y[colormat == "blueviolet"], s=1, c="blueviolet", label="CD+", alpha=0.3)
+        ax.scatter(x[colormat == "blueviolet"], y[colormat == "blueviolet"], s=1, c="blueviolet", label="CD8+", alpha=0.3)
         ax.legend()
 
 
