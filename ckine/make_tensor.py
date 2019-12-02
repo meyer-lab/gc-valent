@@ -52,7 +52,8 @@ def ySolver_IL2_mut(matIn, ts, mut):
     elif mut == "b":
         k2rev *= 0.01  # 100x more bindng to IL2Rb
 
-    rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, matIn[6], matIn[7], matIn[8], k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])  # IL2Ra, IL2Rb, gc
+    rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, matIn[6], matIn[7], matIn[8],
+                       k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])  # IL2Ra, IL2Rb, gc
 
     yOut = runCkineU_IL2(ts, rxntfr)
 
@@ -70,9 +71,8 @@ def meshprep(mut):
     # Make mesh grid of all ligand concentrations, First is IL-2 WT, Third is IL-15; Fourth is IL7
     # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)
     if mut:
-        concMesh = np.vstack(
-            (np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6))
-        )
+        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0,
+                                                                                                               0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
     else:
         concMesh = np.vstack(
             (
@@ -86,7 +86,9 @@ def meshprep(mut):
     # Just stacks up concMesh on top of each other 10 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
 
-    # Set receptor levels for IL9R, IL4Ra, IL21Ra to 0. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra measured.
+    # Set receptor levels for IL9R, IL4Ra, IL21Ra to 0. We won't use them for
+    # IL2-15 model. Second argument can also be set to 4 since we only have
+    # IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra measured.
     no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0
     # Need to convert numbers to expression values
     numpy_data[:, :] = receptor_expression(numpy_data[:, :], rxntfR[17], rxntfR[20], rxntfR[19], rxntfR[21])
