@@ -70,7 +70,14 @@ def runCkineU_IL2(tps, rxntfr):
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
+    retVal = libb.runCkine(
+        tps.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), tps.size, yOut.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), rxntfr.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), True, 0.0, None)
 
     assert retVal >= 0  # make sure solver worked
 
@@ -97,8 +104,21 @@ def runIL2simple(unkVec, input_params, IL, CD25=1.0, tps=None, input_receptors=N
         IL2Ra, IL2Rb, gc = unkVec[22] * CD25, unkVec[23], unkVec[24]
 
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2],
-                       k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]])  # input_params[2] represents endosomal binding affinity relative to surface affinity
+    rxntfr = np.array([IL,
+                       kfwd,
+                       k1rev,
+                       k2rev,
+                       k4rev,
+                       k5rev,
+                       k11rev,
+                       IL2Ra,
+                       IL2Rb,
+                       gc,
+                       k1rev * input_params[2],
+                       k2rev * input_params[2],
+                       k4rev * input_params[2],
+                       k5rev * input_params[2],
+                       k11rev * input_params[2]])  # input_params[2] represents endosomal binding affinity relative to surface affinity
 
     yOut = runCkineU_IL2(tps, rxntfr)
 
@@ -137,8 +157,13 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
     retVal = libb.runCkineParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
-    )
+        rxntfr.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), tps.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), preT, prestim)
 
     assert retVal >= 0  # make sure solver worked
 
@@ -181,7 +206,14 @@ def fullModel(y, t, rxntfr):
 
     yOut = np.zeros_like(y)
 
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullModel_C(
+        y.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), t, yOut.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)), rxntfr.ctypes.data_as(
+            ct.POINTER(
+                ct.c_double)))
 
     return yOut
 
@@ -258,7 +290,8 @@ def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX
     sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
     sum_inactive = (sum_total - sum_active) * sortF  # scale the inactive species by sortF
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV))  # can assume all free ligand and active species are degraded at rate kDeg
+    # can assume all free ligand and active species are degraded at rate kDeg
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV))
 
 
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
