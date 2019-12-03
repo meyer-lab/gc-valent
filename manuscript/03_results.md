@@ -1,4 +1,4 @@
-# Results
+## Results
 
 ![**B1.** (A)](./Figures/figureB1.svg){#fig:B1}
 
