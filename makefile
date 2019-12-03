@@ -69,7 +69,7 @@ clean:
 	find -iname "*.pyc" -delete
 
 spell: Manuscript/Text/*.md
-	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
+	pandoc --lua-filter common/templates/spell.lua manuscript/*.md | sort | uniq -ic
 
 download: venv
 	mkdir -p ./ckine/data/flow
