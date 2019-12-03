@@ -68,7 +68,7 @@ clean:
 	rm -rf html doxy.log graph_all.svg valgrind.xml venv ./ckine/data/flow
 	find -iname "*.pyc" -delete
 
-spell: Manuscript/Text/*.md
+spell: manuscript/*.md
 	pandoc --lua-filter common/templates/spell.lua manuscript/*.md | sort | uniq -ic
 
 download: venv
