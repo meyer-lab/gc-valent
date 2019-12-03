@@ -47,15 +47,7 @@ def makeFigure():
     ligand_order = ['IL2', 'IL15', 'IL2-060', 'IL2-062', 'IL2-088', 'IL2-097']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
-    df = pd.DataFrame(
-        columns=[
-            'Cells',
-            'Ligand',
-            'Time Point',
-            'Concentration',
-            'Activity Type',
-            'Replicate',
-            'Activity'])  # make empty dataframe for all cell types
+    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
@@ -92,19 +84,19 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
 
             # plot experimental data
             if axis == 47:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (
-                    dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
+                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
                 ax[axis].legend(loc='lower right', title="time (hours)")
             else:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (
-                    dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
+                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
+                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
 
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
                     for m in range(unkVec_2_15.shape[1]):
-                        pred_data[k, l, m] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (df["Activity Type"] == 'predicted') & (
-                            df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
+                        pred_data[k, l, m] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
+                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
 
             for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:

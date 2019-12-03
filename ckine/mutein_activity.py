@@ -32,19 +32,10 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
     exp_data = np.zeros((12, 4))
     mutein_conc = exp_data.copy()
     for i, conc in enumerate(dataMean.Concentration.unique()):
-        exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (
-            dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
+        exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
         mutein_conc[i, :] = conc
-    df_exp = pd.DataFrame(
-        {
-            'Cells': np.tile(
-                np.array(cell_name), num), 'Ligand': np.tile(
-                np.array(ligand_name), num), 'Time Point': np.tile(
-                    tps, 12), 'Concentration': mutein_conc.reshape(
-                        num,), 'Activity Type': np.tile(
-                            np.array('experimental'), num), 'Replicate': np.zeros(
-                                (num)), 'Activity': exp_data.reshape(
-                                    num,)})
+    df_exp = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
+                           'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
     df = df.append(df_exp, ignore_index=True)
 
     # calculate predicted dose response
@@ -54,7 +45,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
         pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
         df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(
             tps, 12), 'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num),
-            'Activity': pred_data[:, :, j].reshape(num,)})
+                                'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
 
     return df
@@ -91,8 +82,8 @@ def mutein_scaling(df, unkVec):
     for i, cells in enumerate(cell_groups):
         for j in range(unkVec.shape[1]):
             subset_df = df[df['Cells'].isin(cells)]
-            scales[i, :, j] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (
-                subset_df["Replicate"] == (j + 1)), "Activity"]), np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
+            scales[i, :, j] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (subset_df["Replicate"] == (j + 1)), "Activity"]),
+                                             np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
 
     return scales
 

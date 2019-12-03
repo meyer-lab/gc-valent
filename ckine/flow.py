@@ -110,14 +110,12 @@ def nk():
     nk_gate = nk1 & nk2
     return nk_gate
 
-
 def nkt():
     """Function for creating and returning the NKT gate"""
     nkt1 = QuadGate((6.758e03, 6.021e03), ("BL1-H", "VL4-H"), region="top left", name="nkt1")
     nkt2 = QuadGate((5.550e03, 7.013e03), ("BL1-H", "VL4-H"), region="bottom right", name="nkt2")
     nkt_gate = nkt1 & nkt2
     return nkt_gate
-
 
 def bnk():
     """Function for creating and returning the BNK gate"""
@@ -492,8 +490,7 @@ def sampleTcolor(smpl):
     pstat = tform.data[["RL1-H"]][0:]
     colmat = [] * (len(data) + 1)
     for i in range(len(data)):
-        if data.iat[i, 0] > 5.115e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i,
-                                                                                  1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03 and data.iat[i, 2] > 6.512e+03:
+        if data.iat[i, 0] > 5.115e+03 and data.iat[i, 0] < 6.258e+03 and data.iat[i, 1] > 3.229e+03 and data.iat[i, 1] < 5.814e+03 and data.iat[i, 2] > 6.512e+03:
             if data.iat[i, 3] > 6300:
                 colmat.append('r')  # Treg naive
             else:
@@ -521,16 +518,16 @@ def sampleNKcolor(smpl):
     pstat = tform.data[["BL2-H"]][0:]
     # Create a section for assigning colors to each data point of each cell population --> in this case NK cells
     colmat = [] * (len(data) + 1)
-
+    
     for i in range(len(data)):
         if data.iat[i, 0] > 5.550e03 and data.iat[i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
             colmat.append('r')  # nk
         elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
             colmat.append('darkgreen')  # bnk
         elif data.iat[i, 0] > 5.976e03 and data.iat[i, 0] < 7.541e03 and data.iat[i, 1] > 6.825e03 and data.iat[i, 1] < 9.016e03:
-            colmat.append('blueviolet')  # cd8+
-        elif data.iat[i, 0] > 5.50e03 and data.iat[i, 0] < 6.758e03 and data.iat[i, 2] > 6.021e03 and data.iat[i, 2] < 7.013e03:
-            colmat.append('midnightblue')  # nkt
+            colmat.append('blueviolet') # cd8+
+        elif data.iat[i, 0] > 5.50e03 and data.iat[i, 0] < 6.758e03 and data.iat[i, 2] >6.021e03 and data.iat[i, 2] < 7.013e03:
+            colmat.append('midnightblue') # nkt
         else:
             colmat.append('c')
     return data, pstat, features, colmat
@@ -556,10 +553,8 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
     if Tcells:
         ax.scatter(x[colormat == "c"], y[colormat == "c"], s=0.5, c="c", label="Other", alpha=0.3, edgecolors='none')
         ax.scatter(x[colormat == "g"], y[colormat == "g"], s=0.5, c="g", label="T Helper Naive", alpha=0.3, edgecolors='none')
-        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=0.5,
-                   c="darkorchid", label="T Helper Memory", alpha=0.3, edgecolors='none')
-        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=0.5,
-                   c="darkorange", label="T Reg Memory", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=0.5, c="darkorchid", label="T Helper Memory", alpha=0.3, edgecolors='none')
+        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=0.5, c="darkorange", label="T Reg Memory", alpha=0.3, edgecolors='none')
         ax.scatter(x[colormat == "r"], y[colormat == "r"], s=0.5, c="r", label="T Reg Naive", alpha=0.3, edgecolors='none')
         ax.legend(markerscale=6.)
     else:
@@ -639,8 +634,7 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, gate, Tcells=True):
 
         xf = appPCA(data, PCAobj, Tcells)  # get PC1/2 vals
         PCApd = PCdatTransform(xf, pstat)
-        PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0])
-                      & (PCApd['PC2'] <= PC2Bnds[1])]  # remove data that that is not within given PC bounds
+        PCApd = PCApd[(PCApd['PC1'] >= PC1Bnds[0]) & (PCApd['PC1'] <= PC1Bnds[1]) & (PCApd['PC2'] >= PC2Bnds[0]) & (PCApd['PC2'] <= PC2Bnds[1])]  # remove data that that is not within given PC bounds
         pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean()  # take average Pstat activity of data fitting criteria
 
     pSTATvals = pSTATvals.flatten()

@@ -112,16 +112,7 @@ def calculate_EC50s(df, scales, cell_order, ligand_order):
             mutein_types.extend(np.tile(np.array(ligand_name), len(tps) * 2))
 
     EC50s = np.log10(EC50s)
-    dataframe = {
-        'Time Point': np.tile(
-            tps,
-            len(cell_order) *
-            len(ligand_order) *
-            2),
-        'Mutein': mutein_types,
-        'Cell Type': cell_types,
-        'Data Type': data_types,
-        'EC-50': EC50s}
+    dataframe = {'Time Point': np.tile(tps, len(cell_order) * len(ligand_order) * 2), 'Mutein': mutein_types, 'Cell Type': cell_types, 'Data Type': data_types, 'EC-50': EC50s}
     df = pd.DataFrame(dataframe)
 
     return df
