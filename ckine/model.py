@@ -39,11 +39,10 @@ def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
 
+
 def rxParams():
     """ Returns the length of the rxntfR vector. """
     return __rxParams
-
-
 
 
 __internalStrength = 0.5  # strength of endosomal activity relative to surface
@@ -77,6 +76,8 @@ def runCkineU_IL2(tps, rxntfr):
     assert np.all(rxntfr >= 0.0)
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+
+    rxntfr = getRateVec(rxntfr)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
@@ -281,7 +282,6 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     return rec_ex
 
 
-
 def condenseSENV(sensVin):
     """ Condense sensitivities down into the old rxnRates format. """
     sensVin[:, 7:27] += sensVin[:, 27:47] * 5.0
@@ -294,34 +294,79 @@ def condenseSENV(sensVin):
 def getparamsdict(rxntfr):
     """Where rate vectors and constants are defined, organized in an ordered dictionary"""
     rd = OrderedDict()
+    modtype = rxntfr.size
 
-    kfbnd = 0.60
-    rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
-    rd['surface.k1rev'] = kfbnd * 10.0  # 7
-    rd['surface.k2rev'] = kfbnd * 144.0
-    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
-    rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
-    rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
-    rd['surface.k13rev'] = kfbnd * 0.065
-    rd['surface.k14rev'] = kfbnd * 438.0
-    rd['surface.k16rev'] = rxntfr[9]
-    rd['surface.k17rev'] = rxntfr[10]  # 16
-    rd['surface.k22rev'] = rxntfr[11]
-    rd['surface.k23rev'] = rxntfr[12]
-    rd['surface.k25rev'] = kfbnd * 59.0
-    rd['surface.k27rev'] = rxntfr[13]
-    rd['surface.k29rev'] = kfbnd * 0.1
-    rd['surface.k31rev'] = rxntfr[14]
-    rd['surface.k32rev'] = kfbnd * 1.0
-    rd['surface.k33rev'] = rxntfr[15]
-    rd['surface.k34rev'] = kfbnd * 0.07
-    rd['surface.k35rev'] = rxntfr[16]
+    if modtype == 15:
+        rd['IL2'] = rxntfr[0]
+        rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'] = 0, 0, 0, 0, 0
+        rd['kfwd'] = rxntfr[1]
+        rd['surface.k1rev'] = rxntfr[2]
+        rd['surface.k2rev'] = rxntfr[3]
+        rd['surface.k4rev'] = rxntfr[4]
+        rd['surface.k5rev'] = rxntfr[5]  # 9 #10
+        rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
+        rd['surface.k11rev'] = rxntfr[6]
+        rd['surface.k13rev'] = 1.0
+        rd['surface.k14rev'] = 1.0
+        rd['surface.k16rev'] = 1.0
+        rd['surface.k17rev'] = 1.0
+        rd['surface.k22rev'] = 1.0
+        rd['surface.k23rev'] = 1.0
+        rd['surface.k25rev'] = 1.0
+        rd['surface.k27rev'] = 1.0
+        rd['surface.k29rev'] = 1.0
+        rd['surface.k31rev'] = 1.0
+        rd['surface.k32rev'] = 1.0
+        rd['surface.k33rev'] = 1.0
+        rd['surface.k34rev'] = 1.0
+        rd['surface.k35rev'] = 1.0
+        rd['endosome.k1rev'] = rxntfr[10]
+        rd['endosome.k2rev'] = rxntfr[11]
+        rd['endosome.k4rev'] = rxntfr[12]
+        rd['endosome.k5rev'] = rxntfr[13]
+        rd['endosome.k10rev'] = 12 * rd['endosome.k5rev'] / 1.5
+        rd['endosome.k11rev'] = rxntfr[14]
 
-    for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
-        rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
+        for ii in ('13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
+            rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev']
 
-    rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
-    rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])
+        rd['endo'] = 0.08221
+        rd['activeEndo'] = 2.52654
+        rd['sortF'] = 0.16024
+        rd['kRec'] = 0.10017
+        rd['kDeg'] = 0.00807
+
+        rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], = rxntfr[7:10]
+        rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = 0, 0, 0, 0, 0
+
+    else:
+        kfbnd = 0.60
+        rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
+        rd['surface.k1rev'] = kfbnd * 10.0  # 7
+        rd['surface.k2rev'] = kfbnd * 144.0
+        rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
+        rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
+        rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
+        rd['surface.k13rev'] = kfbnd * 0.065
+        rd['surface.k14rev'] = kfbnd * 438.0
+        rd['surface.k16rev'] = rxntfr[9]
+        rd['surface.k17rev'] = rxntfr[10]  # 16
+        rd['surface.k22rev'] = rxntfr[11]
+        rd['surface.k23rev'] = rxntfr[12]
+        rd['surface.k25rev'] = kfbnd * 59.0
+        rd['surface.k27rev'] = rxntfr[13]
+        rd['surface.k29rev'] = kfbnd * 0.1
+        rd['surface.k31rev'] = rxntfr[14]
+        rd['surface.k32rev'] = kfbnd * 1.0
+        rd['surface.k33rev'] = rxntfr[15]
+        rd['surface.k34rev'] = kfbnd * 0.07
+        rd['surface.k35rev'] = rxntfr[16]
+
+        for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
+            rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
+
+        rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
+        rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])
 
     return rd
 
