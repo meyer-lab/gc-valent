@@ -1,10 +1,11 @@
 """
 A file that includes the model and important helper functions.
 """
+from collections import OrderedDict
 import os
 import ctypes as ct
 import numpy as np
-from collections import OrderedDict
+
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
@@ -300,30 +301,14 @@ def getparamsdict(rxntfr):
         rd['IL2'] = rxntfr[0]
         rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'] = 0, 0, 0, 0, 0
         rd['kfwd'] = rxntfr[1]
-        rd['surface.k1rev'] = rxntfr[2]
-        rd['surface.k2rev'] = rxntfr[3]
-        rd['surface.k4rev'] = rxntfr[4]
-        rd['surface.k5rev'] = rxntfr[5]  # 9 #10
+        rd['surface.k1rev'], rd['surface.k2rev'], rd['surface.k4rev'], rd['surface.k5rev']  = rxntfr[2:6]
         rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
         rd['surface.k11rev'] = rxntfr[6]
-        rd['surface.k13rev'] = 1.0
-        rd['surface.k14rev'] = 1.0
-        rd['surface.k16rev'] = 1.0
-        rd['surface.k17rev'] = 1.0
-        rd['surface.k22rev'] = 1.0
-        rd['surface.k23rev'] = 1.0
-        rd['surface.k25rev'] = 1.0
-        rd['surface.k27rev'] = 1.0
-        rd['surface.k29rev'] = 1.0
-        rd['surface.k31rev'] = 1.0
-        rd['surface.k32rev'] = 1.0
-        rd['surface.k33rev'] = 1.0
-        rd['surface.k34rev'] = 1.0
-        rd['surface.k35rev'] = 1.0
-        rd['endosome.k1rev'] = rxntfr[10]
-        rd['endosome.k2rev'] = rxntfr[11]
-        rd['endosome.k4rev'] = rxntfr[12]
-        rd['endosome.k5rev'] = rxntfr[13]
+
+        for ii in ('13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
+            rd['surface.k' + ii + 'rev'] = 1.0
+
+        rd['endosome.k1rev'], rd['endosome.k2rev'], rd['endosome.k4rev'], rd['endosome.k5rev'] = rxntfr[10:14]
         rd['endosome.k10rev'] = 12 * rd['endosome.k5rev'] / 1.5
         rd['endosome.k11rev'] = rxntfr[14]
 
@@ -335,7 +320,6 @@ def getparamsdict(rxntfr):
         rd['sortF'] = 0.16024
         rd['kRec'] = 0.10017
         rd['kDeg'] = 0.00807
-
         rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], = rxntfr[7:10]
         rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = 0, 0, 0, 0, 0
 
