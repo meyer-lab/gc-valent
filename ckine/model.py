@@ -7,7 +7,6 @@ import ctypes as ct
 import numpy as np
 
 
-
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 pcd = ct.POINTER(ct.c_double)
@@ -301,7 +300,7 @@ def getparamsdict(rxntfr):
         rd['IL2'] = rxntfr[0]
         rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'] = 0, 0, 0, 0, 0
         rd['kfwd'] = rxntfr[1]
-        rd['surface.k1rev'], rd['surface.k2rev'], rd['surface.k4rev'], rd['surface.k5rev']  = rxntfr[2:6]
+        rd['surface.k1rev'], rd['surface.k2rev'], rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[2:6]
         rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
         rd['surface.k11rev'] = rxntfr[6]
 
