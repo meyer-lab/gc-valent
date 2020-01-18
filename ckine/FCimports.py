@@ -101,3 +101,38 @@ def THelpN():#switch to polygates
 
 #Panel 4 TODO
 
+def plot_Tcells(sample, cd3cd4gate, Thelpgate, Treggate):
+    """Plotting naïve and memory T-regulatory and T-helper cells. Input transformed sample and gate functions for arguments"""
+    
+    fig = figure(figsize=(12,9))
+    fig.subplots_adjust(hspace=.25)
+    ax1 = subplot(221)
+    sample.plot(['VL4-H', 'VL6-H'], cmap=cm.viridis, gates=cd3cd4gate, gate_lw=2)
+    title('Singlet Lymphocytes')
+    ax1.set_ylabel('CD4')
+    ax1.set_xlabel('CD3')
+    
+    cd3cd4gated_sample = sample.gate(cd3cd4gate)
+    
+    ax2 = subplot(222)
+    cd3cd4gated_sample.plot(['VL1-H','BL1-H'], cmap=cm.viridis, gates=(Thelpgate,Treggate), gate_lw=2)
+    title('CD3+CD4+ Cells')
+    ax2.set_ylabel('CD127')
+    ax2.set_xlabel('CD25')
+    ax2.set_xlim(right=7000)
+    ax2.set_ylim(top=7000)
+    
+    ThelpGated_sample = cd3cd4gated_sample.gate(Thelpgate)
+    TregGated_sample = cd3cd4gated_sample.gate(Treggate)
+
+    ax3 = subplot(223)
+    ThelpGated_sample.plot(['BL3-H'], color='blue');
+    title('T helper')
+    ax3.set_xlabel('CD45Ra');
+
+    ax4= subplot(224)
+    TregGated_sample.plot(['BL3-H'], color='blue');
+    title('T reg')
+    ax4.set_xlabel('CD45Ra');
+    
+    return fig
