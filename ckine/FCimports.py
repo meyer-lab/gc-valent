@@ -1,9 +1,7 @@
 """
 This file includes various methods for flow cytometry analysis.
 """
-from pylab import *
 from pathlib import Path
-import numpy as np
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate, PolyGate
 
