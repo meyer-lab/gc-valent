@@ -72,23 +72,23 @@ def treg():
 
 def plot_Tcells(sample, cd3cd4gate, Thelpgate, Treggate):
     """Plotting naïve and memory T-regulatory and T-helper cells. Input transformed sample and gate functions for arguments"""
-    
+
     fig, axs = plt.subplots(2, 2)
-    sample.plot(['VL4-H', 'VL6-H'], cmap=cm.viridis, gates=cd3cd4gate, gate_lw=2, ax=axs[0,0])
-    axs[0,0].set(xlabel='CD3', ylabel='CD4', title='Singlet Lymphocytes')
+    sample.plot(['VL4-H', 'VL6-H'], cmap=cm.viridis, gates=cd3cd4gate, gate_lw=2, ax=axs[0, 0])
+    axs[0, 0].set(xlabel='CD3', ylabel='CD4', title='Singlet Lymphocytes')
 
     cd3cd4gated_sample = sample.gate(cd3cd4gate)
-    cd3cd4gated_sample.plot(['VL1-H', 'BL1-H'], cmap=cm.viridis, gates=(Thelpgate, Treggate), gate_lw=2, ax=axs[0,1])
-    axs[0,1].set(xlabel='CD25', ylabel='CD127', title='CD3+CD4+ Cells')
-    axs[0,1].set_xlim(right=7000)
-    axs[0,1].set_ylim(top=7000)
+    cd3cd4gated_sample.plot(['VL1-H', 'BL1-H'], cmap=cm.viridis, gates=(Thelpgate, Treggate), gate_lw=2, ax=axs[0, 1])
+    axs[0, 1].set(xlabel='CD25', ylabel='CD127', title='CD3+CD4+ Cells')
+    axs[0, 1].set_xlim(right=7000)
+    axs[0, 1].set_ylim(top=7000)
 
     ThelpGated_sample = cd3cd4gated_sample.gate(Thelpgate)
-    ThelpGated_sample.plot(['BL3-H'], color='blue', ax=axs[1,0])
-    axs[1,0].set(xlabel='CD45Ra', title='T helper')
+    ThelpGated_sample.plot(['BL3-H'], color='blue', ax=axs[1, 0])
+    axs[1, 0].set(xlabel='CD45Ra', title='T helper')
 
     TregGated_sample = cd3cd4gated_sample.gate(Treggate)
-    TregGated_sample.plot(['BL3-H'], color='blue', ax=axs[1,1])
-    axs[1,1].set(xlabel='CD45Ra', title='T reg')
+    TregGated_sample.plot(['BL3-H'], color='blue', ax=axs[1, 1])
+    axs[1, 1].set(xlabel='CD45Ra', title='T reg')
 
     return fig
