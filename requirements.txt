@@ -4,10 +4,8 @@ scipy==1.4.1
 seaborn==0.10.0
 numpy==1.18.1
 pytest
-pymc3==3.8
 hypothesis==5.3.1
 hypothesis-numpy==2.0.0
-tensorly==0.4.5
 parameterized==0.7.1
 pytest-xdist
 pytest-cov
