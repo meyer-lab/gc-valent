@@ -4,7 +4,7 @@ flist = C1 C2 C3
 
 .PHONY: clean test all testprofile testcover spell
 
-all: ckine/ckine.so output/manuscript.html output/manuscript.pdf pylint.log
+all: output/manuscript.html output/manuscript.pdf pylint.log
 
 venv: venv/bin/activate
 
@@ -60,8 +60,8 @@ clean:
 	mkdir output
 	mv requests-cache.sqlite output/requests-cache.sqlite || true
 
-	rm -f ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
-	rm -rf html doxy.log graph_all.svg valgrind.xml venv ./ckine/data/flow
+	rm -f profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
+	rm -rf html doxy.log graph_all.svg venv ./ckine/data/flow
 	find -iname "*.pyc" -delete
 
 spell: manuscript/*.md
