@@ -9,5 +9,4 @@ class TestModel(unittest.TestCase):
 
     def test_eg(self):
         """ Example. """
-        self.assertTrue(True)
-        print("This is a test stub.")
+        self.assertTrue(3 + 1 > 0)
