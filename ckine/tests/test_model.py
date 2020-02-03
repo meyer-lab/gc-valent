@@ -2,7 +2,6 @@
 Unit test file.
 """
 import unittest
-import numpy as np
 
 
 class TestModel(unittest.TestCase):
@@ -10,4 +9,5 @@ class TestModel(unittest.TestCase):
 
     def test_eg(self):
         """ Example. """
+        self.assertTrue(True)
         print("This is a test stub.")
