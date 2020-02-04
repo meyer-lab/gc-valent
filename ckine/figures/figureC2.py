@@ -6,7 +6,7 @@ import os
 import string
 import matplotlib.lines as mlines
 from .figureCommon import subplotLabel, getSetup
-from ..flow import importF, gate, treg, tregMem, tregNaive, nonTreg, THelpMem, THelpN, nk
+from ..flow import importF
 from ..PCA import StatGini
 
 path_here = os.path.dirname(os.path.dirname(__file__))
