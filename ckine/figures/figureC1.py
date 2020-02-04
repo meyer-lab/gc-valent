@@ -6,7 +6,8 @@ import os
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
-from ..flow import importF, pcaAll, pcaPlt, appPCA, fitPCA, sampleT, sampleNK, pcaPltColor, pcaAllCellType, loadingPlot
+from ..flow import importF
+from ..PCA import pcaAll, pcaPlt, appPCA, fitPCA, sampleT, sampleNK, pcaPltColor, pcaAllCellType, loadingPlot
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -19,6 +20,7 @@ def makeFigure():
     Titles = [" 84 nM IL-2", " 0.345 nM IL-2", " Zero Treatment"]
     ax[10].axis('off')
     ax[11].axis('off')
+
 
     for i, item in enumerate(ax):
         if i < 10:
