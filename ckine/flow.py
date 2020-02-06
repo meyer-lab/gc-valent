@@ -3,14 +3,9 @@ This file includes various methods for flow cytometry analysis.
 """
 from pathlib import Path
 import numpy as np
-import pandas as pd
-import seaborn as sns
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
-from sklearn import preprocessing
-from sklearn.decomposition import PCA
-from scipy.optimize import least_squares
 
 
 def importF(pathname, WellRow):
@@ -68,24 +63,16 @@ regionSpec_['treg'] = regionSpec_['nonTreg'] = regionSpec_['nk'] = regionSpec_['
 regionSpec_['tregMem'] = regionSpec_['THelpMem'] = "below"
 regionSpec_['tregNaive'] = regionSpec_['THelpN'] = "above"
 
-def treg():
-    """Function for creating and returning the T reg gate on CD4+ cells"""
-    treg1 = QuadGate((4.814e+03, 3.229e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
-    treg2 = QuadGate((6.258e+03, 5.814e+03), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
-    treg_gate = treg1 & treg2 & cd4()
-    print(treg_gate)
-    return treg_gate
 
-def gate(cell_type):
+def gating(cell_type):
     """ Creates and returns the cell type gate on CD4+ cells. """
-    #print(vert[cell_type][0])
     cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type+'1'))
     cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type+'2'))
     if regionSpec_[cell_type] is not None:
         cd45 = ThresholdGate(6300, ('BL3-H'), region=regionSpec_[cell_type], name='cd45')
         gate = cell1 & cell2 & cd4() & cd45
     else:
-        if cell_type == 'nk' or cell_type == 'nkt' or cell_type == 'bnk' or cell_type == 'cd':
+        if cell_type in ('nk', 'nkt', 'bnk', 'cd'):
             gate = cell1 & cell2
         else:
             gate = cell1 & cell2 & cd4()
@@ -98,10 +85,10 @@ def cellData(sample_i, gate, Tcells=True):
     """
     # Import single file and save data to a variable --> transform to logarithmic scale
     if Tcells:
-        channels = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
+        channels_ = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
     else:
-        channels = ["BL1-H", "RL1-H", "VL4-H"]
-    smpl = sample_i.transform("hlog", channels=channels)
+        channels_ = ["BL1-H", "RL1-H", "VL4-H"]
+    smpl = sample_i.transform("hlog", channels=channels_)
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
     # Number of events (AKA number of cells)
@@ -118,9 +105,9 @@ channel_data['nk_bnk'] = ["BL1-H", "VL4-H", "RL1-H"]
 channel_data['cd'] = ["BL1-H", "VL4-H", "RL1-H"]
 
 
-def plot_cells(sample_i, gates, channels, plot_channels, cell_names, title, plot_entire_sample=False):
+def plot_cells(sample_i, gates, channels_, plot_channels, cell_names, title, plot_entire_sample=False):
     """ Plots specified cell types and gates. """
-    smpl = sample_i.transform('hlog', channels=channels)
+    smpl = sample_i.transform('hlog', channels=channels_)
 
     _, ax = plt.subplots()
 
@@ -134,19 +121,18 @@ def plot_cells(sample_i, gates, channels, plot_channels, cell_names, title, plot
         smpl.plot(plot_channels)
 
     legend_names = []
-    bars = []
     bar_range = [np.arange(0,0), np.arange(1,11), np.arange(30, 40)]
-    bar = 0
+    bar_ = 0
 
     for j, name in enumerate(cell_names):
         if name == 'CD4':
             continue
-        bar = bar + 1
-        bar = ax.bar(np.arange(0, 10), bar_range[bar], bottom=bar_range[bar-1], color=colors[j])
+        bar_ = bar_ + 1
+        bar_ = ax.bar(np.arange(0, 10), bar_range[bar_], bottom=bar_range[bar_-1], color=colors[j])
         legend_names.append(name)
 
     ax.set(title=str(title), xlabel="Foxp3", ylabel="CD25", fontsize=12)
-    ax.legend([bar1, bar2], legend_names, loc="upper left")
+    ax.legend(legend_names, loc="upper left")
 
 
 def count_data(sampleType, gate, Tcells=True):

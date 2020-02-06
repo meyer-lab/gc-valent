@@ -1,17 +1,14 @@
 """
 This file includes various methods for flow cytometry analysis.
 """
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-from FlowCytometryTools import FCMeasurement
-from FlowCytometryTools import QuadGate, ThresholdGate
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from scipy.optimize import least_squares
-from .flow import count_data, gate
+from .flow import count_data, gating
 
 
 def sampleT(smpl):
@@ -333,7 +330,7 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, cell_type, Tcells=True):
     dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
     pSTATvals = np.zeros([1, dosemat.size])
     if cell_type:
-        gates = gate(cell_type)
+        gates = gating(cell_type)
         _, alldata = count_data(sampleType, gates, Tcells)
 
     for i, sample in enumerate(sampleType):
@@ -384,7 +381,7 @@ def StatGini(sampleType, ax, cell_type, Tcells=True):
         statcol = 'BL2-H'
 
     if cell_type:
-        gates = gate(cell_type)
+        gates = gating(cell_type)
         _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
 
     else:
