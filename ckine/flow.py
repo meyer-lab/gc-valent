@@ -129,8 +129,7 @@ def plot_cells(sample_i, gates, channels_, plot_channels, cell_names, title, plo
         if name == 'CD4':
             continue
         bar_ = bar_ + 1
-        bar = ax.bar(np.arange(0, 10), bar_range[bar_], bottom=bar_range[bar_ - 1], color=colors[j])
-        legend_range.append(bar)
+        legend_range.append(np.arange(0, 10), bar_range[bar_], bottom=bar_range[bar_ - 1], color=colors[j])
         legend_names.append(name)
 
     ax.set(title=str(title), xlabel="Foxp3", ylabel="CD25", fontsize=12)
