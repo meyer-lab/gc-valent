@@ -66,8 +66,8 @@ regionSpec_['tregNaive'] = regionSpec_['THelpN'] = "above"
 
 def gating(cell_type):
     """ Creates and returns the cell type gate on CD4+ cells. """
-    cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type+'1'))
-    cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type+'2'))
+    cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type + '1'))
+    cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type + '2'))
     if regionSpec_[cell_type] is not None:
         cd45 = ThresholdGate(6300, ('BL3-H'), region=regionSpec_[cell_type], name='cd45')
         gate = cell1 & cell2 & cd4() & cd45
@@ -121,18 +121,20 @@ def plot_cells(sample_i, gates, channels_, plot_channels, cell_names, title, plo
         smpl.plot(plot_channels)
 
     legend_names = []
-    bar_range = [np.arange(0,0), np.arange(1,11), np.arange(30, 40)]
+    legend_range = []
+    bar_range = [np.arange(0, 0), np.arange(1, 11), np.arange(30, 40)]
     bar_ = 0
 
     for j, name in enumerate(cell_names):
         if name == 'CD4':
             continue
         bar_ = bar_ + 1
-        bar_ = ax.bar(np.arange(0, 10), bar_range[bar_], bottom=bar_range[bar_-1], color=colors[j])
+        bar = ax.bar(np.arange(0, 10), bar_range[bar_], bottom=bar_range[bar_ - 1], color=colors[j])
+        legend_range.append(bar)
         legend_names.append(name)
 
     ax.set(title=str(title), xlabel="Foxp3", ylabel="CD25", fontsize=12)
-    ax.legend(legend_names, loc="upper left")
+    ax.legend(legend_range, legend_names, loc="upper left")
 
 
 def count_data(sampleType, gate, Tcells=True):

@@ -21,7 +21,6 @@ def makeFigure():
     ax[10].axis('off')
     ax[11].axis('off')
 
-
     for i, item in enumerate(ax):
         if i < 10:
             subplotLabel(item, string.ascii_uppercase[i])

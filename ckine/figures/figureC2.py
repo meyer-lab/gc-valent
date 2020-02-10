@@ -20,7 +20,7 @@ def makeFigure():
     for i, item in enumerate(ax):
         if i < 8:
             subplotLabel(item, string.ascii_uppercase[i])
-            
+
     gates = [False, 'treg', 'tregMem', 'tregNaive', 'nonTreg', 'THelpMem', 'THelpN']
     Titles = ["Tcells", "T-regs", "Mem Treg", "Naive Treg", "T-helper", "Mem Th", "Naive Th"]
     Tsample, _ = importF(path_here + "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT/", "B")
