@@ -8,11 +8,23 @@ from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import PolyGate
 
 
-def importF(pathname, WellRow):
+def combineWells(samples, channels_):
+    """Accepts sample array returned from importF, and array of channels, returns transformed combined well data"""
+    combinedSamples = samples[0]
+    for sample in samples[1:]:
+        combinedSamples.data = combinedSamples.data.append(sample.data)
+    t_combinedSamples = combinedSamples.transform('hlog', channels=channels_)
+    return t_combinedSamples
+
+
+#importF(date, plate, panel, wellRow, combine = true)
+def importF(date, plate, panel, WellRow):
     """
-    Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format
+    Import FCS files. Variable input: date in format mm-dd, plate #, panel #, and well letter. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
+    pathname = "/PBMC receptor quant/"+date+"/Plate "+plate+"/Plate "+plate+" - Panel "+panel+" IL2R/"
+    
     # Declare arrays and int
     file = []
     sample = []
@@ -29,17 +41,22 @@ def importF(pathname, WellRow):
     for entry in file:
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
-    # Returns the array sample which contains data of each file in folder (one file per entry in array)
-    return sample, file
-
-
-def combineWells(samples, channels_):
-    """Accepts sample array returned from importF, and array of channels, returns transformed combined well data"""
-    combinedSamples = samples[0]
-    for sample in samples[1:]:
-        combinedSamples.data = combinedSamples.data.append(sample.data)
-    t_combinedSamples = combinedSamples.transform('hlog', channels=channels_)
-    return t_combinedSamples
+    # The array sample contains data of each file in folder (one file per entry in array)
+    
+    channels = []
+    switch(panel)
+    {
+        case 1: channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H','BL3-H'];
+        break;
+        case 2: channels = ['BL4-H', 'BL3-H']; #Check more not needed
+        break;
+        case 3: channels = ['VL6-H', 'VL4-H','BL3-H']; #check more not needed
+        break; 
+    }
+    
+    combinedSamples = combineWells(sample, channels) #Combines all files from samples and transforms
+    
+    return combinedSamples
 
 
 # *********************************** Gating Fxns *******************************************
