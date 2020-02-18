@@ -18,13 +18,13 @@ def combineWells(samples, channels_):
 
 
 #importF(date, plate, panel, wellRow, combine = true)
-def importF(date, plate, panel, wellRow, combine = true, wellNum =0):
+def importF(date, plate, panel, wellRow, combine=true, wellNum=0):
     """
     Import FCS files. Variable input: date in format mm-dd, plate #, panel #, and well letter. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
-    pathname = "/PBMC receptor quant/"+date+"/Plate "+plate+"/Plate "+plate+" - Panel "+panel+" IL2R/"
-    
+    pathname = "/PBMC receptor quant/" + date + "/Plate " + plate + "/Plate " + plate + " - Panel " + panel + " IL2R/"
+
     # Declare arrays and int
     file = []
     sample = []
@@ -43,29 +43,22 @@ def importF(date, plate, panel, wellRow, combine = true, wellNum =0):
         z += 1
     # The array sample contains data of each file in folder (one file per entry in array)
     if(combine == true):
-    {
-          channels = []
-        switch(panel)
-        {
-            case 1: channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H','BL3-H'];
-            break;
-            case 2: channels = ['BL4-H', 'BL3-H']; 
-            break;
-            case 3: channels = ['VL6-H', 'VL4-H','BL3-H'];
-            break; 
-        }  
-        
-        combinedSamples = combineWells(sample, channels) #Combines all files from samples and transforms
-    
+        channels = []
+        if(panel == 1):
+            channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H', 'BL3-H']
+        else if(panel == 2):
+            channels = ['BL4-H', 'BL3-H']
+        else if(panel == 3):
+            channels = ['VL6-H', 'VL4-H', 'BL3-H']
+
+        combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
         return combinedSamples
-    }
+
     else
-    {
-        xsample = sample[wellNum-1]
-        return xsample
-    }
-    
-    
+    xsample = sample[wellNum - 1]
+    return xsample
+
+
 # *********************************** Gating Fxns *******************************************
 
 # Panel 1 gates:naive and memory T-regulatory and T-helper cells
