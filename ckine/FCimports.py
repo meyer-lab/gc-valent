@@ -46,9 +46,9 @@ def importF(date, plate, panel, wellRow, combine=true, wellNum=0):
         channels = []
         if(panel == 1):
             channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H', 'BL3-H']
-        else if(panel == 2):
+        elif(panel == 2):
             channels = ['BL4-H', 'BL3-H']
-        else if(panel == 3):
+        elif(panel == 3):
             channels = ['VL6-H', 'VL4-H', 'BL3-H']
 
         combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
