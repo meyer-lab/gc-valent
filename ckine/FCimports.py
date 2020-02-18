@@ -54,7 +54,7 @@ def importF(date, plate, panel, wellRow, combine=true, wellNum=0):
         combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
         return combinedSamples
 
-    else
+    else:
     xsample = sample[wellNum - 1]
     return xsample
 
