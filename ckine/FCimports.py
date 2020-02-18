@@ -18,7 +18,7 @@ def combineWells(samples, channels_):
 
 
 #importF(date, plate, panel, wellRow, combine = true)
-def importF(date, plate, panel, WellRow):
+def importF(date, plate, panel, wellRow, combine = true, wellNum =0):
     """
     Import FCS files. Variable input: date in format mm-dd, plate #, panel #, and well letter. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
@@ -33,7 +33,7 @@ def importF(date, plate, panel, WellRow):
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
     for path in pathlist:
         wellID = path.name.split("_")[1]
-        if wellID[0] == WellRow:
+        if wellID[0] == wellRow:
             file.append(str(path))
     file.sort()
     assert file != []
@@ -42,23 +42,30 @@ def importF(date, plate, panel, WellRow):
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     # The array sample contains data of each file in folder (one file per entry in array)
-    
-    channels = []
-    switch(panel)
+    if(combine == true):
     {
-        case 1: channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H','BL3-H'];
-        break;
-        case 2: channels = ['BL4-H', 'BL3-H']; #Check more not needed
-        break;
-        case 3: channels = ['VL6-H', 'VL4-H','BL3-H']; #check more not needed
-        break; 
+          channels = []
+        switch(panel)
+        {
+            case 1: channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H','BL3-H'];
+            break;
+            case 2: channels = ['BL4-H', 'BL3-H']; 
+            break;
+            case 3: channels = ['VL6-H', 'VL4-H','BL3-H'];
+            break; 
+        }  
+        
+        combinedSamples = combineWells(sample, channels) #Combines all files from samples and transforms
+    
+        return combinedSamples
+    }
+    else
+    {
+        xsample = sample[wellNum-1]
+        return xsample
     }
     
-    combinedSamples = combineWells(sample, channels) #Combines all files from samples and transforms
     
-    return combinedSamples
-
-
 # *********************************** Gating Fxns *******************************************
 
 # Panel 1 gates:naive and memory T-regulatory and T-helper cells
