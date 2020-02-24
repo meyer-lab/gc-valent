@@ -17,7 +17,7 @@ def combineWells(samples, channels_):
     return t_combinedSamples
 
 
-def importF(date, plate, wellRow, panel=None, wellNum=0):
+def importF(date, plate, wellRow, panel, wellNum=None):
     """
     Import FCS files. Variable input: date in format mm-dd, plate #, panel #, and well letter. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
@@ -41,21 +41,23 @@ def importF(date, plate, wellRow, panel=None, wellNum=0):
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     # The array sample contains data of each file in folder (one file per entry in array)
-    if panel is not None:
-        channels = []
-        if panel == 1:
-            channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H', 'BL3-H']
-        elif panel == 2:
-            channels = ['BL4-H', 'BL3-H']
-        elif panel == 3:
-            channels = ['VL6-H', 'VL4-H', 'BL3-H']
+    channels = []
+    if panel == 1:
+        channels = ['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H', 'BL3-H']
+    elif panel == 2:
+        channels = ['BL4-H', 'BL3-H']
+    elif panel == 3:
+        channels = ['VL6-H', 'VL4-H', 'BL3-H']
 
+    if wellNum is None:
         combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
         return combinedSamples
 
-    xsample = sample[wellNum - 1]
+    else
+        tsample = sample[wellNum-1]
+        tsample = sample.transform('hlog', channels=channels)
 
-    return xsample
+    return tsample
 
 
 # *********************************** Gating Fxns *******************************************
