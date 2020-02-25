@@ -53,7 +53,6 @@ def importF(date, plate, wellRow, panel, wellNum=None):
         combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
         return combinedSamples
 
-    else:
     tsample = sample[wellNum - 1]
     tsample = sample.transform('hlog', channels=channels)
 
