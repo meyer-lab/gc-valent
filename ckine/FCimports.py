@@ -54,10 +54,11 @@ def importF(date, plate, wellRow, panel, wellNum=None):
         return combinedSamples
 
     else:
-    tsample = sample[wellNum - 1]
-    tsample = sample.transform('hlog', channels=channels)
+        tsample = sample[wellNum - 1]
+        tsample = sample.transform('hlog', channels=channels)
+        return tsample
 
-    return tsample
+    return
 
 
 # *********************************** Gating Fxns *******************************************
