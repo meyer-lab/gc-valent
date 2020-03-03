@@ -2,6 +2,7 @@
 This file includes various methods for flow cytometry analysis.
 """
 from pathlib import Path
+from scipy.optimize import least_squares
 import numpy as np
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
@@ -153,3 +154,20 @@ def count_data(sampleType, gate, Tcells=True):
         data_array.append(rawData)
     # returns the array for count of cells and the array where each entry is the data for the specific cell population in that .fcs file
     return count_array, data_array
+
+
+def residuals(x0, x, y):
+    """ Calculates residuals for sigmoidal function input. """
+    def sigmoid(x, x0):
+        """ Sigmoidal function general format. """
+        A = x0[0]
+        k = x0[1]
+        x = np.array(x)
+        return A * (1 - np.exp(-k * x))
+    return sigmoid(x, x0) - y
+
+
+def nllsq(x0, x, y):
+    """ Runs nonlinear least squares for sigmoidal function. """
+    lsq = least_squares(residuals, x0, args=(x, y), bounds=([0., 0.], [15000., 10000.]), jac='3-point')
+    return lsq.x
