@@ -204,7 +204,6 @@ def plot_fsc_ssc(axes, sample):
 def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=False):
     """ Plots regression of signal to bead capacity. """
     means = np.zeros(len(recQuant))
-    df = pd.DataFrame(columns=[str(channels[first]), 'Bead Capacity'])
     for i, s in enumerate(sample):
         if skip:
             if i < first:
