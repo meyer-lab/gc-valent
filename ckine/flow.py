@@ -157,17 +157,17 @@ def count_data(sampleType, gate, Tcells=True):
 
 
 def residuals(x0, x, y):
-    """ Calculates residuals for sigmoidal function input. """
-    def sigmoid(x, x0):
-        """ Sigmoidal function general format. """
+    """ Calculates residuals for given function input. """
+    def exp_dec(x, x0):
+        """ Increasing exponential decay function general format. """
         A = x0[0]
         k = x0[1]
         x = np.array(x)
         return A * (1 - np.exp(-k * x))
-    return sigmoid(x, x0) - y
+    return exp_dec(x, x0) - y
 
 
 def nllsq(x0, x, y):
-    """ Runs nonlinear least squares for sigmoidal function. """
+    """ Runs nonlinear least squares for exponential decay function. """
     lsq = least_squares(residuals, x0, args=(x, y), bounds=([0., 0.], [15000., 10000.]), jac='3-point')
     return lsq.x
