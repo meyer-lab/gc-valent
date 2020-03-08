@@ -3,7 +3,6 @@ This file contains functions that are used in multiple figures.
 """
 import seaborn as sns
 import numpy as np
-import pandas as pd
 import matplotlib
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
