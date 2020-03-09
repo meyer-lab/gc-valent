@@ -158,10 +158,8 @@ def count_data(sampleType, gate, Tcells=True):
 
 def exp_dec(x, pp):
     """ Increasing exponential decay function general format. """
-    A = pp[0]
-    k = pp[1]
-    x = np.log(x)
-    return A * (1 - np.exp(-k * x))
+    A, B, C, D = pp
+    return (A-D)/(1.0+((x/C)**B)) + D
 
 
 def residuals(pp, x, y):
@@ -171,5 +169,5 @@ def residuals(pp, x, y):
 
 def nllsq(x0, x, y):
     """ Runs nonlinear least squares for exponential decay function. """
-    lsq = least_squares(residuals, x0, args=(x, y), bounds=([0., 0.], [15000., 10000.]), jac='3-point')
+    lsq = least_squares(residuals, x0, args=(x, y), jac='3-point')
     return lsq.x
