@@ -158,6 +158,7 @@ def count_data(sampleType, gate, Tcells=True):
 
 def exp_dec(x, pp):
     """ Increasing exponential decay function general format. """
+    x = np.log(x + 0.01)
     return (pp[0] - pp[3]) / (1.0 + ((x / pp[2])**pp[1])) + pp[3]
 
 
