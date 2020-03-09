@@ -3,7 +3,6 @@ This creates Figure 4 for Single Cell data analysis. Plots of flow intensity ver
 """
 
 import os
-import string
 from .figureCommon import subplotLabel, getSetup, plot_regression
 from ..imports import channels, receptors
 from ..flow import importF
@@ -16,9 +15,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((10, 5), (2, 4))
 
-    for i, item in enumerate(ax):
-        if i < 8:
-            subplotLabel(item, string.ascii_uppercase[i])
+    subplotLabel(ax)
 
     print(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/")
 
