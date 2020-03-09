@@ -168,5 +168,5 @@ def residuals(pp, x, y):
 
 def nllsq(x0, x, y):
     """ Runs nonlinear least squares for exponential decay function. """
-    lsq = least_squares(residuals, x0, args=(x, y), jac='3-point')
+    lsq = least_squares(residuals, x0, args=(x, y), bounds=(np.zeros(x0.size), np.ones(x0.size)*1E6), jac='3-point')
     return lsq.x
