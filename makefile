@@ -61,7 +61,7 @@ clean:
 	mv requests-cache.sqlite output/requests-cache.sqlite || true
 
 	rm -f profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
-	rm -rf html doxy.log graph_all.svg venv
+	rm -rf html doxy.log graph_all.svg venv ./ckine/data/flow
 	find -iname "*.pyc" -delete
 
 spell: manuscript/*.md
