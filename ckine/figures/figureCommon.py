@@ -214,6 +214,6 @@ def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=Fal
     ax.scatter(recQuant, means)
     lsq = nllsq([1, 1000], recQuant, means)
     xs = np.linspace(np.amin(recQuant), np.amax(recQuant), num=1000)
-    ax.plot(xs, (lsq[0] / (1 + np.exp(-lsq[1] * xs))))
+    ax.plot(xs, (lsq[0] * (1 - np.exp(-lsq[1] * xs))))
     ax.set_xlabel('Bead Capacity')
     ax.set_ylabel('Average Signal (' + str(receptors[4 + first]) + ')')
