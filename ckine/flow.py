@@ -156,15 +156,17 @@ def count_data(sampleType, gate, Tcells=True):
     return count_array, data_array
 
 
-def residuals(x0, x, y):
+def exp_dec(x, pp):
+    """ Increasing exponential decay function general format. """
+    A = pp[0]
+    k = pp[1]
+    x = np.log(x)
+    return A * (1 - np.exp(-k * x))
+
+
+def residuals(pp, x, y):
     """ Calculates residuals for given function input. """
-    def exp_dec(x, x0):
-        """ Increasing exponential decay function general format. """
-        A = x0[0]
-        k = x0[1]
-        x = np.array(x)
-        return A * (1 - np.exp(-k * x))
-    return exp_dec(x, x0) - y
+    return exp_dec(x, pp) - y
 
 
 def nllsq(x0, x, y):

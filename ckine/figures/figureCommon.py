@@ -9,7 +9,7 @@ from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..imports import import_pstat
-from ..flow import nllsq
+from ..flow import nllsq, exp_dec
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -214,6 +214,6 @@ def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=Fal
     ax.scatter(recQuant, means)
     lsq = nllsq([1, 1000], recQuant, means)
     xs = np.linspace(np.amin(recQuant), np.amax(recQuant), num=1000)
-    ax.plot(xs, (lsq[0] * (1 - np.exp(-lsq[1] * xs))))
+    ax.plot(xs, exp_dec(lsq, xs))
     ax.set_xlabel('Bead Capacity')
     ax.set_ylabel('Average Signal (' + str(receptors[4 + first]) + ')')
