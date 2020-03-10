@@ -61,6 +61,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     return tsample_.transform('tlog', channels=channels_)
 
+
 def subtract_unstained_signal(sample, channels):
     """ Subtract mean unstained signal from all input channels for a given sample. """
     for _, channel in enumerate(channels):
