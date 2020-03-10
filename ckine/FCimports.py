@@ -1,6 +1,7 @@
 """
 This file includes various methods for flow cytometry analysis.
 """
+import os
 from pathlib import Path
 import matplotlib.cm as cm
 from matplotlib import pyplot as plt
