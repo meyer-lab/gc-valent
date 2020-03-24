@@ -6,6 +6,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib
 import matplotlib.cm as cm
+import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
@@ -92,8 +93,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
-    import svgutils.transform as st
-
     # Overlay Figure cartoons
     template = st.fromfile(figFile)
     cartoon = st.fromfile(cartoonFile).getroot()
