@@ -1,14 +1,17 @@
 """
 This file contains functions that are used in multiple figures.
 """
+from string import ascii_lowercase
 import seaborn as sns
 import numpy as np
 import matplotlib
 import matplotlib.cm as cm
+import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..imports import import_pstat
+from ..flow import nllsq, exp_dec
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -24,36 +27,18 @@ matplotlib.rcParams['legend.markerscale'] = 0.7
 matplotlib.rcParams['legend.borderpad'] = 0.35
 
 
-def getSetup(figsize, gridd, multz=None, empts=None):
+def getSetup(figsize, gridd):
     """ Establish figure set-up with subplots. """
-    sns.set(style="whitegrid",
-            font_scale=0.7,
-            color_codes=True,
-            palette="colorblind",
-            rc={'grid.linestyle': 'dotted',
-                'axes.linewidth': 0.6})
-
-    # create empty list if empts isn't specified
-    if empts is None:
-        empts = []
-
-    if multz is None:
-        multz = dict()
+    sns.set(style="whitegrid", font_scale=0.7, color_codes=True, palette="colorblind", rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6})
 
     # Setup plotting space and grid
     f = plt.figure(figsize=figsize, constrained_layout=True)
     gs1 = gridspec.GridSpec(*gridd, figure=f)
 
     # Get list of axis objects
-    x = 0
     ax = list()
-    while x < gridd[0] * gridd[1]:
-        if x not in empts and x not in multz.keys():  # If this is just a normal subplot
-            ax.append(f.add_subplot(gs1[x]))
-        elif x in multz.keys():  # If this is a subplot that spans grid elements
-            ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
-            x += multz[x]
-        x += 1
+    for x in range(gridd[0] * gridd[1]):
+        ax.append(f.add_subplot(gs1[x]))
 
     return (ax, f)
 
@@ -67,10 +52,10 @@ def set_bounds(ax):
     ax.set_ylim(-y_max, y_max)
 
 
-def subplotLabel(ax, letter, hstretch=1, ystretch=1):
-    """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2 / ystretch, letter, transform=ax.transAxes,
-            fontsize=16, fontweight='bold', va='top')
+def subplotLabel(axs):
+    """ Place subplot labels on figure. """
+    for ii, ax in enumerate(axs):
+        ax.text(-0.2, 1.25, ascii_lowercase[ii], transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
 
 
 def traf_names():
@@ -108,8 +93,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
-    import svgutils.transform as st
-
     # Overlay Figure cartoons
     template = st.fromfile(figFile)
     cartoon = st.fromfile(cartoonFile).getroot()
@@ -180,3 +163,40 @@ def legend_2_15(ax, location="center right"):
                               markerfacecolor='k', markersize=16)]
     ax.legend(handles=legend_elements, loc=location, prop={'size': 16})
     ax.axis('off')  # remove the grid
+
+
+def plot_hist(axes, sample, channels):
+    """ Plots histogram of signal for each well/channel in a sample. """
+    for i, s in enumerate(sample):
+        tform = s.transform('hlog', channels=channels[i])
+        data = tform.data[[channels[i]]][0:]
+        axes[i].hist(data[channels[i]], bins=100)
+
+
+def plot_fsc_ssc(axes, sample):
+    """ Plots forward and side scatter for a given sample (all wells). """
+    for i, s in enumerate(sample):
+        s.plot(['SSC-H', 'FSC-H'], ax=axes[i])
+        x0, x1 = axes[i].get_xlim()
+        y0, y1 = axes[i].get_ylim()
+        axes[i].set_aspect((x1 - x0) / (y1 - y0))
+
+
+def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=False):
+    """ Plots regression of signal to bead capacity. """
+    means = np.zeros(len(recQuant))
+    for i, s in enumerate(sample):
+        if skip:
+            if i < first:
+                continue
+        tform = s.transform('hlog', channels=channels[i - first])
+        data = tform.data[[channels[i - first]]][0:]
+        avg_signal = np.mean(data[str(channels[i - first])])
+        means[i - first] = avg_signal
+    ax.scatter(recQuant, means)
+
+    lsq = nllsq(recQuant, means)
+    xs = np.linspace(np.amin(recQuant), np.amax(recQuant), num=1000)
+    ax.plot(xs, exp_dec(xs, lsq))
+    ax.set_xlabel('Bead Capacity')
+    ax.set_ylabel('Average Signal (' + str(receptors[4 + first]) + ')')
