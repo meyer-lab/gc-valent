@@ -14,7 +14,7 @@ venv/bin/activate: requirements.txt
 	touch venv/bin/activate
 
 output/figure%.svg: venv genFigures.py ckine/figures/figure%.py
-	mkdir -p ./Manuscript/Figures
+	mkdir -p ./output
 	. venv/bin/activate && ./genFigures.py $*
 
 output/manuscript.md: venv manuscript/*.md
