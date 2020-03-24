@@ -3,6 +3,7 @@ This creates Figure 4 for Single Cell data analysis. Plots of flow intensity ver
 """
 
 import os
+import numpy as np
 from .figureCommon import subplotLabel, getSetup, plot_regression
 from ..imports import channels, receptors
 from ..flow import importF
@@ -25,8 +26,8 @@ def makeFigure():
     sampleG, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "G")
     sampleH, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "H")
 
-    recQuant1 = [0., 4407, 59840, 179953, 625180]  # CD25, CD122, IL15
-    recQuant2 = [0., 7311, 44263, 161876, 269561]  # CD132
+    recQuant1 = np.array([0., 4407, 59840, 179953, 625180])  # CD25, CD122, IL15
+    recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
 
     plot_regression(ax[0], sampleD, channels['D'], receptors['D'], recQuant1)
     plot_regression(ax[1], sampleE, channels['E'], receptors['E'], recQuant2, 2, True)
