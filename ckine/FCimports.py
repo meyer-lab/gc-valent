@@ -53,11 +53,10 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
-        return combinedSamples
+        return subtract_unstained_signal(combinedSamples, channels)
 
-    tsample = sample[wellNum - 1]
-    tsample = sample.transform('hlog', channels=channels)
-    return tsample
+    tsample = subtract_unstained_signal(sample[wellNum - 1], channels)
+    return sample.transform('hlog', channels=channels)
 
 
 def subtract_unstained_signal(sample, channels):
