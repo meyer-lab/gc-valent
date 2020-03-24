@@ -173,5 +173,4 @@ def nllsq(x, y):
     upper = np.array([np.min(y), 1.1, 1.0e6, 1.0e9])
 
     lsq = least_squares(residuals, (upper - lower) / 2.0 + lower, bounds=(lower, upper), jac='3-point')
-    print(lsq.x)
     return lsq.x
