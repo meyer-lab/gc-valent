@@ -13,7 +13,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7.5), (3, 4))
+    ax, f = getSetup((12.5, 5), (2, 5))
     PCscanVecT = [-2, 2, 6]
     PCscanVecNk = [-1, 1, 3]
     loadingT = []
@@ -27,18 +27,18 @@ def makeFigure():
     Nksample, _ = importF(path_here + "/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate/", "A")
 
     for i, cell in enumerate(gates):
-        EC50_PC_Scan(Tsample, PCscanVecT, ax[i], cell, Tcells=True, PC1=True)
-        ax[i].set_title(Titles[i] + " PC1 Scan")
-        loadingT = EC50_PC_Scan(Tsample, PCscanVecT, ax[i + 4], cell, Tcells=True, PC1=False)
-        ax[i + 4].set_title(Titles[i] + " PC2 Scan")
-        loadingPlot(loadingT, ax=ax[i + 8], Tcells=True)
-        ax[i + 8].set_title(Titles[i] + " Loadings")
+        EC50_PC_Scan(Tsample, PCscanVecT, ax[2 * i], cell, Tcells=True, PC1=True)
+        ax[2 * i].set_title(Titles[i] + " PC1 Scan")
+        loadingT = EC50_PC_Scan(Tsample, PCscanVecT, ax[2 * i + 1], cell, Tcells=True, PC1=False)
+        ax[2 * i + 1].set_title(Titles[i] + " PC2 Scan")
+        loadingPlot(loadingT, ax=ax[6], Tcells=True)
+        ax[6].set_title(Titles[i] + " Loadings")
 
-    EC50_PC_Scan(Nksample, PCscanVecNk, ax[3], 'nk', Tcells=False, PC1=True)
-    ax[3].set_title("Nk PC1 Scan")
-    loadingNk = EC50_PC_Scan(Nksample, PCscanVecNk, ax[7], 'nk', Tcells=False, PC1=False)
-    ax[7].set_title("Nk PC2 Scan")
-    loadingPlot(loadingNk, ax=ax[11], Tcells=False)
-    ax[11].set_title("Nk Loadings")
+    EC50_PC_Scan(Nksample, PCscanVecNk, ax[7], 'nk', Tcells=False, PC1=True)
+    ax[7].set_title("Nk PC1 Scan")
+    loadingNk = EC50_PC_Scan(Nksample, PCscanVecNk, ax[8], 'nk', Tcells=False, PC1=False)
+    ax[8].set_title("Nk PC2 Scan")
+    loadingPlot(loadingNk, ax=ax[9], Tcells=False)
+    ax[9].set_title("Nk Loadings")
 
     return f

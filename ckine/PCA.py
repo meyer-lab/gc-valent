@@ -346,12 +346,13 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, cell_type, Tcells=True):
         else:
             data, pstat, _ = sampleNK(sample)
             statcol = "BL2-H"
-        if cell_type:
-            data = alldata[i]
-            pstat = data[[statcol]]
 
         if i == 0:
             PCAobj, loading = fitPCA(data, Tcells)  # only fit to first set
+
+        if cell_type:
+            data = alldata[i]
+            pstat = data[[statcol]]
 
         xf = appPCA(data, PCAobj, Tcells)  # get PC1/2 vals
         PCApd = PCdatTransform(xf, pstat)
