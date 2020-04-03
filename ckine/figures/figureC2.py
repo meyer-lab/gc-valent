@@ -83,6 +83,7 @@ def StatMV(sampleType, ax, cell_type, Tcells=True):
         MVdf = MVdf.append(pds.DataFrame.from_dict({"Dose": dosemat[0, i], "Mean": np.mean(stat_array), "Variance": np.var(
             stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array)}))
 
+    MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
     MVdf.plot.scatter(x='Dose', y='Mean', ax=ax, color="dodgerblue", legend=False)
     ax.set_xscale("log")
     ax.set_xlabel("Cytokine Dosage (log10[nM])")
