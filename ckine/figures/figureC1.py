@@ -20,7 +20,6 @@ def makeFigure():
     ax, f = getSetup((13, 10), (3, 4))
     Titles = [" 84 nM IL-2", " 0.345 nM IL-2", " Zero Treatment"]
 
-
     subplotLabel(ax)
 
     dose_ind = np.array([0., 6., 11.])
@@ -33,8 +32,6 @@ def makeFigure():
     _, pstat_arrayNk, _, loadingNk = pcaAll(Nksample, Tcells=False)  # take out titles req
     dataNk, _, _ = sampleNK(Nksample[0])
     PCAobjNk, _ = fitPCA(dataNk, Tcells=False)
-    RecQuantResp(ax[10], Tsample)
-    RecQuantResp(ax[11], Tsample, "treg")
 
     for i, col in enumerate(dose_ind):
         col = int(col)
@@ -53,9 +50,12 @@ def makeFigure():
     loadingPlot(loadingNk, ax=ax[7], Tcells=False)
     ax[7].set_title("T-reg Loadings", fontsize=15)
 
-    ColPlot(Tsample, ax[8], 4, True)
-    ColPlot(Nksample, ax[9], 4, False)
-    
+    #ColPlot(Tsample, ax[8], 4, True)
+    #ColPlot(Nksample, ax[9], 4, False)
+    RecQuantResp(ax[8], Tsample)
+    RecQuantResp(ax[9], Tsample, "treg")
+    RecQuantResp(ax[10], Tsample, "nonTreg")
+    RecQuantResp(ax[11], Tsample, "tregNaive")
 
     return f
 
@@ -77,7 +77,7 @@ def ColPlot(sample, ax, col, Tcells=True):
 def RecQuantResp(ax, samples, cellType=False):
     """Plots dose response curves for cells separated by their receptor expression levels"""
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
-    quartDF = pds.DataFrame(columns = ["IL-2 Dose (nM)", "Activity", "Quartile"])
+    quartDF = pds.DataFrame(columns=["IL-2 Dose (nM)", "Activity", "Quartile"])
     if cellType:
         gates = gating(cellType)
     for i, sample in enumerate(samples):
@@ -97,8 +97,8 @@ def RecQuantResp(ax, samples, cellType=False):
         quartDF = quartDF.append(pds.DataFrame({"IL-2 Dose (nM)": dosemat[0, i], "Activity": pstatdata.loc[(df < quantiles[2]) & (df > quantiles[1])].mean(), "Quartile": "IL-2Rα Quartile 3"}))
         quartDF = quartDF.append(pds.DataFrame({"IL-2 Dose (nM)": dosemat[0, i], "Activity": pstatdata[df > quantiles[2]].mean(), "Quartile": "IL-2Rα Quartile 4"}))
 
-    sns.scatterplot(x="IL-2 Dose (nM)", y= "Activity", hue="Quartile", data=quartDF, ax=ax)
-    ax.set_xscale("log")
+    sns.lineplot(x="IL-2 Dose (nM)", y="Activity", hue="Quartile", data=quartDF, ax=ax, palette="husl")
+    ax.set(xscale="log", xticks=[1e-4, 1e-2, 1e0, 1e2], xlim=[1e-4, 1e2])
     if cellType:
         ax.set_title(cellType)
     else:
