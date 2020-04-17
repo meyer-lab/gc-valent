@@ -3,9 +3,12 @@ This creates Figure 1 for Single Cell FC data analysis. Examples of PCA loadings
 """
 
 import os
+import pandas as pds
+import numpy as np
+import seaborn as sns
+from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup
-from ..flow import importF
-from ..PCA import EC50_PC_Scan, loadingPlot
+from ..imports import importMoments
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -13,32 +16,40 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7.5), (3, 4))
-    PCscanVecT = [-2, 2, 6]
-    PCscanVecNk = [-1, 1, 3]
-    loadingT = []
-    loadingNk = []
-
+    ax, f = getSetup((12.5, 7.5), (3, 3))
     subplotLabel(ax)
 
-    gates = [False, 'treg', 'nonTreg']
-    Titles = ["Tcells", "T-regs", "T Helper"]
-    Tsample, _ = importF(path_here + "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT/", "A")
-    Nksample, _ = importF(path_here + "/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate/", "A")
-
-    for i, cell in enumerate(gates):
-        EC50_PC_Scan(Tsample, PCscanVecT, ax[i], cell, Tcells=True, PC1=True)
-        ax[i].set_title(Titles[i] + " PC1 Scan")
-        loadingT = EC50_PC_Scan(Tsample, PCscanVecT, ax[i + 4], cell, Tcells=True, PC1=False)
-        ax[i + 4].set_title(Titles[i] + " PC2 Scan")
-        loadingPlot(loadingT, ax=ax[i + 8], Tcells=True)
-        ax[i + 8].set_title(Titles[i] + " Loadings")
-
-    EC50_PC_Scan(Nksample, PCscanVecNk, ax[3], 'nk', Tcells=False, PC1=True)
-    ax[3].set_title("Nk PC1 Scan")
-    loadingNk = EC50_PC_Scan(Nksample, PCscanVecNk, ax[7], 'nk', Tcells=False, PC1=False)
-    ax[7].set_title("Nk PC2 Scan")
-    loadingPlot(loadingNk, ax=ax[11], Tcells=False)
-    ax[11].set_title("Nk Loadings")
+    momentsDF = importMoments()
+    moments = np.array(["Mean", "Variance", "Skew"])
+    ind = [11, 6, 0]
+    for i, dose in enumerate(ind):
+        for j, moment in enumerate(moments):
+            if (3 * i + j) == 0:
+                momentPlot(ax[3 * i + j], momentsDF, moment, "2019-4-18", dose, legend=True)
+            else:
+                momentPlot(ax[3 * i + j], momentsDF, moment, "2019-4-18", dose, legend=False)
 
     return f
+
+
+def momentPlot(ax, df, moment, date, doseInd, legend=False):
+    """Plots moments of pSTAT for a given dose for both IL2 and IL15"""
+    doses = df.Dose.unique()
+    times = df.Time.unique()
+    markers = ['.', '^', 'P', 'D']
+    for i, time in enumerate(times):
+        df1 = df.loc[(df["Date"] == date) & (df["Dose"] == doses[doseInd]) & (df["Time"] == time)]
+        sns.stripplot(x="Cell", y=moment, hue="Ligand", data=df1, ax=ax, palette={"IL2": "darkorchid", "IL15": "goldenrod"}, marker=markers[i], dodge=True)
+
+    handles, labels = ax.get_legend_handles_labels()
+    handles = handles[0:2]
+    for ii, name in enumerate(times):
+        handles.append(Line2D([0], [0], color="k", marker=markers[ii], label="Time (hrs) " + str(name), linestyle="None"))
+
+    ax.legend(handles=handles)
+    ax.set_ylabel(moment)
+    ax.set_title(moment + " " + str(doses[doseInd])[0:6] + " nM")
+    ax.set_yscale("log")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=25)
+    if not legend:
+        ax.get_legend().remove()
