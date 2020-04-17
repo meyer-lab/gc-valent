@@ -63,7 +63,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
 def subtract_unstained_signal(sample, channels,unstainedWell):
     """ Subtract mean unstained signal from all input channels for a given sample. """
-    meanBackground = mean(unstainedWell.data['RL1-H'])
+    meanBackground = unstainedWell.data.mean(unstainedWell.data['RL1-H'])
     for _, channel in enumerate(channels):
         for i, _ in enumerate(sample[channel]):
             if sample[channel][i] < meanBackground:
