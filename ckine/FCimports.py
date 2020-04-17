@@ -37,7 +37,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
         if wellID[0] == wellRow:
             file.append(str(path))
         else:
-            unstainedWell = FCMeasurement(ID="Unstained Sample", datafile = str(path))
+            unstainedWell = FCMeasurement(ID="Unstained Sample", datafile=str(path))
     file.sort()
     assert file != []
     # Go through each file and assign the file contents to entry in the array sample
@@ -57,11 +57,11 @@ def importF(date, plate, wellRow, panel, wellNum=None):
         combinedSamples = combineWells(sample, channels)  # Combines all files from samples and transforms
         return subtract_unstained_signal(combinedSamples, channels, unstainedWell)
 
-    tsample = subtract_unstained_signal(sample[wellNum - 1], channels, unstainedWell) 
-    return sample.transform('hlog', channels=channels) #Should be tsample.transform? also one combined are transformed then subtracted but single is subtracted then transformed
+    tsample = subtract_unstained_signal(sample[wellNum - 1], channels, unstainedWell)
+    return sample.transform('hlog', channels=channels)  # Should be tsample.transform? also one combined are transformed then subtracted but single is subtracted then transformed
 
 
-def subtract_unstained_signal(sample, channels,unstainedWell):
+def subtract_unstained_signal(sample, channels, unstainedWell):
     """ Subtract mean unstained signal from all input channels for a given sample. """
     meanBrackground = mean(unstain.data['RL1-H'])
     for _, channel in enumerate(channels):
