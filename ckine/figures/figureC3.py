@@ -10,7 +10,7 @@ import seaborn as sns
 from scipy import stats
 from .figureCommon import subplotLabel, getSetup
 from ..flow import importF
-from ..PCA import StatGini, sampleT, sampleNK
+from ..PCA import sampleT, sampleNK
 from ..flow import gating, count_data
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -129,14 +129,14 @@ def violinDist(sampleType2, sampleType15, ax, cell_type, title, Tcells=True):
         for i, sample in enumerate(sampleType2):
             if Tcells:
                 _, pstat2, _ = sampleT(sample)
-                alldata2.append(pstat)
+                alldata2.append(pstat2)
                 _, pstat15, _ = sampleT(sampleType15[i])
-                alldata15.append(pstat)
+                alldata15.append(pstat15)
             else:
                 _, pstat2, _ = sampleNK(sample)
-                alldata2.append(pstat)
+                alldata2.append(pstat2)
                 _, pstat15, _ = sampleNK(sampleType15[i])
-                alldata15.append(pstat)
+                alldata15.append(pstat15)
 
     for i, _ in enumerate(sampleType2):  # get pstat data and put it into list form
         dat_array2, dat_array15 = alldata2[i], alldata15[i]
@@ -149,8 +149,6 @@ def violinDist(sampleType2, sampleType15, ax, cell_type, title, Tcells=True):
             else:
                 distDF = distDF.append(pds.DataFrame.from_dict({"Dose": np.tile(dosemat[0, i], (len(pSTATArray))), "Ligand": np.tile(ILs[kk], (len(pSTATArray))), "pSTAT": pSTATArray.flatten()}))
 
-    #MVdf['pSTAT'].loc[("Ligand" == "IL2")] -= MVdf['Mean'].loc[("Ligand" == "IL2")].min()
-   # MVdf['pSTAT'].loc[("Ligand" == "IL15")] -= MVdf['Mean'].loc[("Ligand" == "IL15")].min()
     sns.violinplot(x='Dose', y='pSTAT', hue='Ligand', data=distDF, split=True, palette={'IL-2': 'darkorchid', 'IL-15': 'goldenrod'}, ax=ax)
     ax.set(xlabel="Ligand nM", ylabel="Activity", ylim=(0, 50000), title=title)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25)
