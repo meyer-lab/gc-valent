@@ -4,6 +4,7 @@ This file includes various methods for flow cytometry analysis.
 from pathlib import Path
 from scipy.optimize import least_squares
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
@@ -158,11 +159,11 @@ def count_data(sampleType, gate, Tcells=True):
     return count_array, data_array
 
 
-def exp_dec(x, pp):
+def exp_dec(x, pp, soln=0):
     """ Increasing exponential decay function general format. """
     # https://www.myassays.com/four-parameter-logistic-regression.html
     A, B, C, D = pp
-    return ((A - D) / (1.0 + ((x / C)**B))) + D
+    return ((A - D) / (1.0 + ((x / C)**B))) + D - soln
 
 
 def nllsq(x, y):
@@ -173,3 +174,20 @@ def nllsq(x, y):
 
     lsq = least_squares(lambda pp: exp_dec(x, pp) - y, x0, bounds=(lower, upper), jac='3-point')
     return lsq.x
+
+
+def bead_regression(sample, channels, receptors, recQuant, first=0, skip=False):
+    """ Implements regression of signal to bead capacity. """
+    means = np.zeros(len(recQuant))
+    for i, s in enumerate(sample):
+        if skip:
+            if i < first:
+                continue
+        tform = s.transform('hlog', channels=channels[i - first])
+        data = tform.data[[channels[i - first]]][0:]
+        avg_signal = np.mean(data[str(channels[i - first])])
+        means[i - first] = avg_signal
+
+    lsq = nllsq(recQuant, means)
+    return means, lsq
+
