@@ -26,7 +26,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
     path_ = os.path.abspath("")
-    pathname = path_ + "/ckine/data/PBMC-rec-quant/" + date + "/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
+    pathname = path_ + "/ckine/data/PBMC-rec-quant/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
     
     # Declare arrays and int
     file = []
