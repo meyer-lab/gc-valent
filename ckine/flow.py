@@ -169,7 +169,7 @@ def exp_dec(x, pp, soln=0):
 def nllsq(x, y):
     """ Runs nonlinear least squares for exponential decay function. """
     lower = np.array([0.0, 0.1, 0.0, np.max(y)])
-    upper = np.array([np.min(y), 1.1, 1.0e6, 1.0e9])
+    upper = np.array([1.0, 1.1, 1.0e6, 1.0e9])
     x0 = (upper - lower) / 2.0 + lower
 
     lsq = least_squares(lambda pp: exp_dec(x, pp) - y, x0, bounds=(lower, upper), jac='3-point')
@@ -187,6 +187,8 @@ def bead_regression(sample, channels, receptors, recQuant, first=0, skip=False):
         data = tform.data[[channels[i - first]]][0:]
         avg_signal = np.mean(data[str(channels[i - first])])
         means[i - first] = avg_signal
+    
+    means = means - np.amin(means)
 
     lsq = nllsq(recQuant, means)
     return means, lsq
