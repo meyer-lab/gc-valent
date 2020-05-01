@@ -4,7 +4,7 @@ flist = C1 C2 C3 C4
 
 .PHONY: clean test all testprofile testcover spell
 
-all: output/manuscript.html output/manuscript.pdf pylint.log
+all: output/manuscript.html pylint.log
 
 venv: venv/bin/activate
 
@@ -43,23 +43,11 @@ output/manuscript.html: venv output/manuscript.md $(patsubst %, output/figure%.s
 		--include-after-body=common/templates/manubot/plugins/hypothesis.html \
 		--output=output/manuscript.html output/manuscript.md
 
-output/manuscript.pdf: venv output/manuscript.md $(patsubst %, output/figure%.svg, $(flist))
-	. venv/bin/activate && pandoc --from=markdown --to=html5 \
-    	--pdf-engine=weasyprint --pdf-engine-opt=--presentational-hints \
-    	--filter=pandoc-fignos --filter=pandoc-eqnos --filter=pandoc-tablenos \
-    	--bibliography=output/references.json \
-    	--csl=common/templates/manubot/style.csl \
-    	--metadata link-citations=true \
-    	--webtex=https://latex.codecogs.com/svg.latex? \
-    	--include-after-body=common/templates/manubot/default.html \
-    	--output=output/manuscript.pdf output/manuscript.md
-
 clean:
 	mv output/requests-cache.sqlite requests-cache.sqlite || true
 	rm -rf prof output coverage.xml .coverage .coverage* junit.xml coverage.xml profile profile.svg pylint.log
 	mkdir output
 	mv requests-cache.sqlite output/requests-cache.sqlite || true
-
 	rm -f profile.p* stats.dat .coverage nosetests.xml coverage.xml testResults.xml
 	rm -rf html doxy.log graph_all.svg venv ./ckine/data/flow
 	find -iname "*.pyc" -delete
