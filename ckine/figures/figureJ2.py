@@ -1,6 +1,8 @@
 """
 This creates Figure 4 for Single Cell data analysis. Plots of flow intensity versus receptor quantification.
 """
+from julia import Pkg
+from julia.api import Julia
 import os
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
