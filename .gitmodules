@@ -4,3 +4,6 @@
 [submodule "gcSolver"]
 	path = gcSolver
 	url = https://github.com/meyer-lab/gcSolver.git
+[submodule "gcSolver.jl"]
+	path = gcSolver.jl
+	url = https://github.com/meyer-lab/gcSolver.jl.git

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-flist = C1 C2 C3 C4
+flist = C1 C2 C3 C4 J1 J2
 
 .PHONY: clean test all testprofile testcover spell
 
