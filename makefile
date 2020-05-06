@@ -13,9 +13,8 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && pip install -Uqr requirements.txt
 	touch venv/bin/activate
 
-%.pdf: %.md venv
-	. venv/bin/activate && pweave -f pandoc $<
-	pandoc -s --mathjax $< -o $@
+%.pdf: %.ipynb venv
+	. venv/bin/activate && jupyter nbconvert --execute --ExecutePreprocessor.timeout=6000 --to pdf $< --output $@
 
 output/figure%.svg: venv genFigures.py ckine/figures/figure%.py
 	mkdir -p ./output
