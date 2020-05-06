@@ -3,7 +3,6 @@ This creates Figure 4 for Single Cell data analysis. Plots of flow intensity ver
 """
 from .figureCommon import subplotLabel, getSetup
 from .figureCommonJulia import getUnkVecPy
-from julia import gcSolver
 
 
 def makeFigure():
