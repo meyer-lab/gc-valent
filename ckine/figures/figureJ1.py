@@ -1,8 +1,6 @@
 """
 This creates Figure 4 for Single Cell data analysis. Plots of flow intensity versus receptor quantification.
 """
-import os
-import numpy as np
 from .figureCommon import subplotLabel, getSetup
 from .figureCommonJulia import getUnkVecPy
 
