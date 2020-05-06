@@ -12,8 +12,7 @@ venv/bin/activate: requirements.txt
 	test -d venv || virtualenv --system-site-packages venv
 	. venv/bin/activate && pip install -Uqr requirements.txt
 	[credential "https://github.com/meyer-lab/gcSolver.jl.git"]
-	[987faeec2cac1aa066960e9cdc6345a58d3bacb1]
-	julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.add(PackageSpec(url="https://github.com/meyer-lab/gcSolver.jl.git")); Pkg.build(); Pkg.precompile()'
+	julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.add(PackageSpec(url="https://borcuttjahns:987faeec2cac1aa066960e9cdc6345a58d3bacb1@github.com/meyer-lab/gcSolver.jl.git")); Pkg.build(); Pkg.precompile()'
 	. venv/bin/activate && python3 -c "import julia; julia.install()"
 	touch venv/bin/activate
 
