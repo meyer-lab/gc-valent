@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-flist = C1 C2 C3 C4 J1 J2
+flist = J1 J2
 
 .PHONY: clean test all testprofile testcover spell
 
@@ -11,6 +11,8 @@ venv: venv/bin/activate
 venv/bin/activate: requirements.txt
 	test -d venv || virtualenv --system-site-packages venv
 	. venv/bin/activate && pip install -Uqr requirements.txt
+	julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.add(PackageSpec(url="https://github.com/meyer-lab/gcSolver.jl.git")); Pkg.build(); Pkg.precompile()'
+	. venv/bin/activate && python3 -c "import julia; julia.install()"
 	touch venv/bin/activate
 
 output/figure%.svg: venv genFigures.py ckine/figures/figure%.py

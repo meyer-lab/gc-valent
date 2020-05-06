@@ -4,13 +4,7 @@ This creates Figure 4 for Single Cell data analysis. Plots of flow intensity ver
 import os
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
-
-path_here_jl = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-from julia.api import Julia
-jl = Julia(compiled_modules=False)
-from julia import Pkg
-Pkg.activate(path_here_jl + "/gcSolver.jl")
-from julia import gcSolver
+from .figureCommonJulia import getUnkVecPy
 
 
 def makeFigure():
@@ -19,7 +13,7 @@ def makeFigure():
     ax, f = getSetup((10, 5), (2, 4))
 
     subplotLabel(ax)
-    a = gcSolver.getUnkVec()
+    a = getUnkVecPy()
     print(a)
     print(type(a))
 
