@@ -1,16 +1,16 @@
 """
 This creates Figure 4 for Single Cell data analysis. Plots of flow intensity versus receptor quantification.
 """
+from julia import gcSolver
+from julia import Pkg
+from julia.api import Julia
 import os
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
 
 path_here_jl = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-from julia.api import Julia
 jl = Julia(compiled_modules=False)
-from julia import Pkg
 Pkg.activate(path_here_jl + "/gcSolver.jl")
-from julia import gcSolver
 
 
 def makeFigure():
