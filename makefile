@@ -2,9 +2,11 @@ SHELL := /bin/bash
 
 flist = C1 C2 C3 C4
 
+notebooks := $(wildcard *.ipynb)
+
 .PHONY: clean test all testprofile testcover spell
 
-all: output/manuscript.html pylint.log
+all: output/manuscript.html pylint.log $(patsubst %.ipynb, %.pdf, $(notebooks))
 
 venv: venv/bin/activate
 
