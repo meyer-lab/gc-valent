@@ -7,7 +7,6 @@ from .figureCommon import subplotLabel, getSetup
 from .figureCommonJulia import getUnkVecPy
 
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
