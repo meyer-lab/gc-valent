@@ -9,9 +9,13 @@ all: output/manuscript.html pylint.log
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	test -d venv || virtualenv --system-site-packages venv
+	test -d venv || virtualenv venv
 	. venv/bin/activate && pip install -Uqr requirements.txt
 	touch venv/bin/activate
+
+%.pdf: %.md venv
+	. venv/bin/activate && pweave -f pandoc $<
+	pandoc -s --mathjax $< -o $@
 
 output/figure%.svg: venv genFigures.py ckine/figures/figure%.py
 	mkdir -p ./output
