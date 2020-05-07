@@ -6,11 +6,9 @@ import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import fsolve
-from FlowCytometryTools import ThresholdGate, PolyGate
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels, receptors
-from ..flow import importF, bead_regression, exp_dec
+from ..flow import importF, bead_regression
 from ..FCimports import import_gates, apply_gates
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -32,7 +30,7 @@ def makeFigure():
     df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
-    
+
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
     cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
@@ -41,9 +39,9 @@ def makeFigure():
     lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132]
     dates = ["4-23", "4-26"]
     plates = ["1", "2"]
-    
+
     # calculate receptor counts
-    for i, cell in enumerate(cell_names):
+    for _, cell in enumerate(cell_names):
         for j, receptor in enumerate(receptors_):
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
@@ -51,14 +49,15 @@ def makeFigure():
                     rec_counts = np.zeros(len(data))
                     for k, signal in enumerate(data):
                         A, B, C, D = lsq_params[j]
-                        rec_counts[k] = C * (((A-D)/(signal-D))-1)**(1/B)
-                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)), "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
+                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
+                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
+                                           "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
                     df_rec = df_rec.append(df_add)
-    
+
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
-    
+
     # calculate mean, variance, and skew for each replicate
     df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
     for i, cell in enumerate(cell_names):
@@ -70,9 +69,9 @@ def makeFigure():
                     var_ = df_subset.var()
                     skew_ = df_subset.skew()
                     df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
-                    df_new.loc[0] = [cell, receptor, mean_, var_,  skew_, date, plate]
+                    df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
                     df_stats = df_stats.append(df_new)
-    
+
     # plot log10 of mean, variance, and skew
     df_stats["Mean"] = np.log10(df_stats["Mean"].astype(np.float))
     df_stats["Variance"] = np.log10(df_stats["Variance"].astype(np.float))
@@ -80,7 +79,7 @@ def makeFigure():
     celltype_pointplot(ax[0], df_stats, "Mean")
     celltype_pointplot(ax[1], df_stats, "Variance")
     celltype_pointplot(ax[2], df_stats, "Skew")
-    
+
     return f
 
 
@@ -105,6 +104,5 @@ def run_regression():
     _, lsq_cd25 = bead_regression(sampleD, channels['D'], receptors['D'], recQuant1)
     _, lsq_cd122 = bead_regression(sampleE, channels['E'], receptors['E'], recQuant2, 2, True)
     _, lsq_cd132 = bead_regression(sampleF, channels['F'], receptors['F'], recQuant1)
-    
-    return lsq_cd25, lsq_cd122, lsq_cd132
 
+    return lsq_cd25, lsq_cd122, lsq_cd132

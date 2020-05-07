@@ -187,9 +187,8 @@ def bead_regression(sample, channels, receptors, recQuant, first=0, skip=False):
         data = tform.data[[channels[i - first]]][0:]
         avg_signal = np.mean(data[str(channels[i - first])])
         means[i - first] = avg_signal
-    
+
     means = means - np.amin(means)
 
     lsq = nllsq(recQuant, means)
     return means, lsq
-
