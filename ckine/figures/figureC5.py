@@ -28,10 +28,10 @@ def makeFigure():
 
     # create dataframe with gated samples (all replicates)
     df_gates = import_gates()
-    df_signal = apply_gates("04-23", "1", df_gates)
-    df_signal = df_signal.append(apply_gates("04-23", "2", df_gates))
-    df_signal = df_signal.append(apply_gates("04-26", "1", df_gates))
-    df_signal = df_signal.append(apply_gates("04-26", "2", df_gates))
+    df_signal = apply_gates("4-23", "1", df_gates)
+    df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
+    df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
+    df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
     
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -39,7 +39,7 @@ def makeFigure():
     receptors_ = ["CD25", "CD122", "CD132"]
     channels_ = ["VL1-H", "BL5-H", "RL1-H"]
     lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132]
-    dates = ["04-23", "04-26"]
+    dates = ["4-23", "4-26"]
     plates = ["1", "2"]
     
     # calculate receptor counts
