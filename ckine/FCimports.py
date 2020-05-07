@@ -33,7 +33,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
         for name in dirs:
             print(os.path.join(root, name))
     
-    pathname = path_ + "/ckine/data/flow/4-23_4-26_Receptor quant/" + date + "/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
+    pathname = path_ + "/ckine/data/flow/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
     print(pathname)
     
     # Declare arrays and int
