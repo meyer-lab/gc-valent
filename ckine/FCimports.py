@@ -26,7 +26,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
     path_ = os.path.abspath("")
-    pathname = path_ + "/ckine/data/flow/4-23_4-26_Receptor quant/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R"
+    pathname = path_ + "/ckine/data/flow/4-23_4-26_Receptor quant/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
     print(pathname)
     
     # Declare arrays and int
@@ -37,6 +37,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
 
     for path in pathlist:
+        print(path)
         wellID = path.name.split("_")[1]
         if wellID[0] == wellRow:
             file.append(str(path))
