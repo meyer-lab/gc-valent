@@ -95,8 +95,6 @@ def run_regression():
     sampleD, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads", "D")
     sampleE, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "E")
     sampleF, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "F")
-    sampleG, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "G")
-    sampleH, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "H")
 
     recQuant1 = np.array([0., 4407, 59840, 179953, 625180])  # CD25, CD122
     recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
