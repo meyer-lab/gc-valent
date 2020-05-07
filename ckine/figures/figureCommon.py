@@ -184,7 +184,7 @@ def plot_fsc_ssc(axes, sample):
 
 def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=False):
     """ Plots regression of signal to bead capacity. """
-    means, lsq = bead_regression(sample, channels, receptors, recQuant, first, skip)
+    means, lsq = bead_regression(sample, channels, recQuant, first, skip)
     ax.scatter(recQuant, means)
     xs = np.linspace(np.amin(recQuant), np.amax(recQuant), num=1000)
     ax.plot(xs, exp_dec(xs, lsq))

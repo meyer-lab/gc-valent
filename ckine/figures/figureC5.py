@@ -60,7 +60,7 @@ def makeFigure():
 
     # calculate mean, variance, and skew for each replicate
     df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
-    for i, cell in enumerate(cell_names):
+    for _, cell in enumerate(cell_names):
         for j, receptor in enumerate(receptors_):
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
@@ -99,8 +99,8 @@ def run_regression():
     recQuant1 = np.array([0., 4407, 59840, 179953, 625180])  # CD25, CD122
     recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
 
-    _, lsq_cd25 = bead_regression(sampleD, channels['D'], receptors['D'], recQuant1)
-    _, lsq_cd122 = bead_regression(sampleE, channels['E'], receptors['E'], recQuant2, 2, True)
-    _, lsq_cd132 = bead_regression(sampleF, channels['F'], receptors['F'], recQuant1)
+    _, lsq_cd25 = bead_regression(sampleD, channels['D'], recQuant1)
+    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant2, 2, True)
+    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant1)
 
     return lsq_cd25, lsq_cd122, lsq_cd132

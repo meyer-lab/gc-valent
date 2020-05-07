@@ -4,7 +4,6 @@ This file includes various methods for flow cytometry analysis.
 from pathlib import Path
 from scipy.optimize import least_squares
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
@@ -98,8 +97,6 @@ def cellData(sample_i, gate, Tcells=True):
     # Number of events (AKA number of cells)
     cell_data = cells.get_data()
     cell_count = cells.get_data().shape[0]
-    # print(cell_count)
-    # print('Number of Treg cells:' + str(treg_count))
     return cell_data, cell_count
 
 
@@ -176,7 +173,7 @@ def nllsq(x, y):
     return lsq.x
 
 
-def bead_regression(sample, channels, receptors, recQuant, first=0, skip=False):
+def bead_regression(sample, channels, recQuant, first=0, skip=False):
     """ Implements regression of signal to bead capacity. """
     means = np.zeros(len(recQuant))
     for i, s in enumerate(sample):
