@@ -28,7 +28,7 @@ def makeFigure():
 
     # create dataframe with gated samples (all replicates)
     df_gates = import_gates()
-    df_signal = apply_gates("4-23", "1", df_gates)
+    df_signal = apply_gates("04-23", "1", df_gates)
     df_signal = df_signal.append(apply_gates("04-23", "2", df_gates))
     df_signal = df_signal.append(apply_gates("04-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("04-26", "2", df_gates))
