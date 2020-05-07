@@ -2,7 +2,6 @@
 This file includes various methods for flow cytometry analysis of fixed cells.
 """
 import os
-import ast
 from os.path import dirname, join
 from pathlib import Path
 import pandas as pd
@@ -109,7 +108,8 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplethelp = subtract_unstained_signal(samplethelp, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", samplethelp.counts), "Date": np.tile(date, samplethelp.counts), "Plate": np.tile(plate, samplethelp.counts),
-                           "VL1-H": samplethelp.data[['VL1-H']].values.reshape((samplethelp.counts,)), "BL5-H": samplethelp.data[['BL5-H']].values.reshape((samplethelp.counts,)), "RL1-H": samplethelp.data[['RL1-H']].values.reshape((samplethelp.counts,))})
+                           "VL1-H": samplethelp.data[['VL1-H']].values.reshape((samplethelp.counts,)), "BL5-H": samplethelp.data[['BL5-H']].values.reshape((samplethelp.counts,)),
+                           "RL1-H": samplethelp.data[['RL1-H']].values.reshape((samplethelp.counts,))})
     df = df.append(df_add)
 
     # separates memory and naive populations and adds to dataframe

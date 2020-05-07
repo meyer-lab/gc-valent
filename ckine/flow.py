@@ -173,16 +173,16 @@ def nllsq(x, y):
     return lsq.x
 
 
-def bead_regression(sample, channels, recQuant, first=0, skip=False):
+def bead_regression(sample, channels_, recQuant, first=0, skip=False):
     """ Implements regression of signal to bead capacity. """
     means = np.zeros(len(recQuant))
     for i, s in enumerate(sample):
         if skip:
             if i < first:
                 continue
-        tform = s.transform('hlog', channels=channels[i - first])
-        data = tform.data[[channels[i - first]]][0:]
-        avg_signal = np.mean(data[str(channels[i - first])])
+        tform = s.transform('hlog', channels=channels_[i - first])
+        data = tform.data[[channels_[i - first]]][0:]
+        avg_signal = np.mean(data[str(channels_[i - first])])
         means[i - first] = avg_signal
 
     means = means - np.amin(means)

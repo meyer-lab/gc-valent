@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup
-from ..imports import channels, receptors
+from ..imports import channels
 from ..flow import importF, bead_regression
 from ..FCimports import import_gates, apply_gates
 
