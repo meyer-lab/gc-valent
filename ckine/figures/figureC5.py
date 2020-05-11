@@ -104,3 +104,12 @@ def run_regression():
     _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant1)
 
     return lsq_cd25, lsq_cd122, lsq_cd132
+
+def compValue(data, plate, panel):
+    """Applies compensation matrix given parameters data, plate and panel."""
+    path = path_here + "/data/compensation/"+date+"/"+plate+"/"+celltype+".csv" #not actual path need to organize
+    df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
+    
+    
+    
+    
