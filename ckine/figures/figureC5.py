@@ -105,11 +105,26 @@ def run_regression():
 
     return lsq_cd25, lsq_cd122, lsq_cd132
 
-def compValue(data, plate, panel):
-    """Applies compensation matrix given parameters data, plate and panel."""
-    path = path_here + "/data/compensation/"+date+"/"+plate+"/"+celltype+".csv" #not actual path need to organize
+def compValue(data, plate, wellRow):
+    """Applies compensation matrix given parameters date in mm-dd, plate number and wellRow A, B, or C."""
+    path = path_here + "/data/compensation/"+date+"/Plate "+plate+"/Plate "+plate+" - "+wellRow+".csv"
     df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
     
-    
-    
-    
+    # Add diangonal values of 100 to compensation values
+    addedChannels = []
+    for i in df_comp.index:
+    channelName = df_comp.iloc[i]['Channel1']
+    if channelName not in addedChannels:
+        addedChannels.append(channelName)
+        df2 = pd.DataFrame([[channelName,channelName, 100]], columns=['Channel1','Channel2','Comp'])
+        df_comp = df_comp.append(df2, ignore_index=True)
+        
+    df_matrix = pd.DataFrame(index = addedChannels, columns = addedChannels)
+    for i in df_matrix.index:
+        for c in df_matrix.columns:
+            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1']==i) & (df_comp['Channel2']==c), 'Comp'].iloc[0]
+            #switch i and c to transpose
+            
+    #df_matrix now has all values in square matrix form
+    return df_matrix
+        
