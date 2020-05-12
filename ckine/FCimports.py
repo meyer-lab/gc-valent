@@ -72,9 +72,9 @@ def subtract_unstained_signal(sample, channels, unstainedWell):
     for _, channel in enumerate(channels):
         for i, well in enumerate(sample[channel]):
             if well < meanBackground:
-                print(sample[channel].iloc[i])
+                #print(sample[channel].iloc[i])
                 sample[channel].iloc[i] = 0.
-                print(sample[channel].iloc[i])
+                #print(sample[channel].iloc[i])
             if well >= meanBackground:
                 sample[channel].iloc[i] = sample[channel].iloc[i] - meanBackground
     return sample
