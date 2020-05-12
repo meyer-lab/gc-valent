@@ -30,6 +30,7 @@ def makeFigure():
     df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
+    print(df_signal)
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -105,9 +106,9 @@ def run_regression():
 
     return lsq_cd25, lsq_cd122, lsq_cd132
 
-def compValue(date, plate, wellRow):
-    """Applies compensation matrix given parameters date in mm-dd, plate number and wellRow A, B, or C."""
-    path = path_here + "/data/compensation/"+date+"/Plate "+plate+"/Plate "+plate+" - "+wellRow+".csv"
+def compMatrix(date, plate, panel):
+    """Applies compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
+    path = path_here + "/data/compensation/"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
     header_names = ['Channel1', 'Channel2', 'Comp']
     df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
     #type-I-ckine-model/ckine/data/compensation/04-23/Plate 1/Plate 1 - A.csv
