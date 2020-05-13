@@ -142,11 +142,11 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Subtract unstained signal
     samplethelp = subtract_unstained_signal(samplethelp, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
+    # Apply hlog transformation
+    samplethelp = samplethelp.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'A')
     samplethelp = applyMatrix(samplethelp, df_compMatrix)
-    # Apply hlog transformation
-    samplethelp = samplethelp.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to data fram
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", samplethelp.counts), "Date": np.tile(date, samplethelp.counts), "Plate": np.tile(plate, samplethelp.counts),
                            "VL1-H": samplethelp.data[['VL1-H']].values.reshape((samplethelp.counts,)), "BL5-H": samplethelp.data[['BL5-H']].values.reshape((samplethelp.counts,)),
@@ -182,11 +182,11 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     sampletreg = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == 'T-reg') &
                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     sampletreg = subtract_unstained_signal(sampletreg, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
+    # Apply hlog transformation
+    sampletreg = sampletreg.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'A')
     sampletreg = applyMatrix(sampletreg, df_compMatrix)
-    # Apply hlog transformation
-    sampletreg = sampletreg.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("T-reg", sampletreg.counts), "Date": np.tile(date, sampletreg.counts), "Plate": np.tile(plate, sampletreg.counts),
                            "VL1-H": sampletreg.data[['VL1-H']].values.reshape((sampletreg.counts,)), "BL5-H": sampletreg.data[['BL5-H']].values.reshape((sampletreg.counts,)),
@@ -221,11 +221,11 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     samplenk = panel2.gate(eval(gates_df.loc[(gates_df["Name"] == 'NK') &
                                              (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplenk = subtract_unstained_signal(samplenk, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
+    # Apply hlog transformation
+    samplenk = samplenk.transform("hlog", channels=['VL4-H', 'BL3-H', 'VL1-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'B')
     samplenk = applyMatrix(samplenk, df_compMatrix)
-    # Apply hlog transformation
-    samplenk = samplenk.transform("hlog", channels=['VL4-H', 'BL3-H', 'VL1-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("NK", samplenk.counts), "Date": np.tile(date, samplenk.counts), "Plate": np.tile(plate, samplenk.counts),
                            "VL1-H": samplenk.data[['VL1-H']].values.reshape((samplenk.counts,)), "BL5-H": samplenk.data[['BL5-H']].values.reshape((samplenk.counts,)),
@@ -253,11 +253,11 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     samplecd8 = panel3.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD8+') &
                                               (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplecd8 = subtract_unstained_signal(samplecd8, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
+    # Apply hlog transformation
+    samplecd8 = samplecd8.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL3-H', 'VL1-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'C')
     samplecd8 = applyMatrix(samplecd8, df_compMatrix)
-    # Apply hlog transformation
-    samplecd8 = samplecd8.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL3-H', 'VL1-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("CD8+", samplecd8.counts), "Date": np.tile(date, samplecd8.counts), "Plate": np.tile(plate, samplecd8.counts),
                            "VL1-H": samplecd8.data[['VL1-H']].values.reshape((samplecd8.counts,)), "BL5-H": samplecd8.data[['BL5-H']].values.reshape((samplecd8.counts,)),
