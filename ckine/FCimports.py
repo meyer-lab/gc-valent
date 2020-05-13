@@ -101,12 +101,13 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     """ Returns gated T-helper sample for a given date and plate. """
     panel1, unstainedWell = importF(date, plate, "A", 1)
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
-
+    
     samplecd3cd4 = panel1.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplethelp = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == 'T-helper') &
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplethelp = subtract_unstained_signal(samplethelp, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
+    #gated and cells subtracted
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", samplethelp.counts), "Date": np.tile(date, samplethelp.counts), "Plate": np.tile(plate, samplethelp.counts),
                            "VL1-H": samplethelp.data[['VL1-H']].values.reshape((samplethelp.counts,)), "BL5-H": samplethelp.data[['BL5-H']].values.reshape((samplethelp.counts,)),
                            "RL1-H": samplethelp.data[['RL1-H']].values.reshape((samplethelp.counts,))})
@@ -224,3 +225,31 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
         df = df.append(df_add)
 
     return df
+
+
+def compMatrix(date, plate, panel, invert=True):
+    """Applies compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
+    path = path_here + "/data/compensation/"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
+    header_names = ['Channel1', 'Channel2', 'Comp']
+    df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
+    #Add diangonal values of 100 to compensation values
+    addedChannels = []
+    for i in df_comp.index:
+        channelName = df_comp.iloc[i]['Channel1']
+        if channelName not in addedChannels:
+            addedChannels.append(channelName)
+            df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1','Channel2','Comp'])
+            df_comp = df_comp.append(df2, ignore_index=True)
+    #create square matrix from compensation values
+    df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)
+    for i in df_matrix.index:
+        for c in df_matrix.columns:
+            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == i) & (df_comp['Channel2'] == c), 'Comp'].iloc[0]
+            #switch i and c to transpose
+    #df_matrix now has all values in square matrix form
+    if invert:
+        a = np.matrix(df_matrix.values, dtype=float)
+        df_matrix = pd.DataFrame(np.linalg.pinv(a),df_matrix.columns, df_matrix.index)
+    
+    return df_matrix
+        

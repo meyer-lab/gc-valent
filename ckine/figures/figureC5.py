@@ -32,6 +32,8 @@ def makeFigure():
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
     print(df_signal)
 
+    
+    
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
     cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
@@ -106,27 +108,3 @@ def run_regression():
 
     return lsq_cd25, lsq_cd122, lsq_cd132
 
-def compMatrix(date, plate, panel):
-    """Applies compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
-    path = path_here + "/data/compensation/"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
-    header_names = ['Channel1', 'Channel2', 'Comp']
-    df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
-    #type-I-ckine-model/ckine/data/compensation/04-23/Plate 1/Plate 1 - A.csv
-    # Add diangonal values of 100 to compensation values
-    addedChannels = []
-    for i in df_comp.index:
-        channelName = df_comp.iloc[i]['Channel1']
-        if channelName not in addedChannels:
-            addedChannels.append(channelName)
-            df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1','Channel2','Comp'])
-            df_comp = df_comp.append(df2, ignore_index=True)
-        
-    df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)
-    for i in df_matrix.index:
-        for c in df_matrix.columns:
-            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == i) & (df_comp['Channel2'] == c), 'Comp'].iloc[0]
-            #switch i and c to transpose
-    
-    #df_matrix now has all values in square matrix form
-    return df_matrix
-        
