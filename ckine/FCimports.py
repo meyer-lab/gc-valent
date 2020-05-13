@@ -58,10 +58,10 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        return combinedSamples.transform("hlog", channels=channels_), unstainedWell
+        return combinedSamples, unstainedWell
 
     #sample = subtract_unstained_signal(sample[wellNum - 1], channels_, unstainedWell)
-    return sample.transform("hlog", channels=channels_), unstainedWell
+    return sample, unstainedWell
 
 
 def compMatrix(date, plate, panel, invert=True):
@@ -83,7 +83,7 @@ def compMatrix(date, plate, panel, invert=True):
     df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)
     for i in df_matrix.index:
         for c in df_matrix.columns:
-            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == c) & (df_comp['Channel2'] == i), 'Comp'].iloc[0]
+            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == i) & (df_comp['Channel2'] == c), 'Comp'].iloc[0]
             #switch i and c to transpose
     #df_matrix now has all values in square matrix form
     if invert:
@@ -145,6 +145,8 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'A')
     samplethelp = applyMatrix(samplethelp, df_compMatrix)
+    # Apply hlog transformation
+    samplethelp = samplethelp.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to data fram
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", samplethelp.counts), "Date": np.tile(date, samplethelp.counts), "Plate": np.tile(plate, samplethelp.counts),
                            "VL1-H": samplethelp.data[['VL1-H']].values.reshape((samplethelp.counts,)), "BL5-H": samplethelp.data[['BL5-H']].values.reshape((samplethelp.counts,)),
@@ -183,6 +185,8 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'A')
     sampletreg = applyMatrix(sampletreg, df_compMatrix)
+    # Apply hlog transformation
+    sampletreg = sampletreg.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("T-reg", sampletreg.counts), "Date": np.tile(date, sampletreg.counts), "Plate": np.tile(plate, sampletreg.counts),
                            "VL1-H": sampletreg.data[['VL1-H']].values.reshape((sampletreg.counts,)), "BL5-H": sampletreg.data[['BL5-H']].values.reshape((sampletreg.counts,)),
@@ -220,6 +224,8 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'B')
     samplenk = applyMatrix(samplenk, df_compMatrix)
+    # Apply hlog transformation
+    samplenk = samplenk.transform("hlog", channels=['VL4-H', 'BL3-H', 'VL1-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("NK", samplenk.counts), "Date": np.tile(date, samplenk.counts), "Plate": np.tile(plate, samplenk.counts),
                            "VL1-H": samplenk.data[['VL1-H']].values.reshape((samplenk.counts,)), "BL5-H": samplenk.data[['BL5-H']].values.reshape((samplenk.counts,)),
@@ -250,6 +256,8 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'C')
     samplecd8 = applyMatrix(samplecd8, df_compMatrix)
+    # Apply hlog transformation
+    samplecd8 = samplecd8.transform("hlog", channels=['VL6-H', 'VL4-H', 'BL3-H', 'VL1-H', 'BL5-H', 'RL1-H'])
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("CD8+", samplecd8.counts), "Date": np.tile(date, samplecd8.counts), "Plate": np.tile(plate, samplecd8.counts),
                            "VL1-H": samplecd8.data[['VL1-H']].values.reshape((samplecd8.counts,)), "BL5-H": samplecd8.data[['BL5-H']].values.reshape((samplecd8.counts,)),
