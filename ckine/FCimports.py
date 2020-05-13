@@ -58,10 +58,10 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        return combinedSamples, unstainedWell
+        return combinedSamples.transform("hlog", channels=channels_), unstainedWell
 
     #sample = subtract_unstained_signal(sample[wellNum - 1], channels_, unstainedWell)
-    return sample, unstainedWell
+    return sample.transform("hlog", channels=channels_), unstainedWell
 
 
 def compMatrix(date, plate, panel, invert=True):
@@ -143,7 +143,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     # Subtract unstained signal
     samplethelp = subtract_unstained_signal(samplethelp, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Apply hlog transformation
-    samplethelp = samplethelp.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
+    #samplethelp = samplethelp.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'A')
     samplethelp = applyMatrix(samplethelp, df_compMatrix)
@@ -183,7 +183,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     sampletreg = subtract_unstained_signal(sampletreg, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Apply hlog transformation
-    sampletreg = sampletreg.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
+    #sampletreg = sampletreg.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'A')
     sampletreg = applyMatrix(sampletreg, df_compMatrix)
@@ -222,7 +222,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
                                              (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplenk = subtract_unstained_signal(samplenk, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Apply hlog transformation
-    samplenk = samplenk.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
+    #samplenk = samplenk.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'B')
     samplenk = applyMatrix(samplenk, df_compMatrix)
@@ -254,7 +254,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
                                               (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplecd8 = subtract_unstained_signal(samplecd8, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Apply hlog transformation
-    samplecd8 = samplecd8.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
+    #samplecd8 = samplecd8.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
     # Apply compensation matrix to signal data
     df_compMatrix = compMatrix(date, plate, 'C')
     samplecd8 = applyMatrix(samplecd8, df_compMatrix)
