@@ -67,7 +67,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
 def compMatrix(date, plate, panel, invert=True):
     """Applies compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
-    path = path_ + "/ckine/data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
+    path = path_here + "/ckine/data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
     #type-I-ckine-model/ckine/data/compensation/04-23/Plate 1/Plate 1 - A.csv
     #type-I-ckine-model/ckine/data/compensation/04-26/Plate 1/Plate 1 - A.csv
     header_names = ['Channel1', 'Channel2', 'Comp']
