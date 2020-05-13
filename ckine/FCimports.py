@@ -67,7 +67,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
 def compMatrix(date, plate, panel, invert=True):
     """Applies compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
-    path = path_here + "ckine//data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
+    path = path_here + "/ckine/data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
     header_names = ['Channel1', 'Channel2', 'Comp']
     df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
     #Add diangonal values of 100 to compensation values
