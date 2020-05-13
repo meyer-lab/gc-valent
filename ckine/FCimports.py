@@ -6,7 +6,7 @@ from os.path import dirname, join
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from FlowCytometryTools import FCMeasurement
+from FlowCytometryTools import FCMeasurement, PolyGate, ThresholdGate
 path_here = dirname(dirname(__file__))
 
 
