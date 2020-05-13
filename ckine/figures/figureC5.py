@@ -31,8 +31,6 @@ def makeFigure():
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
     print(df_signal)
-
-    
     
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])

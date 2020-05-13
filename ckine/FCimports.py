@@ -6,8 +6,7 @@ from os.path import dirname, join
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from FlowCytometryTools import FCMeasurement, PolyGate, ThresholdGate
-
+from FlowCytometryTools import FCMeasurement
 path_here = dirname(dirname(__file__))
 
 
@@ -78,7 +77,7 @@ def compMatrix(date, plate, panel, invert=True):
         channelName = df_comp.iloc[i]['Channel1']
         if channelName not in addedChannels:
             addedChannels.append(channelName)
-            df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1','Channel2','Comp'])
+            df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1', 'Channel2', 'Comp'])
             df_comp = df_comp.append(df2, ignore_index=True)
     #create square matrix from compensation values
     df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)
@@ -89,15 +88,15 @@ def compMatrix(date, plate, panel, invert=True):
     #df_matrix now has all values in square matrix form
     if invert:
         a = np.matrix(df_matrix.values, dtype=float)
-        df_matrix = pd.DataFrame(np.linalg.pinv(a),df_matrix.columns, df_matrix.index)
-    
+        df_matrix = pd.DataFrame(np.linalg.pinv(a), df_matrix.columns, df_matrix.index)
     return df_matrix
 
 
 def applyMatrix(sample, matrix):
+    """Multiples two matrices together in the order sample dot matrix"""
     for c in sample.data.columns:
         if c not in matrix:
-            sample.data = sample.data.drop([c],axis=1)
+            sample.data = sample.data.drop([c], axis=1)
     sample.data = sample.data.dot(matrix)
     return sample
 
@@ -137,23 +136,20 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     """ Returns gated T-helper sample for a given date and plate. """
     panel1, unstainedWell = importF(date, plate, "A", 1)
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
-    
     samplecd3cd4 = panel1.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplethelp = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == 'T-helper') &
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+    # Subtract unstained signal
     samplethelp = subtract_unstained_signal(samplethelp, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
-    
     # Apply compensation matrix to signal data
-    df_compMatrix = compMatrix(date,plate,'A')
+    df_compMatrix = compMatrix(date, plate, 'A')
     samplethelp = applyMatrix(samplethelp, df_compMatrix)
-    
-    
+    # Add processed signal to data fram
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", samplethelp.counts), "Date": np.tile(date, samplethelp.counts), "Plate": np.tile(plate, samplethelp.counts),
                            "VL1-H": samplethelp.data[['VL1-H']].values.reshape((samplethelp.counts,)), "BL5-H": samplethelp.data[['BL5-H']].values.reshape((samplethelp.counts,)),
                            "RL1-H": samplethelp.data[['RL1-H']].values.reshape((samplethelp.counts,))})
     df = df.append(df_add)
-
     # separates memory and naive populations and adds to dataframe
     if mem_naive:
         samplenaive = samplethelp.gate(eval(gates_df.loc[(gates_df["Name"] == 'Naive Th') &
@@ -184,11 +180,10 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     sampletreg = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == 'T-reg') &
                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     sampletreg = subtract_unstained_signal(sampletreg, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
-    
     # Apply compensation matrix to signal data
-    df_compMatrix = compMatrix(date,plate,'A')
+    df_compMatrix = compMatrix(date, plate, 'A')
     sampletreg = applyMatrix(sampletreg, df_compMatrix)
-    
+    # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("T-reg", sampletreg.counts), "Date": np.tile(date, sampletreg.counts), "Plate": np.tile(plate, sampletreg.counts),
                            "VL1-H": sampletreg.data[['VL1-H']].values.reshape((sampletreg.counts,)), "BL5-H": sampletreg.data[['BL5-H']].values.reshape((sampletreg.counts,)),
                            "RL1-H": sampletreg.data[['RL1-H']].values.reshape((sampletreg.counts,))})
@@ -222,11 +217,10 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     samplenk = panel2.gate(eval(gates_df.loc[(gates_df["Name"] == 'NK') &
                                              (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplenk = subtract_unstained_signal(samplenk, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
-    
     # Apply compensation matrix to signal data
-    df_compMatrix = compMatrix(date,plate,'B')
+    df_compMatrix = compMatrix(date, plate, 'B')
     samplenk = applyMatrix(samplenk, df_compMatrix)
-    
+    # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("NK", samplenk.counts), "Date": np.tile(date, samplenk.counts), "Plate": np.tile(plate, samplenk.counts),
                            "VL1-H": samplenk.data[['VL1-H']].values.reshape((samplenk.counts,)), "BL5-H": samplenk.data[['BL5-H']].values.reshape((samplenk.counts,)),
                            "RL1-H": samplenk.data[['RL1-H']].values.reshape((samplenk.counts,))})
@@ -253,11 +247,10 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     samplecd8 = panel3.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD8+') &
                                               (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     samplecd8 = subtract_unstained_signal(samplecd8, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
-    
     # Apply compensation matrix to signal data
-    df_compMatrix = compMatrix(date,plate,'C')
+    df_compMatrix = compMatrix(date, plate, 'C')
     samplecd8 = applyMatrix(samplecd8, df_compMatrix)
-    
+    # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("CD8+", samplecd8.counts), "Date": np.tile(date, samplecd8.counts), "Plate": np.tile(plate, samplecd8.counts),
                            "VL1-H": samplecd8.data[['VL1-H']].values.reshape((samplecd8.counts,)), "BL5-H": samplecd8.data[['BL5-H']].values.reshape((samplecd8.counts,)),
                            "RL1-H": samplecd8.data[['RL1-H']].values.reshape((samplecd8.counts,))})
