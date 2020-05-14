@@ -88,7 +88,7 @@ def compMatrix(date, plate, panel, invert=True):
     #df_matrix now has all values in square matrix form
     if invert:
         a = np.matrix(df_matrix.values, dtype=float)
-        df_matrix = pd.DataFrame(np.linalg.pinv(a), df_matrix.columns, df_matrix.index)
+        df_matrix = pd.DataFrame(np.linalg.inv(a), df_matrix.columns, df_matrix.index)
     return df_matrix
 
 
