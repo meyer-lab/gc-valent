@@ -64,7 +64,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
     return sample.transform("hlog", channels=channels_), unstainedWell
 
 
-def compMatrix(date, plate, panel, invert=False):
+def compMatrix(date, plate, panel, invert=True):
     """Applies compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
     path = path_here + "/ckine/data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+panel+".csv"
     #type-I-ckine-model/ckine/data/compensation/04-23/Plate 1/Plate 1 - A.csv
