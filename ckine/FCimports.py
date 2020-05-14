@@ -246,7 +246,6 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     samplecd8 = subtract_unstained_signal(samplecd8, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Apply hlog transformation
     #samplecd8 = samplecd8.transform("hlog", channels=['VL1-H', 'BL5-H', 'RL1-H'])
-    # Apply compensation matrix to signal data
     # Add processed signal to dataframe
     df_add = pd.DataFrame({"Cell Type": np.tile("CD8+", samplecd8.counts), "Date": np.tile(date, samplecd8.counts), "Plate": np.tile(plate, samplecd8.counts),
                            "VL1-H": samplecd8.data[['VL1-H']].values.reshape((samplecd8.counts,)), "BL5-H": samplecd8.data[['BL5-H']].values.reshape((samplecd8.counts,)),

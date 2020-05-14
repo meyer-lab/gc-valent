@@ -24,6 +24,8 @@ def importF(pathname, WellRow):
         wellID = path.name.split("_")[1]
         if wellID[0] == WellRow:
             file.append(str(path))
+        else:
+            unstainedWell = FCMeasurement(ID="Unstained Sample", datafile=str(path))  #Stores data from unstainedWell separately
     file.sort()
     assert file != []
     # Go through each file and assign the file contents to entry in the array sample
@@ -31,7 +33,7 @@ def importF(pathname, WellRow):
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
-    return sample, file
+    return sample, file, unstainedWell
 
 
 def cd4():
