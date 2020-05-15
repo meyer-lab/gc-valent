@@ -84,7 +84,7 @@ def compMatrix(date, plate, panel, invert=True):
     df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)
     for i in df_matrix.index:
         for c in df_matrix.columns:
-            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == i) & (df_comp['Channel2'] == c), 'Comp'].iloc[0]
+            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == c) & (df_comp['Channel2'] == i), 'Comp'].iloc[0]
             #switch i and c to transpose
     #df_matrix now has all values in square matrix form
     if invert:
