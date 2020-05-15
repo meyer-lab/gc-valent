@@ -58,11 +58,10 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        combinedSamples = subtract_unstained_signal(combinedSamples, channels_, unstainedWell)
-        return combinedSamples
+        return combinedSamples.transform("hlog", channels=channels_), unstainedWell
 
-    sample = subtract_unstained_signal(sample[wellNum - 1], channels_, unstainedWell)
-    return sample
+    #sample = subtract_unstained_signal(sample[wellNum - 1], channels_, unstainedWell)
+    return sample.transform("hlog", channels=channels_), unstainedWell
 
 
 def compMatrix(date, plate, panel, invert=True):
