@@ -33,7 +33,7 @@ def importF(pathname, WellRow):
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
-    return sample, file, unstainedWell
+    return sample, file
 
 
 def cd4():
