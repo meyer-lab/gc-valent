@@ -8,7 +8,7 @@ import pandas as pds
 import numpy as np
 import seaborn as sns
 from scipy import stats
-from .figureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup, dosemat
 from ..flow import importF
 from ..PCA import sampleT, sampleNK
 from ..flow import gating, count_data
@@ -60,7 +60,6 @@ def StatMV(sampleType, ax, cell_type, ligand, title, Tcells=True):
     """
     MVdf = pds.DataFrame(columns={"Dose", "Mean", "Variance", "Skew", "Kurtosis"})
     alldata = []
-    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
 
     if Tcells:
         statcol = "RL1-H"
@@ -112,7 +111,6 @@ def violinDist(sampleType2, sampleType15, ax, cell_type, title, Tcells=True):
     """
     distDF = pds.DataFrame(columns={"Dose", "Ligand", "pSTAT", "Mean"})
     alldata2, alldata15 = [], []
-    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
     ILs = ["IL-2", "IL-15"]
 
     if Tcells:
@@ -150,7 +148,7 @@ def violinDist(sampleType2, sampleType15, ax, cell_type, title, Tcells=True):
                 distDF = distDF.append(pds.DataFrame.from_dict({"Dose": np.tile(dosemat[0, i], (len(pSTATArray))), "Ligand": np.tile(ILs[kk], (len(pSTATArray))), "pSTAT": pSTATArray.flatten()}))
 
     sns.violinplot(x='Dose', y='pSTAT', hue='Ligand', data=distDF, split=True, palette={'IL-2': 'darkorchid', 'IL-15': 'goldenrod'}, ax=ax)
-    ax.set(xlabel="Ligand nM", ylabel="Activity", ylim=(0, 50000), title=title)
+    ax.set(xlabel="Ligand nM", ylabel="Activity", ylim=(0, 60000), title=title)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25)
 
     return distDF

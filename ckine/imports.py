@@ -15,9 +15,7 @@ def import_Rexpr():
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
     cell_names = cell_names[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2]]  # Reorder to match pstat import order
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
-    numpy_data = pds.Series(df["Count"]).values.reshape(
-        cell_names.size, receptor_names.size
-    )  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
+    numpy_data = pds.Series(df["Count"]).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
     numpy_data = numpy_data[:, [2, 3, 0, 1, 4]]  # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
     numpy_data = numpy_data[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2], :]  # Reorder to match cells
     return df, numpy_data, cell_names
@@ -73,10 +71,10 @@ def import_pstat(combine_samples=True):
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
         # order of increasing time by cell type
-        IL2_data[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL2_data2[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
-        IL15_data[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL15_data2[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL2_data[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL2_data2[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL15_data[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL15_data2[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
 
     if combine_samples is False:
         return ckineConc, cell_names, IL2_data, IL2_data2, IL15_data, IL15_data2
@@ -104,20 +102,20 @@ def import_pstat(combine_samples=True):
 
 
 channels = {}
-channels['A'] = ["VL1-H", "BL5-H", "RL1-H", "RL1-H", "RL1-H", "Width"]
-channels['C'] = ["VL4-H", "VL6-H", "BL1-H", "BL3-H"]
-channels['D'] = ['VL1-H', 'VL1-H', 'VL1-H', 'VL1-H', 'VL1-H']
-channels['E'] = ['VL6-H', 'BL3-H', 'BL5-H', 'BL5-H', 'BL5-H', 'BL5-H', 'BL5-H']
-channels['F'] = channels['G'] = channels['H'] = ['RL1-H', 'RL1-H', 'RL1-H', 'RL1-H', 'RL1-H']
+channels["A"] = ["VL1-H", "BL5-H", "RL1-H", "RL1-H", "RL1-H", "Width"]
+channels["C"] = ["VL4-H", "VL6-H", "BL1-H", "BL3-H"]
+channels["D"] = ["VL1-H", "VL1-H", "VL1-H", "VL1-H", "VL1-H"]
+channels["E"] = ["VL6-H", "BL3-H", "BL5-H", "BL5-H", "BL5-H", "BL5-H", "BL5-H"]
+channels["F"] = channels["G"] = channels["H"] = ["RL1-H", "RL1-H", "RL1-H", "RL1-H", "RL1-H"]
 
 receptors = {}
-receptors['A'] = ["CD25", "CD122", "CD132", "IL15(1)", "IL15(2)", " "]
-receptors['C'] = ["CD3", "CD4", "CD127", "CD45RA"]
-receptors['D'] = ["CD25", "CD25", "CD25", "CD25", "CD25"]
-receptors['E'] = ["CD8", "CD56", "CD122", "CD122", "CD122", "CD122", "CD122"]
-receptors['F'] = ["CD132", "CD132", "CD132", "CD132", "CD132"]
-receptors['G'] = ["IL15(1)", "IL15(1)", "IL15(1)", "IL15(1)", "IL15(1)"]
-receptors['H'] = ["IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)"]
+receptors["A"] = ["CD25", "CD122", "CD132", "IL15(1)", "IL15(2)", " "]
+receptors["C"] = ["CD3", "CD4", "CD127", "CD45RA"]
+receptors["D"] = ["CD25", "CD25", "CD25", "CD25", "CD25"]
+receptors["E"] = ["CD8", "CD56", "CD122", "CD122", "CD122", "CD122", "CD122"]
+receptors["F"] = ["CD132", "CD132", "CD132", "CD132", "CD132"]
+receptors["G"] = ["IL15(1)", "IL15(1)", "IL15(1)", "IL15(1)", "IL15(1)"]
+receptors["H"] = ["IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)"]
 
 
 def importMoments():

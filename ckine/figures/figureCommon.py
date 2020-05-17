@@ -27,6 +27,9 @@ matplotlib.rcParams['legend.markerscale'] = 0.7
 matplotlib.rcParams['legend.borderpad'] = 0.35
 
 
+dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+
+
 def getSetup(figsize, gridd, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid", font_scale=0.7, color_codes=True, palette="colorblind", rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6})

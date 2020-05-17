@@ -7,7 +7,7 @@ import matplotlib.lines as mlines
 import pandas as pds
 import numpy as np
 from scipy import stats
-from .figureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup, dosemat
 from ..flow import importF
 from ..PCA import StatGini, sampleT, sampleNK
 from ..flow import gating, count_data
@@ -22,8 +22,8 @@ def makeFigure():
 
     subplotLabel(ax)
 
-    gates = [False, 'treg', 'tregMem', 'tregNaive', 'nonTreg', 'THelpMem', 'THelpN']
-    Titles = ["Tcells", "T-regs", "Mem Treg", "Naive Treg", "T-helper", "Mem Th", "Naive Th"]
+    gates = [False, 'treg', 'nonTreg']
+    Titles = ["Tcells", "T-regs", "T-helper"]
     Tsample, _ = importF(path_here + "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT/", "B")
     Nksample, _ = importF(path_here + "/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate/", "B")
     for i, cell in enumerate(gates):
@@ -55,7 +55,6 @@ def StatMV(sampleType, ax, cell_type, Tcells=True):
     """
     MVdf = pds.DataFrame(columns={"Dose", "Mean", "Variance", "Skew", "Kurtosis"})
     alldata = []
-    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
 
     if Tcells:
         statcol = "RL1-H"
