@@ -144,9 +144,9 @@ def violinDist(sampleType2, sampleType15, ax, cell_type, title, Tcells=True):
         stat_array2, stat_array15 = stat_array2.clip(min=1), stat_array15.clip(min=1)  # remove small percentage of negative pstat values
         for kk, pSTATArray in enumerate(np.array([stat_array2, stat_array15])):
             if pSTATArray.size == 0:
-                distDF = distDF.append(pds.DataFrame.from_dict({"Dose": dosemat[0, i], "Ligand": ILs[kk], "pSTAT": [0]}))
+                distDF = distDF.append(pds.DataFrame.from_dict({"Dose": dosemat[i], "Ligand": ILs[kk], "pSTAT": [0]}))
             else:
-                distDF = distDF.append(pds.DataFrame.from_dict({"Dose": np.tile(dosemat[0, i], (len(pSTATArray))), "Ligand": np.tile(ILs[kk], (len(pSTATArray))), "pSTAT": pSTATArray.flatten()}))
+                distDF = distDF.append(pds.DataFrame.from_dict({"Dose": np.tile(dosemat[i], (len(pSTATArray))), "Ligand": np.tile(ILs[kk], (len(pSTATArray))), "pSTAT": pSTATArray.flatten()}))
 
     sns.violinplot(x="Dose", y="pSTAT", hue="Ligand", data=distDF, split=True, palette={"IL-2": "darkorchid", "IL-15": "goldenrod"}, ax=ax)
     ax.set(xlabel="Ligand nM", ylabel="Activity", ylim=(0, 60000), title=title)
