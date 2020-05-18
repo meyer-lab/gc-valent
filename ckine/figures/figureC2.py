@@ -29,13 +29,13 @@ def makeFigure():
     for i, cell in enumerate(gates):
         StatGini(Tsample, ax[i], cell, Tcells=True)
         ax[i].set_title(Titles[i])
-        StatMV(Tsample, ax[i + 8], cell, Tcells=True)
-        ax[i + 8].set_title(Titles[i])
+        StatMV(Tsample, ax[i + 4], cell, Tcells=True)
+        ax[i + 4].set_title(Titles[i])
 
-    StatGini(Nksample, ax[7], "nk", Tcells=False)
+    StatGini(Nksample, ax[3], "nk", Tcells=False)
     ax[7].set_title("NK")
-    StatMV(Nksample, ax[15], "nk", Tcells=False)
-    ax[15].set_title("NK")
+    StatMV(Nksample, ax[7], "nk", Tcells=False)
+    ax[7].set_title("NK")
 
     # global_legend(ax[7])
 
