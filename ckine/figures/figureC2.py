@@ -84,13 +84,13 @@ def StatMV(sampleType, ax, cell_type, Tcells=True):
         )
 
     MVdf["Mean"] = MVdf["Mean"] - MVdf["Mean"].min()
-    MVdf.plot.scatter(x="Dose", y="Mean", ax=ax, color="dodgerblue", legend=False)
+    MVdf.plot(x="Dose", y="Mean", ax=ax, color="dodgerblue", legend=False)
     ax.set_xscale("log")
     ax.set_xlabel("Cytokine Dosage (log10[nM])")
     ax.set_ylabel("Mean", color="dodgerblue")
     ax.tick_params(axis="y", labelcolor="dodgerblue")
     ax1 = ax.twinx()
-    MVdf.plot.scatter(x="Dose", y="Variance", ax=ax1, color="orangered", legend=False)
+    MVdf.plot(x="Dose", y="Variance", ax=ax1, color="orangered", legend=False)
     ax1.set_ylabel("Variance", color="orangered")
     ax1.tick_params(axis="y", labelcolor="orangered")
 
