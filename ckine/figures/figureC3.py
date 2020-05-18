@@ -85,10 +85,10 @@ def StatMV(sampleType, ax, cell_type, ligand, title, Tcells=True):
         stat_array = stat_array.to_numpy()
         stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
         if stat_array.size == 0:
-            MVdf = MVdf.append(pds.DataFrame.from_dict({"Dose": dosemat[0, i], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0]}))
+            MVdf = MVdf.append(pds.DataFrame.from_dict({"Dose": dosemat[i], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0]}))
         else:
             MVdf = MVdf.append(
-                pds.DataFrame.from_dict({"Dose": dosemat[0, i], "Mean": np.mean(stat_array), "Variance": np.var(stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array)})
+                pds.DataFrame.from_dict({"Dose": dosemat[i], "Mean": np.mean(stat_array), "Variance": np.var(stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array)})
             )
 
     MVdf["Mean"] = MVdf["Mean"] - MVdf["Mean"].min()
