@@ -70,11 +70,11 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 def compMatrix(date, plate, panel, invert=True):
     """Applies compensation matrix given parameters date in mm-dd, plate number and panel number."""
     wellRow = ''
-    if path == 1:
+    if panel == 1:
         wellRow = 'A'
-    elif path == 2:
+    elif panel == 2:
         wellRow = 'B'
-    elif path == 3:
+    elif panel == 3:
         wellRow = 'C'
     assert wellRow != ''
     path = path_here + "/ckine/data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+wellRow+".csv"
