@@ -25,7 +25,9 @@ def makeFigure():
     lsq_cd25, lsq_cd122, lsq_cd132 = run_regression()
 
     # create dataframe with gated samples (all replicates)
+    print("Test1")
     df_gates = import_gates()
+    print("Test2")
     df_signal = apply_gates("4-23", "1", df_gates)
     df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
