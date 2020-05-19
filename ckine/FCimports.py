@@ -58,25 +58,17 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, panel))
+        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))
         compSample = subtract_unstained_signal(compSample, channels_, unstainedWell)
         return compSample.transform("tlog", channels=channels_), unstainedWell
 
-    compSample = applyMatrix(sample, compMatrix(date, plate, panel))
+    compSample = applyMatrix(sample, compMatrix(date, plate, wellRow))
     compSample = subtract_unstained_signal(compSample[wellNum - 1], channels_, unstainedWell)
     return compSample.transform("tlog", channels=channels_), unstainedWell
 
 
-def compMatrix(date, plate, panel, invert=True):
+def compMatrix(date, plate, wellRow, invert=True):
     """Applies compensation matrix given parameters date in mm-dd, plate number and panel number."""
-    wellRow = ''
-    if panel == 1:
-        wellRow = 'A'
-    elif panel == 2:
-        wellRow = 'B'
-    elif panel == 3:
-        wellRow = 'C'
-    assert wellRow != ''
     path = path_here + "/ckine/data/compensation/0"+date+"/Plate "+plate+"/Plate "+plate+" - "+wellRow+".csv"
     header_names = ['Channel1', 'Channel2', 'Comp']
     df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
