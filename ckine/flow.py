@@ -24,8 +24,6 @@ def importF(pathname, WellRow):
         wellID = path.name.split("_")[1]
         if wellID[0] == WellRow:
             file.append(str(path))
-        else:
-            unstainedWell = FCMeasurement(ID="Unstained Sample", datafile=str(path))  #Stores data from unstainedWell separately
     file.sort()
     assert file != []
     # Go through each file and assign the file contents to entry in the array sample
