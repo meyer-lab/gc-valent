@@ -59,7 +59,7 @@ def makeFigure():
     df_rec.to_csv(str(update_path), index=False, header=True)
 
     # calculate mean, variance, and skew for each replicate
-    df_stats = calculate_moments(cell_names, receptors_)
+    df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
     # plot log10 of mean, variance, and skew
     df_stats["Mean"] = np.log10(df_stats["Mean"].astype(np.float))
@@ -71,7 +71,7 @@ def makeFigure():
 
     return f
 
-def calculate_moments(cell_names, receptors):
+def calculate_moments(df, cell_names, receptors):
     """ Calculates mean, variance, and skew for each replicate. """
     cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
     receptors_ = ["CD25", "CD122", "CD132"]
@@ -80,7 +80,7 @@ def calculate_moments(cell_names, receptors):
         for j, receptor in enumerate(receptors):
             for _, date in enumerate(["4-23", "4-26"]):
                 for _, plate in enumerate(["1", "2"]):
-                    df_subset = df_rec.loc[(df_rec["Cell Type"] == cell) & (df_rec["Receptor"] == receptor) & (df_rec["Date"] == date) & (df_rec["Plate"] == plate)]["Count"]
+                    df_subset = df.loc[(df["Cell Type"] == cell) & (df["Receptor"] == receptor) & (df["Date"] == date) & (df["Plate"] == plate)]["Count"]
                     mean_ = df_subset.mean()
                     var_ = df_subset.var()
                     skew_ = df_subset.skew()

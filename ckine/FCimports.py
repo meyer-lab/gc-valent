@@ -104,7 +104,7 @@ def subtract_unstained_signal(sample, channels, unstainedWell):
         else:
             return signal - background
     
-    vfunc = np.vectorize(subtract_bg)
+    vfunc = np.vectorize(compare_background)
 
     for _, channel in enumerate(channels):
         sample[channel] = vfunc(sample[channel], meanBackground)
