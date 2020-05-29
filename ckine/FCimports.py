@@ -86,10 +86,13 @@ def compMatrix(date, plate, panel, invert=True):
 
 def applyMatrix(sample, matrix):
     """Multiples two matrices together in the order sample dot matrix"""
+    holder = pd.DataFrame()
     for c in sample.data.columns:
         if c not in matrix:
+            holder.join(sample.data.loc[c])
             sample.data = sample.data.drop([c], axis=1)
     sample.data = sample.data.dot(matrix)
+    sample.data.join(holder)
     return sample
 
 
