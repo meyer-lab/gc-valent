@@ -159,7 +159,7 @@ def count_data(sampleType, gate, Tcells=True):
 
 
 def exp_dec(x, pp, soln=0):
-    """ Increasing exponential decay function general format. """
+    """ 4PL regression function general format. """
     # https://www.myassays.com/four-parameter-logistic-regression.html
     A, B, C, D = pp
     return ((A - D) / (1.0 + ((x / C)**B))) + D - soln
@@ -182,9 +182,7 @@ def bead_regression(sample, channels_, recQuant, first=0, skip=False):
         if skip:
             if i < first:
                 continue
-        tform = s.transform('hlog', channels=channels_[i - first])
-        data = tform.data[[channels_[i - first]]][0:]
-        avg_signal = np.mean(data[str(channels_[i - first])])
+        avg_signal = np.mean(s[str(channels_[i - first])])
         means[i - first] = avg_signal
 
     means = means - np.amin(means)

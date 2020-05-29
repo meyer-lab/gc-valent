@@ -9,7 +9,7 @@ import seaborn as sns
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels
 from ..flow import importF, bead_regression
-from ..FCimports import import_gates, apply_gates
+from ..FCimports import import_gates, apply_gates 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -25,14 +25,11 @@ def makeFigure():
     lsq_cd25, lsq_cd122, lsq_cd132 = run_regression()
 
     # create dataframe with gated samples (all replicates)
-    print("Test1")
     df_gates = import_gates()
-    print("Test2")
     df_signal = apply_gates("4-23", "1", df_gates)
     df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
-    print(df_signal)
     
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -62,18 +59,7 @@ def makeFigure():
     df_rec.to_csv(str(update_path), index=False, header=True)
 
     # calculate mean, variance, and skew for each replicate
-    df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
-    for _, cell in enumerate(cell_names):
-        for j, receptor in enumerate(receptors_):
-            for _, date in enumerate(dates):
-                for _, plate in enumerate(plates):
-                    df_subset = df_rec.loc[(df_rec["Cell Type"] == cell) & (df_rec["Receptor"] == receptor) & (df_rec["Date"] == date) & (df_rec["Plate"] == plate)]["Count"]
-                    mean_ = df_subset.mean()
-                    var_ = df_subset.var()
-                    skew_ = df_subset.skew()
-                    df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
-                    df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
-                    df_stats = df_stats.append(df_new)
+    df_stats = calculate_moments(cell_names, receptors_)
 
     # plot log10 of mean, variance, and skew
     df_stats["Mean"] = np.log10(df_stats["Mean"].astype(np.float))
@@ -84,6 +70,25 @@ def makeFigure():
     celltype_pointplot(ax[2], df_stats, "Skew")
 
     return f
+
+def calculate_moments(cell_names, receptors):
+    """ Calculates mean, variance, and skew for each replicate. """
+    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
+    receptors_ = ["CD25", "CD122", "CD132"]
+    df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
+    for _, cell in enumerate(cell_names):
+        for j, receptor in enumerate(receptors):
+            for _, date in enumerate(["4-23", "4-26"]):
+                for _, plate in enumerate(["1", "2"]):
+                    df_subset = df_rec.loc[(df_rec["Cell Type"] == cell) & (df_rec["Receptor"] == receptor) & (df_rec["Date"] == date) & (df_rec["Plate"] == plate)]["Count"]
+                    mean_ = df_subset.mean()
+                    var_ = df_subset.var()
+                    skew_ = df_subset.skew()
+                    df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
+                    df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
+                    df_stats = df_stats.append(df_new)
+                    
+    return df_stats
 
 
 def celltype_pointplot(ax, df, moment):
