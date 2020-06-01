@@ -127,11 +127,8 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
     df = df.append(treg_sample(date, plate, gates_df, mem_naive=subpopulations))
     df = df.append(nk_nkt_sample(date, plate, gates_df, nkt=subpopulations))
     df = df.append(cd8_sample(date, plate, gates_df, mem_naive=subpopulations))
-    print("Point 2:")
-    print(df)
     df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
-    print("Point 3:")
-    print(df)
+    #print(df)
     return df
 
 
