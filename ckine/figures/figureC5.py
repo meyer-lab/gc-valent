@@ -38,7 +38,7 @@ def makeFigure():
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
     cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
     receptors_ = ["CD25", "CD122", "CD132"]
-    channels_ = ["VL1-H", "VL5-H", "RL1-H"]
+    channels_ = ["VL1-H", "BL5-H", "RL1-H"]
     lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132]
     dates = ["4-23", "4-26"]
     plates = ["1", "2"]

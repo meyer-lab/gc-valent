@@ -129,7 +129,7 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
     df = df.append(cd8_sample(date, plate, gates_df, mem_naive=subpopulations))
     print("Point 2:")
     print(df)
-    df = subtract_unstained_signal(df, ["VL1-H", "VL5-H", "RL1-H"], unstainedWell)
+    df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     print("Point 3:")
     print(df)
     return df
@@ -141,7 +141,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     panel1, unstainedWell = importF(date, plate, "A", 1)
     panel1_t = panel1.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H'])
 
-    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "VL5-H", "RL1-H"])  # initialize dataframe for receptor quant channels
+    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])  # initialize dataframe for receptor quant channels
 
     # implement gating, revert tlog, and add to dataframe
     samplecd3cd4 = panel1_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
@@ -152,7 +152,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     panel1.set_data(panel1.data.loc[gated_idx])
 
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", panel1.counts), "Date": np.tile(date, panel1.counts), "Plate": np.tile(plate, panel1.counts),
-                           "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "VL5-H": panel1.data[['VL5-H']].values.reshape((panel1.counts,)),
+                           "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "BL5-H": panel1.data[['BL5-H']].values.reshape((panel1.counts,)),
                            "RL1-H": panel1.data[['RL1-H']].values.reshape((panel1.counts,))})
     df = df.append(df_add)
 
@@ -164,7 +164,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
         gated_idx = np.array(samplenaive.data.index)
         panel1_n.set_data(panel1.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Naive Th", samplenaive.counts), "Date": np.tile(date, samplenaive.counts), "Plate": np.tile(plate, samplenaive.counts),
-                               "VL1-H": panel1_n.data[['VL1-H']].values.reshape((samplenaive.counts,)), "VL5-H": panel1_n.data[['VL5-H']].values.reshape((samplenaive.counts,)),
+                               "VL1-H": panel1_n.data[['VL1-H']].values.reshape((samplenaive.counts,)), "BL5-H": panel1_n.data[['BL5-H']].values.reshape((samplenaive.counts,)),
                                "RL1-H": panel1_n.data[['RL1-H']].values.reshape((samplenaive.counts,))})
         df = df.append(df_add)
         panel1_m = panel1.copy()
@@ -173,7 +173,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
         gated_idx = np.array(samplemem.data.index)
         panel1_m.set_data(panel1.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Mem Th", samplemem.counts), "Date": np.tile(date, samplemem.counts), "Plate": np.tile(plate, samplemem.counts),
-                               "VL1-H": panel1_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "VL5-H": panel1_m.data[['VL5-H']].values.reshape((samplemem.counts,)),
+                               "VL1-H": panel1_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "BL5-H": panel1_m.data[['BL5-H']].values.reshape((samplemem.counts,)),
                                "RL1-H": panel1_m.data[['RL1-H']].values.reshape((samplemem.counts,))})
         df = df.append(df_add)
 
@@ -186,7 +186,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     panel1, _ = importF(date, plate, "A", 1)
     panel1_t = panel1.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H'])
 
-    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "VL5-H", "RL1-H"])
+    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
     samplecd3cd4 = panel1_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
@@ -197,7 +197,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     panel1.set_data(panel1.data.loc[gated_idx])
 
     df_add = pd.DataFrame({"Cell Type": np.tile("T-reg", panel1.counts), "Date": np.tile(date, panel1.counts), "Plate": np.tile(plate, panel1.counts),
-                           "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "VL5-H": panel1.data[['VL5-H']].values.reshape((panel1.counts,)),
+                           "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "BL5-H": panel1.data[['BL5-H']].values.reshape((panel1.counts,)),
                            "RL1-H": panel1.data[['RL1-H']].values.reshape((panel1.counts,))})
     df = df.append(df_add)
 
@@ -209,7 +209,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
         gated_idx = np.array(samplenaive.data.index)
         panel1_n.set_data(panel1.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Naive Treg", samplenaive.counts), "Date": np.tile(date, samplenaive.counts), "Plate": np.tile(plate, samplenaive.counts),
-                               "VL1-H": panel1_n.data[['VL1-H']].values.reshape((samplenaive.counts,)), "VL5-H": panel1_n.data[['VL5-H']].values.reshape((samplenaive.counts,)),
+                               "VL1-H": panel1_n.data[['VL1-H']].values.reshape((samplenaive.counts,)), "BL5-H": panel1_n.data[['BL5-H']].values.reshape((samplenaive.counts,)),
                                "RL1-H": panel1_n.data[['RL1-H']].values.reshape((samplenaive.counts,))})
         df = df.append(df_add)
         panel1_m = panel1.copy()
@@ -218,7 +218,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
         gated_idx = np.array(samplemem.data.index)
         panel1_m.set_data(panel1.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Mem Treg", samplemem.counts), "Date": np.tile(date, samplemem.counts), "Plate": np.tile(plate, samplemem.counts),
-                               "VL1-H": panel1_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "VL5-H": panel1_m.data[['VL5-H']].values.reshape((samplemem.counts,)),
+                               "VL1-H": panel1_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "BL5-H": panel1_m.data[['BL5-H']].values.reshape((samplemem.counts,)),
                                "RL1-H": panel1_m.data[['RL1-H']].values.reshape((samplemem.counts,))})
         df = df.append(df_add)
 
@@ -231,7 +231,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     panel2, _ = importF(date, plate, "B", 2)
     panel2_t = panel2.transform("tlog", channels=['VL4-H', 'BL3-H'])
 
-    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "VL5-H", "RL1-H"])
+    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
     samplenk = panel2_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'NK') &
@@ -240,7 +240,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     gated_idx = np.array(samplenk.data.index)
     panel2_1.set_data(panel2.data.loc[gated_idx])
     df_add = pd.DataFrame({"Cell Type": np.tile("NK", samplenk.counts), "Date": np.tile(date, samplenk.counts), "Plate": np.tile(plate, samplenk.counts),
-                           "VL1-H": panel2_1.data[['VL1-H']].values.reshape((samplenk.counts,)), "VL5-H": panel2_1.data[['VL5-H']].values.reshape((samplenk.counts,)),
+                           "VL1-H": panel2_1.data[['VL1-H']].values.reshape((samplenk.counts,)), "BL5-H": panel2_1.data[['BL5-H']].values.reshape((samplenk.counts,)),
                            "RL1-H": panel2_1.data[['RL1-H']].values.reshape((samplenk.counts,))})
     df = df.append(df_add)
 
@@ -252,7 +252,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
         gated_idx = np.array(samplenkt.data.index)
         panel2_2.set_data(panel2.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("NKT", samplenkt.counts), "Date": np.tile(date, samplenkt.counts), "Plate": np.tile(plate, samplenkt.counts),
-                               "VL1-H": panel2_2.data[['VL1-H']].values.reshape((samplenkt.counts,)), "VL5-H": panel2_2.data[['VL5-H']].values.reshape((samplenkt.counts,)),
+                               "VL1-H": panel2_2.data[['VL1-H']].values.reshape((samplenkt.counts,)), "BL5-H": panel2_2.data[['BL5-H']].values.reshape((samplenkt.counts,)),
                                "RL1-H": panel2_2.data[['RL1-H']].values.reshape((samplenkt.counts,))})
         df = df.append(df_add)
 
@@ -265,7 +265,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     panel3, _ = importF(date, plate, "C", 3)
     panel3_t = panel3.transform("tlog", channels=['VL4-H', 'VL6-H', 'BL3-H'])
 
-    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "VL5-H", "RL1-H"])
+    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
     samplecd8 = panel3_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD8+') &
@@ -273,7 +273,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     gated_idx = np.array(samplecd8.data.index)
     panel3.set_data(panel3.data.loc[gated_idx])
     df_add = pd.DataFrame({"Cell Type": np.tile("CD8+", samplecd8.counts), "Date": np.tile(date, samplecd8.counts), "Plate": np.tile(plate, samplecd8.counts),
-                           "VL1-H": panel3.data[['VL1-H']].values.reshape((samplecd8.counts,)), "VL5-H": panel3.data[['VL5-H']].values.reshape((samplecd8.counts,)),
+                           "VL1-H": panel3.data[['VL1-H']].values.reshape((samplecd8.counts,)), "BL5-H": panel3.data[['BL5-H']].values.reshape((samplecd8.counts,)),
                            "RL1-H": panel3.data[['RL1-H']].values.reshape((samplecd8.counts,))})
     df = df.append(df_add)
 
@@ -285,7 +285,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
         gated_idx = np.array(samplenaive.data.index)
         panel3_n.set_data(panel3.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Naive CD8+", samplenaive.counts), "Date": np.tile(date, samplenaive.counts), "Plate": np.tile(plate, samplenaive.counts),
-                               "VL1-H": panel3_n.data[['VL1-H']].values.reshape((samplenaive.counts,)), "VL5-H": panel3_n.data[['VL5-H']].values.reshape((samplenaive.counts,)),
+                               "VL1-H": panel3_n.data[['VL1-H']].values.reshape((samplenaive.counts,)), "BL5-H": panel3_n.data[['BL5-H']].values.reshape((samplenaive.counts,)),
                                "RL1-H": panel3_n.data[['RL1-H']].values.reshape((samplenaive.counts,))})
         df = df.append(df_add)
         panel3_m = panel3.copy()
@@ -294,7 +294,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
         gated_idx = np.array(samplemem.data.index)
         panel3_m.set_data(panel3.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Mem CD8+", samplemem.counts), "Date": np.tile(date, samplemem.counts), "Plate": np.tile(plate, samplemem.counts),
-                               "VL1-H": panel3_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "VL5-H": panel3_m.data[['VL5-H']].values.reshape((samplemem.counts,)),
+                               "VL1-H": panel3_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "BL5-H": panel3_m.data[['BL5-H']].values.reshape((samplemem.counts,)),
                                "RL1-H": panel3_m.data[['RL1-H']].values.reshape((samplemem.counts,))})
         df = df.append(df_add)
 
