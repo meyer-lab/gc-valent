@@ -110,7 +110,7 @@ def applyMatrix(sample, matrix):
     print(matrix)
     return sample
 
-#print(sample)
+# print(sample)
     #cols = sample.channel_names
     #matrix = matrix[cols]
     #matrix = matrix.reindex(cols)
@@ -129,7 +129,7 @@ def subtract_unstained_signal(sample, channels, unstainedWell):
         return signal - background
 
     vfunc = np.vectorize(compare_background)
-    
+
     for i, channel in enumerate(channels):
         sample[channel] = vfunc(sample[channel], meanBackground[i])
 
@@ -150,7 +150,7 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
     df = df.append(nk_nkt_sample(date, plate, gates_df, nkt=subpopulations))
     df = df.append(cd8_sample(date, plate, gates_df, mem_naive=subpopulations))
     df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
-    #print(df)
+    # print(df)
     return df
 
 
