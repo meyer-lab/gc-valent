@@ -4,11 +4,8 @@ This file includes various methods for flow cytometry analysis of fixed cells.
 import os
 from os.path import dirname
 from pathlib import Path
-import matplotlib.cm as cm
 import numpy as np
-from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
-from FlowCytometryTools import PolyGate
 
 path_here = dirname(dirname(__file__))
 
@@ -21,7 +18,7 @@ def combineWells(samples):
     return combinedSamples
 
 
-def importF(date, plate, wellRow, panel, wellNum=None):
+def importF(date, plate, wellRow, panel, channels, wellNum=None):
     """
     Import FCS files. Variable input: date in format mm-dd, plate #, panel #, and well letter. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
