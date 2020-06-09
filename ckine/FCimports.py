@@ -1,7 +1,8 @@
 """
-This file includes various methods for flow cytometry analysis.
+This file includes various methods for flow cytometry analysis of fixed cells.
 """
 import os
+from os.path import dirname
 from pathlib import Path
 import matplotlib.cm as cm
 import numpy as np
@@ -9,12 +10,14 @@ from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import PolyGate
 
+path_here = dirname(dirname(__file__))
+
 
 def combineWells(samples):
-    """Accepts sample array returned from importF, and array of channels, returns transformed combined well data"""
+    """Accepts sample array returned from importF, and array of channels, returns combined well data"""
     combinedSamples = samples[0]
     for sample in samples[1:]:
-        combinedSamples.data = combinedSamples.data.append(sample.data)
+        combinedSamples.data = combinedSamples.data.append(sample.data, ignore_index=True)
     return combinedSamples
 
 
@@ -24,7 +27,8 @@ def importF(date, plate, wellRow, panel, wellNum=None):
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
     """
     path_ = os.path.abspath("")
-    pathname = path_ + "/data/PBMC-rec-quant/" + date + "/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
+
+    pathname = path_ + "/ckine/data/flow/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
 
     # Declare arrays and int
     file = []
@@ -32,6 +36,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
     z = 0
     # Read in user input for file path and assign to array file
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
+
     for path in pathlist:
         wellID = path.name.split("_")[1]
         if wellID[0] == wellRow:
@@ -45,13 +50,6 @@ def importF(date, plate, wellRow, panel, wellNum=None):
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     # The array sample contains data of each file in folder (one file per entry in array)
-    channels = []
-    if panel == 1:
-        channels = ["BL1-H", "VL1-H", "VL6-H", "VL4-H", "BL3-H"]
-    elif panel == 2:
-        channels = ["BL4-H", "BL3-H"]
-    elif panel == 3:
-        channels = ["VL6-H", "VL4-H", "BL3-H"]
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
@@ -120,4 +118,5 @@ def plot_Tcells(sample, cd3cd4gate, Thelpgate, Treggate):
     TregGated_sample.plot(["BL3-H"], color="blue", ax=axs[1, 1])
     axs[1, 1].set(xlabel="CD45Ra", title="T reg")
 
-    return fig
+    #compSample = applyMatrix(sample, compMatrix(date, plate, wellRow))
+    return sample, unstainedWell
