@@ -64,18 +64,9 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
 def subtract_unstained_signal(sample, channels, unstainedWell):
     """ Subtract mean unstained signal from all input channels for a given sample. """
-
-    def compare_background(signal, background):
-        """ Compares signal to background: subtracts background from signal if greater or sets to zero if not. """
-        if signal <= background:
-            return 0
-        return signal - background
-
-    vfunc = np.vectorize(compare_background)
-
     for _, channel in enumerate(channels):
         meanBackground = np.mean(unstainedWell.data[channel])  # Calculates mean unstained signal for given channel
-        sample[channel] = vfunc(sample[channel], meanBackground)
+        sample[channel] = np.maximum(sample[channel] - meanBackground, 0.0)
 
     return sample
 
