@@ -4,6 +4,7 @@ This file includes various methods for flow cytometry analysis.
 import os
 from pathlib import Path
 import matplotlib.cm as cm
+import numpy as np
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import PolyGate
