@@ -2,11 +2,11 @@
 This file includes various methods for flow cytometry analysis of fixed cells.
 """
 import os
-from os.path import dirname #, join
+from os.path import dirname  # , join
 from pathlib import Path
 #import pandas as pd
 #import numpy as np
-from FlowCytometryTools import FCMeasurement#, PolyGate, ThresholdGate
+from FlowCytometryTools import FCMeasurement  # , PolyGate, ThresholdGate
 path_here = dirname(dirname(__file__))
 
 
@@ -50,7 +50,7 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        #compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))  # Applies compensation matrix
+        # compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))  # Applies compensation matrix
         return compSample, unstainedWell
 
     #compSample = applyMatrix(sample, compMatrix(date, plate, wellRow))
