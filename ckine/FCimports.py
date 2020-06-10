@@ -120,10 +120,10 @@ def import_gates():
 
 def apply_gates(date, plate, gates_df, subpopulations=False):
     """ Constructs dataframe with channels relevant to receptor quantification. """
-    df, unstainedWell = samp_Gate(date, plate, gates_df, 'T-helper', subPop=True)
-    df = df.append(samp_Gate(date, plate, gates_df, 'T-reg', subPop=True)[0])
-    df = df.append(samp_Gate(date, plate, gates_df, 'NK', subPop=True)[0])
-    df = df.append(samp_Gate(date, plate, gates_df, 'CD8+', subPop=True)[0])
+    df, unstainedWell = samp_Gate(date, plate, gates_df, 'T-helper', subPop=subpopulations)
+    df = df.append(samp_Gate(date, plate, gates_df, 'T-reg', subPop=subpopulations)[0])
+    df = df.append(samp_Gate(date, plate, gates_df, 'NK', subPop=subpopulations)[0])
+    df = df.append(samp_Gate(date, plate, gates_df, 'CD8+', subPop=subpopulations)[0])
     # All samples for data and plate processed combined
     df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Background signal substracted
@@ -131,7 +131,7 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
 
 
 def samp_Gate(date, plate, gates_df, cellType, subPop=False):
-    """ Returns gated CD8+ sample for a given date and plate. """
+    """ Returns gated sample for a given date and plate. """
     # import data and create transformed df for gating
     tchannels, subPopName, row, panelNum = cellGateDat(cellType)
     panel, unstainedWell = importF(date, plate, row, panelNum)
@@ -140,7 +140,7 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
-    if cellType == "T-reg" or cellType == "T-helper":
+    if cellType in ('T-reg', 'T-helper'):
         samplecd3cd4 = panel_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                                   (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         sample = samplecd3cd4.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == cellType) &
@@ -172,7 +172,8 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
 
 
 def cellGateDat(cellType):
-    if cellType == "T-reg" or cellType == "T-helper":
+    "Returns pertinent gating information for a given cell type"
+    if cellType in ('T-reg', 'T-helper'):
         tchannels = ['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']
         row = 'A'
         panel = 1
