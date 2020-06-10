@@ -1,12 +1,13 @@
 """
 This file includes various methods for flow cytometry analysis of fixed cells.
 """
+import ast
 import os
 from os.path import dirname, join
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from FlowCytometryTools import FCMeasurement, PolyGate, ThresholdGate
+from FlowCytometryTools import FCMeasurement
 
 path_here = dirname(dirname(__file__))
 
@@ -138,14 +139,14 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])  # initialize dataframe for receptor quant channels
 
     # implement gating, revert tlog, and add to dataframe
-    samplecd3cd4 = panel1_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
+    samplecd3cd4 = panel1_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                    (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
-    samplethelp = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == 'T-helper') &
+    samplethelp = samplecd3cd4.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'T-helper') &
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(samplethelp.data.index)
     panel1.set_data(panel1.data.loc[gated_idx]) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
-    
+
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", panel1.counts), "Date": np.tile(date, panel1.counts), "Plate": np.tile(plate, panel1.counts),
                            "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "BL5-H": panel1.data[['BL5-H']].values.reshape((panel1.counts,)),
                            "RL1-H": panel1.data[['RL1-H']].values.reshape((panel1.counts,))})
@@ -154,7 +155,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     # separates memory and naive populations and adds to dataframe
     if mem_naive:
         panel1_n = panel1.copy()
-        samplenaive = samplethelp.gate(eval(gates_df.loc[(gates_df["Name"] == 'Naive Th') &
+        samplenaive = samplethelp.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Naive Th') &
                                                          (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         gated_idx = np.array(samplenaive.data.index)
         panel1_n.set_data(panel1.data.loc[gated_idx])
@@ -163,7 +164,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
                                "RL1-H": panel1_n.data[['RL1-H']].values.reshape((samplenaive.counts,))})
         df = df.append(df_add)
         panel1_m = panel1.copy()
-        samplemem = samplethelp.gate(eval(gates_df.loc[(gates_df["Name"] == 'Mem Th') &
+        samplemem = samplethelp.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Mem Th') &
                                                        (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         gated_idx = np.array(samplemem.data.index)
         panel1_m.set_data(panel1.data.loc[gated_idx])
@@ -184,9 +185,9 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
-    samplecd3cd4 = panel1_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
+    samplecd3cd4 = panel1_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                    (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
-    sampletreg = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == 'T-reg') &
+    sampletreg = samplecd3cd4.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'T-reg') &
                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(sampletreg.data.index)
@@ -200,7 +201,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     # separates memory and naive populations and adds to dataframe
     if mem_naive:
         panel1_n = panel1.copy()
-        samplenaive = sampletreg.gate(eval(gates_df.loc[(gates_df["Name"] == 'Naive Treg') &
+        samplenaive = sampletreg.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Naive Treg') &
                                                         (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         gated_idx = np.array(samplenaive.data.index)
         panel1_n.set_data(panel1.data.loc[gated_idx])
@@ -209,7 +210,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
                                "RL1-H": panel1_n.data[['RL1-H']].values.reshape((samplenaive.counts,))})
         df = df.append(df_add)
         panel1_m = panel1.copy()
-        samplemem = sampletreg.gate(eval(gates_df.loc[(gates_df["Name"] == 'Mem Th') &
+        samplemem = sampletreg.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Mem Th') &
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         gated_idx = np.array(samplemem.data.index) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
         panel1_m.set_data(panel1.data.loc[gated_idx])
@@ -230,7 +231,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
-    samplenk = panel2_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'NK') &
+    samplenk = panel2_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'NK') &
                                                (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     panel2_1 = panel2.copy() #Not sure why this copy was created and used(maybe debugging) have to ask Zoe
@@ -243,7 +244,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
 
     # gates NKT population and adds to dataframe
     if nkt:
-        samplenkt = panel2_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'NKT') &
+        samplenkt = panel2_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'NKT') &
                                                     (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         panel2_2 = panel2.copy()
         gated_idx = np.array(samplenkt.data.index)
@@ -265,7 +266,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
-    samplecd8 = panel3_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD8+') &
+    samplecd8 = panel3_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD8+') &
                                                 (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(samplecd8.data.index)
@@ -278,7 +279,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     # separates memory and naive populations and adds to dataframe
     if mem_naive:
         panel3_n = panel3.copy()
-        samplenaive = samplecd8.gate(eval(gates_df.loc[(gates_df["Name"] == 'Naive CD8+') &
+        samplenaive = samplecd8.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Naive CD8+') &
                                                        (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         gated_idx = np.array(samplenaive.data.index)
         panel3_n.set_data(panel3.data.loc[gated_idx])
@@ -287,7 +288,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
                                "RL1-H": panel3_n.data[['RL1-H']].values.reshape((samplenaive.counts,))})
         df = df.append(df_add)
         panel3_m = panel3.copy()
-        samplemem = samplecd8.gate(eval(gates_df.loc[(gates_df["Name"] == 'Mem CD8+') &
+        samplemem = samplecd8.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Mem CD8+') &
                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         gated_idx = np.array(samplemem.data.index)
         panel3_m.set_data(panel3.data.loc[gated_idx])
