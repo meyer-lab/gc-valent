@@ -135,14 +135,14 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     # import data and create transformed df for gating
     tchannels, subPopName, row, panelNum = cellGateDat(cellType)
     panel, unstainedWell = importF(date, plate, row, panelNum)
-    panel_t = panel.transform("tlog", channels=tchannels) # Creates copy of panel1 to transform and gate
+    panel_t = panel.transform("tlog", channels=tchannels)  # Creates copy of panel1 to transform and gate
 
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
     # implement gating, revert tlog, and add to dataframe
     if cellType == "T-reg" or cellType == "T-helper":
         samplecd3cd4 = panel_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
-                                                                   (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+                                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         sample = samplecd3cd4.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == cellType) &
                                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     else:
@@ -150,7 +150,7 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
                                                             (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(sample.data.index)
-    panel.set_data(panel.data.loc[gated_idx]) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+    panel.set_data(panel.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
     df_add = pd.DataFrame({"Cell Type": np.tile(cellType, sample.counts), "Date": np.tile(date, sample.counts), "Plate": np.tile(plate, sample.counts),
                            "VL1-H": panel.data[["VL1-H"]].values.reshape((sample.counts,)), "BL5-H": panel.data[["BL5-H"]].values.reshape((sample.counts,)),
                            "RL1-H": panel.data[["RL1-H"]].values.reshape((sample.counts,))})
@@ -164,8 +164,8 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
             gated_idx = np.array(sampleSub.data.index)
             panel_S = panel.data.loc[gated_idx]
             df_add = pd.DataFrame({"Cell Type": np.tile(subpopulation, sampleSub.counts), "Date": np.tile(date, sampleSub.counts), "Plate": np.tile(plate, sampleSub.counts),
-                                "VL1-H": panel_S.data[["VL1-H"]].values.reshape((sampleSub.counts,)), "BL5-H": panel_S.data[["BL5-H"]].values.reshape((sampleSub.counts,)),
-                                "RL1-H": panel_S.data[["RL1-H"]].values.reshape((sampleSub.counts,))})
+                                   "VL1-H": panel_S.data[["VL1-H"]].values.reshape((sampleSub.counts,)), "BL5-H": panel_S.data[["BL5-H"]].values.reshape((sampleSub.counts,)),
+                                   "RL1-H": panel_S.data[["RL1-H"]].values.reshape((sampleSub.counts,))})
             df = df.append(df_add)
 
     return df, unstainedWell
@@ -184,12 +184,12 @@ def cellGateDat(cellType):
         tchannels = ['VL4-H', 'VL6-H', 'BL3-H']
         row = 'C'
         panel = 3
-        subPopName =['Naive CD8+', 'Mem CD8+']
+        subPopName = ['Naive CD8+', 'Mem CD8+']
     elif cellType == "NK":
         tchannels = ['VL4-H', 'BL3-H']
         row = 'B'
         panel = 2
-        subPopName =['NKT']
+        subPopName = ['NKT']
 
     assert tchannels != []
 
