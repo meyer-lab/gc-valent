@@ -101,6 +101,10 @@ def applyMatrix(sample, matrix):
         if c not in matrix: #If sample channel column is not found in matrix
             holder = holder.join(sample.data[[c]], how='right') # Store for after calculation
             sample.data = sample.data.drop([c], axis=1) # Removed column to allow for matrix multiplication
+
+    cols = sample.data.columns
+    matrix = matrix[cols]
+    matrix = matrix.reindex(cols)
     sample.data = sample.data.dot(matrix) # Use matrix multiplication to compensate the relevant data
     sample.data = sample.data.join(holder) # Restore uncompensated channels to sample
     return sample
