@@ -134,7 +134,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
     """ Returns gated T-helper sample for a given date and plate. """
     # import data and create transformed df for gating
     panel1, unstainedWell = importF(date, plate, "A", 1)
-    panel1_t = panel1.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']) # Creates copy of panel1 to transform and gate
+    panel1_t = panel1.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H'])  # Creates copy of panel1 to transform and gate
 
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])  # initialize dataframe for receptor quant channels
 
@@ -145,7 +145,7 @@ def thelp_sample(date, plate, gates_df, mem_naive=False):
                                                                   (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(samplethelp.data.index)
-    panel1.set_data(panel1.data.loc[gated_idx]) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+    panel1.set_data(panel1.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
 
     df_add = pd.DataFrame({"Cell Type": np.tile("T-helper", panel1.counts), "Date": np.tile(date, panel1.counts), "Plate": np.tile(plate, panel1.counts),
                            "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "BL5-H": panel1.data[['BL5-H']].values.reshape((panel1.counts,)),
@@ -180,7 +180,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
     """ Returns gated T-reg sample for a given date and plate. """
     # import data and create transformed df for gating
     panel1, _ = importF(date, plate, "A", 1)
-    panel1_t = panel1.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']) # Creates copy of panel1 to transform and gate
+    panel1_t = panel1.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H'])  # Creates copy of panel1 to transform and gate
 
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
@@ -191,7 +191,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
                                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(sampletreg.data.index)
-    panel1.set_data(panel1.data.loc[gated_idx]) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+    panel1.set_data(panel1.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
 
     df_add = pd.DataFrame({"Cell Type": np.tile("T-reg", panel1.counts), "Date": np.tile(date, panel1.counts), "Plate": np.tile(plate, panel1.counts),
                            "VL1-H": panel1.data[['VL1-H']].values.reshape((panel1.counts,)), "BL5-H": panel1.data[['BL5-H']].values.reshape((panel1.counts,)),
@@ -212,7 +212,7 @@ def treg_sample(date, plate, gates_df, mem_naive=False):
         panel1_m = panel1.copy()
         samplemem = sampletreg.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'Mem Th') &
                                                                   (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
-        gated_idx = np.array(samplemem.data.index) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+        gated_idx = np.array(samplemem.data.index)  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
         panel1_m.set_data(panel1.data.loc[gated_idx])
         df_add = pd.DataFrame({"Cell Type": np.tile("Mem Treg", samplemem.counts), "Date": np.tile(date, samplemem.counts), "Plate": np.tile(plate, samplemem.counts),
                                "VL1-H": panel1_m.data[['VL1-H']].values.reshape((samplemem.counts,)), "BL5-H": panel1_m.data[['BL5-H']].values.reshape((samplemem.counts,)),
@@ -226,7 +226,7 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     """ Returns gated NK sample for a given date and plate. """
     # import data and create transformed df for gating
     panel2, _ = importF(date, plate, "B", 2)
-    panel2_t = panel2.transform("tlog", channels=['VL4-H', 'BL3-H']) # Creates copy of panel1 to transform and gate
+    panel2_t = panel2.transform("tlog", channels=['VL4-H', 'BL3-H'])  # Creates copy of panel1 to transform and gate
 
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
@@ -234,8 +234,8 @@ def nk_nkt_sample(date, plate, gates_df, nkt=False):
     samplenk = panel2_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'NK') &
                                                            (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
-    panel2_1 = panel2.copy() #Not sure why this copy was created and used(maybe debugging) have to ask Zoe
-    gated_idx = np.array(samplenk.data.index) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+    panel2_1 = panel2.copy()  # Not sure why this copy was created and used(maybe debugging) have to ask Zoe
+    gated_idx = np.array(samplenk.data.index)  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
     panel2_1.set_data(panel2.data.loc[gated_idx])
     df_add = pd.DataFrame({"Cell Type": np.tile("NK", samplenk.counts), "Date": np.tile(date, samplenk.counts), "Plate": np.tile(plate, samplenk.counts),
                            "VL1-H": panel2_1.data[['VL1-H']].values.reshape((samplenk.counts,)), "BL5-H": panel2_1.data[['BL5-H']].values.reshape((samplenk.counts,)),
@@ -261,7 +261,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
     """ Returns gated CD8+ sample for a given date and plate. """
     # import data and create transformed df for gating
     panel3, _ = importF(date, plate, "C", 3)
-    panel3_t = panel3.transform("tlog", channels=['VL4-H', 'VL6-H', 'BL3-H']) # Creates copy of panel1 to transform and gate
+    panel3_t = panel3.transform("tlog", channels=['VL4-H', 'VL6-H', 'BL3-H'])  # Creates copy of panel1 to transform and gate
 
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
@@ -270,7 +270,7 @@ def cd8_sample(date, plate, gates_df, mem_naive=False):
                                                             (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     # Gated signals based on gating values from csv
     gated_idx = np.array(samplecd8.data.index)
-    panel3.set_data(panel3.data.loc[gated_idx]) #Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+    panel3.set_data(panel3.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
     df_add = pd.DataFrame({"Cell Type": np.tile("CD8+", samplecd8.counts), "Date": np.tile(date, samplecd8.counts), "Plate": np.tile(plate, samplecd8.counts),
                            "VL1-H": panel3.data[['VL1-H']].values.reshape((samplecd8.counts,)), "BL5-H": panel3.data[['BL5-H']].values.reshape((samplecd8.counts,)),
                            "RL1-H": panel3.data[['RL1-H']].values.reshape((samplecd8.counts,))})
