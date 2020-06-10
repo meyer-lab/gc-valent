@@ -74,9 +74,9 @@ def compMatrix(date, plate, panel, invert=True):
     header_names = ['Channel1', 'Channel2', 'Comp']
     df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
     # Add diangonal values of 100 to compensation values
-    addedChannels = [] 
+    addedChannels = []
     for i in df_comp.index:
-        channelName = df_comp.iloc[i]['Channel1'] 
+        channelName = df_comp.iloc[i]['Channel1']
         if channelName not in addedChannels: # Ensures a diagonal value is only added once for each channel
             addedChannels.append(channelName)
             df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1', 'Channel2', 'Comp']) # Creates new row for dataframe
@@ -102,5 +102,5 @@ def applyMatrix(sample, matrix):
             holder = holder.join(sample.data[[c]], how='right') # Store for after calculation
             sample.data = sample.data.drop([c], axis=1) # Removed column to allow for matrix multiplication
     sample.data = sample.data.dot(matrix) # Use matrix multiplication to compensate the relevant data
-    sample.data = sample.data.join(holder) # Restore uncompensated channels to sample 
+    sample.data = sample.data.join(holder) # Restore uncompensated channels to sample
     return sample
