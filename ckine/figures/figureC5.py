@@ -27,7 +27,6 @@ def makeFigure():
     # create dataframe with gated samples (all replicates)
     df_gates = import_gates()
     df_signal = apply_gates("4-23", "1", df_gates)
-    print(df_signal)
     df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
@@ -47,6 +46,7 @@ def makeFigure():
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
                     data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
+                    print(data)
                     rec_counts = np.zeros(len(data))
                     for k, signal in enumerate(data):
                         A, B, C, D = lsq_params[j]
@@ -112,4 +112,3 @@ def run_regression():
     _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant1)
 
     return lsq_cd25, lsq_cd122, lsq_cd132
-    
