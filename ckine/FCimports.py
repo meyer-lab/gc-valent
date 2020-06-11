@@ -140,8 +140,8 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
 
     # implement gating, revert tlog, and add to dataframe
     if cellType in ('T-reg', 'T-helper'):
-        print(typeof(gates_df.loc[(gates_df["Name"] == 'CD3CD4') & (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])))
-        print(typeof(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') & (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))))
+        print(typeof(gates_df.loc[(gates_df["Name"] == 'CD3CD4') & (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+        print(typeof(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') & (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])))
         samplecd3cd4 = panel_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                                   (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         sample = samplecd3cd4.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == cellType) &
