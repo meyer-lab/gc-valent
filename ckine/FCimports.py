@@ -1,7 +1,6 @@
 """
 This file includes various methods for flow cytometry analysis of fixed cells.
 """
-import ast
 import os
 from os.path import dirname, join
 from pathlib import Path
@@ -141,13 +140,13 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
 
     # implement gating, revert tlog, and add to dataframe
     if cellType in ('T-reg', 'T-helper'):
-        samplecd3cd4 = panel_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
-                                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
-        sample = samplecd3cd4.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == cellType) &
-                                                                 (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+        samplecd3cd4 = panel_t.gate(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
+                                                 (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])
+        sample = samplecd3cd4.gate(gates_df.loc[(gates_df["Name"] == cellType) &
+                                                (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])
     else:
-        sample = panel_t.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == cellType) &
-                                                            (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+        sample = panel_t.gate(gates_df.loc[(gates_df["Name"] == cellType) &
+                                           (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])
     # Gated signals based on gating values from csv
     gated_idx = np.array(sample.data.index)
     panel.set_data(panel.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
@@ -159,8 +158,8 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     # separates memory and naive populations and adds to dataframe
     if subPop:
         for subpopulation in subPopName:
-            sampleSub = sample.gate(ast.literal_eval(gates_df.loc[(gates_df["Name"] == subpopulation) &
-                                                                  (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+            sampleSub = sample.gate(gates_df.loc[(gates_df["Name"] == subpopulation) &
+                                                 (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])
             gated_idx = np.array(sampleSub.data.index)
             panel_S = panel.data.loc[gated_idx]
             df_add = pd.DataFrame({"Cell Type": np.tile(subpopulation, sampleSub.counts), "Date": np.tile(date, sampleSub.counts), "Plate": np.tile(plate, sampleSub.counts),
