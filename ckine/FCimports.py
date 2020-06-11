@@ -125,6 +125,8 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
     df = df.append(samp_Gate(date, plate, gates_df, 'NK', subPop=subpopulations)[0])
     df = df.append(samp_Gate(date, plate, gates_df, 'CD8+', subPop=subpopulations)[0])
     # All samples for data and plate processed combined
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        print(df)
     df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Background signal substracted
     return df
