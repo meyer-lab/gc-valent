@@ -52,10 +52,10 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))  # Applies compensation matrix
+        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow, False))  # Applies compensation matrix
         return compSample, unstainedWell
 
-    compSample = applyMatrix(sample, compMatrix(date, plate, wellRow))
+    compSample = applyMatrix(sample, compMatrix(date, plate, wellRow, False))
     return compSample, unstainedWell
 
 
@@ -125,8 +125,8 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
     df = df.append(samp_Gate(date, plate, gates_df, 'NK', subPop=subpopulations)[0])
     df = df.append(samp_Gate(date, plate, gates_df, 'CD8+', subPop=subpopulations)[0])
     # All samples for data and plate processed combined
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-        print(samp_Gate(date, plate, gates_df, 'T-helper', subPop=subpopulations)[0])
+    #with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+    #    print(samp_Gate(date, plate, gates_df, 'T-helper', subPop=subpopulations)[0])
     df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Background signal substracted
     return df
