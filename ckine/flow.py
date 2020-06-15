@@ -173,7 +173,6 @@ def nllsq(x, y):
     return lsq.x
 
 
-
 def bead_regression(sample, channels_, recQuant, first=0, skip=False):
     """ Implements regression of signal to bead capacity. """
     means = np.zeros(len(recQuant))
