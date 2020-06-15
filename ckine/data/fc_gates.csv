@@ -47,5 +47,3 @@
 4-26,2,CD8+,3,"PolyGate([(4.7e3, 5.7e3), (8.1e3, 5.7e3), (8.1e3, 8.0e3), (4.7e3, 8.0e3)], ('VL4-H', 'VL6-H'), region='in', name='cd8')"
 4-26,2,Naive CD8+,3,"ThresholdGate(7720.0, ['BL3-H'], region='above') & ThresholdGate(8800.0, ['BL3-H'], region='below')"
 4-26,2,Mem CD8+,3,"ThresholdGate(3800.0, ['BL3-H'], region='above') & ThresholdGate(7200.0, ['BL3-H'], region='below')"
-,,,,
-,,,,
