@@ -89,7 +89,7 @@ def calculate_moments(df, cell_names, receptors):
 
 def celltype_pointplot(ax, df, moment):
     """ Plots a given distribution moment with SD among replicates for all cell types and receptors. """
-    sns.pointplot(x="Cell Type", y=moment, hue="Receptor", data=df, ci='sd', join=False, dodge=True, ax=ax)
+    sns.pointplot(x="Cell Type", y=moment, hue="Receptor", data=df, ci='sd', join=False, dodge=True, ax=ax, estimator=sp.stats.gmean)
     ax.set_ylabel("log(" + moment + ")")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
 
