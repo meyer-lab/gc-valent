@@ -164,7 +164,7 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     if subPop:
         for subpopulation in subPopName:
             subGates = gates_df.loc[(gates_df["Name"] == subpopulation) &
-                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0])
+                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]
             sampleSub=sample.gate(subGates)
             gated_idx=np.array(sampleSub.data.index)
             panel_S=panel.data.loc[gated_idx]
