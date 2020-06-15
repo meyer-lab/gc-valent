@@ -52,10 +52,10 @@ def importF(date, plate, wellRow, panel, wellNum=None):
 
     if wellNum is None:
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow, False))  # Applies compensation matrix
+        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))  # Applies compensation matrix
         return compSample, unstainedWell
 
-    compSample = applyMatrix(sample, compMatrix(date, plate, wellRow, False))
+    compSample = applyMatrix(sample, compMatrix(date, plate, wellRow))
     return compSample, unstainedWell
 
 
