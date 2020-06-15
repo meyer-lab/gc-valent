@@ -62,9 +62,6 @@ def makeFigure():
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
     # plot log10 of mean, variance, and skew
-    df_stats["Mean"] = np.log10(df_stats["Mean"].astype(np.float))
-    df_stats["Variance"] = np.log10(df_stats["Variance"].astype(np.float))
-    df_stats["Skew"] = np.log10(df_stats["Skew"].astype(np.float))
     celltype_pointplot(ax[0], df_stats, "Mean")
     celltype_pointplot(ax[1], df_stats, "Variance")
     celltype_pointplot(ax[2], df_stats, "Skew")
@@ -80,9 +77,9 @@ def calculate_moments(df, cell_names, receptors):
             for _, date in enumerate(["4-23", "4-26"]):
                 for _, plate in enumerate(["1", "2"]):
                     df_subset = df.loc[(df["Cell Type"] == cell) & (df["Receptor"] == receptor) & (df["Date"] == date) & (df["Plate"] == plate)]["Count"]
-                    mean_ = df_subset.mean()
-                    var_ = df_subset.var()
-                    skew_ = df_subset.skew()
+                    mean_ = np.log10(df_subset.mean())
+                    var_ = np.log10(df_subset.var())
+                    skew_ = np.log10(df_subset.skew())
                     df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
                     df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
                     df_stats = df_stats.append(df_new)
