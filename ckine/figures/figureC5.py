@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import scipy as sp
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels
 from ..flow import importF, bead_regression
