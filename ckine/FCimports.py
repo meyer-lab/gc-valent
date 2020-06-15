@@ -142,15 +142,13 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
 
     # implement gating, revert tlog, and add to dataframe
     if cellType in ('T-reg', 'T-helper'):
-        cd3cd4Gates = gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
-                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]
-        samplecd3cd4 = panel_t.gate(cd3cd4Gates)
-        typeGates = gates_df.loc[(gates_df["Name"] == cellType) &
-                                                     (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]
-        sample = samplecd3cd4.gate(typeGates)
+        samplecd3cd4 = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
+                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+        sample = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
+                                                     (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     else:
         typeGates = gates_df.loc[(gates_df["Name"] == cellType) &
-                                                (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]
+                                 (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]
         sample = panel_t.gate(typeGates)
     # Gated signals based on gating values from csv
     gated_idx = np.array(sample.data.index)
@@ -163,15 +161,14 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     # separates memory and naive populations and adds to dataframe
     if subPop:
         for subpopulation in subPopName:
-            subGates = gates_df.loc[(gates_df["Name"] == subpopulation) &
-                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]
-            sampleSub=sample.gate(subGates)
-            gated_idx=np.array(sampleSub.data.index)
-            panel_S=panel.data.loc[gated_idx]
-            df_add=pd.DataFrame({"Cell Type": np.tile(subpopulation, sampleSub.counts), "Date": np.tile(date, sampleSub.counts), "Plate": np.tile(plate, sampleSub.counts),
+            sampleSub = sample.gate(eval(gates_df.loc[(gates_df["Name"] == subpopulation) &
+                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+            gated_idx = np.array(sampleSub.data.index)
+            panel_S = panel.data.loc[gated_idx]
+            df_add = pd.DataFrame({"Cell Type": np.tile(subpopulation, sampleSub.counts), "Date": np.tile(date, sampleSub.counts), "Plate": np.tile(plate, sampleSub.counts),
                                    "VL1-H": panel_S.data[["VL1-H"]].values.reshape((sampleSub.counts,)), "BL5-H": panel_S.data[["BL5-H"]].values.reshape((sampleSub.counts,)),
                                    "RL1-H": panel_S.data[["RL1-H"]].values.reshape((sampleSub.counts,))})
-            df=df.append(df_add)
+            df = df.append(df_add)
 
     return df, unstainedWell
 
@@ -179,23 +176,23 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
 def cellGateDat(cellType):
     "Returns pertinent gating information for a given cell type"
     if cellType in ('T-reg', 'T-helper'):
-        tchannels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']
-        row='A'
-        panel=1
+        tchannels = ['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']
+        row = 'A'
+        panel = 1
         if cellType == "T-reg":
-            subPopName=["Mem Treg", "Naive Treg"]
+            subPopName = ["Mem Treg", "Naive Treg"]
         else:
-            subPopName=['Naive Th', 'Mem Th']
+            subPopName = ['Naive Th', 'Mem Th']
     elif cellType == "CD8+":
-        tchannels=['VL4-H', 'VL6-H', 'BL3-H']
-        row='C'
-        panel=3
-        subPopName=['Naive CD8+', 'Mem CD8+']
+        tchannels = ['VL4-H', 'VL6-H', 'BL3-H']
+        row = 'C'
+        panel = 3
+        subPopName = ['Naive CD8+', 'Mem CD8+']
     elif cellType == "NK":
-        tchannels=['VL4-H', 'BL3-H']
-        row='B'
-        panel=2
-        subPopName=['NKT']
+        tchannels = ['VL4-H', 'BL3-H']
+        row = 'B'
+        panel = 2
+        subPopName = ['NKT']
 
     assert tchannels != []
 
