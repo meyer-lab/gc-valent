@@ -105,7 +105,7 @@ def run_regression():
     recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
 
     _, lsq_cd25 = bead_regression(sampleD, channels['D'], recQuant1)
-    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant1)
-    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant2, 2, True)
+    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant1, 2, True)
+    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant2)
 
     return lsq_cd25, lsq_cd122, lsq_cd132
