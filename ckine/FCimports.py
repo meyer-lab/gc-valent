@@ -155,6 +155,8 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     print(sample.data)
     panel.set_data(panel.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
     print(panel.data)
+    print(panel.transform("tlog", channels=tchannels))
+    print("Done")
     df_add = pd.DataFrame({"Cell Type": np.tile(cellType, sample.counts), "Date": np.tile(date, sample.counts), "Plate": np.tile(plate, sample.counts),
                            "VL1-H": panel.data[["VL1-H"]].values.reshape((sample.counts,)), "BL5-H": panel.data[["BL5-H"]].values.reshape((sample.counts,)),
                            "RL1-H": panel.data[["RL1-H"]].values.reshape((sample.counts,))})
