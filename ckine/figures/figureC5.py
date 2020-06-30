@@ -51,14 +51,10 @@ def makeFigure():
                     for k, signal in enumerate(data):
                         A, B, C, D = lsq_params[j]
                         rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
-                        print(cell)
-                        print(receptor)
-                        print(signal)
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    print(df_add)
                     df_rec = df_rec.append(df_add)
-
+    df_rec = df_rec[dr_rec.Receptor != 0]
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
