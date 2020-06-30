@@ -54,7 +54,7 @@ def makeFigure():
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
                     df_rec = df_rec.append(df_add)
-    df_rec = df_rec[dr_rec.Receptor != 0]
+    df_rec = df_rec[df_rec.Receptor != 0]
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
