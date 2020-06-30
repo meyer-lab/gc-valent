@@ -47,6 +47,7 @@ def makeFigure():
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
                     data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
+                    data = data[data >= 0]
                     rec_counts = np.zeros(len(data))
                     for k, signal in enumerate(data):
                         A, B, C, D = lsq_params[j]
@@ -54,7 +55,6 @@ def makeFigure():
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
                     df_rec = df_rec.append(df_add)
-    df_rec = df_rec[df_rec.Receptor != 0]
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
