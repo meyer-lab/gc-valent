@@ -5,7 +5,6 @@ This creates Figure 6 for IL2Ra correlatoin data analysis.
 import os
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from .figureCommon import subplotLabel, getSetup
 
 path_here = os.path.dirname(os.path.dirname(__file__))
