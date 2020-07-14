@@ -6,11 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import scipy as sp
 from .figureCommon import subplotLabel, getSetup
-from ..imports import channels
-#from ..flow import importF, bead_regression
-from ..FCimports import import_gates, importF
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
