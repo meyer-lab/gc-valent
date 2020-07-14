@@ -27,14 +27,14 @@ def importF(date, plate, wellRow, panel, wellNum=None, comp=True):
     path_ = os.path.abspath("")
 
     pathname = path_ + "/ckine/data/flow/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
-    #print(pathname)
+    # print(pathname)
     # Declare arrays and int
     file = []
     sample = []
     z = 0
     # Read in user input for file path and assign to array file
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
-    
+
     unstainedWell = "none"
 
     for path in pathlist:
@@ -60,8 +60,8 @@ def importF(date, plate, wellRow, panel, wellNum=None, comp=True):
         return compSample, unstainedWell
 
     if comp is False:
-        return sample[wellNum-1], unstainedWell
-    compSample = applyMatrix(sample[wellNum-1], compMatrix(date, plate, wellRow))
+        return sample[wellNum - 1], unstainedWell
+    compSample = applyMatrix(sample[wellNum - 1], compMatrix(date, plate, wellRow))
     return compSample, unstainedWell
 
 
