@@ -92,8 +92,9 @@ def getReceptors():
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
                     df_rec = df_rec.append(df_add)
-    
+
     return df_rec
+
 
 def run_regression():
     """ Imports bead data and runs regression to get least squares parameters for conversion of signal to receptor count. """
