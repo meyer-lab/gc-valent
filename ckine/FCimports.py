@@ -27,7 +27,6 @@ def importF(date, plate, wellRow, panel, wellNum=None, comp=True):
     path_ = os.path.abspath("")
 
     pathname = path_ + "/ckine/data/flow/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
-    # print(pathname)
     # Declare arrays and int
     file = []
     sample = []
