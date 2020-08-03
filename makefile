@@ -24,6 +24,7 @@ output/figure%.svg: venv genFigures.py ckine/figures/figure%.py
 
 output/manuscript.md: venv manuscript/*.md
 	. venv/bin/activate && manubot process --content-directory=./manuscript/ --output-directory=./output --log-level=INFO
+	git remote rm rootstock
 
 output/manuscript.html: venv output/manuscript.md $(patsubst %, output/figure%.svg, $(flist))
 	mkdir output/output
