@@ -1,4 +1,4 @@
-matplotlib==3.2.1
+matplotlib==3.3.0
 pandas==1.1.0
 scipy==1.5.2
 seaborn==0.10.1
@@ -7,10 +7,10 @@ pytest==6.0.1
 pytest-cov==2.10.0
 scikit-learn==0.23.2
 svgutils==0.3.1
-FlowCytometryTools==0.5.0
 pylint==2.5.3
 manubot==0.4.0
-pandoc-fignos
-pandoc-eqnos
-pandoc-tablenos
+pandoc-fignos==2.3.1
+pandoc-eqnos==2.3.0
+pandoc-tablenos==2.2.2
 jupyter==1.0.0
+git+git://github.com/eyurtsev/FlowCytometryTools.git@093057486ab0aeb2938537ddcfea36d3c1d14fd3
