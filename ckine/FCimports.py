@@ -23,20 +23,32 @@ def importF(date, plate, wellRow, panel, wellNum=None, comp=True):
     """
     Import FCS files. Variable input: date in format mm-dd, plate #, panel #, and well letter. Output is a list of Data File Names in FCT Format
     Title/file names are returned in the array file --> later referenced in other functions as title/titles input argument
-    """
+    """                                                             
     path_ = os.path.abspath("")
 
     pathname = path_ + "/ckine/data/flow/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " IL2R/"
+    isotypePathname = pathname + "/Isotypes/"
     # Declare arrays and int
     file = []
     sample = []
+    isotypes = []
     z = 0
     # Read in user input for file path and assign to array file
     pathlist = Path(r"" + str(pathname)).glob("**/*.fcs")
+    iso_pathlist = Path(r"" + str(isotypePathname)).glob("**/*.fcs")
+    
+    for iso in iso_pathlist:
+        name = iso.name.split("_")[0]
+        isoSample = FCMeasurement(ID=name, datafile=str(iso))
+        print("Before: "+ str(np.mean(isoSample.data['RL1-H'])))
+        compedIsoSample = applyMatrix(isoSample, compMatrix(date, plate, wellRow))
+        print("After: "+ str(np.mean(compedIsoSample.data['RL1-H'])))
+        isotypes.append(compedIsoSample)
 
     unstainedWell = "none"
-
     for path in pathlist:
+        if path.name.split("_")[2] == "Isotype.fcs":
+            continue
         wellID = path.name.split("_")[1]
         if wellID[0] == wellRow:
             file.append(str(path))
@@ -49,29 +61,47 @@ def importF(date, plate, wellRow, panel, wellNum=None, comp=True):
         sample.append(FCMeasurement(ID="Test Sample" + str(z), datafile=entry))
         z += 1
     # The array sample contains data of each file in folder (one file per entry in array)
-
+    
     if wellNum is None:
         if comp is False:
             combinedSamples = combineWells(sample)
-            return combinedSamples, unstainedWell
+            return combinedSamples, unstainedWell, isotypes
         combinedSamples = combineWells(sample)  # Combines all files from samples
         compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))  # Applies compensation matrix
-        return compSample, unstainedWell
+        return compSample, unstainedWell, isotypes
 
     if comp is False:
-        return sample[wellNum - 1], unstainedWell
+        return sample[wellNum - 1], unstainedWell, isotypes
     compSample = applyMatrix(sample[wellNum - 1], compMatrix(date, plate, wellRow))
-    return compSample, unstainedWell
+    return compSample, unstainedWell, isotypes
 
 
-def subtract_unstained_signal(sample, channels, unstainedWell):
-    """ Subtract mean unstained signal from all input channels for a given sample. """
+def subtract_unstained_signal(sample, channels, receptors, unstainedWell, isotypes):
+    """ Subtract larger of mean isotype signal and mean unstained signal from all input channels for a given sample. """
     for _, channel in enumerate(channels):
-        meanBackground = np.mean(unstainedWell.data[channel])  # Calculates mean unstained signal for given channel
+        if _ <len(isotypes):
+            for i, iso in enumerate(isotypes):
+                if iso.ID == receptors[_]:
+                    meanBackground = compareSignals(isotypes[i], unstainedWell, channel) #Returns larger of two background signals
+                    break
+            assert(isotypes[i].ID == receptors[_])
+        else:
+            meanBackground = np.mean(unstainedWell.data[channel])
         sample[channel] = np.maximum(sample[channel] - meanBackground, 0.0)
 
     return sample
 
+
+def compareSignals(isotype, unstained, channel):
+    """ Compares a mean isotype and mean unstained signal and returns greater of the two"""
+    meanIsotype = np.mean(isotype.data[channel])
+    meanUnstained = np.mean(unstained.data[channel])
+    if meanIsotype > meanUnstained:
+        print(str(channel)+ " Isotype: " + str(meanIsotype))
+        return meanIsotype
+    else:
+        print(str(channel)+ " Unstained: " + str(meanUnstained))
+        return meanUnstained
 
 def compMatrix(date, plate, panel, invert=True):
     """Creates compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
@@ -125,14 +155,18 @@ def import_gates():
 
 def apply_gates(date, plate, gates_df, subpopulations=False):
     """ Constructs dataframe with channels relevant to receptor quantification. """
-    df, unstainedWell = samp_Gate(date, plate, gates_df, 'T-helper', subPop=subpopulations)
-    df = df.append(samp_Gate(date, plate, gates_df, 'T-reg', subPop=subpopulations)[0])
-    df = df.append(samp_Gate(date, plate, gates_df, 'NK', subPop=subpopulations)[0])
-    df = df.append(samp_Gate(date, plate, gates_df, 'CD8+', subPop=subpopulations)[0])
+    df, unstainedWell, isotypes = samp_Gate(date, plate, gates_df, 'T-helper', subPop=subpopulations)
+    df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"],["CD25","CD122","CD132"], unstainedWell, isotypes)
+    df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, 'T-reg', subPop=subpopulations)
+    df2 = subtract_unstained_signal(df2, ["VL1-H", "BL5-H", "RL1-H"],["CD25","CD122","CD132"], unstainedWell2, isotypes2)
+    df = df.append(df2)
+    df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, 'NK', subPop=subpopulations)
+    df2 = subtract_unstained_signal(df2, ["VL1-H", "BL5-H", "RL1-H"],["CD25","CD122","CD132"], unstainedWell2, isotypes2)
+    df = df.append(df2)
+    df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, 'CD8+', subPop=subpopulations)
+    df2 = subtract_unstained_signal(df2, ["VL1-H", "BL5-H", "RL1-H"],["CD25","CD122","CD132"], unstainedWell2, isotypes2)
+    df = df.append(df2)
     # All samples for data and plate processed combined
-    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-    #    print(samp_Gate(date, plate, gates_df, 'T-helper', subPop=subpopulations)[0])
-    df = subtract_unstained_signal(df, ["VL1-H", "BL5-H", "RL1-H"], unstainedWell)
     # Background signal substracted
     return df
 
@@ -141,8 +175,8 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
     """ Returns gated sample for a given date and plate. """
     # import data and create transformed df for gating
     tchannels, subPopName, row, panelNum = cellGateDat(cellType)
-    panel, unstainedWell = importF(date, plate, row, panelNum)
-    panel_t = panel.transform("tlog", channels=tchannels)  # Creates copy of panel1 to transform and gate
+    panel, unstainedWell, isotypes = importF(date, plate, row, panelNum)
+    panel_t = panel.transform("tlog", channels=tchannels)  # Creates copy of panel to transform and gate
 
     df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H"])
 
@@ -176,7 +210,7 @@ def samp_Gate(date, plate, gates_df, cellType, subPop=False):
                                    "RL1-H": panel_S.data[["RL1-H"]].values.reshape((sampleSub.counts,))})
             df = df.append(df_add)
 
-    return df, unstainedWell
+    return df, unstainedWell, isotypes
 
 
 def cellGateDat(cellType):
