@@ -32,6 +32,7 @@ def makeFigure():
     df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
     df_signal = df_signal.append(apply_gates("5-16", "1", df_gates))
+    df_signal = df_signal.append(apply_gates("5-16", "2", df_gates))
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -39,7 +40,7 @@ def makeFigure():
     receptors_ = ["CD25", "CD122", "CD132", "CD127"]
     channels_ = ["VL1-H", "BL5-H", "RL1-H", "BL1-H"]
     lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127]
-    dates = ["4-23", "4-26"]
+    dates = ["4-23", "4-26", "5-16"]
     plates = ["1", "2"]
 
     # calculate receptor counts
@@ -47,7 +48,7 @@ def makeFigure():
         for j, receptor in enumerate(receptors_):
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
-                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
+                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Receptor"] == receptor) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
                     data = data[data >= 0]
                     rec_counts = np.zeros(len(data))
                     for k, signal in enumerate(data):
@@ -55,20 +56,7 @@ def makeFigure():
                         rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    df_rec = df_rec.append(df_add)
-    
-    for _, cell in enumerate(cell_names):
-        for j, receptor in enumerate(receptors_):
-            for _, date in enumerate(dates):
-                for _, plate in enumerate(plates):
-                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
-                    data = data[data >= 0]
-                    rec_counts = np.zeros(len(data))
-                    for k, signal in enumerate(data):
-                        A, B, C, D = lsq_params[j]
-                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
-                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
-                                           "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
+                    df_add
                     df_rec = df_rec.append(df_add)
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
@@ -90,8 +78,9 @@ def calculate_moments(df, cell_names, receptors):
     df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
     for _, cell in enumerate(cell_names):
         for _, receptor in enumerate(receptors):
-            for _, date in enumerate(["4-23", "4-26"]):
+            for _, date in enumerate(["4-23", "4-26","5-16"]):
                 for _, plate in enumerate(["1", "2"]):
+                    #print(cell, receptor, date, plate)
                     df_subset = df.loc[(df["Cell Type"] == cell) & (df["Receptor"] == receptor) & (df["Date"] == date) & (df["Plate"] == plate)]["Count"]
                     mean_ = np.log10(df_subset.mean())
                     var_ = np.log10(df_subset.var())
@@ -99,7 +88,7 @@ def calculate_moments(df, cell_names, receptors):
                     df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
                     df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
                     df_stats = df_stats.append(df_new)
-
+    print(df_stats)
     return df_stats
 
 

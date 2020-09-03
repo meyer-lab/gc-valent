@@ -188,7 +188,7 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
         rType = 'IL2R'
 
     tchannels, subPopName, row, panelNum = cellGateDat(cellType)
-    if date == '5-16' and row == 'C':
+    if date == '5-16' and (row == 'C' or row == 'B'):
         row = 'A'
         panelNum = 1
     # FIX ^
@@ -201,14 +201,13 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
     # Implement gating, revert tlog, and add to dataframe
     if cellType in ('T-reg', 'T-helper'):
         samplecd3cd4 = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
-                                                      (gates_df["Date"] == '4-23') & (gates_df["Plate"] == float(1))]["Gate"].values[0]))
+                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         sample = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
-                                                     (gates_df["Date"] == '4-23') & (gates_df["Plate"] == float(1))]["Gate"].values[0]))
+                                                     (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
     else:
         sample = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
-                                                (gates_df["Date"] == '4-23') & (gates_df["Plate"] == float(1))]["Gate"].values[0]))
+                                                (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
 
-    # FIX ^^ dates for gating filled in manually
 
     # Gated signals based on gating values from csv
     gated_idx = np.array(sample.data.index)
