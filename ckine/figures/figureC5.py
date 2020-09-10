@@ -78,7 +78,7 @@ def calculate_moments(df, cell_names, receptors):
     df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
     for _, cell in enumerate(cell_names):
         for _, receptor in enumerate(receptors):
-            for _, date in enumerate(["4-23", "4-26","5-16"]):
+            for _, date in enumerate(["4-23", "4-26", "5-16"]):
                 for _, plate in enumerate(["1", "2"]):
                     #print(cell, receptor, date, plate)
                     df_subset = df.loc[(df["Cell Type"] == cell) & (df["Receptor"] == receptor) & (df["Date"] == date) & (df["Plate"] == plate)]["Count"]
@@ -105,8 +105,6 @@ def run_regression():
     sampleE, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "E")
     sampleF, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "F")
     sampleI, _ = importF(path_here + "/data/flow/2019-05-16 Receptor Quant - Beads/", "F")
-
-
 
     recQuant1 = np.array([0., 4407, 59840, 179953, 625180])  # CD25, CD122
     recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
