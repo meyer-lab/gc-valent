@@ -56,7 +56,6 @@ def makeFigure():
                         rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    df_add
                     df_rec = df_rec.append(df_add)
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
@@ -80,7 +79,6 @@ def calculate_moments(df, cell_names, receptors):
         for _, receptor in enumerate(receptors):
             for _, date in enumerate(["4-23", "4-26", "5-16"]):
                 for _, plate in enumerate(["1", "2"]):
-                    #print(cell, receptor, date, plate)
                     df_subset = df.loc[(df["Cell Type"] == cell) & (df["Receptor"] == receptor) & (df["Date"] == date) & (df["Plate"] == plate)]["Count"]
                     mean_ = np.log10(df_subset.mean())
                     var_ = np.log10(df_subset.var())

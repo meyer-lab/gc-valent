@@ -49,7 +49,6 @@ def importF(date, plate, wellRow, panel, receptorType, wellNum, comp=True):
             continue
         wellID = path.name.split("_")[1]
         if wellID[0] == wellRow:
-            test = FCMeasurement(ID="Sample " + str(wellID), datafile=str(path))
             file.append(str(path))
         else:
             unstainedWell = FCMeasurement(ID="Unstained Sample", datafile=str(path))  # Stores data from unstainedWell separately
@@ -191,7 +190,7 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
     if date == '5-16' and (row == 'C' or row == 'B'):
         row = 'A'
         panelNum = 1
-    # FIX ^
+
     panel, unstainedWell, isotypes = importF(date, plate, row, panelNum, rType, wellNum)
 
     panel_t = panel.transform("tlog", channels=tchannels)  # Creates copy of panel to transform and gate
