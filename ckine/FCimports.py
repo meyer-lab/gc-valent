@@ -208,7 +208,6 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
         sample = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
                                                 (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
 
-
     # Gated signals based on gating values from csv
     gated_idx = np.array(sample.data.index)
     panel.set_data(panel.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
