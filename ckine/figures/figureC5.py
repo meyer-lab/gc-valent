@@ -88,7 +88,7 @@ def calculate_moments(df, cell_names, receptors):
                     df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
                     df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
                     df_stats = df_stats.append(df_new)
-    print(df_stats)
+
     return df_stats
 
 
