@@ -1,5 +1,5 @@
 """
-This creates Figure 7, tensor factorization of
+This creates Figure 7, tensor factorization of mutant and WT biv and monovalent ligands.
 """
 
 import os
@@ -20,10 +20,7 @@ def makeFigure():
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all()
-    print(respDF)
     respTensor = makeTensor(respDF)
-    print(respDF)
-    print(respTensor[0, 0, 0, :, 0])
 
     return f
 
@@ -47,3 +44,4 @@ def makeTensor(sigDF):
                             tensor[i, j, k, ii, jj] = np.mean(entry)
 
     return tensor
+
