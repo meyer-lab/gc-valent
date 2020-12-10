@@ -40,7 +40,7 @@ def makeTensor(sigDF):
                 for ii, conc in enumerate(concs):
                     for jj, cell in enumerate(cellTypes):
                         entry = sigDF.loc[(sigDF.Ligand == lig) & (sigDF.Bivalent == val) & (sigDF.Time == tp) & (sigDF.Dose == conc) & (sigDF.Cell == cell)].Mean.values
-                        if len(entry) > 1:
+                        if len(entry) >= 1:
                             tensor[i, j, k, ii, jj] = np.mean(entry)
 
     return tensor
