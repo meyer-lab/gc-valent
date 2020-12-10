@@ -44,4 +44,3 @@ def makeTensor(sigDF):
                             tensor[i, j, k, ii, jj] = np.mean(entry)
 
     return tensor
-
