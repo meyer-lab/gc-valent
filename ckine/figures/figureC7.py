@@ -7,8 +7,6 @@ from os.path import join, dirname
 import numpy as np
 import pandas as pd
 import tensorly as tl
-from tensorly.decomposition._cp import initialize_cp
-from tensorly.cp_tensor import CPTensor
 from tensorly.decomposition import non_negative_parafac
 from .figureCommon import subplotLabel, getSetup
 from ..imports import import_pstat_all
@@ -26,7 +24,7 @@ def makeFigure():
     respTensor = makeTensor(respDF)
     nnTens, maskTens = getMaskTens()
     R2Xplot(ax[0], respTensor, 5)
-    
+
     return f
 
 
