@@ -3,13 +3,11 @@ This creates Figure 7, tensor factorization of mutant and WT biv and monovalent 
 """
 
 import os
-from os.path import join, dirname
 import numpy as np
 import pandas as pd
-import tensorly as tl
-from tensorly.decomposition import non_negative_parafac
 from .figureCommon import subplotLabel, getSetup
 from ..imports import import_pstat_all
+from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Time, plot_tFac_Conc, plot_tFac_Cells
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -18,60 +16,22 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
     ax, f = getSetup((10, 5), (2, 4))
-    subplotLabel(ax)
+    ax[3].axis("off")
+    axLabel = ax.copy()
+    del axLabel[3]
+    subplotLabel(axLabel)
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all()
     respTensor = makeTensor(respDF)
-    nnTens, maskTens = getMaskTens(respTensor)
+    tFacAll = factorTensor(respTensor, 4)
+    tFacAll.normalize()
+
     R2Xplot(ax[0], respTensor, 5)
+    ligHandles, ligLabels = plot_tFac_Ligs(ax[1:3], tFacAll, respDF)
+    ax[3].legend(ligHandles, ligLabels, loc="center", prop={"size": 8}, title="Ligand Legend")
+    plot_tFac_Time(ax[4], tFacAll, respDF)
+    plot_tFac_Conc(ax[5], tFacAll, respDF)
+    plot_tFac_Cells(ax[6:8], tFacAll, respDF)
 
     return f
-
-
-def makeTensor(sigDF):
-    """Makes tensor of data with dimensions mutein x valency x time point x concentration x cell type"""
-    ligands = sigDF.Ligand.unique()
-    tps = sigDF.Time.unique()
-    concs = sigDF.Dose.unique()
-    cellTypes = sigDF.Cell.unique()
-    tensor = np.empty((len(ligands), len(tps), len(concs), len(cellTypes)))
-    tensor[:] = np.nan
-    for i, lig in enumerate(ligands):
-        for j, tp in enumerate(tps):
-            for k, conc in enumerate(concs):
-                for ii, cell in enumerate(cellTypes):
-                    entry = sigDF.loc[(sigDF.Ligand == lig) & (sigDF.Time == tp) & (sigDF.Dose == conc) & (sigDF.Cell == cell)].Mean.values
-                    if len(entry) >= 1:
-                        tensor[i, j, k, ii] = np.mean(entry)
-
-    return tensor
-
-
-def R2Xplot(ax, statTens, compNum):
-    """Creates R2X plot for non-neg CP tensor decomposition"""
-    varHold = np.zeros(compNum)
-    for i in range(1, compNum + 1):
-        tFac = non_negative_parafac(np.nan_to_num(statTens, nan=0), rank=i, n_iter_max=1000)
-        varHold[i - 1] = calcR2X(statTens, tFac)
-
-    ax.scatter(np.arange(1, compNum + 1), varHold, c='k', s=20.)
-    ax.set(ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum + 1), xticks=np.arange(0, compNum + 1))
-
-
-def calcR2X(tensorIn, tensorFac):
-    """ Calculate R2X. """
-    tErr = np.nanvar(tl.cp_to_tensor(tensorFac) - tensorIn)
-    return 1.0 - (tErr) / (np.nanvar(tensorIn))
-
-
-def getMaskTens(tensor):
-    """Returns binary mask of tensor marking nan locations, and a tensor copy with NaNs as zeros"""
-    masktensor = tensor.copy()
-    tensorNoNan = tensor.copy()
-
-    masktensor[np.isnan(masktensor)] = 0
-    masktensor[np.invert(np.isnan(masktensor))] = 1
-    tensorNoNan[np.isnan(masktensor)] = 0
-
-    return tensorNoNan, masktensor
