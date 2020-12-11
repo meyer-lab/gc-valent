@@ -13,6 +13,7 @@ from ..imports import import_pstat_all
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
@@ -50,12 +51,12 @@ def makeTensor(sigDF):
 def R2Xplot(ax, statTens, compNum):
     """Creates R2X plot for non-neg CP tensor decomposition"""
     varHold = np.zeros(compNum)
-    for i in range(1, compNum+1):
+    for i in range(1, compNum + 1):
         tFac = non_negative_parafac(np.nan_to_num(statTens, nan=0), rank=i, n_iter_max=1000)
-        varHold[i-1] = calcR2X(statTens, tFac)
+        varHold[i - 1] = calcR2X(statTens, tFac)
 
-    ax.scatter(np.arange(1, compNum+1), varHold, c='k', s=20.)
-    ax.set(ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum+1), xticks=np.arange(0, compNum+1))
+    ax.scatter(np.arange(1, compNum + 1), varHold, c='k', s=20.)
+    ax.set(ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum + 1), xticks=np.arange(0, compNum + 1))
 
 
 def calcR2X(tensorIn, tensorFac):
