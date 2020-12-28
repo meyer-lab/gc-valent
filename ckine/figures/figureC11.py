@@ -55,8 +55,8 @@ def StatMV():
     cellTypesNK = ["nk", "cd"]
     TitlesT = ["Treg", "Thelper"]
     TitlesNK = ["NK", "CD8"]
-    masterMVdf = pds.DataFrame(columns={"Date", "Time", "Cell", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "2Ra_Stat_Covar"})
-    MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "2Ra_Stat_Covar"})
+    masterMVdf = pds.DataFrame(columns={"Date", "Time", "Cell", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "alphStatCov"})
+    MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "alphStatCov"})
     alldata = []
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
     T_matrix = compMatrix("2019-11-08", "1", "A")  # Create matrix 1
@@ -70,19 +70,18 @@ def StatMV():
             Tcells = True
         else:
             Tcells = False
-        for j, row in enumerate(rows):
-            print(filename)
-            sample, _ = importF(filename, row)
-            if Tcells:
-                statcol = "RL1-H"
-                IL2RaCol = "VL1-H"
-                for k, cell_type in enumerate(cellTypesT):
+        if Tcells:
+            statcol = "RL1-H"
+            IL2RaCol = "VL1-H"
+            for k, cell_type in enumerate(cellTypesT):
+                for j, row in enumerate(rows):
+                    print(filename)
+                    sample, _ = importF(filename, row)
                     if cell_type:
                         for jj, subSample in enumerate(sample):
                             sample[jj] = applyMatrix(subSample, T_matrix)
                         gates = gating(cell_type, True)
                         _, alldata = count_data(sample, gates, Tcells, True)
-
                     for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
                         dat_array = alldata[ii]
                         stat_array = dat_array[[statcol]]
@@ -94,17 +93,20 @@ def StatMV():
                         timelig = mutFunc(row, filename)
                         if stat_array.size == 0:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1],
-                                                                        "Dose": dosemat[0, ii], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0], "2Ra_Stat_Covar": [0], "Bivalent": timelig[2]}))
+                                                                        "Dose": dosemat[0, ii], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0], "alphStatCov": [0], "Bivalent": timelig[2]}))
                         else:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": np.mean(stat_array), "Variance": np.var(
-                                stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array), "2Ra_Stat_Covar": [np.cov(stat_array.flatten(), IL2Ra_array.flatten())[1, 0]], "Bivalent": timelig[2]}))
-
-                    MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
-                    masterMVdf = masterMVdf.append(MVdf)
-                    MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "2Ra_Stat_Covar", "Bivalent"})
-            else:
-                statcol = "BL2-H"
-                for k, cell_type in enumerate(cellTypesNK):
+                                stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array), "alphStatCov": [np.cov(stat_array.flatten(), IL2Ra_array.flatten())[1, 0]], "Bivalent": timelig[2]}))
+                    if j == 3 or j == 7:
+                        MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
+                        masterMVdf = masterMVdf.append(MVdf)
+                        MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "alphStatCov", "Bivalent"})
+        else:
+            statcol = "BL2-H"
+            for k, cell_type in enumerate(cellTypesNK):
+                for j, row in enumerate(rows):
+                    print(filename)
+                    sample, _ = importF(filename, row)
                     if cell_type:
                         for jj, subSample in enumerate(sample):
                             sample[jj] = applyMatrix(subSample, Cd8_NKmatrix)
@@ -118,14 +120,14 @@ def StatMV():
                         timelig = mutFunc(row, filename)
                         if stat_array.size == 0:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesNK[k],
-                                                                        "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0], "2Ra_Stat_Covar": [0], "Bivalent": timelig[2]}))
+                                                                        "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0], "alphStatCov": [0], "Bivalent": timelig[2]}))
                         else:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesNK[k], "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": np.mean(stat_array), "Variance": np.var(
-                                stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array), "2Ra_Stat_Covar": [0], "Bivalent": timelig[2]}))
-
-                    MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
-                    masterMVdf = masterMVdf.append(MVdf)
-                    MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "2Ra_Stat_Covar", "Bivalent"})
+                                stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array), "alphStatCov": [0], "Bivalent": timelig[2]}))
+                    if j == 3 or j == 7:
+                        MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
+                        masterMVdf = masterMVdf.append(MVdf)
+                        MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "alphStatCov", "Bivalent"})
 
     masterMVdf.to_csv("MonomericMutSingleCellData.csv", index=False)
     # masterMVdf.to_csv("/home/brianoj/VarData/")
@@ -185,13 +187,13 @@ def mutFunc(letter, datafile):
 # done done
     elif datafile == "ckine/data/2019-11-27 monomer IL-2 Fc signaling/CD4 T cells - C-term IL2-060 mono, C-term V91K mono" or datafile == "ckine/data/2019-11-27 monomer IL-2 Fc signaling/NK CD8 T cells - C-term IL2-060 mono, C-term V91K mono":
         if letter == "A":
-            return [4.0, "WT N-term", 0]
+            return [4.0, "WT C-term", 0]
         elif letter == "B":
-            return [2.0, "WT N-term", 0]
+            return [2.0, "WT C-term", 0]
         elif letter == "C":
-            return [1.0, "WT N-term", 0]
+            return [1.0, "WT C-term", 0]
         elif letter == "D":
-            return [0.5, "WT N-term", 0]
+            return [0.5, "WT C-term", 0]
         elif letter == "E":
             return [4.0, "V91K C-term", 0]
         elif letter == "F":

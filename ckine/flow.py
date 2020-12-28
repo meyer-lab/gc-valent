@@ -44,8 +44,8 @@ def cd4():
 
 def cd4monMut():
     """ Function for gating CD4+ cells (generates T cells) - for monomeric Mut Experiments. """
-    cd41 = ThresholdGate(6.514e03, ("VL4-H"), region="above", name="cd41")
-    cd42 = ThresholdGate(7.646e03, ("VL4-H"), region="below", name="cd42")
+    cd41 = ThresholdGate(6500.0, ("VL4-H"), region="above", name="cd41")
+    cd42 = ThresholdGate(8000.0, ("VL4-H"), region="below", name="cd42")
     cd4_gate = cd41 & cd42
     return cd4_gate
 
@@ -69,6 +69,11 @@ channels["treg"] = channels["tregMem"] = channels["tregNaive"] = channels["nonTr
 channels["nk"] = channels["nkt"] = channels["bnk"] = ("BL1-H", "VL4-H")
 channels["cd"] = ("RL1-H", "VL4-H")
 
+channelsMut = {}
+channelsMut["treg"] = channelsMut["nonTreg"] = ("VL1-H", "BL1-H")
+channelsMut["nk"] = ("VL4-H", "BL1-H")
+channelsMut["cd"] = ("VL4-H", "RL1-H")
+
 regionSpec = {}
 regionSpec["treg"] = regionSpec["tregMem"] = regionSpec["tregNaive"] = ["top right", "bottom left"]
 regionSpec["nonTreg"] = regionSpec["THelpMem"] = regionSpec["THelpN"] = regionSpec["nk"] = regionSpec["nkt"] = regionSpec["bnk"] = regionSpec[
@@ -83,11 +88,12 @@ regionSpec_["tregNaive"] = regionSpec_["THelpN"] = "above"
 
 def gating(cell_type, Mut=False):
     """ Creates and returns the cell type gate on CD4+ cells. """
+    print(cell_type)
     if not Mut:
         cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type + "1"))
         cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type + "2"))
     else:
-        cell1 = PolyGate(vertMonMut[cell_type], channels[cell_type], region='in', name=cell_type)
+        cell1 = PolyGate(vertMonMut[cell_type], channelsMut[cell_type], region='in', name=cell_type)
     if regionSpec_[cell_type] is not None:
         cd45 = ThresholdGate(6300, ("BL3-H"), region=regionSpec_[cell_type], name="cd45")
         gate = cell1 & cell2 & cd4() & cd45
@@ -121,6 +127,7 @@ def cellData(sample_i, gate, Tcells=True, Mut=False):
         smpl = sample_i.transform("tlog", channels=channels_)
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
+
     # Number of events (AKA number of cells)
     cell_data = cells.get_data()
     cell_count = cells.get_data().shape[0]
