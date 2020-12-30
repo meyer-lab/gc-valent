@@ -24,6 +24,7 @@ def makeFigure():
 
     dose_ind = np.array([0.0, 6.0, 11.0])
     Tsample, _ = importF(path_here + "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT/", "C")
+    Tdate = "4/18/2019"
     _, pstat_arrayT, _, loadingT = pcaAll(Tsample, Tcells=True)  # take out titles req
     dataT, _, _ = sampleT(Tsample[0])
     PCAobjT, _ = fitPCA(dataT, Tcells=True)
@@ -32,6 +33,7 @@ def makeFigure():
     _, pstat_arrayNk, _, loadingNk = pcaAll(Nksample, Tcells=False)  # take out titles req
     dataNk, _, _ = sampleNK(Nksample[0])
     PCAobjNk, _ = fitPCA(dataNk, Tcells=False)
+    NKdate = "3/15/2019"
 
     for i, col in enumerate(dose_ind):
         col = int(col)
@@ -74,12 +76,12 @@ def ColPlot(sample, ax, col, Tcells=True):
         ax.set_title("Nk PCA by Gating", fontsize=15)
 
 
-def RecQuantResp(ax, samples, cellType=False):
+def RecQuantResp(ax, samples, cellType=False, date=False):
     """Plots dose response curves for cells separated by their receptor expression levels"""
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
     quartDF = pds.DataFrame(columns=["IL-2 Dose (nM)", "Activity", "Quartile"])
     if cellType:
-        gates = gating(cellType)
+        gates = gating(cellType, date, True)
     for i, sample in enumerate(samples):
 
         if cellType:

@@ -87,9 +87,8 @@ regionSpec_["tregMem"] = regionSpec_["THelpMem"] = "below"
 regionSpec_["tregNaive"] = regionSpec_["THelpN"] = "above"
 
 
-def gating(cell_type, date, Mut=False):
+def gating(cell_type, date=False, Mut=False):
     """ Creates and returns the cell type gate on CD4+ cells. """
-    print(cell_type)
     if not Mut:
         cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type + "1"))
         cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type + "2"))
