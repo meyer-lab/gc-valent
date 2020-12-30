@@ -80,7 +80,7 @@ def StatMV():
                     if cell_type:
                         for jj, subSample in enumerate(sample):
                             sample[jj] = applyMatrix(subSample, T_matrix)
-                        gates = gating(cell_type, True)
+                        gates = gating(cell_type, dates[i], True)
                         _, alldata = count_data(sample, gates, Tcells, True)
                     for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
                         dat_array = alldata[ii]
@@ -110,7 +110,7 @@ def StatMV():
                     if cell_type:
                         for jj, subSample in enumerate(sample):
                             sample[jj] = applyMatrix(subSample, Cd8_NKmatrix)
-                        gates = gating(cell_type, True)
+                        gates = gating(cell_type, dates[i], True)
                         _, alldata = count_data(sample, gates, Tcells, True)
                     for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
                         dat_array = alldata[ii]
@@ -119,6 +119,7 @@ def StatMV():
                         stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
                         timelig = mutFunc(row, filename)
                         if stat_array.size == 0:
+
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesNK[k],
                                                                         "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": [0], "Variance": [0], "Skew": [0], "Kurtosis": [0], "alphStatCov": [0], "Bivalent": timelig[2]}))
                         else:
@@ -130,7 +131,6 @@ def StatMV():
                         MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "alphStatCov", "Bivalent"})
 
     masterMVdf.to_csv("MonomericMutSingleCellData.csv", index=False)
-    # masterMVdf.to_csv("/home/brianoj/VarData/")
 
     return MVdf
 

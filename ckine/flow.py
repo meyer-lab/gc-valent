@@ -2,11 +2,16 @@
 This file includes various methods for flow cytometry analysis.
 """
 from pathlib import Path
+from os.path import dirname
 from scipy.optimize import least_squares
 import numpy as np
+import pandas as pd
+import warnings
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate, PolyGate
+
+path_here = dirname(dirname(__file__))
 
 
 def importF(pathname, WellRow):
@@ -50,6 +55,13 @@ def cd4monMut():
     return cd4_gate
 
 
+def import_gates_pSTAT(date, cellType):
+    """Imports the gates for pSTAT signaling experiments"""
+    gateDF = pd.read_csv(path_here + "/ckine/data/pSTATgates.csv")
+    gates = gateDF.loc[(gateDF["Date"] == date) & (gateDF["Cell Type"] == cellType)].Gates
+    return eval(gates.values[0])
+
+
 vert = {}
 vert["treg"] = vert["tregMem"] = vert["tregNaive"] = [(4.814e03, 3.229e03), (6.258e03, 5.814e03)]
 vert["nonTreg"] = vert["THelpMem"] = vert["THelpN"] = [(5.115e03, 3.470e02), (2.586e03, 5.245e03)]
@@ -58,21 +70,10 @@ vert["nkt"] = [(6.758e03, 6.021e03), (5.550e03, 7.013e03)]
 vert["bnk"] = [(7.342e03, 4.899e03), (6.533e03, 5.751e03)]
 vert["cd"] = [(9.016e03, 5.976e03), (6.825e03, 7.541e03)]
 
-vertMonMut = {}
-vertMonMut["treg"] = [(4.2e3, 7.2e3), (6.5e03, 7.2e03), (6.5e03, 5.3e03), (4.9e03, 5.3e03), (4.2e03, 5.7e03)]
-vertMonMut["nonTreg"] = [(1.8e03, 3.1e03), (1.8e03, 4.9e03), (6.0e03, 4.9e03), (6.0e03, 3.1e03)]
-vertMonMut["nk"] = [(4.8e3, 5.1e3), (5.9e3, 5.1e3), (5.9e03, 6.1e03), (4.8e03, 6.1e03)]
-vertMonMut["cd"] = [(7.5e3, 8.4e3), (4.7e3, 8.4e3), (4.7e03, 6.5e03), (7.5e03, 6.5e03)]
-
 channels = {}
 channels["treg"] = channels["tregMem"] = channels["tregNaive"] = channels["nonTreg"] = channels["THelpMem"] = channels["THelpN"] = ("BL1-H", "VL1-H")
 channels["nk"] = channels["nkt"] = channels["bnk"] = ("BL1-H", "VL4-H")
 channels["cd"] = ("RL1-H", "VL4-H")
-
-channelsMut = {}
-channelsMut["treg"] = channelsMut["nonTreg"] = ("VL1-H", "BL1-H")
-channelsMut["nk"] = ("VL4-H", "BL1-H")
-channelsMut["cd"] = ("VL4-H", "RL1-H")
 
 regionSpec = {}
 regionSpec["treg"] = regionSpec["tregMem"] = regionSpec["tregNaive"] = ["top right", "bottom left"]
@@ -86,14 +87,14 @@ regionSpec_["tregMem"] = regionSpec_["THelpMem"] = "below"
 regionSpec_["tregNaive"] = regionSpec_["THelpN"] = "above"
 
 
-def gating(cell_type, Mut=False):
+def gating(cell_type, date, Mut=False):
     """ Creates and returns the cell type gate on CD4+ cells. """
     print(cell_type)
     if not Mut:
         cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type + "1"))
         cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type + "2"))
     else:
-        cell1 = PolyGate(vertMonMut[cell_type], channelsMut[cell_type], region='in', name=cell_type)
+        cell1 = import_gates_pSTAT(date, cell_type)
     if regionSpec_[cell_type] is not None:
         cd45 = ThresholdGate(6300, ("BL3-H"), region=regionSpec_[cell_type], name="cd45")
         gate = cell1 & cell2 & cd4() & cd45
@@ -116,6 +117,7 @@ def cellData(sample_i, gate, Tcells=True, Mut=False):
     Function for returning the count of cells and raw data in a single .fcs. file of a single cell file. Arguments: single sample/.fcs file and the gate of the desired cell output
     """
     # Import single file and save data to a variable --> transform to logarithmic scale
+
     if Tcells:
         channels_ = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
     else:
@@ -124,7 +126,9 @@ def cellData(sample_i, gate, Tcells=True, Mut=False):
     if not Mut:
         smpl = sample_i.transform("hlog", channels=channels_)
     else:
-        smpl = sample_i.transform("tlog", channels=channels_)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', category=RuntimeWarning)
+            smpl = sample_i.transform("tlog", channels=channels_)
     # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
     cells = smpl.gate(gate)
 

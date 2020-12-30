@@ -46,7 +46,7 @@ def StatMV():
                  "/data/flow/2019-03-27 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate.zip",
                  "/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate - NEW PBMC LOT.zip"]
     dataFiles = ["/home/brianoj/Tplate15", "/home/brianoj/Tplate27", "/home/brianoj/Tplate418", "/home/brianoj/Nkplate15", "/home/brianoj/Nkplate27", "/home/brianoj/Nkplate418"]
-    dates = ["3/19/2019", "3/27/2019", "4/18/2019", "3/15/2019", "3/27/2019", "4/18/2019"]
+    dates = ["3/15/2019", "3/27/2019", "4/18/2019", "3/15/2019", "3/27/2019", "4/18/2019"]
     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     cellTypesT = ['treg', 'nonTreg']
     cellTypesNK = ["nk", "cd"]
@@ -74,11 +74,9 @@ def StatMV():
                     print(filename)
                     sample, _ = importF(filename, row)
                     if cell_type:
-
                         for jj, subSample in enumerate(sample):
                             sample[jj] = applyMatrix(subSample, T_matrix)
-
-                        gates = gating(cell_type, True)
+                        gates = gating(cell_type, dates[i], True)
                         _, alldata = count_data(sample, gates, Tcells, True)
                     else:
                         for jj, samplejj in enumerate(sample):
@@ -100,6 +98,7 @@ def StatMV():
                         else:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timeFunc(row), "Cell": TitlesT[k], "Ligand": cytFunc(row), "Dose": dosemat[0, ii], "Mean": np.mean(stat_array), "Variance": np.var(
                                 stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array), "alphStatCov": [np.cov(stat_array.flatten(), IL2Ra_array.flatten())[1, 0]], "Bivalent": [0]}))
+
                     if j == 3 or j == 7:
                         MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
                         masterMVdf = masterMVdf.append(MVdf)
@@ -114,7 +113,7 @@ def StatMV():
                         if cell_type:
                             for jj, subSample in enumerate(sample):
                                 sample[jj] = applyMatrix(subSample, Cd8_NKmatrix)
-                            gates = gating(cell_type, True)
+                            gates = gating(cell_type, dates[i], True)
                             _, alldata = count_data(sample, gates, Tcells, True)
                         else:
                             for jj, samplejj in enumerate(sample):
@@ -162,11 +161,9 @@ def StatMV():
                     print(filename)
                     sample, _ = importF(filename, row)
                     if cell_type:
-
                         for jj, subSample in enumerate(sample):
                             sample[jj] = applyMatrix(subSample, T_matrix)
-
-                        gates = gating(cell_type, True)
+                        gates = gating(cell_type, dates[i], True)
                         _, alldata = count_data(sample, gates, Tcells, True)
                     else:
                         for jj, samplejj in enumerate(sample):
@@ -188,7 +185,6 @@ def StatMV():
                         else:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": np.mean(stat_array), "Variance": np.var(
                                 stat_array), "Skew": stats.skew(stat_array), "Kurtosis": stats.kurtosis(stat_array), "alphStatCov": [np.cov(stat_array.flatten(), IL2Ra_array.flatten())[1, 0]], "Bivalent": timelig[2]}))
-
                     if j == 3 or j == 7:
                         MVdf['Mean'] = MVdf['Mean'] - MVdf['Mean'].min()
                         masterMVdf = masterMVdf.append(MVdf)
@@ -201,11 +197,9 @@ def StatMV():
                     sample, _ = importF(filename, row)
                     if (row == 'H' and i == 4) is False:
                         if cell_type:
-
                             for jj, subSample in enumerate(sample):
                                 sample[jj] = applyMatrix(subSample, Cd8_NKmatrix)
-
-                            gates = gating(cell_type, True)
+                            gates = gating(cell_type, dates[i], True)
                             _, alldata = count_data(sample, gates, Tcells, True)
                         else:
                             for jj, samplejj in enumerate(sample):
@@ -232,7 +226,6 @@ def StatMV():
                         MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Variance", "Skew", "Kurtosis", "alphStatCov", "Bivalent"})
 
     masterMVdf.to_csv("WTDimericMutSingleCellData.csv", index=False)
-    # masterMVdf.to_csv("/home/brianoj/VarData/")
 
     return MVdf
 
