@@ -108,7 +108,7 @@ def StatMV(sampleType, ax, cell_type, ligand, title, date, Tcells=True):
     return MVdf
 
 
-def violinDist(sampleType2, sampleType15, ax, cell_type, title, Tcells=True):
+def violinDist(sampleType2, sampleType15, ax, cell_type, title, date, Tcells=True):
     """
     Calculate mean and variance of a sample in a pandas dataframe, and plot.
     """

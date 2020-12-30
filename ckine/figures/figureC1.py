@@ -55,9 +55,9 @@ def makeFigure():
     # ColPlot(Tsample, ax[8], 4, True)
     # ColPlot(Nksample, ax[9], 4, False)
     RecQuantResp(ax[8], Tsample)
-    RecQuantResp(ax[9], Tsample, "treg")
-    RecQuantResp(ax[10], Tsample, "nonTreg")
-    RecQuantResp(ax[11], Tsample, "tregNaive")
+    RecQuantResp(ax[9], Tsample, "treg", Tdate)
+    RecQuantResp(ax[10], Tsample, "nonTreg", Tdate)
+    #RecQuantResp(ax[11], Tsample, "tregNaive")
 
     return f
 
@@ -83,7 +83,6 @@ def RecQuantResp(ax, samples, cellType=False, date=False):
     if cellType:
         gates = gating(cellType, date, True)
     for i, sample in enumerate(samples):
-
         if cellType:
             df, _ = cellData(sample, gates)
             pstatdata = pds.DataFrame({"RL1-H": df["RL1-H"]})
