@@ -90,6 +90,7 @@ def StatMV():
                         IL2Ra_array = dat_array[[IL2RaCol]]
                         IL2Ra_array = IL2Ra_array.to_numpy()
                         IL2Ra_array = IL2Ra_array.clip(min=1)
+                        IL2Ra_array = IL2Ra_array / 1.5  # convert roughly to number from signal
                         IL2Ra_array = np.reshape(IL2Ra_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
                         stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
                         timelig = mutFunc(row, filename)
