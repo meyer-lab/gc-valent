@@ -78,7 +78,7 @@ def StatMV():
                     print(filename)
                     sample, _ = importF(filename, row)
                     if cell_type:
-                        #for jj, subSample in enumerate(sample):
+                        # for jj, subSample in enumerate(sample):
                         #    sample[jj] = applyMatrix(subSample, T_matrix)
                         gates = gating(cell_type, dates[i], True, repList[i])
                         _, alldata = count_data(sample, gates, Tcells, True)
@@ -90,8 +90,8 @@ def StatMV():
                         IL2Ra_array = dat_array[[IL2RaCol]]
                         IL2Ra_array = IL2Ra_array.to_numpy()
                         IL2Ra_array = IL2Ra_array.clip(min=1)
-                        IL2Ra_array = np.reshape(IL2Ra_array[stat_array != np.amax(stat_array)], (-1, 1)) # Remove random exploding value
-                        stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1)) # Remove random exploding value
+                        IL2Ra_array = np.reshape(IL2Ra_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
+                        stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
                         timelig = mutFunc(row, filename)
                         if stat_array.size == 0:
                             MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": [
@@ -110,7 +110,7 @@ def StatMV():
                     print(filename)
                     sample, _ = importF(filename, row)
                     if cell_type:
-                        #for jj, subSample in enumerate(sample):
+                        # for jj, subSample in enumerate(sample):
                         #    sample[jj] = applyMatrix(subSample, Cd8_NKmatrix)
                         gates = gating(cell_type, dates[i], True, repList[i])
                         _, alldata = count_data(sample, gates, Tcells, True)
@@ -119,7 +119,7 @@ def StatMV():
                         stat_array = dat_array[[statcol]]
                         stat_array = stat_array.to_numpy()
                         stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
-                        stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1)) # Remove random exploding value
+                        stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
                         timelig = mutFunc(row, filename)
                         if stat_array.size == 0:
 
