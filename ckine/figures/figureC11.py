@@ -9,7 +9,6 @@ from ..flow import importF
 from ..PCA import StatGini, sampleT, sampleNK
 from ..flow import gating, count_data
 from ..FCimports import compMatrix, applyMatrix, combineWells
-from ..imports import importSigma
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -20,8 +19,6 @@ def makeFigure():
     ax, f = getSetup((10, 10), (4, 4))
 
     subplotLabel(ax)
-
-    importSigma("Treg")
     StatMV()
 
     # global_legend(ax[7])
