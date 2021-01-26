@@ -6,6 +6,7 @@ import os
 from os.path import dirname, join
 from pathlib import Path
 import numpy as np
+from numpy import linalg as LA
 import pandas as pd
 import jax.numpy as jnp
 from jax import jit, jacfwd
@@ -13,9 +14,10 @@ from jax.config import config
 from scipy.optimize import root
 from scipy.special import binom
 from .imports import import_pstat_all
+from scipy.optimize import minimize
 
 path_here = dirname(dirname(__file__))
-KxStarP = 1e-10
+KxStarP = 1e-12
 
 
 def Req_func(Req, Rtot, L0fA, AKxStar, f):
@@ -144,7 +146,7 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     return Lbound, Rbound, Lfbnd
 
 
-def cytBindingModel(mut, val, doseVec, cellType, date=False):
+def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     recQuantDF = pd.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
@@ -159,21 +161,24 @@ def cytBindingModel(mut, val, doseVec, cellType, date=False):
     recCount = np.ravel(np.power(10, recCount))
 
     for i, dose in enumerate(doseVec):
-        output[i] = polyfc(dose / 1e9, KxStarP, val, recCount, [1], Affs)[0]
-
+        if x:
+            output[i] = polyfc(dose / 1e9, x[0], val, recCount, [1], Affs)[1]
+        else:
+            output[i] = polyfc(dose / 1e9, KxStarP, val, recCount, [1], Affs)[1]
     if date:
         convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
-        output *= convDict.loc[date].values
+        output *= convDict.loc[(convDict.Date == date) and (convDict.Cell == cellType)].Scale
 
     return output
 
 
-def getBindConvDict():
-    """Runs model for all data points and outputs date conversion dict for binding to pSTAT"""
+def runFullModel(x=False):
+    """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all()
-    statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)")]
+    statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)") & (statDF.Ligand != "IL15 (Mono)")]
     statDF = statDF.loc[(statDF.Time == 0.5)]
-    dateConvDF = pd.DataFrame(columns={"Date", "Scale"})
+    dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
+    masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"})
     dates = statDF.Date.unique()
     for ii, date in enumerate(dates):
         statDFdate = statDF.loc[(statDF.Date == date)]
@@ -181,26 +186,34 @@ def getBindConvDict():
         concs = statDFdate.Dose.unique()
         cellTypes = statDFdate.Cell.unique()
 
-        expVec = np.zeros((len(ligands) * len(concs) * len(cellTypes)))
-        predVec = np.zeros((len(ligands) * len(concs) * len(cellTypes)))
-
-        for i, lig in enumerate(ligands):
+        for lig in ligands:
             if lig[-5::] == "(Biv)":
                 val = 2
                 ligName = lig[0:-6]
             else:
                 val = 1
                 ligName = lig[0:-7]
-            for j, conc in enumerate(concs):
-                for k, cell in enumerate(cellTypes):
+            for conc in concs:
+                for cell in cellTypes:
                     entry = statDFdate.loc[(statDFdate.Ligand == lig) & (statDFdate.Dose == conc) & (statDFdate.Cell == cell)].Mean.values
-
                     if len(entry) >= 1:
-                        expVec[i * len(cellTypes) * len(concs) + j * len(cellTypes) + k] = np.mean(entry)
-                        predVec[i * len(cellTypes) * len(concs) + j * len(cellTypes) + k] = cytBindingModel(ligName, val, conc, cell)
+                        expVal = np.mean(entry)
+                        predVal = cytBindingModel(ligName, val, conc, cell, x)
+                        masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
 
-        slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
-        dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope}, index=[ii]))
+    for date in dates:
+        for cell in masterSTAT.Cell.unique():
+            expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
+            predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
+            slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+            masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
+            dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}, index=[ii]))
 
     dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
-    return dateConvDF
+
+    if x:
+        print(x)
+        print(LA.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values))
+        return LA.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)
+    else:
+        return masterSTAT
