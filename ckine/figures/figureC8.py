@@ -22,16 +22,6 @@ def makeFigure():
     subplotLabel(axLabel)
 
     # Imports receptor levels from .csv created by figC5
-    respDF = import_pstat_all()
-    respTensor = makeTensor(respDF, Variance=True)
-    tFacAll = factorTensor(respTensor, 3)
-    tFacAll.normalize()
 
-    R2Xplot(ax[0], respTensor, 5)
-    ligHandles, ligLabels = plot_tFac_Ligs(ax[1:3], tFacAll, respDF)
-    ax[3].legend(ligHandles, ligLabels, loc="center", prop={"size": 8}, title="Ligand Legend")
-    plot_tFac_Time(ax[4], tFacAll, respDF)
-    plot_tFac_Conc(ax[5], tFacAll, respDF)
-    plot_tFac_Cells(ax[6:8], tFacAll, respDF)
 
     return f
