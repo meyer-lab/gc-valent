@@ -148,13 +148,18 @@ def cytBindingModel(mut, val, doseVec, cellType, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     recQuantDF = pd.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
-    Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)].values
-    output = np.zeros(doseVec.shape)
-    recCount = recQuantDF.loc[("IL2Ra", "IL2Rb")].cellType
-    recCount = np.power(recCount.values, 10)
+    Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.reshape(Affs, (1, -1))
+
+    doseVec = np.array([doseVec])
+    output = np.zeros(doseVec.size)
+    recCount = recQuantDF[["Receptor", cellType]]
+    recCount = [recCount.loc[(recCount.Receptor == "IL2Ra")][cellType].values, recCount.loc[(recCount.Receptor == "IL2Rb")][cellType].values]
+    recCount = np.ravel(np.power(10, recCount))
 
     for i, dose in enumerate(doseVec):
-        output[i] = np.sum(polyfc(dose / 1e9, KxStarP, val, recCount, [1], Affs)[0])
+        output[i] = polyfc(dose / 1e9, KxStarP, val, recCount, [1], Affs)[0]
 
     if date:
         convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
@@ -166,34 +171,36 @@ def cytBindingModel(mut, val, doseVec, cellType, date=False):
 def getBindConvDict():
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT"""
     statDF = import_pstat_all()
+    statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)")]
     statDF = statDF.loc[(statDF.Time == 0.5)]
     dateConvDF = pd.DataFrame(columns={"Date", "Scale"})
     dates = statDF.Date.unique()
-    for date in dates:
+    for ii, date in enumerate(dates):
         statDFdate = statDF.loc[(statDF.Date == date)]
         ligands = statDFdate.Ligand.unique()
         concs = statDFdate.Dose.unique()
         cellTypes = statDFdate.Cell.unique()
 
-        expVec = np.zeros((len(ligands)* len(concs) * len(cellTypes)))
-        predVec = np.zeros((len(ligands)* len(concs) * len(cellTypes)))
+        expVec = np.zeros((len(ligands) * len(concs) * len(cellTypes)))
+        predVec = np.zeros((len(ligands) * len(concs) * len(cellTypes)))
 
         for i, lig in enumerate(ligands):
             if lig[-5::] == "(Biv)":
                 val = 2
+                ligName = lig[0:-6]
             else:
                 val = 1
+                ligName = lig[0:-7]
             for j, conc in enumerate(concs):
                 for k, cell in enumerate(cellTypes):
                     entry = statDFdate.loc[(statDFdate.Ligand == lig) & (statDFdate.Dose == conc) & (statDFdate.Cell == cell)].Mean.values
 
                     if len(entry) >= 1:
-                        expVec[i * len(ligands) + j * len(concs) + k * len(cellTypes)] = np.mean(entry)
-                        predVec[i * len(ligands) + j * len(concs) + k * len(cellTypes)] = cytBindingModel(lig, val, conc, cell)
-        
-        slope = np.linalg.lstsq(predVec, expVec, rcond=None)[0]
-        dateConvDF = dateConvDF.append(pd.DataFrame({"Date": [date], "Scale": [slope]}))
-    
-    dateConvDF.to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
-    return dateConvDF
+                        expVec[i * len(cellTypes) * len(concs) + j * len(cellTypes) + k] = np.mean(entry)
+                        predVec[i * len(cellTypes) * len(concs) + j * len(cellTypes) + k] = cytBindingModel(ligName, val, conc, cell)
 
+        slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+        dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope}, index=[ii]))
+
+    dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+    return dateConvDF
