@@ -21,7 +21,7 @@ def makeFigure():
     subplotLabel(ax)
 
     #minSolved = minimize(runFullModel, -11)
-    #print(minSolved.x)
+    # print(minSolved.x)
     modelDF = runFullModel()
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
