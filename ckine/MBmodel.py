@@ -20,7 +20,6 @@ path_here = dirname(dirname(__file__))
 KxStarP = 2e-12
 
 
-
 def getKxStar():
     return KxStarP
 
