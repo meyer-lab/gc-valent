@@ -23,16 +23,17 @@ def makeFigure():
     subplotLabel(ax)
     ax[6].axis("off")
 
-    # minSolved = minimize(runFullModel, -11)
+    # minSolved = minimize(runFullModel, x0=-11, args=[0.5])
     # print(minSolved.x)
-    modelDF = runFullModel()
+    modelDF = runFullModel(time=[0.5])
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
+    
     R2_Plot_Cells(ax[1], modelDF)
     R2_Plot_Ligs(ax[2], modelDF)
     MonVsBivalent(ax[3], modelDF, ligs=True)
     MonVsBivalent(ax[4], modelDF, ligs=False)
-    EC50comp(ax[5], modelDF, time=1.0)
+    EC50comp(ax[5], modelDF, time=0.5)
     legend = ax[5].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[6].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8})  # use this to place universal legend later
@@ -170,5 +171,5 @@ def EC50comp(ax, dfAll, time):
                     EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]}))
 
     sns.scatterplot(x="Ligand", y="EC50", hue="Cell Type", style="Exp/Pred", data=EC50df, ax=ax)
-    ax.set(ylabel=r"log$_{10}$EC50 (nM)")
+    ax.set(ylabel=r"log$_{10}$EC50 (nM)", ylim=(-2, 6))
     ax.set_xticklabels(EC50df.Ligand.unique(), rotation=45)
