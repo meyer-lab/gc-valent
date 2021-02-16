@@ -23,12 +23,12 @@ def makeFigure():
     subplotLabel(ax)
     ax[5].axis("off")
 
-    # minSolved = minimize(runFullModel, x0=-11, args=[0.5])
+    # minSolved = minimize(runFullModel, x0=-11, args=[0.5, False])
     # print(minSolved.x)
     modelDF = runFullModel(time=[0.5])
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
-    
+
     R2_Plot_Cells(ax[1], modelDF)
     R2_Plot_Ligs(ax[2], modelDF)
     MonVsBivalent(ax[3], modelDF, ligs=True)
@@ -181,7 +181,7 @@ def timePlot(ax):
     times = [[0.5], [1.], [2.], [4.]]
     accDF = pd.DataFrame(columns={"Time", "Valency", "Accuracy"})
     for time in times:
-        df = runFullModel(time=time)
+        df = runFullModel(time=time, saveDict=False)
         for val in df.Valency.unique():
             preds = df.loc[(df.Time == time[0]) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Time == time[0]) & (df.Valency == val)].Experimental.values
