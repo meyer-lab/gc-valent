@@ -150,7 +150,7 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     return Lbound, Rbound, Lfbnd
 
 
-def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
+def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, delta=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     recQuantDF = pd.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
@@ -166,6 +166,8 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     recCount = recQuantDF[["Receptor", cellType]]
     recCount = [recCount.loc[(recCount.Receptor == "IL2Ra")][cellType].values, recCount.loc[(recCount.Receptor == "IL2Rb")][cellType].values]
     recCount = np.ravel(np.power(10, recCount))
+    if delta:
+        recCount[0] += delta
 
     for i, dose in enumerate(doseVec):
         if x:

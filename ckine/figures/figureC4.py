@@ -20,12 +20,14 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
     ax, f = getSetup((10, 5), (2, 4), multz={4: 1})
-    subplotLabel(ax)
+    axlabel = copy(ax)
+    del axlabel[5]
+    subplotLabel(axlabel)
     ax[5].axis("off")
 
     # minSolved = minimize(runFullModel, x0=-11, args=[0.5, False])
     # print(minSolved.x)
-    modelDF = runFullModel(time=[0.5])
+    modelDF = runFullModel(time=[0.5, 1.0])
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
 
@@ -39,6 +41,8 @@ def makeFigure():
     ax[5].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8})  # use this to place universal legend later
     ax[4].get_legend().remove()
     timePlot(ax[6])
+
+    #bindCheck(modelDF, ax[0])
 
     return f
 
@@ -151,18 +155,15 @@ def EC50comp(ax, dfAll, time):
             for cell in Cells:
                 #dates = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Date.values
                 dosesExp = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Dose.values
-                #doseMax, doseMin = np.log10(np.amax(dosesExp)), np.log10(np.amin(dosesExp))
-                #dosesPred = np.log10(np.logspace(doseMin, doseMax, 100)) + 4
+                doseMax, doseMin = np.log10(np.amax(dosesExp)) + 4, np.log10(np.amin(dosesExp))
+                dosesPredMB = np.logspace(doseMin, doseMax, 40)
+                dosesPred = np.log10(dosesPredMB) + 4
                 dosesExp = np.log10(dosesExp) + 4
 
                 expVals = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Experimental.values
-                #predVals = np.array([])
-                # for date in dates:
-                #predVals = np.append(predVals, cytBindingModel(ligand, valency, dosesPred, cell, date=date))
-                #dosesPred = np.tile(dosesPred, dates.size)
-                predVals = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Predicted.values
+                predVals = cytBindingModel(ligand, valency, dosesPredMB, cell)
                 EC50exp = nllsq_EC50(x0exp, dosesExp, expVals) - 4
-                EC50pred = nllsq_EC50(x0pred, dosesExp, predVals) - 4
+                EC50pred = nllsq_EC50(x0pred, dosesPred, predVals) - 4
 
                 if valency == 1:
                     EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]}))
@@ -190,3 +191,22 @@ def timePlot(ax):
     sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+
+
+def bindCheck(df, ax):
+    """For Fun"""
+    curveDF = pd.DataFrame(columns=["Dose", "Pred", "Delta"])
+    x0pred = [4, 2.0, 1000.0]
+    mut = "H16N N-term"
+    cell = "Treg"
+    val = 1
+    dosesExp = df.loc[(df.Ligand == mut) & (df.Cell == cell) & (df.Valency == val)].Dose.unique()
+    doseMax, doseMin = np.log10(np.amax(dosesExp)) + 4, np.log10(np.amin(dosesExp))
+    dosesExp = np.logspace(doseMin, doseMax, 50)
+    dosesExpEC = np.log10(dosesExp) + 4
+    for IL2RaChange in np.arange(-2000, 2000, 250):
+        preds = cytBindingModel(mut, val, dosesExp, cell, delta=IL2RaChange)
+        EC50exp = nllsq_EC50(x0pred, dosesExpEC, preds) - 4
+        curveDF = curveDF.append(pd.DataFrame({"Dose": dosesExp, "Pred": preds, "Delta": (np.repeat(IL2RaChange, 50))}))
+    sns.lineplot(x="Dose", y="Pred", hue="Delta", data=curveDF, ax=ax)
+    ax.set(xscale="log")
