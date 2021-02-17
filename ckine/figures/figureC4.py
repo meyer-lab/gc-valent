@@ -42,8 +42,6 @@ def makeFigure():
     ax[4].get_legend().remove()
     timePlot(ax[6])
 
-    #bindCheck(modelDF, ax[0])
-
     return f
 
 
@@ -191,22 +189,3 @@ def timePlot(ax):
     sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-
-
-def bindCheck(df, ax):
-    """For Fun"""
-    curveDF = pd.DataFrame(columns=["Dose", "Pred", "Delta"])
-    x0pred = [4, 2.0, 1000.0]
-    mut = "H16N N-term"
-    cell = "Treg"
-    val = 1
-    dosesExp = df.loc[(df.Ligand == mut) & (df.Cell == cell) & (df.Valency == val)].Dose.unique()
-    doseMax, doseMin = np.log10(np.amax(dosesExp)) + 4, np.log10(np.amin(dosesExp))
-    dosesExp = np.logspace(doseMin, doseMax, 50)
-    dosesExpEC = np.log10(dosesExp) + 4
-    for IL2RaChange in np.arange(-2000, 2000, 250):
-        preds = cytBindingModel(mut, val, dosesExp, cell, delta=IL2RaChange)
-        EC50exp = nllsq_EC50(x0pred, dosesExpEC, preds) - 4
-        curveDF = curveDF.append(pd.DataFrame({"Dose": dosesExp, "Pred": preds, "Delta": (np.repeat(IL2RaChange, 50))}))
-    sns.lineplot(x="Dose", y="Pred", hue="Delta", data=curveDF, ax=ax)
-    ax.set(xscale="log")
