@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels
-from ..FCimports import import_gates, apply_gates
+from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates
+from FlowCytometryTools import FCMeasurement
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -19,6 +20,20 @@ def makeFigure():
     Tcell_sample = importF(Tcell_pathname, "A")
     NK_CD8_sample = importF(NK_CD8_pathname, "A")
 
+    Tcell_sample = combineWells(Tcell_sample)
+    NK_CD8_sample = combineWells(NK_CD8_sample)
+
+    Tcell_matrixPath = path_here + "/ckine/data/compensation/CD4+ comp matrix.csv"
+    Cd8_NKmatrixPath = path_here + "/ckine/data/compensation/CD8-CD56 comp matrix.csv"
+
+    Tcell_sample = applyMatrix(Tcell_sample, compMatrix(Tcell_matrixPath))
+    NK_CD8_sample = applyMatrix(NK_CD8_sample, compMatrix(Cd8_NKmatrixPath))
+
+    Tcell_sample = Tcell_sample.transform("tlog", channels=['VL1-H', 'VL4-H', 'BL1-H','BL3-H']) #Tlog transformations
+    NK_CD8_sample = NK_CD8_sample.transform("tlog", channels=['RL1-H', 'VL4-H', 'BL1-H', 'BL2-H']) #Tlog transformations
+
+    
+    
     return f
 
 
