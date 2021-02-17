@@ -1,10 +1,13 @@
 import os
+from os.path import dirname, join
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels
 from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates
-from FlowCytometryTools import FCMeasurement
+from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate, QuadGate
+from matplotlib import pyplot as plt
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -14,25 +17,31 @@ def makeFigure():
     ax, f = getSetup((10, 5), (2, 4))
     subplotLabel(ax)
 
-    Tcell_pathname = path_here + "/ckine/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
-    NK_CD8_pathname = path_here + "/ckine/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
+    Tcell_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
+    NK_CD8_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
 
-    Tcell_sample = importF(Tcell_pathname, "A")
-    NK_CD8_sample = importF(NK_CD8_pathname, "A")
+    print(Tcell_pathname)
+
+    Tcell_sample, _ = importF(Tcell_pathname, "A")
+    NK_CD8_sample, _ = importF(NK_CD8_pathname, "A")
 
     Tcell_sample = combineWells(Tcell_sample)
     NK_CD8_sample = combineWells(NK_CD8_sample)
 
-    Tcell_matrixPath = path_here + "/ckine/data/compensation/CD4+ comp matrix.csv"
-    Cd8_NKmatrixPath = path_here + "/ckine/data/compensation/CD8-CD56 comp matrix.csv"
-
-    Tcell_sample = applyMatrix(Tcell_sample, compMatrix(Tcell_matrixPath))
-    NK_CD8_sample = applyMatrix(NK_CD8_sample, compMatrix(Cd8_NKmatrixPath))
+    Tcell_sample = applyMatrix(Tcell_sample, compMatrix('2019-11-08','1','A'))
+    NK_CD8_sample = applyMatrix(NK_CD8_sample, compMatrix('2019-11-08','1','B'))
 
     Tcell_sample = Tcell_sample.transform("tlog", channels=['VL1-H', 'VL4-H', 'BL1-H','BL3-H']) #Tlog transformations
     NK_CD8_sample = NK_CD8_sample.transform("tlog", channels=['RL1-H', 'VL4-H', 'BL1-H', 'BL2-H']) #Tlog transformations
 
-    
+    ax[0]
+    cd4_gate = ThresholdGate(6500.0, ['VL4-H'], region='above') & ThresholdGate(8000.0, ['VL4-H'], region='below')
+    _ = Tcell_sample.plot(['VL4-H'], gates=cd4_gate) #CD4
+    plt.title("Singlet Lymphocytes")
+    plt.xlabel("CD4")
+    plt.ylabel("Events")
+    plt.grid()
+
     
     return f
 
