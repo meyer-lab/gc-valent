@@ -17,7 +17,7 @@ from .imports import import_pstat_all
 from scipy.optimize import minimize
 
 path_here = dirname(dirname(__file__))
-KxStarP = 5e-11
+KxStarP = 2e-12
 
 
 def getKxStar():
@@ -158,6 +158,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
+    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
 
     if doseVec.size == 1:
         doseVec = np.array([doseVec])
@@ -169,9 +170,9 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     for i, dose in enumerate(doseVec):
         if x:
             print(x)
-            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, 0]], [1.0], Affs)[1][0][1]
+            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[1][0][1]
         else:
-            output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, 0]], [1.0], Affs)[1][0][1]  # IL2RB binding only
+            output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[1][0][1]  # IL2RB binding only
     if date:
         convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
         output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
@@ -179,14 +180,24 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     return output
 
 
-def runFullModel(x=False):
+def runFullModel(x=False, time=[0.5], saveDict=True):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all()
+
     statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)") & (statDF.Ligand != "IL15 (Mono)")]
-    statDF = statDF.loc[(statDF.Time != 2.0) & (statDF.Time != 4.0)]
+    statDF = statDF.loc[(statDF.Time.isin(time))]
+
+    if x:
+        # If Minimizing, scale all so that cells are weighted identically
+        statDF.loc[(statDF.Cell == "Treg"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "Thelper"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "CD8"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "CD8"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "NK"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "NK"), "Mean"].mean()
+
     dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
-    masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"})
+    masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Time", "Dose", "Valency", "Experimental", "Predicted"})
     dates = statDF.Date.unique()
+    times = statDF.Time.unique()
     for ii, date in enumerate(dates):
         statDFdate = statDF.loc[(statDF.Date == date)]
         ligands = statDFdate.Ligand.unique()
@@ -202,11 +213,13 @@ def runFullModel(x=False):
                 ligName = lig[0:-7]
             for conc in concs:
                 for cell in cellTypes:
-                    entry = statDFdate.loc[(statDFdate.Ligand == lig) & (statDFdate.Dose == conc) & (statDFdate.Cell == cell)].Mean.values
-                    if len(entry) >= 1:
-                        expVal = np.mean(entry)
-                        predVal = cytBindingModel(ligName, val, conc, cell, x)
-                        masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
+                    for time in times:
+                        entry = statDFdate.loc[(statDFdate.Ligand == lig) & (statDFdate.Dose == conc) & (statDFdate.Cell == cell) & (statDFdate.Time == time)].Mean.values
+                        if len(entry) >= 1:
+                            expVal = np.mean(entry)
+                            predVal = cytBindingModel(ligName, val, conc, cell, x)
+                            masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
+                                                                         "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
 
     for date in dates:
         for cell in masterSTAT.Cell.unique():
@@ -216,7 +229,8 @@ def runFullModel(x=False):
             masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
             dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}, index=[ii]))
 
-    dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+    if saveDict:
+        dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
 
     if x:
         print(x)

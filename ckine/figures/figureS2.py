@@ -3,14 +3,13 @@ This creates Figure 8, dose response of all IL-2 cytokines using binding model.
 """
 
 import numpy as np
-from .figureCommon import subplotLabel, getSetup
-from .figureC8 import plotDoseResponses
+from .figureCommon import subplotLabel, getSetup, plotDoseResponses
 from ..MBmodel import runFullModel
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    modelDF = runFullModel()
+    modelDF = runFullModel(time=[0.5], saveDict=False)
 
     ligands = modelDF.Ligand.unique()
     cells = modelDF.Cell.unique()
