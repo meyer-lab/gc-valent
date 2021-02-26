@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup
+from .figureC6 import getReceptors
 from ..imports import channels
 from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates, importF
 from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate, QuadGate
@@ -21,8 +22,6 @@ def makeFigure():
     Tcell_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
     NK_CD8_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
 
-    print(Tcell_pathname)
-
     Tcell_sample, _ = importF2(Tcell_pathname, "A")
     NK_CD8_sample, _ = importF2(NK_CD8_pathname, "A")
 
@@ -39,8 +38,7 @@ def makeFigure():
     cd4_gate = ThresholdGate(6500.0, ['VL4-H'], region='above') & ThresholdGate(8000.0, ['VL4-H'], region='below')
     ax[0] = Tcell_sample.plot(['VL4-H'], gates=cd4_gate, ax=ax[0]) #CD4
     plt.title("Singlet Lymphocytes")
-    plt.xlabel("CD4")
-    plt.ylabel("Events")
+    #ax.set(xlabel= "CD4", ylabel="Events")
     plt.grid()
 
     sampleCD4 = Tcell_sample.gate(cd4_gate)
@@ -96,7 +94,7 @@ def makeFigure():
 
     nk_gate = PolyGate([(3.3e3, 5.4e3), (5.3e3, 5.4e3), (5.3e3, 7.3e3), (3.3e3, 7.3e3)], ('VL4-H', 'BL3-H'), region='in', name='nk')
     nkt_gate = PolyGate([(5.6e3, 5.1e3), (7.6e3, 5.1e3), (7.6e3, 7.1e3), (5.6e3, 7.1e3)], ('VL4-H', 'BL3-H'), region='in', name='nkt')
-    _ = panel2.plot(['VL4-H', 'BL3-H'], gates=[nk_gate,nkt_gate], gate_colors=['red','red'], cmap=cm.jet,ax=ax[5]) #CD56 vs. CD3
+    _ = panel2.plot(['VL4-H', 'BL3-H'], gates=[nk_gate,nkt_gate], gate_colors=['red','red'], cmap=cm.jet,ax=ax[6]) #CD56 vs. CD3
     samplenk = panel2.gate(nk_gate)
     samplenkt = panel2.gate(nkt_gate)
     plt.title("Singlet Lymphocytes")
@@ -105,10 +103,43 @@ def makeFigure():
     plt.grid()
 
     cd8_gate = PolyGate([(4.2e3, 5.7e3), (8.1e3, 5.7e3), (8.1e3, 8.0e3), (4.2e3, 8.0e3)], ('VL4-H', 'VL6-H'), region='in', name='cd8')
-    _ = panel3.plot(['VL4-H', 'VL6-H'], gates=cd8_gate, gate_colors=['red'], cmap=cm.jet, ax=ax[6]) #CD8 vs. CD3
+    _ = panel3.plot(['VL4-H', 'VL6-H'], gates=cd8_gate, gate_colors=['red'], cmap=cm.jet, ax=ax[7]) #CD8 vs. CD3
     plt.title("Singlet Lymphocytes")
     plt.xlabel("CD3")
     plt.ylabel("CD8")
+
+
+    print("check")
+
+    for i, axs in enumerate(ax):
+        if i == 0:
+            print(" ")
+            #weird error replace later, axs is not correct object type
+            #axs.set(xlabel='CD4',ylabel='Events')
+        elif i == 1:
+            axs.set_title('CD4+ Cells')
+            axs.set(xlabel='CD25', ylabel='FOXP3')
+        elif i == 2:
+            axs.set_title('Singlet Lymphocytes')
+            axs.set(xlabel='CD3', ylabel='CD8')
+        elif i == 3:
+            axs.set_title('Singlet Lymphocytes')
+            axs.set(xlabel='CD3', ylabel='CD56')
+        elif i == 4:
+            axs.set_title('Singlet Lymphocytes')
+            axs.set(xlabel='CD3', ylabel='CD4')
+        elif i == 5:
+            axs.set_title('CD3+CD4+ cells')
+            axs.set(xlabel='CD25', ylabel='CD127')
+        elif i == 6:
+            axs.set_title('Singlet Lymphocytes')
+            axs.set(xlabel='CD23', ylabel='CD56')
+        elif i == 7:
+            axs.set_title('Singlet Lymphocytes')
+            axs.set(xlabel='CD3', ylabel='CD8')
+        #axs.grid()
+
+    #receptorPlot()
     
     return f
 
@@ -136,3 +167,16 @@ def importF2(pathname, WellRow):
         z += 1
     # Returns the array sample which contains data of each file in folder (one file per entry in array)
     return sample, file
+
+def receptorPlot():
+
+    receptor_levels = getReceptors()
+    cell_types = ['T-reg', 'T-helper', 'NK', 'CD8+']
+
+    alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
+    betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
+    gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')]
+
+    print("test")
+
+    return
