@@ -57,7 +57,7 @@ def minSelecFunc(x, val, targCell, offTCells, IL7=False):
 
 def optimizeDesign(ax, targCell, offTcells, IL7=False):
     """ A more general purpose optimizer """
-    
+
     vals = np.logspace(0, 4, num=5, base=2)
     if IL7:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Ra"})
@@ -67,8 +67,8 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Ra", "IL2RBG"})
         X0 = [8, 8, -12]
         optBnds = [(5, 11),  # Ka IL2Ra
-           (5, 11),  # Ka IL2Rb
-           (-13, -11)]  # Kx
+                   (5, 11),  # Ka IL2Rb
+                   (-13, -11)]  # Kx
 
     for val in vals:
         optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point")
