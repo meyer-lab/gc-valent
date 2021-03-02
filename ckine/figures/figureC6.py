@@ -13,13 +13,13 @@ from ..MBmodel import polyc
 
 path_here = dirname(dirname(__file__))
 
+
 def makeFigure():
     """ Make figure 6. """
     # Get list of axis objects
     ax, f = getSetup((16, 8), (3, 6))
     subplotLabel(ax)
 
-    
     optimizeDesign(ax[0:2], ["Treg"], ["CD8"])
 
     return f
@@ -70,7 +70,7 @@ def optimizeDesign(ax, targCell, offTcells):
         IL2RaKD = 1e9 / np.power(10, optimized.x[0])
         IL2RBGKD = 1e9 / np.power(10, optimized.x[1])
         optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL2Ra KD": IL2RaKD, "IL2RBG KD": IL2RBGKD}))
-    
+
     sns.barplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0])
 
     affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Ra KD', 'IL2RBG KD'])
@@ -78,4 +78,3 @@ def optimizeDesign(ax, targCell, offTcells):
     ax[1].set(yscale="log")
 
     return optimized
-
