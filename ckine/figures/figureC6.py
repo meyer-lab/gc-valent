@@ -1,112 +1,101 @@
 """
-This creates Figure 6 for IL2Ra correlation data analysis. Useful for grants but will be cleared eventually.
+Figure 6. Optimization of Ligands
 """
-
 import os
+from os.path import dirname, join
+from pathlib import Path
 import numpy as np
 import pandas as pd
+import seaborn as sns
+from scipy.optimize import minimize
 from .figureCommon import subplotLabel, getSetup
-from ..imports import channels
-from ..flow import importF, bead_regression
-from ..FCimports import import_gates, apply_gates
+from ..MBmodel import polyc
 
-path_here = os.path.dirname(os.path.dirname(__file__))
+path_here = dirname(dirname(__file__))
 
 
 def makeFigure():
-    """Get a list of the axis objects and create a figure"""
-
-    ax, f = getSetup((10, 5), (2, 4))
+    """ Make figure 6. """
+    # Get list of axis objects
+    ax, f = getSetup((5, 4), (2, 2))
     subplotLabel(ax)
-
-    # Imports receptor levels from .csv created by figC5
-    receptor_levels = getReceptors()
-    cell_types = ['T-reg', 'T-helper', 'NK', 'CD8+']
-
-    for index, cell_type in enumerate(cell_types):
-        i = 2 * index
-
-        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
-        betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
-        gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')]
-
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
-        betaCounts = betaLevels['Count'].reset_index(drop=True)
-        d = {'alpha': alphaCounts, 'beta': betaCounts}
-        recepCounts = pd.DataFrame(data=d)
-        recepCounts = recepCounts.dropna()
-        recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
-
-        hex1 = ax[i]
-        hex1.hexbin(recepCounts['alpha'], recepCounts['beta'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
-        hex1.set_xlabel('CD25')
-        hex1.set_ylabel('CD122')
-        hex1.set_title(cell_type + ' Alpha-Beta correlation')
-
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
-        gammaCounts = gammaLevels['Count'].reset_index(drop=True)
-        d2 = {'alpha': alphaCounts, 'gamma': gammaCounts}
-        recepCounts2 = pd.DataFrame(data=d2)
-        recepCounts2 = recepCounts2.dropna()
-        recepCounts2 = recepCounts2[(recepCounts2[['alpha', 'gamma']] != 0).all(axis=1)]
-
-        hex2 = ax[i + 1]
-        hex2.hexbin(recepCounts2['alpha'], recepCounts2['gamma'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
-        hex2.set_xlabel('CD25')
-        hex2.set_ylabel('CD132')
-        hex2.set_title(cell_type + ' Alpha-Gamma correlation')
+    optimizeDesign(ax[0:2], ["Treg"], ["Thelper", "NK", "CD8"])
+    optimizeDesign(ax[2:4], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True)
 
     return f
 
 
-def getReceptors():
-    # import bead data and run regression to get equations
-    lsq_cd25, lsq_cd122, lsq_cd132 = run_regression()
+def cytBindingModelOpt(x, val, cellType, IL7=False):
+    """Runs binding model for a given mutein, valency, dose, and cell type. """
+    recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
+    recCount = recQuantDF[["Receptor", cellType]]
+    Kx = np.power(10, x[-1])
+    if IL7:
+        affs = [[np.power(10, x[0])]]
+        recCount = [recCount.loc[(recCount.Receptor == "IL7Ra")][cellType].values]
+        recCount = np.ravel(np.power(10, recCount))
+        output = polyc(1e-9 / val, Kx, recCount, [[val]], [1.0], affs)[1][0][0]  # IL7Ra binding only
+    else:
+        affs = [[np.power(10, x[0]), 1e2], [1e2, np.power(10, x[1])]]
+        recCount = [recCount.loc[(recCount.Receptor == "IL2Ra")][cellType].values, recCount.loc[(recCount.Receptor == "IL2Rb")][cellType].values]
+        recCount = np.ravel(np.power(10, recCount))
+        output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[1][0][1]  # IL2RB binding only
 
-    # create dataframe with gated samples (all replicates)
-    df_gates = import_gates()
-    df_signal = apply_gates("4-23", "1", df_gates)
-    df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
-    df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
-    df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
-
-    # make new dataframe for receptor counts
-    df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
-    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
-    receptors_ = ["CD25", "CD122", "CD132"]
-    channels_ = ["VL1-H", "BL5-H", "RL1-H"]
-    lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132]
-    dates = ["4-23", "4-26"]
-    plates = ["1", "2"]
-
-    # calculate receptor counts
-    for _, cell in enumerate(cell_names):
-        for j, receptor in enumerate(receptors_):
-            for _, date in enumerate(dates):
-                for _, plate in enumerate(plates):
-                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Receptor"] == receptor) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
-                    rec_counts = np.zeros(len(data))
-                    for k, signal in enumerate(data):
-                        A, B, C, D = lsq_params[j]
-                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
-                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
-                                           "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    df_rec = df_rec.append(df_add)
-
-    return df_rec
+    return output
 
 
-def run_regression():
-    """ Imports bead data and runs regression to get least squares parameters for conversion of signal to receptor count. """
-    sampleD, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads", "D")
-    sampleE, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "E")
-    sampleF, _ = importF(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "F")
+def minSelecFunc(x, val, targCell, offTCells, IL7=False):
+    """Provides the function to be minimized to get optimal selectivity"""
+    offTargetBound = 0
 
-    recQuant1 = np.array([0., 4407, 59840, 179953, 625180])  # CD25, CD122
-    recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
+    targetBound = cytBindingModelOpt(x, val, targCell[0], IL7)
+    for cellT in offTCells:
+        offTargetBound += cytBindingModelOpt(x, val, cellT, IL7)
 
-    _, lsq_cd25 = bead_regression(sampleD, channels['D'], recQuant1)
-    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant2, 2, True)
-    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant1)
+    return (offTargetBound) / (targetBound)
 
-    return lsq_cd25, lsq_cd122, lsq_cd132
+
+def optimizeDesign(ax, targCell, offTcells, IL7=False):
+    """ A more general purpose optimizer """
+
+    vals = np.logspace(0, 4, num=5, base=2)
+    if IL7:
+        optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Ra"})
+        X0 = [8, -12]
+        optBnds = [(5, 11), (-13, -11)]  # Ka IL7, Kx
+    else:
+        optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Ra", "IL2RBG"})
+        X0 = [8, 8, -12]
+        optBnds = [(5, 11),  # Ka IL2Ra
+                   (5, 11),  # Ka IL2Rb
+                   (-13, -11)]  # Kx
+
+    for val in vals:
+        optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point")
+        print(val)
+        print(optimized.fun)
+        if IL7:
+            IL7RaKD = 1e9 / np.power(10, optimized.x[0])
+            optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL7Ra": IL7RaKD}))
+        else:
+            IL2RaKD = 1e9 / np.power(10, optimized.x[0])
+            IL2RBGKD = 1e9 / np.power(10, optimized.x[1])
+            optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL2Ra": IL2RaKD, "IL2RBG": IL2RBGKD}))
+
+    if IL7:
+        sns.barplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
+        ax[0].set(title=targCell[0] + " Selectivity with IL-7 mutein")
+
+        sns.barplot(x="Valency", y="IL7Ra", data=optDF, ax=ax[1], palette="crest")
+        ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
+
+    else:
+        sns.barplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
+        ax[0].set(title=targCell[0] + " Selectivity with IL-2 mutein")
+
+        affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Ra', 'IL2RBG'])
+        affDF = affDF.rename(columns={"variable": "Receptor"})
+        sns.barplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
+        ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
+
+    return optimized
