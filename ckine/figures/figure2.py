@@ -234,7 +234,7 @@ def receptorPlot(ax1,ax2,ax3):
         hex1 = ax2
         hex1.hexbin(recepCounts['alpha'], recepCounts['beta'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
         hex1.set_xlabel('CD25 (IL2RA)')
-        hex1.set_ylabel('CD122(IL2RB')
+        hex1.set_ylabel('CD122(IL2RB)')
         hex1.set_title(cell_type + ' Alpha-Beta correlation')
 
         alphaCounts = alphaLevels['Count'].reset_index(drop=True)
