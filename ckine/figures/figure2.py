@@ -132,7 +132,7 @@ def makeFigure():
             axs.set(xlabel='CD25', ylabel='CD127')
         elif i == 6:
             axs.set_title('NK and NKT Gating')
-            axs.set(xlabel='CD23', ylabel='CD56')
+            axs.set(xlabel='CD3', ylabel='CD56')
         elif i == 7:
             axs.set_title('CD3+CD8+ Gating')
             axs.set(xlabel='CD3', ylabel='CD8')
