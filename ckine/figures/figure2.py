@@ -138,7 +138,7 @@ def makeFigure():
             axs.set(xlabel='CD3', ylabel='CD8')
         # axs.grid()
 
-    receptorPlot(ax[8],ax[9],ax[10])
+    receptorPlot(ax[8], ax[9], ax[10])
 
     return f
 
@@ -168,9 +168,9 @@ def importF2(pathname, WellRow):
     return sample, file
 
 
-def receptorPlot(ax1,ax2,ax3):
+def receptorPlot(ax1, ax2, ax3):
 
-    #import bead data and run regression to get equations
+    # import bead data and run regression to get equations
     lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127 = run_regression()
 
     # create dataframe with gated samples (all replicates)
@@ -212,9 +212,9 @@ def receptorPlot(ax1,ax2,ax3):
     # calculate mean, variance, and skew for each replicate
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
-    # plots log10 of mean on 
+    # plots log10 of mean on
     celltype_pointplot(ax1, df_stats, "Mean")
-    
+
     receptor_levels = df_rec
     cell_types = ['T-reg']
 
@@ -251,6 +251,7 @@ def receptorPlot(ax1,ax2,ax3):
         hex2.set_title(cell_type + ' Alpha-Gamma correlation')
 
     return
+
 
 def calculate_moments(df, cell_names, receptors):
     """ Calculates mean, variance, and skew for each replicate. """
