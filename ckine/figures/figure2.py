@@ -136,7 +136,8 @@ def makeFigure():
         elif i == 7:
             axs.set_title('CD3+CD8+ Gating')
             axs.set(xlabel='CD3', ylabel='CD8')
-        # axs.grid()
+        if i != 0:
+            axs.grid()
 
     receptorPlot(ax[8], ax[9], ax[10])
 
