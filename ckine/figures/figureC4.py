@@ -62,7 +62,7 @@ def R2_Plot_Cells(ax, df):
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
 
     sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
-    ax.set(ylim=(0, 1))
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
 
 
 def R2_Plot_Ligs(ax, df):
@@ -75,7 +75,7 @@ def R2_Plot_Ligs(ax, df):
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]}))
     sns.barplot(x="Ligand", y="Accuracy", hue="Valency", data=accDF, ax=ax)
-    ax.set(ylim=(0, 1))
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 
 
@@ -118,7 +118,7 @@ def MonVsBivalent(ax, dfAll, ligs=True):
             accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Valency": [1], "Accuracy": [r2Mon]}))
             accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Valency": [2], "Accuracy": [r2Biv]}))
         sns.barplot(x="Ligand", y="Accuracy", hue="Prediction Valency", data=accDF, ax=ax)
-        ax.set(ylim=(0, 1))
+        ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     else:
         accDF = pd.DataFrame(columns={"Cell Type", "Prediction Valency", "Accuracy"})
@@ -131,7 +131,7 @@ def MonVsBivalent(ax, dfAll, ligs=True):
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Valency": [1], "Accuracy": [r2Mon]}))
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Valency": [2], "Accuracy": [r2Biv]}))
         sns.barplot(x="Cell Type", y="Accuracy", hue="Prediction Valency", data=accDF, ax=ax)
-        ax.set(ylim=(0, 1))
+        ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 
     return df
@@ -188,5 +188,5 @@ def timePlot(ax):
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Time": time, "Valency": [val], "Accuracy": [r2]}))
     sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
-    ax.set(ylim=(0, 1))
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
