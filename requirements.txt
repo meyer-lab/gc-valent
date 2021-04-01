@@ -12,7 +12,7 @@ manubot==0.5.0
 pandoc-fignos==2.4.0
 pandoc-eqnos==2.5.0
 pandoc-tablenos==2.3.0
-panflute==2.0.5
+panflute==1.12.5
 jupyter==1.0.0
 tensorly==0.5.1
 jaxlib==0.1.64
