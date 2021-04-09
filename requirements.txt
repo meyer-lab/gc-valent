@@ -3,7 +3,7 @@ pandas==1.2.3
 scipy==1.6.2
 seaborn==0.11.1
 numpy==1.20.2
-pytest==6.2.2
+pytest==6.2.3
 pytest-cov==2.11.1
 scikit-learn==0.24.1
 svgutils==0.3.4
@@ -15,6 +15,4 @@ pandoc-tablenos==2.3.0
 panflute==1.12.5
 jupyter==1.0.0
 tensorly==0.5.1
-jaxlib==0.1.64
-jax==0.2.11
-git+git://github.com/eyurtsev/FlowCytometryTools.git@093057486ab0aeb2938537ddcfea36d3c1d14fd3
+FlowCytometryTools==0.5.1
