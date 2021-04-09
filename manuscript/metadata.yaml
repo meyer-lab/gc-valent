@@ -18,11 +18,16 @@ authors:
     affiliations:
       - Department of Bioengineering, University of California, Los Angeles
   -
-    name: Zoe S. Kim
-    initials: ZSK
-    github: zoeskim
+    name: Eli Snyder
+    initials: ES
+    github: elisnyder17
     affiliations:
       - Department of Bioengineering, University of California, Los Angeles
+  -
+    name: Cori Posner
+    initials: CP
+    affiliations:
+      - Visterra, Inc.
   -
     name: Scott M. Carlson
     initials: SMC
