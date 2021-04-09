@@ -4,14 +4,10 @@ Implementation of a simple multivalent binding model.
 
 import os
 from os.path import dirname, join
-from pathlib import Path
 import numpy as np
-from numpy import linalg as LA
 import pandas as pd
 from scipy.optimize import root
-from scipy.special import binom
 from .imports import import_pstat_all
-from scipy.optimize import minimize
 
 path_here = dirname(dirname(__file__))
 KxStarP = 2e-12
@@ -72,11 +68,10 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
 
     Lbound = L0 / KxStar * Ctheta * np.expm1(np.dot(Cplx, np.log1p(Psirs - 1))).flatten()
     Rbound = L0 / KxStar * Ctheta.reshape(-1, 1) * np.dot(Cplx, Psinorm) * np.exp(np.dot(Cplx, np.log1p(Psirs - 1)))
-    Lfbnd = L0 / KxStar * Ctheta * np.exp(np.dot(Cplx, np.log(Psirs - 1))).flatten()
     assert len(Lbound) == len(Ctheta)
     assert Rbound.shape[0] == len(Ctheta)
     assert Rbound.shape[1] == len(Rtot)
-    return Lbound, Rbound, Lfbnd
+    return Lbound, Rbound
 
 
 def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
@@ -163,7 +158,7 @@ def runFullModel(x=False, time=[0.5], saveDict=True):
 
     if x:
         print(x)
-        print(LA.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values))
-        return LA.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)
+        print(np.linalg.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values))
+        return np.linalg.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)
     else:
         return masterSTAT
