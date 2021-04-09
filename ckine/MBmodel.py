@@ -60,7 +60,7 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     Ctheta = Ctheta / np.sum(Ctheta)
 
     # Solve Req
-    lsq = root(Req_func2, Rtot, jac="3-point", method="lm", args=(L0, KxStar, Rtot, Cplx, Ctheta, Kav), options={"maxiter": 3000})
+    lsq = root(Req_func2, Rtot, method="lm", args=(L0, KxStar, Rtot, Cplx, Ctheta, Kav), options={"maxiter": 3000})
     assert lsq["success"], "Failure in rootfinding. " + str(lsq)
     Req = lsq["x"].reshape(1, -1)
 
