@@ -35,30 +35,16 @@ def makeTensor(sigDF, Variance=False):
     return tensor
 
 
-def getMaskTens(tensor):
-    """Returns binary mask of tensor marking nan locations, and a tensor copy with NaNs as zeros"""
-    masktensor = tensor.copy()
-    tensorNoNan = tensor.copy()
-
-    masktensor[np.isnan(masktensor)] = 0
-    masktensor[np.invert(np.isnan(masktensor))] = 1
-    tensorNoNan = np.nan_to_num(tensor, nan=0)
-
-    return tensorNoNan, masktensor
-
-
-def factorTensor(Tensor, numComps):
-    """Takes Tensor, and mask and returns tensor factorized form"""
-    nnTensor, maskTens = getMaskTens(Tensor)
-    return non_negative_parafac(nnTensor, rank=numComps, mask=maskTens, n_iter_max=1000, init='svd', random_state=0)
+def factorTensor(tensor, numComps):
+    """ Takes Tensor, and mask and returns tensor factorized form. """
+    return non_negative_parafac(np.nan_to_num(tensor), rank=numComps, mask=np.isfinite(tensor), n_iter_max=5000, init='svd', random_state=0)
 
 
 def R2Xplot(ax, tensor, compNum):
     """Creates R2X plot for non-neg CP tensor decomposition"""
     varHold = np.zeros(compNum)
-    nnTens, maskTens = getMaskTens(tensor)
     for i in range(1, compNum + 1):
-        tFac = non_negative_parafac(nnTens, rank=i, mask=maskTens, n_iter_max=1000, init='svd', random_state=0)
+        tFac = factorTensor(tensor, i)
         varHold[i - 1] = calcR2X(tensor, tFac)
 
     ax.scatter(np.arange(1, compNum + 1), varHold, c='k', s=20.)
@@ -68,7 +54,7 @@ def R2Xplot(ax, tensor, compNum):
 def calcR2X(tensorIn, tensorFac):
     """ Calculate R2X. """
     tErr = np.nanvar(tl.cp_to_tensor(tensorFac) - tensorIn)
-    return 1.0 - (tErr) / (np.nanvar(tensorIn))
+    return 1.0 - tErr / np.nanvar(tensorIn)
 
 
 def plot_tFac_Ligs(ax, tFac, respDF):
