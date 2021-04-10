@@ -48,7 +48,7 @@ def R2Xplot(ax, tensor, compNum):
         varHold[i - 1] = calcR2X(tensor, tFac)
 
     ax.scatter(np.arange(1, compNum + 1), varHold, c='k', s=20.)
-    ax.set(title="R2X", ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum + 1), xticks=np.arange(0, compNum + 1))
+    ax.set(title="R2X", ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum), xticks=np.arange(0, compNum + 1))
 
 
 def calcR2X(tensorIn, tensorFac):
@@ -61,10 +61,12 @@ def plot_tFac_Ligs(ax, tFac, respDF):
     """Plots tensor factorization of Ligands"""
     ligands = respDF.Ligand.unique()
     mutFacs = tFac[1][0]
-    tFacDFlig = pd.DataFrame({"Cmpnt. 1": mutFacs[:, 0], "Cmpnt. 2": mutFacs[:, 1], "Cmpnt. 3": mutFacs[:, 2]}, index=ligands)
+    tFacDFlig = pd.DataFrame()
+    for i in range(0, 3):
+        tFacDFlig = tFacDFlig.append(pd.DataFrame({"Component_Val": mutFacs[:, i], "Component": (i + 1), "Ligand": ligands}))
 
-    ax.tick_params(axis='x', labelrotation=45)
-    sns.heatmap(tFacDFlig, ax=ax, vmin=0., vmax=1.0, cbar_kws={'label': 'Component Value'})
+    sns.barplot(data=tFacDFlig, ax=ax, x="Component_Val", y="Ligand", hue="Component")
+    ax.set(xlabel="Component Value")
 
 
 def plot_tFac_Time(ax, tFac, respDF):
@@ -72,9 +74,9 @@ def plot_tFac_Time(ax, tFac, respDF):
     tps = respDF.Time.unique()
     timeFacs = tFac[1][1]
 
-    markersTimes = ["^", "*", "D"]
+    markersTimes = [".", ".", "."]
     for i in range(0, timeFacs.shape[1]):
-        ax.plot(tps, timeFacs[:, i], marker=markersTimes[i], label="Component " + str(i + 1))
+        ax.plot(tps, timeFacs[:, i], marker=markersTimes[i], label="Component " + str(i + 1), markersize=5)
 
     ax.legend()
     ax.set(title="Time", xlabel="Time (hrs)", xlim=(0, 4), ylabel="Component", ylim=(0, 1))
@@ -85,9 +87,9 @@ def plot_tFac_Conc(ax, tFac, respDF):
     concs = respDF.Dose.unique()
     concFacs = tFac[1][2]
 
-    markersConcs = ["^", "*", "D"]
+    markersConcs = [".", ".", "."]
     for i in range(0, concFacs.shape[1]):
-        ax.plot(concs, concFacs[:, i], marker=markersConcs[i], label="Component " + str(i + 1))
+        ax.plot(concs, concFacs[:, i], marker=markersConcs[i], label="Component " + str(i + 1), markersize=5)
 
     ax.legend()
     ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component", ylim=(0, 1), xscale='log')
@@ -97,7 +99,9 @@ def plot_tFac_Cells(ax, tFac, respDF):
     """Plots tensor factorization of cells"""
     cells = respDF.Cell.unique()
     cellFacs = tFac[1][3]
-    tFacDFcell = pd.DataFrame({"Cmpnt. 1": cellFacs[:, 0], "Cmpnt. 2": cellFacs[:, 1], "Cmpnt. 3": cellFacs[:, 2]}, index=cells)
-    ax.tick_params(axis='x', labelrotation=45)
+    tFacDFcell = pd.DataFrame()
+    for i in range(0, 3):
+        tFacDFcell = tFacDFcell.append(pd.DataFrame({"Component_Val": cellFacs[:, i], "Component": (i + 1), "Cell": cells}))
 
-    sns.heatmap(tFacDFcell, ax=ax, vmin=0., vmax=1.0, cbar_kws={'label': 'Component Value'})
+    sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
+    ax.set(ylabel="Component Value")
