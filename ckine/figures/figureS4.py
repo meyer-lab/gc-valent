@@ -5,6 +5,8 @@ This creates Figure 5 for IL2Ra correlation data analysis.
 import os
 import numpy as np
 import pandas as pd
+from scipy import stats
+import matplotlib.pyplot as plt
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels
 from ..flow import importF, bead_regression
@@ -19,20 +21,38 @@ def makeFigure():
     ax, f = getSetup((10, 5), (2, 4))
     subplotLabel(ax)
 
-    # Imports receptor levels from .csv created by figC5
+    
+    
     receptor_levels = getReceptors()
-    cell_types = ['T-reg', 'T-helper', 'NK', 'CD8+']
+    
+    
+    alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
+    alphaLevels = alphaLevels.append(receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')])
 
-    for index, cell_type in enumerate(cell_types):
-        i = 2 * index
-
-        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
-
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+    alphaCounts = alphaLevels['Count'].reset_index(drop=True)
    
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+    print(alphaCounts.describe())
+    min = alphaCounts.min()
+    max = alphaCounts.max()
 
-    print(alphaLevels)
+    logbins = np.logspace(np.log10(min),np.log10(max),6)
+    print(logbins)
+    #pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)
+    #print(pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)).value_counts())
+    
+    #print(pd.cut(alphaCounts, bins=logbins, include_lowest=True, retbins=True))
+    print(alphaCounts.values)
+    medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
+    print(medians)
+
+    ax=ax[0]
+    plt.hist(alphaCounts, bins=logbins)
+    plt.yscale('log')
+    plt.xscale('log')
+    #plt.xticks(medians, medians)
+    plt.ylabel('Number of Cells')
+    plt.xlabel("IL2Ra Proteins/Cell")
+
     return f
 
 
