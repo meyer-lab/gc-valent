@@ -29,7 +29,7 @@ def makeFigure():
 def cytBindingModelOpt(x, val, cellType, IL7=False):
     """Runs binding model for a given mutein, valency, dose, and cell type. """
     recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
-    convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+    convDict = pd.read_csv(join(path_here, "data/BindingConvDict.csv"))
     recCount = recQuantDF[["Receptor", cellType]]
     Kx = np.power(10, x[-1])
 
