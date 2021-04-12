@@ -83,7 +83,7 @@ def StatMV():
                             _, pstat, _ = sampleT(samplejj)
                             alldata.append(pstat)
 
-                    for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
+                    for ii, _ in enumerate(sample):  # get pstat data and put it into list form
                         dat_array = alldata[ii]
                         stat_array = dat_array[[statcol]]
                         stat_array = stat_array.to_numpy()

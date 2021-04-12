@@ -80,7 +80,7 @@ def StatMV():
                         #    sample[jj] = applyMatrix(subSample, T_matrix)
                         gates = gating(cell_type, dates[i], True, repList[i])
                         _, alldata = count_data(sample, gates, Tcells, True)
-                    for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
+                    for ii, _ in enumerate(sample):  # get pstat data and put it into list form
                         dat_array = alldata[ii]
                         stat_array = dat_array[[statcol]]
                         stat_array = stat_array.to_numpy()
