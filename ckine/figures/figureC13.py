@@ -100,8 +100,8 @@ def StatMV():
                                 MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": [0],
                                                                             "Bin": [kk], "NumCells": 0, "Bivalent": timelig[2]}))
                             else:
-                                MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1], "Dose": dosemat[0, ii], "Mean": np.mean(binDat),
-                                                                            "Bin": [kk + 1], "NumCells": [binDat.size], "Bivalent": timelig[2]}))
+                                MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1],
+                                                                            "Dose": dosemat[0, ii], "Mean": np.mean(binDat), "Bin": [kk + 1], "NumCells": [binDat.size], "Bivalent": timelig[2]}))
                     if j == 3 or j == 7:
                         MVdf['Mean'] = MVdf['Mean'] - MVdf.loc[(MVdf.Dose <= 0.001423)].Mean.min()
                         masterMVdf = masterMVdf.append(MVdf)
