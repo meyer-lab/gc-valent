@@ -29,8 +29,10 @@ def makeFigure():
 def cytBindingModelOpt(x, val, cellType, IL7=False):
     """Runs binding model for a given mutein, valency, dose, and cell type. """
     recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
+    convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
     recCount = recQuantDF[["Receptor", cellType]]
     Kx = np.power(10, x[-1])
+
     if IL7:
         affs = [[np.power(10, x[0])]]
         recCount = [recCount.loc[(recCount.Receptor == "IL7Ra")][cellType].values]
@@ -41,6 +43,8 @@ def cytBindingModelOpt(x, val, cellType, IL7=False):
         recCount = [recCount.loc[(recCount.Receptor == "IL2Ra")][cellType].values, recCount.loc[(recCount.Receptor == "IL2Rb")][cellType].values]
         recCount = np.ravel(np.power(10, recCount))
         output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[1][0][1]  # IL2RB binding only
+
+    output *= np.mean(convDict.loc[(convDict.Cell == cellType)].Scale.values)
 
     return output
 
