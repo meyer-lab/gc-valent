@@ -59,16 +59,16 @@ def minSelecFunc(x, val, targCell, offTCells, IL7=False):
 def optimizeDesign(ax, targCell, offTcells, IL7=False):
     """ A more general purpose optimizer """
 
-    vals = np.logspace(0, 4, num=5, base=2)
+    vals = np.arange(1, 8.5, step=0.5)
     if IL7:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Ra"})
         X0 = [8, -12]
-        optBnds = [(5, 11), (-13, -11)]  # Ka IL7, Kx
+        optBnds = [(6, 11), (-13, -11)]  # Ka IL7, Kx
     else:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Ra", "IL2RBG"})
         X0 = [8, 8, -12]
-        optBnds = [(5, 11),  # Ka IL2Ra
-                   (5, 11),  # Ka IL2Rb
+        optBnds = [(6, 11),  # Ka IL2Ra
+                   (6, 11),  # Ka IL2Rb
                    (-13, -11)]  # Kx
 
     for val in vals:
@@ -84,19 +84,25 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
             optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL2Ra": IL2RaKD, "IL2RBG": IL2RBGKD}))
 
     if IL7:
-        sns.barplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
+        sns.lineplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-7 mutein")
 
-        sns.barplot(x="Valency", y="IL7Ra", data=optDF, ax=ax[1], palette="crest")
+        sns.lineplot(x="Valency", y="IL7Ra", data=optDF, ax=ax[1], palette="crest")
         ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
 
     else:
-        sns.barplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
+        sns.lineplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-2 mutein")
 
-        affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Ra', 'IL2RBG'])
-        affDF = affDF.rename(columns={"variable": "Receptor"})
-        sns.barplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
-        ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
+        if targCell == ["NK"]:
+            affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2RBG'])
+            affDF = affDF.rename(columns={"variable": "Receptor"})
+            sns.lineplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
+            ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
+        else:
+            affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Ra', 'IL2RBG'])
+            affDF = affDF.rename(columns={"variable": "Receptor"})
+            sns.lineplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
+            ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
 
     return optimized
