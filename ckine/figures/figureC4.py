@@ -44,7 +44,8 @@ def cytBindingModelOpt(x, val, cellType, IL7=False):
         recCount = np.ravel(np.power(10, recCount))
         output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[1][0][1]  # IL2RB binding only
 
-    output *= np.mean(convDict.loc[(convDict.Cell == cellType)].Scale.values)
+    if not IL7:
+        output *= np.mean(convDict.loc[(convDict.Cell == cellType)].Scale.values)
 
     return output
 
@@ -62,8 +63,9 @@ def minSelecFunc(x, val, targCell, offTCells, IL7=False):
 
 def optimizeDesign(ax, targCell, offTcells, IL7=False):
     """ A more general purpose optimizer """
+    vals = np.arange(1, 9, step=1)
+    sigDF = pd.DataFrame()
 
-    vals = np.arange(1, 8.5, step=0.5)
     if IL7:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Ra"})
         X0 = [8, -12]
@@ -82,20 +84,30 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
         if IL7:
             IL7RaKD = 1e9 / np.power(10, optimized.x[0])
             optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL7Ra": IL7RaKD}))
+            sigDF = sigDF.append(pd.DataFrame({"Cell Type": [targCell[0]], "Target": ["Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, targCell[0], IL7)]}))
+            for cell in offTcells:
+                sigDF = sigDF.append(pd.DataFrame({"Cell Type": [cell], "Target": ["Off-Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, cell, IL7)]}))
         else:
             IL2RaKD = 1e9 / np.power(10, optimized.x[0])
             IL2RBGKD = 1e9 / np.power(10, optimized.x[1])
             optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL2Ra": IL2RaKD, "IL2RBG": IL2RBGKD}))
+            sigDF = sigDF.append(pd.DataFrame({"Cell Type": [targCell[0]], "Target": ["Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, targCell[0], IL7)]}))
+            for cell in offTcells:
+                sigDF = sigDF.append(pd.DataFrame({"Cell Type": [cell], "Target": ["Off-Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, cell, IL7)]}))
+
+    # Normalize to valency 1
+    for cell in targCell + offTcells:
+        sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"] = sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"].div(sigDF.loc[(sigDF["Cell Type"] == cell) & (sigDF.Valency == 1)].pSTAT.values[0])
 
     if IL7:
-        sns.lineplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
+        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-7 mutein")
 
         sns.lineplot(x="Valency", y="IL7Ra", data=optDF, ax=ax[1], palette="crest")
         ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
 
     else:
-        sns.lineplot(x="Valency", y="Selectivity", data=optDF, ax=ax[0], palette="husl")
+        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-2 mutein")
 
         if targCell == ["NK"]:
