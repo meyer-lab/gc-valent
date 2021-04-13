@@ -127,10 +127,14 @@ def importMoments():
     return momentDF
 
 
-def import_pstat_all():
+def import_pstat_all(singleCell=False):
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
-    WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
-    monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
+    if singleCell:
+        WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellDataBin.csv"), encoding="latin1")
+        monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellDataBin.csv"), encoding="latin1")
+    else:
+        WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
+        monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
     respDF = pds.concat([WTbivDF, monDF])
 
     respDF.loc[(respDF.Bivalent == 0), "Ligand"] = (respDF.loc[(respDF.Bivalent == 0)].Ligand + " (Mono)").values

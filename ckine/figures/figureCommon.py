@@ -210,22 +210,30 @@ def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=Fal
     ax.set_ylabel("Average Signal (" + str(receptors[4 + first]) + ")")
 
 
-def plotDoseResponses(ax, df, mut, val, cellType):
+def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
     """Plots all experimental vs. Predicted Values"""
-    expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)]
-    date = expData.loc[0, :].Date.values[0]
-    expData = expData.loc[(expData.Date == date)]
-    expDataSTAT = expData.Experimental.values
-    doseMax, doseMin = np.log10(np.amax(expData.Dose.values)), np.log10(np.amin(expData.Dose.values))
-    doseVec = np.logspace(doseMin, doseMax, 100)
+    if singleCell:
+        expData = df.loc[(df.Ligand == mut) & (df.Bivalent == val) & (df.Cell == cellType)]
+        date = expData.iloc[0, :].Date
+        expData = expData.loc[(expData.Date == date)]
+    else:
+        expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)]
+        date = expData.loc[0, :].Date.values[0]
+        expData = expData.loc[(expData.Date == date)]
 
-    preds = cytBindingModel(mut, val, doseVec, cellType, x=False, date=date)
-    ax.scatter(expData.Dose.values, expDataSTAT, label="Experimental")
-    ax.plot(doseVec, preds, label="Predicted")
-    if val == 1:
-        ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
-    if val == 2:
-        ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+    if singleCell:
+        sns.scatterplot(x="Dose", y="Mean", data=expData, label="Experimental", hue="Bin", ax=ax)
+        if val == 0:
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+        if val == 1:
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+    else:
+        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", ax=ax)
+        sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax)
+        if val == 1:
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+        if val == 2:
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
 
 
 def nllsq_EC50(x0, xdata, ydata):

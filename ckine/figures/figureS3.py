@@ -1,30 +1,30 @@
 """
-This creates Figure S2, dose response of all IL-2 cytokines using binding model.
-"""
+This creates Figure S3, single cell analysis."""
 
 import numpy as np
+import pandas as pd
+from ..imports import import_pstat_all
 from .figureCommon import subplotLabel, getSetup, plotDoseResponses
-from ..MBmodel import runFullModel
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    modelDF = runFullModel(time=[0.5, 1], saveDict=False)
+    df = import_pstat_all(singleCell=True)
 
-    ligands = modelDF.Ligand.unique()
-    cells = modelDF.Cell.unique()
+    ligands = df.Ligand.unique()
+    cells = df.Cell.unique()
     ligList = np.array([])
     valList = np.array([])
 
     for lig in ligands:
-        uniqueVals = modelDF.loc[(modelDF.Ligand == lig)].Valency.unique()
+        uniqueVals = df.loc[(df.Ligand == lig)].Bivalent.unique()
         valList = np.append(valList, uniqueVals)
         ligList = np.append(ligList, np.tile(lig, uniqueVals.size))
 
-    ax, f = getSetup((10, 25), (ligList.size, 4))
+    ax, f = getSetup((6, 25), (ligList.size, 2))
 
     for i, lig in enumerate(ligList):
         for j, cell in enumerate(cells):
-            plotDoseResponses(ax[4 * i + j], modelDF, lig, valList[i], cell)
+            plotDoseResponses(ax[2 * i + j], df, lig, valList[i], cell, singleCell=True)
 
     return f
