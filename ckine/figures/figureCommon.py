@@ -213,7 +213,7 @@ def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=Fal
 def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
     """Plots all experimental vs. Predicted Values"""
     if singleCell:
-        expData = df.loc[(df.Ligand == mut) & (df.Bivalent == val) & (df.Cell == cellType)]
+        expData = df.loc[(df.Ligand == mut) & (df.Bivalent == val) & (df.Cell == cellType) & (df.Time == 1.0)]
         date = expData.iloc[0, :].Date
         expData = expData.loc[(expData.Date == date)]
     else:
