@@ -59,7 +59,7 @@ def StatMV():
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
     # T_matrix = compMatrix("2019-11-08", "1", "A")  # Create matrix 1
     # Cd8_NKmatrix = compMatrix("2019-11-08", "1", "B")  # Create matrix 2
-    numBins = 8
+    numBins = 6
 
     print("Starting Muteins")
 
