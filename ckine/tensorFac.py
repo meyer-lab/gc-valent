@@ -4,9 +4,7 @@ This file includes various methods for flow cytometry analysis.
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import pyplot as plt
 import tensorly as tl
-import matplotlib.cm as cm
 from tensorly.decomposition import non_negative_parafac
 
 
@@ -37,7 +35,7 @@ def makeTensor(sigDF, Variance=False):
 
 def factorTensor(tensor, numComps):
     """ Takes Tensor, and mask and returns tensor factorized form. """
-    return non_negative_parafac(np.nan_to_num(tensor), rank=numComps, mask=np.isfinite(tensor), n_iter_max=5000, init='svd', random_state=0)
+    return non_negative_parafac(np.nan_to_num(tensor), rank=numComps, mask=np.isfinite(tensor), n_iter_max=5000, tol=1e-9)
 
 
 def R2Xplot(ax, tensor, compNum):
