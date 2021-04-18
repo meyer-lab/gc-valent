@@ -5,10 +5,10 @@ import numpy as np
 from scipy import stats
 from .figureCommon import subplotLabel, getSetup
 from ..flow import importF
-from ..PCA import StatGini, sampleT, sampleNK
+from ..PCA import sampleT, sampleNK
 from ..flow import gating, count_data
 
-from ..FCimports import compMatrix, applyMatrix, combineWells
+from ..FCimports import compMatrix, applyMatrix
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 

@@ -3,12 +3,9 @@ from os.path import join
 import matplotlib.lines as mlines
 import pandas as pds
 import numpy as np
-from scipy import stats
 from .figureCommon import subplotLabel, getSetup
 from ..flow import importF
-from ..PCA import StatGini, sampleT, sampleNK
 from ..flow import gating, count_data
-from ..FCimports import compMatrix, applyMatrix, combineWells
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 

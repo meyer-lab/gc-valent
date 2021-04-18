@@ -2,9 +2,8 @@
 This creates Figure S3, single cell analysis."""
 
 import numpy as np
-import pandas as pd
 from ..imports import import_pstat_all
-from .figureCommon import subplotLabel, getSetup, plotDoseResponses
+from .figureCommon import getSetup, plotDoseResponses
 
 
 def makeFigure():

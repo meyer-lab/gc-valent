@@ -10,8 +10,7 @@ from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
 from .figureCommon import subplotLabel, getSetup, nllsq_EC50
-from ..MBmodel import runFullModel, cytBindingModel, getKxStar
-from ..imports import getBindDict
+from ..MBmodel import runFullModel, cytBindingModel
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -181,7 +180,7 @@ def timePlot(ax):
     times = [[0.5], [1.], [2.], [4.]]
     accDF = pd.DataFrame(columns={"Time", "Valency", "Accuracy"})
     for time in times:
-        df = runFullModel(time=time, saveDict=False)
+        df = runFullModel(time=time)
         for val in df.Valency.unique():
             preds = df.loc[(df.Time == time[0]) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Time == time[0]) & (df.Valency == val)].Experimental.values
