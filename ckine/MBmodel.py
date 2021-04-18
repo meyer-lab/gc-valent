@@ -104,7 +104,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     return output
 
 
-def runFullModel(x=False, time=[0.5]):
+def runFullModel(x=False, time=[0.5], saveDict=True):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all()
 
