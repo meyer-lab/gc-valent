@@ -10,7 +10,7 @@ from scipy.optimize import root
 from .imports import import_pstat_all
 
 path_here = dirname(dirname(__file__))
-KxStarP = 2e-12
+KxStarP = 1.126e-12
 
 
 def getKxStar():
@@ -66,12 +66,10 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     Psirs = np.sum(Psi, axis=1).reshape(-1, 1)
     Psinorm = (Psi / Psirs)[:, :-1]
 
-    Lbound = L0 / KxStar * Ctheta * np.expm1(np.dot(Cplx, np.log1p(Psirs - 1))).flatten()
     Rbound = L0 / KxStar * Ctheta.reshape(-1, 1) * np.dot(Cplx, Psinorm) * np.exp(np.dot(Cplx, np.log1p(Psirs - 1)))
-    assert len(Lbound) == len(Ctheta)
     assert Rbound.shape[0] == len(Ctheta)
     assert Rbound.shape[1] == len(Rtot)
-    return Lbound, Rbound
+    return Rbound
 
 
 def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
@@ -93,10 +91,9 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            print(x)
-            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[1][0][1]
+            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
         else:
-            output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[1][0][1]  # IL2RB binding only
+            output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
     if date:
         convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
         output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
