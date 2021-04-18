@@ -29,7 +29,7 @@ def cytBindingModelOpt(x, val, cellType, IL7=False):
     recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
     convDict = pd.read_csv(join(path_here, "data/BindingConvDict.csv"))
     recCount = recQuantDF[["Receptor", cellType]]
-    Kx = np.power(10, -12.0) # TODO: Place fitting Kx
+    Kx = np.power(10, -12.0)  # TODO: Place fitting Kx
 
     if IL7:
         affs = [[np.power(10, x[0])]]
