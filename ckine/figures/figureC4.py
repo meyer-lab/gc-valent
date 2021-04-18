@@ -1,9 +1,7 @@
 """
 Figure 6. Optimization of Ligands
 """
-import os
 from os.path import dirname, join
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import seaborn as sns

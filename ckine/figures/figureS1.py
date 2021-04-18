@@ -1,5 +1,4 @@
 import os
-from os.path import dirname, join
 from pathlib import Path
 import seaborn as sns
 import scipy as sp

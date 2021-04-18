@@ -10,8 +10,7 @@ from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
 from .figureCommon import subplotLabel, getSetup, nllsq_EC50
-from ..MBmodel import runFullModel, cytBindingModel, getKxStar
-from ..imports import getBindDict
+from ..MBmodel import runFullModel, cytBindingModel
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
