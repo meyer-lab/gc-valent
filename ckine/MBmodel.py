@@ -143,7 +143,7 @@ def runFullModel(x=False, time=[0.5], saveDict=True):
             predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
             slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
             masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
-            dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}, index=[ii]))
+            dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
 
     if saveDict:
         dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
