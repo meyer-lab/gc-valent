@@ -180,7 +180,7 @@ def timePlot(ax):
     times = [[0.5], [1.], [2.], [4.]]
     accDF = pd.DataFrame(columns={"Time", "Valency", "Accuracy"})
     for time in times:
-        df = runFullModel(time=time)
+        df = runFullModel(time=time, saveDict=False)
         for val in df.Valency.unique():
             preds = df.loc[(df.Time == time[0]) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Time == time[0]) & (df.Valency == val)].Experimental.values
