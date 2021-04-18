@@ -145,6 +145,9 @@ def runFullModel(x=False, time=[0.5]):
             masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
             dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
 
+    if saveDict:
+        dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+
     if x:
         return np.linalg.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)
     else:
