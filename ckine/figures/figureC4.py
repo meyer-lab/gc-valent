@@ -29,7 +29,7 @@ def cytBindingModelOpt(x, val, cellType, IL7=False):
     recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
     convDict = pd.read_csv(join(path_here, "data/BindingConvDict.csv"))
     recCount = recQuantDF[["Receptor", cellType]]
-    Kx = np.power(10, x[-1])
+    Kx = np.power(10, -12.0) # TODO: Place fitting Kx
 
     if IL7:
         affs = [[np.power(10, x[0])]]
@@ -66,14 +66,13 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
 
     if IL7:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Ra"})
-        X0 = [8, -12]
-        optBnds = [(6, 11), (-13, -11)]  # Ka IL7, Kx
+        X0 = [8]
+        optBnds = [(6, 11)]  # Ka IL7, Kx
     else:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Ra", "IL2RBG"})
-        X0 = [8, 8, -12]
+        X0 = [8, 8]
         optBnds = [(6, 11),  # Ka IL2Ra
-                   (6, 11),  # Ka IL2Rb
-                   (-13, -11)]  # Kx
+                   (6, 11)]  # Ka IL2Rb
 
     for val in vals:
         optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point")
@@ -100,6 +99,7 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
     if IL7:
         sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-7 mutein")
+        ax[0].set_ylim(bottom=0.0)
 
         sns.lineplot(x="Valency", y="IL7Ra", data=optDF, ax=ax[1], palette="crest")
         ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
@@ -107,6 +107,7 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
     else:
         sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-2 mutein")
+        ax[0].set_ylim(bottom=0.0)
 
         if targCell == ["NK"]:
             affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2RBG'])
