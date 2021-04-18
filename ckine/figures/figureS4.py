@@ -25,9 +25,9 @@ def makeFigure():
     
     receptor_levels = getReceptors()
     
-    
-    alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
-    alphaLevels = alphaLevels.append(receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')])
+    alphaLevels_Treg = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
+    alphaLevels_Thelper = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')]
+    alphaLevels = alphaLevels_Treg.append(alphaLevels_Thelper)
 
     alphaCounts = alphaLevels['Count'].reset_index(drop=True)
    
@@ -35,7 +35,7 @@ def makeFigure():
     min = alphaCounts.min()
     max = alphaCounts.max()
 
-    logbins = np.logspace(np.log10(min),np.log10(max),6)
+    logbins = np.logspace(np.log10(min),np.log10(max),8)
     print(logbins)
     #pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)
     #print(pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)).value_counts())
@@ -44,6 +44,11 @@ def makeFigure():
     print(alphaCounts.values)
     medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
     print(medians)
+    medians.to_csv(r'ckine/output/S4data.csv', index = False)
+
+    pd.DataFrame.to_csv(medians)
+    compression_opts = dict(method='zip', archive_name='out.csv')
+
 
     ax=ax[0]
     plt.hist(alphaCounts, bins=logbins)
