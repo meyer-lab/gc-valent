@@ -27,36 +27,47 @@ def makeFigure():
     
     alphaLevels_Treg = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
     alphaLevels_Thelper = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')]
-    alphaLevels = alphaLevels_Treg.append(alphaLevels_Thelper)
-
-    alphaCounts = alphaLevels['Count'].reset_index(drop=True)
-   
-    print(alphaCounts.describe())
-    min = alphaCounts.min()
-    max = alphaCounts.max()
-
-    logbins = np.logspace(np.log10(min),np.log10(max),8)
-    print(logbins)
-    #pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)
-    #print(pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)).value_counts())
+    #alphaLevels = alphaLevels_Treg.append(alphaLevels_Thelper)
     
-    #print(pd.cut(alphaCounts, bins=logbins, include_lowest=True, retbins=True))
-    print(alphaCounts.values)
-    medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
-    print(medians)
-    medians.to_csv(r'ckine/output/S4data.csv', index = False)
+    for i in range(1,2):
+        if i == 1
+            alphaLevels = alphaLevels_Treg
+            ax = ax[0]
+        elif i == 2
+            alphaLevels = alphaLevels_Thelper
+            ax = ax[1]
+        
+        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+    
+        print(alphaCounts.describe())
+        min = alphaCounts.min()
+        max = alphaCounts.max()
 
-    pd.DataFrame.to_csv(medians)
-    compression_opts = dict(method='zip', archive_name='out.csv')
+        logbins = np.logspace(np.log10(min),np.log10(max),8)
+        print(logbins)
+        #pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)
+        #print(pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)).value_counts())
+        
+        #print(pd.cut(alphaCounts, bins=logbins, include_lowest=True, retbins=True))
+        print(alphaCounts.values)
+        medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
+        print(medians)
 
+        #ax=ax[0]
+        plt.hist(alphaCounts, bins=logbins)
+        plt.yscale('log')
+        plt.xscale('log')
+        #plt.xticks(medians, medians)
+        plt.ylabel('Number of Cells')
+        plt.xlabel("IL2Ra Proteins/Cell")
+        if i == 1
+            plt.title("Treg Histogram")
+        elif i == 2
+            plt.title("Thelper Histogram")
+        
+        fullData = fullData.append(alphaCounts)
 
-    ax=ax[0]
-    plt.hist(alphaCounts, bins=logbins)
-    plt.yscale('log')
-    plt.xscale('log')
-    #plt.xticks(medians, medians)
-    plt.ylabel('Number of Cells')
-    plt.xlabel("IL2Ra Proteins/Cell")
+    fullData.to_csv(r'ckine/output/S4data.csv', index = False)
 
     return f
 
