@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import minimize
 from .figureCommon import subplotLabel, getSetup
-from ..MBmodel import polyc
+from ..MBmodel import polyc, getKxStar
 
 path_here = dirname(dirname(__file__))
 
@@ -29,18 +29,18 @@ def cytBindingModelOpt(x, val, cellType, IL7=False):
     recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
     convDict = pd.read_csv(join(path_here, "data/BindingConvDict.csv"))
     recCount = recQuantDF[["Receptor", cellType]]
-    Kx = 2.0e-12  # TODO: Place fitting Kx
+    Kx = getKxStar()
 
     if IL7:
         affs = [[np.power(10, x[0])]]
         recCount = [recCount.loc[(recCount.Receptor == "IL7Ra")][cellType].values]
         recCount = np.ravel(np.power(10, recCount))
-        output = polyc(1e-9 / val, Kx, recCount, [[val]], [1.0], affs)[1][0][0]  # IL7Ra binding only
+        output = polyc(1e-9 / val, Kx, recCount, [[val]], [1.0], affs)[0][0]  # IL7Ra binding only
     else:
         affs = [[np.power(10, x[0]), 1e2], [1e2, np.power(10, x[1])]]
         recCount = [recCount.loc[(recCount.Receptor == "IL2Ra")][cellType].values, recCount.loc[(recCount.Receptor == "IL2Rb")][cellType].values]
         recCount = np.ravel(np.power(10, recCount))
-        output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[1][0][1]  # IL2RB binding only
+        output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[0][1]  # IL2RB binding only
 
     if not IL7:
         output *= np.mean(convDict.loc[(convDict.Cell == cellType)].Scale.values)
