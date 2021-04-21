@@ -20,56 +20,49 @@ def makeFigure():
 
     ax, f = getSetup((10, 5), (2, 4))
     subplotLabel(ax)
+    print(ax[0])
 
     
-    
+    #cell_types = ['T-reg', 'T-helper']
     receptor_levels = getReceptors()
     
-    alphaLevels_Treg = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
-    alphaLevels_Thelper = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')]
+    #alphaLevels_Treg = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
+    #alphaLevels_Thelper = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')]
     #alphaLevels = alphaLevels_Treg.append(alphaLevels_Thelper)
     
-    for i in range(1,2):
-        if i == 1
-            alphaLevels = alphaLevels_Treg
-            ax = ax[0]
-        elif i == 2
-            alphaLevels = alphaLevels_Thelper
-            ax = ax[1]
-        
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
-    
-        print(alphaCounts.describe())
-        min = alphaCounts.min()
-        max = alphaCounts.max()
 
-        logbins = np.logspace(np.log10(min),np.log10(max),8)
-        print(logbins)
-        #pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)
-        #print(pd.DataFrame(data=pd.cut(alphaCounts, bins=logbins, include_lowest=True)).value_counts())
+    plotAlphaHistogram(ax[0],'T-reg',receptor_levels)
+    plotAlphaHistogram(ax[1],'T-helper', receptor_levels)
         
-        #print(pd.cut(alphaCounts, bins=logbins, include_lowest=True, retbins=True))
-        print(alphaCounts.values)
-        medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
-        print(medians)
+        #fullData = fullData.append(alphaCounts)
 
-        #ax=ax[0]
-        plt.hist(alphaCounts, bins=logbins)
-        plt.yscale('log')
-        plt.xscale('log')
-        #plt.xticks(medians, medians)
-        plt.ylabel('Number of Cells')
-        plt.xlabel("IL2Ra Proteins/Cell")
-        if i == 1
-            plt.title("Treg Histogram")
-        elif i == 2
-            plt.title("Thelper Histogram")
-        
-        fullData = fullData.append(alphaCounts)
-
-    fullData.to_csv(r'ckine/output/S4data.csv', index = False)
+    #fullData.to_csv(r'ckine/output/S4data.csv', index = False)
 
     return f
+
+def plotAlphaHistogram(ax, cell_type, receptor_levels):
+    alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
+        
+    alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+    
+    print(alphaCounts.describe())
+    min_ = alphaCounts.min()
+    max_ = alphaCounts.max()
+
+    logbins = np.logspace(np.log10(min_),np.log10(max_),8)
+    print(logbins)
+    
+    #print(alphaCounts.values)
+    medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
+    print(medians)
+
+    
+    ax.hist(alphaCounts, bins=logbins)
+    title = cell_type + " Histogram"
+    ax.set(xlabel='IL2Ra Proteins/Cell', ylabel='Number of Cells',title=title)
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    #plt.xticks(medians, medians) 
 
 
 def getReceptors():
