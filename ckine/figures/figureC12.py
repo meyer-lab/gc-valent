@@ -55,7 +55,7 @@ def StatMV():
     dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
     repList = [0, 0, 0, 0, 0, 0]
 
-    numBins = 6
+    numBins = 4
 
     T_matrix = compMatrix("2019-11-08", "1", "A")  # Create matrix 1
 
@@ -94,7 +94,7 @@ def StatMV():
                         while np.amax(stat_array) > 100000:
                             IL2Ra_array = np.reshape(IL2Ra_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
                             stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
-                        bins = np.logspace(np.log10(np.amin(IL2Ra_array)), np.log10(np.amax(IL2Ra_array)), num=numBins)
+                        bins = np.logspace(np.log10(np.percentile(IL2Ra_array, 5)), np.log10(np.percentile(IL2Ra_array, 95)), num=numBins)
 
                         for kk in range(0, bins.size - 1):
                             binDat = stat_array[(IL2Ra_array > bins[kk]) & (IL2Ra_array < bins[kk + 1])]
@@ -106,7 +106,7 @@ def StatMV():
                                     row), "Dose": dosemat[0, ii], "Mean": np.mean(binDat), "Bin": [kk + 1], "NumCells": [binDat.size], "Bivalent": [0]}))
 
                     if j == 3 or j == 7:
-                        MVdf['Mean'] = MVdf['Mean'] - MVdf.loc[(MVdf.Dose <= 0.001423)].Mean.min()
+                        MVdf['Mean'] = MVdf['Mean'] - MVdf.loc[(MVdf.Dose <= 0.001423)].Mean.mean()
                         masterMVdf = masterMVdf.append(MVdf)
                         MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Bin", "NumCells", "Bivalent"})
 
@@ -156,7 +156,7 @@ def StatMV():
                         while np.amax(stat_array) > 100000:
                             IL2Ra_array = np.reshape(IL2Ra_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
                             stat_array = np.reshape(stat_array[stat_array != np.amax(stat_array)], (-1, 1))  # Remove random exploding value
-                        bins = np.logspace(np.log10(np.amin(IL2Ra_array)), np.log10(np.amax(IL2Ra_array)), num=numBins)
+                        bins = np.logspace(np.log10(np.percentile(IL2Ra_array, 5)), np.log10(np.percentile(IL2Ra_array, 95)), num=numBins)
                         timelig = mutFunc(row, filename)
                         for kk in range(0, bins.size - 1):
                             binDat = stat_array[(IL2Ra_array > bins[kk]) & (IL2Ra_array < bins[kk + 1])]
@@ -167,7 +167,7 @@ def StatMV():
                                 MVdf = MVdf.append(pds.DataFrame.from_dict({"Date": dates[i], "Time": timelig[0], "Cell": TitlesT[k], "Ligand": timelig[1],
                                                                             "Dose": dosemat[0, ii], "Mean": np.mean(binDat), "Bin": [kk + 1], "NumCells": [binDat.size], "Bivalent": timelig[2]}))
                     if j == 3 or j == 7:
-                        MVdf['Mean'] = MVdf['Mean'] - MVdf.loc[(MVdf.Dose <= 0.001423)].Mean.min()
+                        MVdf['Mean'] = MVdf['Mean'] - MVdf.loc[(MVdf.Dose <= 0.001423)].Mean.mean()
                         masterMVdf = masterMVdf.append(MVdf)
                         MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Bin", "NumCells", "Bivalent"})
 
