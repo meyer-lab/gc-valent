@@ -10,8 +10,7 @@ from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
 from .figureCommon import subplotLabel, getSetup, nllsq_EC50
-from ..MBmodel import runFullModel, cytBindingModel, getKxStar
-from ..imports import getBindDict
+from ..MBmodel import runFullModel, cytBindingModel
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -25,8 +24,8 @@ def makeFigure():
     subplotLabel(axlabel)
     ax[5].axis("off")
 
-    # minSolved = minimize(runFullModel, x0=-11, args=[0.5, False])
-    # print(minSolved.x)
+    minSolved = minimize(runFullModel, x0=-12.0, args=[0.5, False])
+    print(minSolved)
     modelDF = runFullModel(time=[0.5, 1.0])
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)

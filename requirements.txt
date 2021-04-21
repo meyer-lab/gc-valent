@@ -1,5 +1,5 @@
 matplotlib==3.4.1
-pandas==1.2.3
+pandas==1.2.4
 scipy==1.6.2
 seaborn==0.11.1
 numpy==1.20.2
@@ -14,5 +14,5 @@ pandoc-eqnos==2.5.0
 pandoc-tablenos==2.3.0
 panflute==1.12.5
 jupyter==1.0.0
-tensorly==0.5.1
+tensorly==0.6.0
 FlowCytometryTools==0.5.1
