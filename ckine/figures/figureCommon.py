@@ -210,6 +210,12 @@ def plot_regression(ax, sample, channels, receptors, recQuant, first=0, skip=Fal
     ax.set_ylabel("Average Signal (" + str(receptors[4 + first]) + ")")
 
 
+cellSTATlimDict = {"Treg": (0, 50000),
+                   "Thelper": (0, 30000),
+                   "CD8": (0, 20000),
+                   "NK": (0, 5000)}
+
+
 def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
     """Plots all experimental vs. Predicted Values"""
     if singleCell:
@@ -224,16 +230,16 @@ def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
     if singleCell:
         sns.scatterplot(x="Dose", y="Mean", data=expData, label="Experimental", hue="Bin", ax=ax)
         if val == 0:
-            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
         if val == 1:
-            ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
     else:
         sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", ax=ax)
         sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax)
         if val == 1:
-            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
         if val == 2:
-            ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2))
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
 
 
 def nllsq_EC50(x0, xdata, ydata):
