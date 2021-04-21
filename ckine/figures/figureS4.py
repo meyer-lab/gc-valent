@@ -20,7 +20,6 @@ def makeFigure():
 
     ax, f = getSetup((10, 5), (2, 4))
     subplotLabel(ax)
-    print(ax[0])
 
     
     #cell_types = ['T-reg', 'T-helper']
@@ -31,38 +30,68 @@ def makeFigure():
     #alphaLevels = alphaLevels_Treg.append(alphaLevels_Thelper)
     
 
-    plotAlphaHistogram(ax[0],'T-reg',receptor_levels)
-    plotAlphaHistogram(ax[1],'T-helper', receptor_levels)
-        
-        #fullData = fullData.append(alphaCounts)
+    binned_tregAlphaCounts = plotAlphaHistogram(ax[0],ax[2],'T-reg',receptor_levels)
+    binned_thelperAlphaCounts = plotAlphaHistogram(ax[1],ax[3],'T-helper', receptor_levels)
 
-    #fullData.to_csv(r'ckine/output/S4data.csv', index = False)
+    binnedAlphaCounts = binned_tregAlphaCounts.append(binned_thelperAlphaCounts, ignore_index=True)
+
+    print(binnedAlphaCounts)
+
+    path = path_here + '/data/S4data.csv'
+    print(path)
+    binnedAlphaCounts.to_csv(path, index = False)
 
     return f
 
-def plotAlphaHistogram(ax, cell_type, receptor_levels):
+def plotAlphaHistogram(ax1,ax2, cell_type, receptor_levels):
     alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
-        
+    betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
+
     alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+    betaCounts = betaLevels['Count'].reset_index(drop=True)
+    d = {'alpha': alphaCounts, 'beta': betaCounts}
+    recepCounts = pd.DataFrame(data=d)
+    recepCounts = recepCounts.dropna()
+    recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
+
+
+
+    print("test")
+    print(len(alphaCounts))
+    print(len(betaCounts))
     
-    print(alphaCounts.describe())
+    #print(alphaCounts.describe())
     min_ = alphaCounts.min()
     max_ = alphaCounts.max()
 
     logbins = np.logspace(np.log10(min_),np.log10(max_),8)
-    print(logbins)
-    
-    #print(alphaCounts.values)
-    medians, _ , _ = stats.binned_statistic(alphaCounts.values, alphaCounts.values, statistic ='median', bins = logbins)
-    print(medians)
 
+    alphaMeans, bin_edges, binnumber = stats.binned_statistic(alphaCounts, alphaCounts, statistic ='mean', bins = logbins)
     
-    ax.hist(alphaCounts, bins=logbins)
+    ax1.hist(alphaCounts, bins=logbins)
     title = cell_type + " Histogram"
-    ax.set(xlabel='IL2Ra Proteins/Cell', ylabel='Number of Cells',title=title)
-    ax.set_yscale('log')
-    ax.set_xscale('log')
+    ax1.set(xlabel='IL2Ra Proteins/Cell', ylabel='Number of Cells',title=title)
+    ax1.set_yscale('log')
+    ax1.set_xscale('log')
     #plt.xticks(medians, medians) 
+    
+    data = {'Count':alphaCounts,'Bin':binnumber}
+    binnedAlphaCounts = pd.DataFrame(data)
+    binnedAlphaCounts['Cell Type']=cell_type
+
+    print(binnedAlphaCounts)
+
+    alphaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'], recepCounts['alpha'], statistic ='mean', bins = logbins)
+    betaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'].values, recepCounts['beta'].values, statistic ='mean', bins = logbins)
+
+    ax2.scatter(alphaMeans,betaMeans)
+    title = cell_type + " alpha/beta mean correlation"
+    ax2.set(xlabel='IL2Ra Mean/Bin', ylabel='IL2Rb Mean/Bin',title=title)
+    ax2.set_yscale('log')
+    ax2.set_xscale('log')
+
+    return binnedAlphaCounts
+
 
 
 def getReceptors():
