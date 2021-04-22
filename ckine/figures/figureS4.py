@@ -23,7 +23,6 @@ def makeFigure():
 
     receptor_levels = getReceptors()
 
-
     binned_tregAlphaCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels)
     binned_thelperAlphaCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels)
 
