@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-flist = C2 C3 C4 S2 S3
+flist = C2 C3 C4 S2 S3 S4
 
 notebooks := $(wildcard *.ipynb)
 

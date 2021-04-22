@@ -21,22 +21,14 @@ def makeFigure():
     ax, f = getSetup((10, 5), (2, 4))
     subplotLabel(ax)
 
-    #cell_types = ['T-reg', 'T-helper']
     receptor_levels = getReceptors()
-
-    #alphaLevels_Treg = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-reg') & (receptor_levels['Receptor'] == 'CD25')]
-    #alphaLevels_Thelper = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD25')]
-    #alphaLevels = alphaLevels_Treg.append(alphaLevels_Thelper)
 
     binned_tregAlphaCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels)
     binned_thelperAlphaCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels)
 
     binnedAlphaCounts = binned_tregAlphaCounts.append(binned_thelperAlphaCounts, ignore_index=True)
 
-    print(binnedAlphaCounts)
-
-    path = path_here + '/data/S4data.csv'
-    print(path)
+    path = path_here + '/data/BinnedReceptorData.csv'
     binnedAlphaCounts.to_csv(path, index=False)
 
     return f
@@ -53,30 +45,22 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels):
     recepCounts = recepCounts.dropna()
     recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
 
-    print("test")
-    print(len(alphaCounts))
-    print(len(betaCounts))
+    min_ = alphaCounts.quantile(0.05)
+    max_ = alphaCounts.quantile(0.95)
 
-    # print(alphaCounts.describe())
-    min_ = alphaCounts.min()
-    max_ = alphaCounts.max()
+    logbins = np.logspace(np.log10(min_), np.log10(max_), 4)
 
-    logbins = np.logspace(np.log10(min_), np.log10(max_), 8)
-
-    alphaMeans, bin_edges, binnumber = stats.binned_statistic(alphaCounts, alphaCounts, statistic='mean', bins=logbins)
+    alphaMeans, _, binnumber = stats.binned_statistic(alphaCounts, alphaCounts, statistic='mean', bins=logbins)
 
     ax1.hist(alphaCounts, bins=logbins)
     title = cell_type + " Histogram"
     ax1.set(xlabel='IL2Ra Proteins/Cell', ylabel='Number of Cells', title=title)
     ax1.set_yscale('log')
     ax1.set_xscale('log')
-    #plt.xticks(medians, medians)
 
     data = {'Count': alphaCounts, 'Bin': binnumber}
     binnedAlphaCounts = pd.DataFrame(data)
     binnedAlphaCounts['Cell Type'] = cell_type
-
-    print(binnedAlphaCounts)
 
     alphaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'], recepCounts['alpha'], statistic='mean', bins=logbins)
     betaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'].values, recepCounts['beta'].values, statistic='mean', bins=logbins)
@@ -94,7 +78,6 @@ def getReceptors():
     # import bead data and run regression to get equations
     lsq_cd25, lsq_cd122, lsq_cd132 = run_regression()
 
-    # create dataframe with gated samples (all replicates)
     df_gates = import_gates()
     df_signal = apply_gates("4-23", "1", df_gates)
     df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
