@@ -218,20 +218,16 @@ cellSTATlimDict = {"Treg": (0, 50000),
 
 def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
     """Plots all experimental vs. Predicted Values"""
-    if singleCell:
-        expData = df.loc[(df.Ligand == mut) & (df.Bivalent == val) & (df.Cell == cellType) & (df.Time == 1.0)]
-        date = expData.iloc[0, :].Date
-        expData = expData.loc[(expData.Date == date)]
-    else:
-        expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)]
-        date = expData.loc[0, :].Date.values[0]
-        expData = expData.loc[(expData.Date == date)]
+    expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)]
+    date = expData.loc[0, :].Date.values[0]
+    expData = expData.loc[(expData.Date == date)]
 
     if singleCell:
-        sns.scatterplot(x="Dose", y="Mean", data=expData, label="Experimental", hue="Bin", ax=ax)
-        if val == 0:
-            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", hue="Bin", ax=ax)
+        sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Bin", ax=ax)
         if val == 1:
+            ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+        if val == 2:
             ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
     else:
         sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", ax=ax)
