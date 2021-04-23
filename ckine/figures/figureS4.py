@@ -23,18 +23,23 @@ def makeFigure():
 
     receptor_levels = getReceptors()
 
-    binned_tregAlphaCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels)
-    binned_thelperAlphaCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels)
+    binned_tregCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
+    binned_thelperCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
 
-    binnedAlphaCounts = binned_tregAlphaCounts.append(binned_thelperAlphaCounts, ignore_index=True)
+    binnedCounts = binned_tregCounts.append(binned_thelperCounts, ignore_index=True)
 
-    path = path_here + '/data/BinnedReceptorData.csv'
-    binnedAlphaCounts.to_csv(path, index=False)
+    #path = path_here + '/data/BinnedReceptorData.csv'
+    #binnedCounts.to_csv(path, index=False)
 
     return f
 
 
-def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels):
+cellTypeDict = {"T-reg": "Treg",
+                "T-helper": "Thelper"}
+
+
+def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
+    """Makes two plots: histogram of IL2Ra values, and IL2Rb means in those bins"""
     alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
     betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
 
@@ -48,7 +53,7 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels):
     min_ = alphaCounts.quantile(0.05)
     max_ = alphaCounts.quantile(0.95)
 
-    logbins = np.logspace(np.log10(min_), np.log10(max_), 4)
+    logbins = np.logspace(np.log10(min_), np.log10(max_), numBins + 1)
 
     alphaMeans, _, binnumber = stats.binned_statistic(alphaCounts, alphaCounts, statistic='mean', bins=logbins)
 
@@ -65,13 +70,16 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels):
     alphaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'], recepCounts['alpha'], statistic='mean', bins=logbins)
     betaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'].values, recepCounts['beta'].values, statistic='mean', bins=logbins)
 
+    binnedRecCounts = pd.DataFrame({"Receptor": "IL2Ra", "Bin": np.arange(1, numBins + 1), "Mean": alphaMeans, "Cell Type": cellTypeDict[cell_type]})
+    binnedRecCounts = binnedRecCounts.append(pd.DataFrame({"Receptor": "IL2Rb", "Bin": np.arange(1, numBins + 1), "Mean": betaMeans, "Cell Type": cellTypeDict[cell_type]}))
+
     ax2.scatter(alphaMeans, betaMeans)
     title = cell_type + " alpha/beta mean correlation"
     ax2.set(xlabel='IL2Ra Mean/Bin', ylabel='IL2Rb Mean/Bin', title=title)
     ax2.set_yscale('log')
     ax2.set_xscale('log')
 
-    return binnedAlphaCounts
+    return binnedRecCounts
 
 
 def getReceptors():

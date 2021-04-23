@@ -199,7 +199,6 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
 
     # Implement gating, revert tlog, and add to dataframe
     if cellType in ('T-reg', 'T-helper'):
-        print(gates_df)
         samplecd3cd4 = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
                                                       (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
         sample = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
