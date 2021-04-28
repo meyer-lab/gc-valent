@@ -2,8 +2,6 @@ SHELL := /bin/bash
 
 flist = C2 C3 C4 S2 S3 S4
 
-notebooks := $(wildcard *.ipynb)
-
 .PHONY: clean test all testprofile testcover spell
 
 all: pylint.log $(patsubst %, output/figure%.svg, $(flist))
