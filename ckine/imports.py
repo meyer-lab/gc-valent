@@ -1,6 +1,6 @@
 """File that deals with everything about importing and sampling."""
 import os
-from functools import cache
+from functools import lru_cache
 from os.path import join
 import numpy as np
 import pandas as pds
@@ -8,7 +8,7 @@ import pandas as pds
 path_here = os.path.dirname(os.path.dirname(__file__))
 
 
-@cache
+@lru_cache(maxsize=None)
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
@@ -80,7 +80,7 @@ receptors["H"] = ["IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)"]
 receptors["I"] = ["CD127", "CD127", "CD127", "CD127", "CD127"]
 
 
-@cache
+@lru_cache(maxsize=None)
 def import_pstat_all(singleCell=False):
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
     if singleCell:
@@ -97,7 +97,7 @@ def import_pstat_all(singleCell=False):
     return respDF
 
 
-@cache
+@lru_cache(maxsize=None)
 def getBindDict():
     """Gets binding to pSTAT fluorescent conversion dictionary"""
     path = os.path.dirname(os.path.dirname(__file__))
