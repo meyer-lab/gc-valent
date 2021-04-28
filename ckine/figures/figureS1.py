@@ -181,7 +181,7 @@ def receptorPlot(ax1, ax2, ax3):
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
     df_signal = df_signal.append(apply_gates("5-16", "1", df_gates))
     df_signal = df_signal.append(apply_gates("5-16", "2", df_gates))
-    df_signal = df_signal.subsample(0.2)
+    df_signal = df_signal
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -221,9 +221,9 @@ def receptorPlot(ax1, ax2, ax3):
 
     for index, cell_type in enumerate(cell_types):
 
-        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
-        betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
-        gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')]
+        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')].sample(frac=0.20)
+        betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')].sample(frac=0.20)
+        gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')].sample(frac=0.20)
 
         alphaCounts = alphaLevels['Count'].reset_index(drop=True)
         betaCounts = betaLevels['Count'].reset_index(drop=True)
