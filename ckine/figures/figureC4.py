@@ -16,11 +16,11 @@ path_here = dirname(dirname(__file__))
 def makeFigure():
     """ Make figure 6. """
     # Get list of axis objects
-    ax, f = getSetup((5, 6), (3, 2))
+    ax, f = getSetup((6, 4.5), (2, 3))
     subplotLabel(ax)
-    optimizeDesign(ax[0:2], ["Treg"], ["Thelper", "NK", "CD8"])
-    optimizeDesign(ax[2:4], ["NK"], ["Thelper", "Treg", "CD8"])
-    optimizeDesign(ax[4:6], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True)
+    optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
+    optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"])
+    optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True)
 
     return f
 
