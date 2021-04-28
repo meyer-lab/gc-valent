@@ -27,8 +27,8 @@ def makeFigure():
     Tcell_sample, _ = importF2(Tcell_pathname, "A")
     NK_CD8_sample, _ = importF2(NK_CD8_pathname, "A")
 
-    Tcell_sample = combineWells(Tcell_sample)
-    NK_CD8_sample = combineWells(NK_CD8_sample)
+    Tcell_sample = combineWells(Tcell_sample).subsample(0.2)
+    NK_CD8_sample = combineWells(NK_CD8_sample).subsample(0.2)
 
     Tcell_sample = applyMatrix(Tcell_sample, compMatrix('2019-11-08', '1', 'A'))
     NK_CD8_sample = applyMatrix(NK_CD8_sample, compMatrix('2019-11-08', '1', 'B'))
@@ -73,9 +73,9 @@ def makeFigure():
     sample1A, unstained, isotype = importF("4-23", "1", "A", 1, "IL2R", None)
     sample2B, unstained, isotype = importF("4-23", "1", "B", 2, "IL2R", None)
     sample3C, unstained, isotype = importF("4-23", "1", "C", 3, "IL2R", None)
-    panel1 = sample1A.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H'])
-    panel2 = sample2B.transform("tlog", channels=['VL4-H', 'BL3-H'])
-    panel3 = sample3C.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL3-H'])
+    panel1 = sample1A.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']).subsample(0.2)
+    panel2 = sample2B.transform("tlog", channels=['VL4-H', 'BL3-H']).subsample(0.2)
+    panel3 = sample3C.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL3-H']).subsample(0.2)
 
     cd3cd4_gate = PolyGate([(5.0e03, 7.3e03), (5.3e03, 5.6e03), (8.0e03, 5.6e03), (8.0e03, 7.3e03)], ('VL4-H', 'VL6-H'), region='in', name='cd3cd4')
     _ = panel1.plot(['VL4-H', 'VL6-H'], gates=cd3cd4_gate, gate_colors=['red'], cmap=cm.jet, ax=ax[4])  # CD3, CD4
@@ -181,6 +181,7 @@ def receptorPlot(ax1, ax2, ax3):
     df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
     df_signal = df_signal.append(apply_gates("5-16", "1", df_gates))
     df_signal = df_signal.append(apply_gates("5-16", "2", df_gates))
+    df_signal = df_signal
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -229,7 +230,7 @@ def receptorPlot(ax1, ax2, ax3):
         d = {'alpha': alphaCounts, 'beta': betaCounts}
         recepCounts = pd.DataFrame(data=d)
         recepCounts = recepCounts.dropna()
-        recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
+        recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)].sample(frac=0.20)
 
         hex1 = ax2
         hex1.hexbin(recepCounts['alpha'], recepCounts['beta'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
@@ -242,7 +243,7 @@ def receptorPlot(ax1, ax2, ax3):
         d2 = {'alpha': alphaCounts, 'gamma': gammaCounts}
         recepCounts2 = pd.DataFrame(data=d2)
         recepCounts2 = recepCounts2.dropna()
-        recepCounts2 = recepCounts2[(recepCounts2[['alpha', 'gamma']] != 0).all(axis=1)]
+        recepCounts2 = recepCounts2[(recepCounts2[['alpha', 'gamma']] != 0).all(axis=1)].sample(frac=0.20)
 
         hex2 = ax3
         hex2.hexbin(recepCounts2['alpha'], recepCounts2['gamma'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
