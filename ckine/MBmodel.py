@@ -2,12 +2,11 @@
 Implementation of a simple multivalent binding model.
 """
 
-import os
 from os.path import dirname, join
 import numpy as np
 import pandas as pd
 from scipy.optimize import root
-from .imports import import_pstat_all
+from .imports import import_pstat_all, getBindDict
 
 path_here = dirname(dirname(__file__))
 KxStarP = 1.126e-12
@@ -100,7 +99,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=Fal
         else:
             output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
     if date:
-        convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+        convDict = getBindDict()
         output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
 
     return output

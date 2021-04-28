@@ -418,99 +418,17 @@ def StatGini(sampleType, ax, cell_type, date, Tcells=True):
 
 
 def nllsq_EC50(x0, xdata, ydata):
-    """
-    Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50.
-    """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0.0, 0.0, 0.0, 0.0], [10.0, 100.0, 10 ** 5.0, 10 ** 5]), jac="3-point")
+    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0.0, 0.0, 0.0], [10, 10.0, 10 ** 5.0]), jac="3-point")
     return lsq_res.x[0]
+
+
+def hill_equation(x, x0, solution=0):
+    """ Calculates EC50 from Hill Equation. """
+    xk = np.power(x / x0[0], x0[1])
+    return (x0[2] * xk / (1.0 + xk)) - solution
 
 
 def residuals(x0, x, y):
     """ Residual function for Hill Equation. """
     return hill_equation(x, x0) - y
-
-
-def hill_equation(x, x0, solution=0):
-    """ Calculates EC50 from Hill Equation. """
-    k = x0[0]
-    n = x0[1]
-    A = x0[2]
-    floor = x0[3]
-    xk = np.power(x / k, n)
-    return (A * xk / (1.0 + xk)) - solution + floor
-
-
-def EC50_PC_Scan(sampleType, min_max_pts, ax, cell_type, Tcells=True, PC1=True):
-    """Scans along one Principal component and returns EC50 for slices along that Axis"""
-    x0 = [1, 2.0, 5000.0, 3000.0]  # would put gating here
-    EC50s = np.zeros([1, min_max_pts[2]])
-    scanspace = np.linspace(min_max_pts[0], min_max_pts[1], num=min_max_pts[2] + 1)
-    axrange = np.array([-100, 100])
-
-    for i in range(0, min_max_pts[2]):  # set bounds and calculate EC50s
-        if PC1:
-            PC1Bnds, PC2Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
-        else:
-            PC2Bnds, PC1Bnds = np.array([scanspace[i], scanspace[i + 1]]), axrange
-        pSTATs, doses, loading = PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, cell_type, Tcells)
-        doses = np.log10(doses.astype(np.float) * 1e4)
-        EC50s[0, i] = nllsq_EC50(x0, doses, pSTATs)
-
-    EC50s = EC50s.flatten() - 4  # account for 10^4 multiplication
-    ax.plot(scanspace[:-1] + (min_max_pts[1] - min_max_pts[0]) / (2 * min_max_pts[2]), EC50s, ".--", color="navy")
-    ax.grid()
-
-    if PC1:
-        ax.set_xlabel("PC1 Space")
-    else:
-        ax.set_xlabel("PC2 Space")
-    ax.set_ylabel("log[EC50] (nM)")
-    ax.set(ylim=(-3, 3))
-    ax.set(xlim=(min_max_pts[0], min_max_pts[1]))
-    ax.grid()
-
-    return loading
-
-
-def ColPlot(sample, ax, col, Tcells=True):
-    """Fills in an ax with a colored by gating PCA plot"""
-    if Tcells:
-        _, _, xf_arrayT, _ = pcaAll(sample, Tcells=True)
-        _, _, _, _, colormatT = pcaAllCellType(sample, Tcells=True)
-        pcaPltColor(xf_arrayT[col], colormatT[col], ax=ax, Tcells=True)
-        ax.set_title("T-reg PCA by Gating", fontsize=15)
-    else:
-        _, _, xf_arrayNk, _ = pcaAll(sample, Tcells=False)
-        _, _, _, _, colormatNk = pcaAllCellType(sample, Tcells=False)
-        pcaPltColor(xf_arrayNk[col], colormatNk[col], ax=ax, Tcells=False)
-        ax.set_title("Nk PCA by Gating", fontsize=15)
-
-
-def RecQuantResp(ax, samples, cellType=False, date=False):
-    """Plots dose response curves for cells separated by their receptor expression levels"""
-    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
-    quartDF = pd.DataFrame(columns=["IL-2 Dose (nM)", "Activity", "Quartile"])
-    if cellType:
-        gates = gating(cellType, date, True)
-    for i, sample in enumerate(samples):
-        if cellType:
-            df, _ = cellData(sample, gates)
-            pstatdata = pd.DataFrame({"RL1-H": df["RL1-H"]})
-            df = df["VL1-H"]
-
-        else:
-            df, pstatdata, _ = sampleT(sample)
-            df = df["VL1-H"]
-
-        quantiles = np.array([df.quantile(0.25), df.quantile(0.5), df.quantile(0.75)])
-        quartDF = quartDF.append(pd.DataFrame({"IL-2 Dose (nM)": dosemat[0, i], "Activity": pstatdata[df < quantiles[0]].mean(), "Quartile": "IL-2Rα Quartile 1"}))
-        quartDF = quartDF.append(pd.DataFrame({"IL-2 Dose (nM)": dosemat[0, i], "Activity": pstatdata.loc[(df < quantiles[1]) & (df > quantiles[0])].mean(), "Quartile": "IL-2Rα Quartile 2"}))
-        quartDF = quartDF.append(pd.DataFrame({"IL-2 Dose (nM)": dosemat[0, i], "Activity": pstatdata.loc[(df < quantiles[2]) & (df > quantiles[1])].mean(), "Quartile": "IL-2Rα Quartile 3"}))
-        quartDF = quartDF.append(pd.DataFrame({"IL-2 Dose (nM)": dosemat[0, i], "Activity": pstatdata[df > quantiles[2]].mean(), "Quartile": "IL-2Rα Quartile 4"}))
-
-    sns.lineplot(x="IL-2 Dose (nM)", y="Activity", hue="Quartile", data=quartDF, ax=ax, palette="husl")
-    ax.set(xscale="log", xticks=[1e-4, 1e-2, 1e0, 1e2], xlim=[1e-4, 1e2])
-    if cellType:
-        ax.set_title(cellType)
-    else:
-        ax.set_title("T-cells")
