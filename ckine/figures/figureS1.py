@@ -8,7 +8,7 @@ from .figureCommon import subplotLabel, getSetup
 from ..imports import channels
 from ..flow import bead_regression
 from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates, importF
-from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate, QuadGate
+from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate
 from matplotlib import pyplot as plt
 from matplotlib import cm
 

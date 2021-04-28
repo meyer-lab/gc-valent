@@ -9,7 +9,7 @@ import pandas as pd
 import warnings
 from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
-from FlowCytometryTools import QuadGate, ThresholdGate, PolyGate
+from FlowCytometryTools import QuadGate, ThresholdGate
 
 path_here = dirname(dirname(__file__))
 
