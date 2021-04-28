@@ -221,16 +221,16 @@ def receptorPlot(ax1, ax2, ax3):
 
     for index, cell_type in enumerate(cell_types):
 
-        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')].sample(frac=0.20)
-        betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')].sample(frac=0.20)
-        gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')].sample(frac=0.20)
+        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
+        betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
+        gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')]
 
         alphaCounts = alphaLevels['Count'].reset_index(drop=True)
         betaCounts = betaLevels['Count'].reset_index(drop=True)
         d = {'alpha': alphaCounts, 'beta': betaCounts}
         recepCounts = pd.DataFrame(data=d)
         recepCounts = recepCounts.dropna()
-        recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
+        recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)].sample(frac=0.20)
 
         hex1 = ax2
         hex1.hexbin(recepCounts['alpha'], recepCounts['beta'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
@@ -243,7 +243,7 @@ def receptorPlot(ax1, ax2, ax3):
         d2 = {'alpha': alphaCounts, 'gamma': gammaCounts}
         recepCounts2 = pd.DataFrame(data=d2)
         recepCounts2 = recepCounts2.dropna()
-        recepCounts2 = recepCounts2[(recepCounts2[['alpha', 'gamma']] != 0).all(axis=1)]
+        recepCounts2 = recepCounts2[(recepCounts2[['alpha', 'gamma']] != 0).all(axis=1)].sample(frac=0.20)
 
         hex2 = ax3
         hex2.hexbin(recepCounts2['alpha'], recepCounts2['gamma'], xscale='log', yscale='log', mincnt=1, cmap='viridis')
