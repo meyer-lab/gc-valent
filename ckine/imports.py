@@ -1,54 +1,14 @@
 """File that deals with everything about importing and sampling."""
 import os
+from functools import cache
 from os.path import join
 import numpy as np
-import scipy as sp
 import pandas as pds
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
 
-def import_Rexpr():
-    """ Loads CSV file containing Rexpr levels from Visterra data. """
-    data = pds.read_csv(join(path_here, "ckine/data/final_receptor_levels.csv"))  # Every row in the data represents a specific cell
-    df = data.groupby(["Cell Type", "Receptor"]).agg(sp.stats.gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
-    cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    cell_names = cell_names[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2]]  # Reorder to match pstat import order
-    receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
-    numpy_data = pds.Series(df["Count"]).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
-    numpy_data = numpy_data[:, [2, 3, 0, 1, 4]]  # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    numpy_data = numpy_data[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2], :]  # Reorder to match cells
-    return df, numpy_data, cell_names
-
-
-def import_muteins():
-    """ Import mutein data and return a normalized DataFrame and tensor. """
-    data = pds.read_csv(join(path_here, "ckine/data/2019-07-mutein-timecourse.csv"))
-
-    # Concentrations are across columns, so melt
-    data = pds.melt(data, id_vars=["Cells", "Ligand", "Time", "Replicate"], var_name="Concentration", value_name="RFU")
-
-    # Make the concentrations numeric
-    data["Concentration"] = pds.to_numeric(data["Concentration"])
-
-    # Subtract off the minimum signal
-    data["RFU"] = data["RFU"] - data.groupby(["Cells", "Replicate"])["RFU"].transform("min")
-
-    # Each replicate varies in its sensitivity, so correct for that
-    replAvg = data[data["Time"] > 0.6].groupby(["Replicate"]).mean()
-    ratio = replAvg.loc[2, "RFU"] / replAvg.loc[1, "RFU"]
-    data.loc[data["Replicate"] == 1, "RFU"] *= ratio
-
-    # Take the average across replicates
-    dataMean = data.groupby(["Cells", "Ligand", "Time", "Concentration"]).mean()
-    dataMean.drop("Replicate", axis=1, inplace=True)
-
-    # Make a data tensor. Dimensions correspond to groupby above
-    dataTensor = np.reshape(dataMean["RFU"].values, (8, 4, 4, 12))
-
-    return dataMean, dataTensor
-
-
+@cache
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
@@ -120,13 +80,7 @@ receptors["H"] = ["IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)", "IL15(2)"]
 receptors["I"] = ["CD127", "CD127", "CD127", "CD127", "CD127"]
 
 
-def importMoments():
-    """Gets pSTAT moment Data"""
-    path = os.path.dirname(os.path.dirname(__file__))
-    momentDF = pds.read_csv(join(path, "ckine/data/pSTATMomentData.csv"), encoding="latin1")
-    return momentDF
-
-
+@cache
 def import_pstat_all(singleCell=False):
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
     if singleCell:
@@ -143,54 +97,7 @@ def import_pstat_all(singleCell=False):
     return respDF
 
 
-def importData(monomeric=False):
-    """Imports pSTAT data and arranges it into quasi-GP compatible format"""
-    yData = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"))
-    monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"))
-    yData = yData.append(monDF, ignore_index=True)
-
-    if monomeric:
-        yData = yData.loc[(yData.Bivalent == 0)]
-
-    affDF = pds.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
-    exprDF = pds.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
-
-    exprDF = exprDF.drop("Moment", axis=1)
-    exprDF = exprDF.T.reset_index()
-    exprDF.columns = np.append(["Cell"], exprDF.iloc[0, 1::].values)
-    exprDF = exprDF.drop(0)
-
-    affDF = affDF.rename(columns={"Mutein": "Ligand"})
-    fullData = pds.merge(yData, affDF, how="inner", on="Ligand")
-    fullData = pds.merge(fullData, exprDF, how="left", on="Cell")
-
-    return fullData
-
-
-def importSigma(cellType):
-    """ Loads and formats the receptor covariance matrix for variance propagation """
-    sigma = np.zeros((3, 3))
-
-    momentDF = pds.read_csv(join(path_here, "ckine/data/receptor_moments.csv"), encoding="latin1")
-    covDF = pds.read_csv(join(path_here, "ckine/data/receptor_covariances.csv"), encoding="latin1")
-
-    momentDF = momentDF.loc[:, ["Cell Type", "Receptor", "Variance"]]
-    momentDF = momentDF.groupby(["Cell Type", "Receptor"]).mean().reset_index()
-    momentDF = momentDF.loc[(momentDF["Cell Type"] == cellType)]
-
-    for i in range(0, 3):
-        sigma[i, i] = momentDF["Variance"].values[i]
-
-    covDF = covDF.loc[:, ["Cell Type", "CD25:Receptor", "Covariance"]]
-    covDF = covDF.groupby(["Cell Type", "CD25:Receptor"]).mean().reset_index()
-    covDF = covDF.loc[(covDF["Cell Type"] == cellType)]
-
-    for i in range(1, 3):
-        sigma[0, i] = sigma[i, 0] = covDF["Covariance"].values[i - 1]
-
-    return sigma
-
-
+@cache
 def getBindDict():
     """Gets binding to pSTAT fluorescent conversion dictionary"""
     path = os.path.dirname(os.path.dirname(__file__))
