@@ -8,6 +8,7 @@ import seaborn as sns
 from scipy.optimize import minimize
 from .figureCommon import subplotLabel, getSetup
 from ..MBmodel import polyc, getKxStar
+from ..imports import getBindDict
 
 path_here = dirname(dirname(__file__))
 
@@ -27,7 +28,7 @@ def makeFigure():
 def cytBindingModelOpt(x, val, cellType, IL7=False):
     """Runs binding model for a given mutein, valency, dose, and cell type. """
     recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
-    convDict = pd.read_csv(join(path_here, "data/BindingConvDict.csv"))
+    convDict = getBindDict()
     recCount = recQuantDF[["Receptor", cellType]]
     Kx = getKxStar()
 

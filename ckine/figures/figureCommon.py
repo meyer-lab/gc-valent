@@ -236,20 +236,3 @@ def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
             ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
         if val == 2:
             ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
-
-
-def nllsq_EC50(x0, xdata, ydata):
-    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0.0, 0.0, 0.0], [10, 10.0, 10 ** 5.0]), jac="3-point")
-    return lsq_res.x[0]
-
-
-def hill_equation(x, x0, solution=0):
-    """ Calculates EC50 from Hill Equation. """
-    xk = np.power(x / x0[0], x0[1])
-    return (x0[2] * xk / (1.0 + xk)) - solution
-
-
-def residuals(x0, x, y):
-    """ Residual function for Hill Equation. """
-    return hill_equation(x, x0) - y
