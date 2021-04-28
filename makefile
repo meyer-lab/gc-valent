@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-flist = C2 C3 C4 S2 S3 S4
+flist = C1 C2 C3 C4 S2 S3 S4
 
 .PHONY: clean test all testprofile testcover spell
 
@@ -13,12 +13,12 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && pip install -Uqr requirements.txt
 	touch venv/bin/activate
 
-%.pdf: %.ipynb venv
-	. venv/bin/activate && jupyter nbconvert --execute --ExecutePreprocessor.timeout=6000 --to pdf $< --output $@
-
 output/figure%.svg: venv genFigures.py ckine/figures/figure%.py
 	mkdir -p ./output
 	. venv/bin/activate && ./genFigures.py $*
+
+output/figureC1.svg: ckine/graphics/figureC1.svg
+	cp $< $@
 
 output/manuscript.md: venv manuscript/*.md
 	. venv/bin/activate && manubot process --content-directory=manuscript --output-directory=output --cache-directory=cache --skip-citations --log-level=INFO
