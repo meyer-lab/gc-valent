@@ -62,12 +62,13 @@ def subplotLabel(axs):
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
+
     # Overlay Figure cartoons
     template = st.fromfile(figFile)
     cartoon = st.fromfile(cartoonFile).getroot()
 
-    cartoon.moveto(x, y, scale=scalee)
-    cartoon.scale_xy(scale_x, scale_y)
+    cartoon.moveto(x, y)
+    cartoon.scale(scalee)
 
     template.append(cartoon)
     template.save(figFile)
