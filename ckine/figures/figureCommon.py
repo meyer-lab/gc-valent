@@ -223,14 +223,14 @@ def plotDoseResponses(ax, df, mut, val, cellType, singleCell=False):
     expData = expData.loc[(expData.Date == date)]
 
     if singleCell:
-        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", hue="Bin", ax=ax)
+        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", hue="Bin", ax=ax)
         sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Bin", ax=ax)
         if val == 1:
             ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
         if val == 2:
             ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
     else:
-        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", ax=ax)
+        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax)
         sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax)
         if val == 1:
             ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
