@@ -19,7 +19,6 @@ if __name__ == '__main__':
     ff = eval(nameOut + '.makeFigure()')
     ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
 
-
     if sys.argv[1] == 'C2':
         # Overlay Figure 2 cartoon
         overlayCartoon(fdir + 'figureC2.svg',
