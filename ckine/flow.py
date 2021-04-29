@@ -7,7 +7,6 @@ from scipy.optimize import least_squares
 import numpy as np
 import pandas as pd
 import warnings
-from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
 from FlowCytometryTools import QuadGate, ThresholdGate
 

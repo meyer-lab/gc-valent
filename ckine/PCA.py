@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from scipy.optimize import least_squares
-from .flow import count_data, gating, cellData
+from .flow import count_data, gating
 
 
 def sampleT(smpl):
