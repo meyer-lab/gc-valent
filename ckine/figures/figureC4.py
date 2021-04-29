@@ -81,13 +81,12 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
             initialTargBind = cytBindingModelOpt(optimized.x, val, targCell[0], IL7)
 
             def bindConstraintFun(x):
-                return cytBindingModelOpt(x, val, targCell[0], IL7) - initialTargBind
+                return cytBindingModelOpt(x, val, targCell[0], IL7) - 0.5 * initialTargBind
 
-            bindConst = {'type':'eq', 'fun': bindConstraintFun}
+            bindConst = {'type': 'ineq', 'fun': bindConstraintFun}
 
         else:
             optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point", constraints=bindConst)
-
         if IL7:
             IL7RaKD = 1e9 / np.power(10, optimized.x[0])
             optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL7Ra": IL7RaKD}))
@@ -109,7 +108,7 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
     if IL7:
         sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-7 mutein")
-        ax[0].set_ylim(bottom=0.0, top=1.5)
+        ax[0].set_ylim(bottom=0.0, top=4)
 
         sns.lineplot(x="Valency", y="IL7Ra", data=optDF, ax=ax[1], palette="crest")
         ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
@@ -117,7 +116,7 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False):
     else:
         sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
         ax[0].set(title=targCell[0] + " Selectivity with IL-2 mutein")
-        ax[0].set_ylim(bottom=0.0, top=1.5)
+        ax[0].set_ylim(bottom=0.0, top=3)
 
         if targCell == ["NK"]:
             affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2RBG'])
