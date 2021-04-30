@@ -25,7 +25,7 @@ def makeFigure():
     subplotLabel(axlabel)
     ax[5].axis("off")
 
-    minSolved = minimize(runFullModel, x0=-12.0, args=[0.5, False])
+    minSolved = minimize(runFullModel, x0=-12.0, args=[0.5, False, False])
     print(minSolved)
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False)  # Change to save
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))

@@ -105,7 +105,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=Fal
     return output
 
 
-def runFullModel(x=False, time=[0.5], saveDict=True, singleCell=False):
+def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all(singleCell)
 
@@ -161,7 +161,6 @@ def runFullModel(x=False, time=[0.5], saveDict=True, singleCell=False):
                 slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
                 masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
                 dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
-
     if saveDict:
         dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
 
