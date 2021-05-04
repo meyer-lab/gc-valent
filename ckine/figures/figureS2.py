@@ -13,18 +13,10 @@ def makeFigure():
 
     ligands = modelDF.Ligand.unique()
     cells = modelDF.Cell.unique()
-    ligList = np.array([])
-    valList = np.array([])
+    ax, f = getSetup((10, 16), (len(ligands), 4))
 
-    for lig in ligands:
-        uniqueVals = modelDF.loc[(modelDF.Ligand == lig)].Valency.unique()
-        valList = np.append(valList, uniqueVals)
-        ligList = np.append(ligList, np.tile(lig, uniqueVals.size))
-
-    ax, f = getSetup((10, 25), (ligList.size, 4))
-
-    for i, lig in enumerate(ligList):
+    for i, lig in enumerate(ligands):
         for j, cell in enumerate(cells):
-            plotDoseResponses(ax[4 * i + j], modelDF, lig, valList[i], cell)
+            plotDoseResponses(ax[4 * i + j], modelDF, lig, cell)
 
     return f
