@@ -91,7 +91,7 @@ def plotDoseResponses(ax, df, mut, cellType, val=False, singleCell=False):
 
     if val:
         if singleCell:
-            sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", hue="Bin", ax=ax, legend="Full")
+            sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", hue="Bin", ax=ax)
             sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Bin", ax=ax)
             if val == 1:
                 ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
