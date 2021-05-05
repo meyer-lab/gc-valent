@@ -175,10 +175,17 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
     return df
 
 
-def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
+def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False, correlation=None):
     """ Returns gated sample for a given date and plate. """
     # import data and create transformed df for gating
-    Dict = {'CD127': 1, 'CD25': 1, 'CD122': 3, 'CD132': 5}
+    
+    #correlation argument only implemented for Tcell CD25/CD122 and CD25/CD132, to be used when getting CD25 data
+    if correlation == "CD122":
+        Dict = {'CD127': 1, 'CD25': 3, 'CD122': 3, 'CD132': 5}
+    elif correlation == "CD132":
+        Dict = {'CD127': 1, 'CD25': 5, 'CD122': 3, 'CD132': 5}
+    else:
+        Dict = {'CD127': 1, 'CD25': 1, 'CD122': 3, 'CD132': 5}
     wellNum = Dict[receptor]
 
     if receptor == 'CD127':
