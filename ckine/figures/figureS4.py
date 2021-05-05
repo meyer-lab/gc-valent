@@ -87,10 +87,10 @@ def getReceptors():
     lsq_cd25, lsq_cd122, lsq_cd132 = run_regression()
 
     df_gates = import_gates()
-    df_signal = apply_gates("4-23", "1", df_gates)
-    df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
-    df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
-    df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
+    df_signal = apply_gates("4-23", "1", df_gates, correlation="CD122")
+    df_signal = df_signal.append(apply_gates("4-23", "2", df_gates, correlation="CD122"))
+    df_signal = df_signal.append(apply_gates("4-26", "1", df_gates, correlation="CD122"))
+    df_signal = df_signal.append(apply_gates("4-26", "2", df_gates, correlation="CD122"))
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])

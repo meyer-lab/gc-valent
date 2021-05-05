@@ -170,45 +170,13 @@ def importF2(pathname, WellRow):
 
 def receptorPlot(ax1, ax2, ax3):
 
-    # import bead data and run regression to get equations
-    lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127 = run_regression()
-
-    # create dataframe with gated samples (all replicates)
-    df_gates = import_gates()
-    df_signal = apply_gates("4-23", "1", df_gates)
-    df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
-    df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
-    df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
-    df_signal = df_signal.append(apply_gates("5-16", "1", df_gates))
-    df_signal = df_signal.append(apply_gates("5-16", "2", df_gates))
-    df_signal = df_signal
-
-    # make new dataframe for receptor counts
-    df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
-    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
-    receptors_ = ["CD25", "CD122", "CD132", "CD127"]
-    channels_ = ["VL1-H", "BL5-H", "RL1-H", "BL1-H"]
-    lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127]
-    dates = ["4-23", "4-26", "5-16"]
-    plates = ["1", "2"]
-
-    # calculate receptor counts
-    for _, cell in enumerate(cell_names):
-        for j, receptor in enumerate(receptors_):
-            for _, date in enumerate(dates):
-                for _, plate in enumerate(plates):
-                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Receptor"] == receptor) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
-                    data = data[data >= 0]
-                    rec_counts = np.zeros(len(data))
-                    for k, signal in enumerate(data):
-                        A, B, C, D = lsq_params[j]
-                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
-                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
-                                           "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    df_rec = df_rec.append(df_add)
+    df_rec = getReceptors()
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
+
+    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
+    receptors_ = ["CD25", "CD122", "CD132", "CD127"]
 
     # calculate mean, variance, and skew for each replicate
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
@@ -216,18 +184,22 @@ def receptorPlot(ax1, ax2, ax3):
     # plots log10 of mean on
     celltype_pointplot(ax1, df_stats, "Mean")
 
-    receptor_levels = df_rec
+    receptor_levels_Beta = getReceptors(correlation="CD122")
+    receptor_levels_Gamma = getReceptors(correlation="CD132")
+
     cell_types = ['T-reg']
 
     for index, cell_type in enumerate(cell_types):
 
-        alphaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD25')]
-        betaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD122')]
-        gammaLevels = receptor_levels.loc[(receptor_levels['Cell Type'] == cell_type) & (receptor_levels['Receptor'] == 'CD132')]
+        alphaBLevels = receptor_levels_Beta.loc[(receptor_levels_Beta['Cell Type'] == cell_type) & (receptor_levels_Beta['Receptor'] == 'CD25')]
+        betaLevels = receptor_levels_Beta.loc[(receptor_levels_Beta['Cell Type'] == cell_type) & (receptor_levels_Beta['Receptor'] == 'CD122')]
 
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+        alphaGLevels = receptor_levels_Gamma.loc[(receptor_levels_Gamma['Cell Type'] == cell_type) & (receptor_levels_Gamma['Receptor'] == 'CD25')]
+        gammaLevels = receptor_levels_Gamma.loc[(receptor_levels_Gamma['Cell Type'] == cell_type) & (receptor_levels_Gamma['Receptor'] == 'CD132')]
+
+        alphaBCounts = alphaBLevels['Count'].reset_index(drop=True)
         betaCounts = betaLevels['Count'].reset_index(drop=True)
-        d = {'alpha': alphaCounts, 'beta': betaCounts}
+        d = {'alpha': alphaBCounts, 'beta': betaCounts}
         recepCounts = pd.DataFrame(data=d)
         recepCounts = recepCounts.dropna()
         recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)].sample(frac=0.20)
@@ -238,9 +210,9 @@ def receptorPlot(ax1, ax2, ax3):
         hex1.set_ylabel('CD122(IL2RB)')
         hex1.set_title(cell_type + ' Alpha-Beta correlation')
 
-        alphaCounts = alphaLevels['Count'].reset_index(drop=True)
+        alphaGCounts = alphaGLevels['Count'].reset_index(drop=True)
         gammaCounts = gammaLevels['Count'].reset_index(drop=True)
-        d2 = {'alpha': alphaCounts, 'gamma': gammaCounts}
+        d2 = {'alpha': alphaGCounts, 'gamma': gammaCounts}
         recepCounts2 = pd.DataFrame(data=d2)
         recepCounts2 = recepCounts2.dropna()
         recepCounts2 = recepCounts2[(recepCounts2[['alpha', 'gamma']] != 0).all(axis=1)].sample(frac=0.20)
@@ -277,6 +249,58 @@ def celltype_pointplot(ax, df, moment):
     sns.pointplot(x="Cell Type", y=moment, hue="Receptor", data=df, ci='sd', join=False, dodge=True, ax=ax, estimator=sp.stats.gmean)
     ax.set_ylabel("log(" + moment + ")")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+
+
+def getReceptors(correlation=None):
+    # import bead data and run regression to get equations
+    lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127 = run_regression()
+
+    # create dataframe with gated samples (all replicates)
+    df_gates = import_gates()
+
+    if correlation == 'CD122':
+        df_signal = apply_gates("4-23", "1", df_gates, correlation="CD122")
+        df_signal = df_signal.append(apply_gates("4-23", "2", df_gates, correlation="CD122"))
+        df_signal = df_signal.append(apply_gates("4-26", "1", df_gates, correlation="CD122"))
+        df_signal = df_signal.append(apply_gates("4-26", "2", df_gates, correlation="CD122"))
+    elif correlation == 'CD132':
+        df_signal = apply_gates("4-23", "1", df_gates, correlation="CD132")
+        df_signal = df_signal.append(apply_gates("4-23", "2", df_gates, correlation="CD132"))
+        df_signal = df_signal.append(apply_gates("4-26", "1", df_gates, correlation="CD132"))
+        df_signal = df_signal.append(apply_gates("4-26", "2", df_gates, correlation="CD132"))
+    else:
+        df_signal = apply_gates("4-23", "1", df_gates)
+        df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
+        df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
+        df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
+        df_signal = df_signal.append(apply_gates("5-16", "1", df_gates))
+        df_signal = df_signal.append(apply_gates("5-16", "2", df_gates))
+
+    # make new dataframe for receptor counts
+    df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
+    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
+    receptors_ = ["CD25", "CD122", "CD132", "CD127"]
+    channels_ = ["VL1-H", "BL5-H", "RL1-H", "BL1-H"]
+    lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127]
+    dates = ["4-23", "4-26", "5-16"]
+    plates = ["1", "2"]
+
+    # calculate receptor counts
+    for _, cell in enumerate(cell_names):
+        for j, receptor in enumerate(receptors_):
+            for _, date in enumerate(dates):
+                for _, plate in enumerate(plates):
+                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Receptor"] == receptor) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
+                    data = data[data >= 0]
+                    rec_counts = np.zeros(len(data))
+                    for k, signal in enumerate(data):
+                        A, B, C, D = lsq_params[j]
+                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
+                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
+                                           "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
+                    df_rec = df_rec.append(df_add)
+
+    return df_rec
 
 
 def run_regression():

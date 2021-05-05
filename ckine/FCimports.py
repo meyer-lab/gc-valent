@@ -153,7 +153,7 @@ def import_gates():
     return data
 
 
-def apply_gates(date, plate, gates_df, subpopulations=False):
+def apply_gates(date, plate, gates_df, subpopulations=False, correlation=None):
     """ Constructs dataframe with channels relevant to receptor quantification. """
     if date == "5-16":
         receptors = ['CD127']
@@ -165,20 +165,27 @@ def apply_gates(date, plate, gates_df, subpopulations=False):
         cellTypes = ['T-helper', 'T-reg', 'NK', 'CD8+']
         for j, cellType in enumerate(cellTypes):
             if i == 0 and j == 0:
-                df, unstainedWell, isotypes = samp_Gate(date, plate, gates_df, cellType, receptor=r, subPop=subpopulations)
+                df, unstainedWell, isotypes = samp_Gate(date, plate, gates_df, cellType, r, correlation, subPop=subpopulations)
                 df = subtract_unstained_signal(df, channels, receptors, unstainedWell, isotypes)
             else:
-                df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, cellType, receptor=r, subPop=subpopulations)
+                df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, cellType, r, correlation, subPop=subpopulations)
                 df2 = subtract_unstained_signal(df2, channels, receptors, unstainedWell2, isotypes2)
                 df = df.append(df2)
 
     return df
 
 
-def samp_Gate(date, plate, gates_df, cellType, receptor, subPop=False):
+def samp_Gate(date, plate, gates_df, cellType, receptor, correlation, subPop=False):
     """ Returns gated sample for a given date and plate. """
     # import data and create transformed df for gating
-    Dict = {'CD127': 1, 'CD25': 1, 'CD122': 3, 'CD132': 5}
+
+    # correlation argument only implemented for Tcell CD25/CD122 and CD25/CD132, to be used when getting CD25 data
+    if correlation == 'CD122':
+        Dict = {'CD127': 1, 'CD25': 3, 'CD122': 3, 'CD132': 5}
+    elif correlation == 'CD132':
+        Dict = {'CD127': 1, 'CD25': 5, 'CD122': 3, 'CD132': 5}
+    else:
+        Dict = {'CD127': 1, 'CD25': 1, 'CD122': 3, 'CD132': 5}
     wellNum = Dict[receptor]
 
     if receptor == 'CD127':
