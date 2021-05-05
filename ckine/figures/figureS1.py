@@ -175,6 +175,9 @@ def receptorPlot(ax1, ax2, ax3):
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
 
+    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
+    receptors_ = ["CD25", "CD122", "CD132", "CD127"]
+
     # calculate mean, variance, and skew for each replicate
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
