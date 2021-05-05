@@ -7,9 +7,8 @@ from scipy.optimize import least_squares
 import numpy as np
 import pandas as pd
 import warnings
-from matplotlib import pyplot as plt
 from FlowCytometryTools import FCMeasurement
-from FlowCytometryTools import QuadGate, ThresholdGate, PolyGate
+from FlowCytometryTools import QuadGate, ThresholdGate
 
 path_here = dirname(dirname(__file__))
 
@@ -141,37 +140,6 @@ channel_data = {}
 channel_data["tcells"] = ["VL4-H", "BL1-H", "VL1-H"]
 channel_data["nk_bnk"] = ["BL1-H", "VL4-H", "RL1-H"]
 channel_data["cd"] = ["BL1-H", "VL4-H", "RL1-H"]
-
-
-def plot_cells(sample_i, gates, channels_, plot_channels, cell_names, title, plot_entire_sample=False):
-    """ Plots specified cell types and gates. """
-    smpl = sample_i.transform("hlog", channels=channels_)
-
-    _, ax = plt.subplots()
-
-    colors = ["y", "g", "b"]
-
-    for i, gate in enumerate(gates):
-        cells = smpl.gate(gate)
-        cells.plot(plot_channels, color=colors[i])
-
-    if plot_entire_sample:
-        smpl.plot(plot_channels)
-
-    legend_names = []
-    legend_range = []
-    bar_range = [np.arange(0, 0), np.arange(1, 11), np.arange(30, 40)]
-    bar_ = 0
-
-    for j, name in enumerate(cell_names):
-        if name == "CD4":
-            continue
-        bar_ = bar_ + 1
-        legend_range.append(np.arange(0, 10), bar_range[bar_], bottom=bar_range[bar_ - 1], color=colors[j])
-        legend_names.append(name)
-
-    ax.set(title=str(title), xlabel="Foxp3", ylabel="CD25", fontsize=12)
-    ax.legend(legend_range, legend_names, loc="upper left")
 
 
 def count_data(sampleType, gate, Tcells=True, Mut=False):

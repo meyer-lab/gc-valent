@@ -2,12 +2,11 @@
 Implementation of a simple multivalent binding model.
 """
 
-import os
 from os.path import dirname, join
 import numpy as np
 import pandas as pd
 from scipy.optimize import root
-from .imports import import_pstat_all
+from .imports import import_pstat_all, getBindDict
 
 path_here = dirname(dirname(__file__))
 KxStarP = 1.126e-12
@@ -100,13 +99,13 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=Fal
         else:
             output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
     if date:
-        convDict = pd.read_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+        convDict = getBindDict()
         output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
 
     return output
 
 
-def runFullModel(x=False, time=[0.5], saveDict=True, singleCell=False):
+def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all(singleCell)
 
@@ -162,7 +161,6 @@ def runFullModel(x=False, time=[0.5], saveDict=True, singleCell=False):
                 slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
                 masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
                 dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
-
     if saveDict:
         dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
 

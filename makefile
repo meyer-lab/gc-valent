@@ -1,8 +1,6 @@
 SHELL := /bin/bash
 
-flist = C2 C3 C4 S2 S3 S4
-
-notebooks := $(wildcard *.ipynb)
+flist = C1 C2 C3 C4 S1 S2 S3 S4
 
 .PHONY: clean test all testprofile testcover spell
 
@@ -15,12 +13,12 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate && pip install -Uqr requirements.txt
 	touch venv/bin/activate
 
-%.pdf: %.ipynb venv
-	. venv/bin/activate && jupyter nbconvert --execute --ExecutePreprocessor.timeout=6000 --to pdf $< --output $@
-
 output/figure%.svg: venv genFigures.py ckine/figures/figure%.py
 	mkdir -p ./output
 	. venv/bin/activate && ./genFigures.py $*
+
+output/figureC1.svg: ckine/graphics/figureC1.svg
+	cp $< $@
 
 output/manuscript.md: venv manuscript/*.md
 	. venv/bin/activate && manubot process --content-directory=manuscript --output-directory=output --cache-directory=cache --skip-citations --log-level=INFO
@@ -60,6 +58,7 @@ download: .dataURLs.txt
 	wget -nv -N -P ./ckine/data/flow/ -i .dataURLs.txt
 	unzip -qd ./ckine/data/flow/ './ckine/data/flow/2019-03-15 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - NK plate.zip'
 	unzip -qd ./ckine/data/flow/ './ckine/data/flow/2019-04-18 IL-2 and IL-15 treated pSTAT5 assay - Lymphocyte gated - Treg plate - NEW PBMC LOT.zip'
+	unzip -qd ./ckine/data/flow/ './ckine/data/flow/2021.04.27 Peter org PBMC signaling and receptor.zip'
 	tar -x --strip-components=1 -C ./ckine/data/flow/ -f ./ckine/data/flow/receptor-profiling-20200909.tar.xz
 
 test: venv

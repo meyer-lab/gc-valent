@@ -71,6 +71,8 @@ def plot_tFac_Time(ax, tFac, respDF):
     """Plots tensor factorization of tps"""
     tps = respDF.Time.unique()
     timeFacs = tFac[1][1]
+    tps = np.append(tps, [0])
+    timeFacs = np.append(timeFacs, np.zeros((1, timeFacs.shape[1])), axis=0)
 
     markersTimes = [".", ".", "."]
     for i in range(0, timeFacs.shape[1]):
