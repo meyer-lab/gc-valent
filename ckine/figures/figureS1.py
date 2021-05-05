@@ -184,14 +184,13 @@ def receptorPlot(ax1, ax2, ax3):
     receptor_levels_Beta = getReceptors(correlation="CD122")
     receptor_levels_Gamma = getReceptors(correlation="CD132")
 
-
     cell_types = ['T-reg']
 
     for index, cell_type in enumerate(cell_types):
 
         alphaBLevels = receptor_levels_Beta.loc[(receptor_levels_Beta['Cell Type'] == cell_type) & (receptor_levels_Beta['Receptor'] == 'CD25')]
         betaLevels = receptor_levels_Beta.loc[(receptor_levels_Beta['Cell Type'] == cell_type) & (receptor_levels_Beta['Receptor'] == 'CD122')]
-        
+
         alphaGLevels = receptor_levels_Gamma.loc[(receptor_levels_Gamma['Cell Type'] == cell_type) & (receptor_levels_Gamma['Receptor'] == 'CD25')]
         gammaLevels = receptor_levels_Gamma.loc[(receptor_levels_Gamma['Cell Type'] == cell_type) & (receptor_levels_Gamma['Receptor'] == 'CD132')]
 
@@ -248,6 +247,7 @@ def celltype_pointplot(ax, df, moment):
     ax.set_ylabel("log(" + moment + ")")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
 
+
 def getReceptors(correlation=None):
     # import bead data and run regression to get equations
     lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127 = run_regression()
@@ -298,6 +298,7 @@ def getReceptors(correlation=None):
                     df_rec = df_rec.append(df_add)
 
     return df_rec
+
 
 def run_regression():
     """ Imports bead data and runs regression to get least squares parameters for conversion of signal to receptor count. """
