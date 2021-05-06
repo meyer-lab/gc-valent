@@ -23,13 +23,13 @@ def makeFigure():
 
     receptor_levels = getReceptors()
 
-    _ = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
-    _ = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
+    binned_tregCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
+    binned_thelperCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
 
-    #binnedCounts = binned_tregCounts.append(binned_thelperCounts, ignore_index=True)
+    binnedCounts = binned_tregCounts.append(binned_thelperCounts, ignore_index=True)
 
-    #path = path_here + '/data/BinnedReceptorData.csv'
-    #binnedCounts.to_csv(path, index=False)
+    path = path_here + '/data/BinnedReceptorData.csv'
+    binnedCounts.to_csv(path, index=False)
 
     return f
 
