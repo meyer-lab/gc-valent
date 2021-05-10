@@ -76,7 +76,7 @@ def R2_Plot_Ligs(ax, df):
             accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]}))
     sns.barplot(x="Ligand", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
 
 def MonVsBivalent(ax, dfAll, ligs=True):
