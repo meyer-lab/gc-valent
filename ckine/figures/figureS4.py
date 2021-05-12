@@ -4,6 +4,7 @@ This creates Figure 5 for IL2Ra correlation data analysis.
 
 import os
 import numpy as np
+from numpy.random import beta
 import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -22,9 +23,8 @@ def makeFigure():
     subplotLabel(ax)
 
     receptor_levels = getReceptors()
-    df_test = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD122')]
-    print(df_test)
-    print("Nan:", df_test.isna().sum())
+    #df_test = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD122')]
+    
 
     binned_tregCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
     binned_thelperCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
@@ -51,9 +51,9 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
     print("BetaMean:",betaCounts.mean())
     d = {'alpha': alphaCounts, 'beta': betaCounts}
     recepCounts = pd.DataFrame(data=d)
-    print(recepCounts)
-    print("Nan:", recepCounts.isna().sum())
-    #recepCounts = recepCounts.dropna()
+    #print(recepCounts)
+    #print("Nan:", recepCounts.isna().sum())
+    recepCounts = recepCounts.dropna()
     recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
 
     min_ = alphaCounts.quantile(0.05)
@@ -76,6 +76,9 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
     alphaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'], recepCounts['alpha'], statistic='mean', bins=logbins)
     betaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'].values, recepCounts['beta'].values, statistic='mean', bins=logbins)
 
+    print("Alpha",alphaMeans)
+    print("Beta",betaMeans)
+    
     binnedRecCounts = pd.DataFrame({"Receptor": "IL2Ra", "Bin": np.arange(1, numBins + 1), "Mean": alphaMeans, "Cell Type": cellTypeDict[cell_type]})
     binnedRecCounts = binnedRecCounts.append(pd.DataFrame({"Receptor": "IL2Rb", "Bin": np.arange(1, numBins + 1), "Mean": betaMeans, "Cell Type": cellTypeDict[cell_type]}))
 
