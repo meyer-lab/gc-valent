@@ -24,7 +24,6 @@ def makeFigure():
 
     receptor_levels = getReceptors()
     #df_test = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD122')]
-    
 
     binned_tregCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
     binned_thelperCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
@@ -48,10 +47,10 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
 
     alphaCounts = alphaLevels['Count'].reset_index(drop=True)
     betaCounts = betaLevels['Count'].reset_index(drop=True)
-    print("BetaMean:",betaCounts.mean())
+    print("BetaMean:", betaCounts.mean())
     d = {'alpha': alphaCounts, 'beta': betaCounts}
     recepCounts = pd.DataFrame(data=d)
-    #print(recepCounts)
+    # print(recepCounts)
     #print("Nan:", recepCounts.isna().sum())
     recepCounts = recepCounts.dropna()
     recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
@@ -76,9 +75,9 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
     alphaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'], recepCounts['alpha'], statistic='mean', bins=logbins)
     betaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'].values, recepCounts['beta'].values, statistic='mean', bins=logbins)
 
-    print("Alpha",alphaMeans)
-    print("Beta",betaMeans)
-    
+    print("Alpha", alphaMeans)
+    print("Beta", betaMeans)
+
     binnedRecCounts = pd.DataFrame({"Receptor": "IL2Ra", "Bin": np.arange(1, numBins + 1), "Mean": alphaMeans, "Cell Type": cellTypeDict[cell_type]})
     binnedRecCounts = binnedRecCounts.append(pd.DataFrame({"Receptor": "IL2Rb", "Bin": np.arange(1, numBins + 1), "Mean": betaMeans, "Cell Type": cellTypeDict[cell_type]}))
 
