@@ -79,7 +79,7 @@ def plot_tFac_Time(ax, tFac, respDF):
         ax.plot(tps, timeFacs[:, i], marker=markersTimes[i], label="Component " + str(i + 1), markersize=5)
 
     ax.legend()
-    ax.set(title="Time", xlabel="Time (hrs)", xlim=(0, 4), ylabel="Component", ylim=(0, 1))
+    ax.set(title="Time", xlabel="Time (hrs)", xlim=(0, 4), ylabel="Component Value", ylim=(0, 1))
 
 
 def plot_tFac_Conc(ax, tFac, respDF):
@@ -92,7 +92,7 @@ def plot_tFac_Conc(ax, tFac, respDF):
         ax.plot(concs, concFacs[:, i], marker=markersConcs[i], label="Component " + str(i + 1), markersize=5)
 
     ax.legend()
-    ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component", ylim=(0, 1), xscale='log')
+    ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component Value", ylim=(0, 1), xscale='log')
 
 
 def plot_tFac_Cells(ax, tFac, respDF):
