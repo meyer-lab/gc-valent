@@ -83,7 +83,7 @@ cellSTATlimDict = {"Treg": (0, 60000),
 
 def plotDoseResponses(ax, df, mut, cellType, val=False):
     """Plots all experimental vs. Predicted Values"""
-    if len(cellType) == 1:
+    if isinstance(cellType, str):
         if val:
             expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)]
         else:
