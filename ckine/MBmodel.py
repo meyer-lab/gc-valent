@@ -75,7 +75,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=Fal
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     recQuantDF = importReceptors()
     recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL2Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values,
-                             recQuantDF.loc[(recQuantDF.Receptor == "IL2Rb") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
+                         recQuantDF.loc[(recQuantDF.Receptor == "IL2Rb") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
 
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
@@ -95,7 +95,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=Fal
             output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
     if date:
         convDict = getBindDict()
-        if cellType[-1] == "$": #if it is a binned pop, use ave fit
+        if cellType[-1] == "$":  # if it is a binned pop, use ave fit
             output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType[0:-13])].Scale.values
         else:
             output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
@@ -135,7 +135,7 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
                                                              "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
         for date in dates:
             for cell in masterSTAT.Cell.unique():
-                if cell[-1] == "$": #if it is a binned pop, use ave fit
+                if cell[-1] == "$":  # if it is a binned pop, use ave fit
                     predVecBin = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
 
                     expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell[0:-13])].Experimental.values

@@ -26,7 +26,7 @@ def makeFigure():
     ax[5].axis("off")
 
     #minSolved = minimize(runFullModel, x0=-12.0, args=([0.5], False, False))
-    #print(minSolved)
+    # print(minSolved)
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
