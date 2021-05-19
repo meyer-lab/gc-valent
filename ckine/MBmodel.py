@@ -9,7 +9,7 @@ from scipy.optimize import root
 from .imports import import_pstat_all, getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
-KxStarP = 1.126e-12
+KxStarP = 1.4e-12
 
 
 def getKxStar():
@@ -71,11 +71,11 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     return Rbound
 
 
-def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=False):
+def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    recQuantDF = importReceptors()
-    recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL2Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values,
-                         recQuantDF.loc[(recQuantDF.Receptor == "IL2Rb") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
+    recDF = importReceptors()
+    recCount = np.ravel([recDF.loc[(recDF.Receptor == "IL2Ra") & (recDF["Cell Type"] == cellType)].Mean.values,
+                         recDF.loc[(recDF.Receptor == "IL2Rb") & (recDF["Cell Type"] == cellType)].Mean.values])
 
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
@@ -111,7 +111,11 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
     if x:
         # If Minimizing, scale all so that cells are weighted identically
         statDF.loc[(statDF.Cell == "Treg"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "Treg $IL2Ra^{lo}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg $IL2Ra^{lo}$"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "Treg $IL2Ra^{hi}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg $IL2Ra^{hi}$"), "Mean"].mean()
         statDF.loc[(statDF.Cell == "Thelper"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{lo}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{lo}$"), "Mean"].mean()
+        statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{hi}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{hi}$"), "Mean"].mean()
         statDF.loc[(statDF.Cell == "CD8"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "CD8"), "Mean"].mean()
         statDF.loc[(statDF.Cell == "NK"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "NK"), "Mean"].mean()
 
@@ -127,28 +131,24 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
             val = 1
             ligName = lig[0:-7]
 
-            entry = group.Mean.values
-            if len(entry) >= 1:
-                expVal = np.mean(entry)
-                predVal = cytBindingModel(ligName, val, conc, cell, x)
-                masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
-                                                             "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
-        for date in dates:
-            for cell in masterSTAT.Cell.unique():
-                if cell[-1] == "$":  # if it is a binned pop, use ave fit
-                    predVecBin = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
-
-                    expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell[0:-13])].Experimental.values
-                    predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell[0:-13])].Predicted.values
-                    slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
-
-                    masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVecBin * slope
-                else:
-                    expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
-                    predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
-                    slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
-                    masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
-                    dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
+        entry = group.Mean.values
+        if len(entry) >= 1:
+            expVal = np.mean(entry)
+            predVal = cytBindingModel(ligName, val, conc, cell, x)
+            masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
+                                                         "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
+    for date in dates:
+        for cell in masterSTAT.Cell.unique():
+            if cell[-1] == "$":  # if it is a binned pop, use ave fit
+                predVecBin = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
+                slope = dateConvDF.loc[(dateConvDF.Date == date) & (dateConvDF.Cell == cell[0:-13])].Scale.values
+                masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVecBin * slope
+            else:
+                expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
+                predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+                masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
+                dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
     if saveDict:
         dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
 
