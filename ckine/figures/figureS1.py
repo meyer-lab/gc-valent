@@ -171,6 +171,9 @@ def importF2(pathname, WellRow):
 def receptorPlot(ax1, ax2, ax3):
 
     df_rec = getReceptors()
+    df_test = df_rec.loc[(df_rec['Cell Type'] == 'T-helper') & (df_rec['Receptor'] == 'CD122')]
+    print(df_test)
+    print("Nan:", df_test.isna().sum())
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
@@ -182,6 +185,7 @@ def receptorPlot(ax1, ax2, ax3):
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
     # plots log10 of mean on
+    print(df_stats.loc[(df_stats['Cell Type'] == 'T-helper') & (df_stats['Receptor'] == 'CD122')])
     celltype_pointplot(ax1, df_stats, "Mean")
 
     receptor_levels_Beta = getReceptors(correlation="CD122")

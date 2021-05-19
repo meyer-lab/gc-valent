@@ -4,6 +4,7 @@ This creates Figure 5 for IL2Ra correlation data analysis.
 
 import os
 import numpy as np
+from numpy.random import beta
 import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -22,14 +23,15 @@ def makeFigure():
     subplotLabel(ax)
 
     receptor_levels = getReceptors()
+    #df_test = receptor_levels.loc[(receptor_levels['Cell Type'] == 'T-helper') & (receptor_levels['Receptor'] == 'CD122')]
 
-    _ = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
-    _ = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
+    binned_tregCounts = plotAlphaHistogram(ax[0], ax[2], 'T-reg', receptor_levels, 3)
+    binned_thelperCounts = plotAlphaHistogram(ax[1], ax[3], 'T-helper', receptor_levels, 3)
 
-    #binnedCounts = binned_tregCounts.append(binned_thelperCounts, ignore_index=True)
+    binnedCounts = binned_tregCounts.append(binned_thelperCounts, ignore_index=True)
 
-    #path = path_here + '/data/BinnedReceptorData.csv'
-    #binnedCounts.to_csv(path, index=False)
+    path = path_here + '/data/BinnedReceptorData.csv'
+    binnedCounts.to_csv(path, index=False)
 
     return f
 
@@ -45,8 +47,11 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
 
     alphaCounts = alphaLevels['Count'].reset_index(drop=True)
     betaCounts = betaLevels['Count'].reset_index(drop=True)
+    print("BetaMean:", betaCounts.mean())
     d = {'alpha': alphaCounts, 'beta': betaCounts}
     recepCounts = pd.DataFrame(data=d)
+    # print(recepCounts)
+    #print("Nan:", recepCounts.isna().sum())
     recepCounts = recepCounts.dropna()
     recepCounts = recepCounts[(recepCounts[['alpha', 'beta']] != 0).all(axis=1)]
 
@@ -69,6 +74,9 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
 
     alphaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'], recepCounts['alpha'], statistic='mean', bins=logbins)
     betaMeans, _, _ = stats.binned_statistic(recepCounts['alpha'].values, recepCounts['beta'].values, statistic='mean', bins=logbins)
+
+    print("Alpha", alphaMeans)
+    print("Beta", betaMeans)
 
     binnedRecCounts = pd.DataFrame({"Receptor": "IL2Ra", "Bin": np.arange(1, numBins + 1), "Mean": alphaMeans, "Cell Type": cellTypeDict[cell_type]})
     binnedRecCounts = binnedRecCounts.append(pd.DataFrame({"Receptor": "IL2Rb", "Bin": np.arange(1, numBins + 1), "Mean": betaMeans, "Cell Type": cellTypeDict[cell_type]}))
@@ -107,6 +115,7 @@ def getReceptors():
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
                     data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Receptor"] == receptor) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
+                    data = data[data >= 0]
                     rec_counts = np.zeros(len(data))
                     for k, signal in enumerate(data):
                         A, B, C, D = lsq_params[j]
@@ -128,7 +137,7 @@ def run_regression():
     recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
 
     _, lsq_cd25 = bead_regression(sampleD, channels['D'], recQuant1)
-    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant2, 2, True)
-    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant1)
+    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant1, 2, True)
+    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant2)
 
     return lsq_cd25, lsq_cd122, lsq_cd132
