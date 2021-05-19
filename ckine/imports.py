@@ -83,13 +83,17 @@ receptors["I"] = ["CD127", "CD127", "CD127", "CD127", "CD127"]
 @lru_cache(maxsize=None)
 def import_pstat_all(singleCell=False):
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
-    if singleCell:
-        WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellDataBin.csv"), encoding="latin1")
-        monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellDataBin.csv"), encoding="latin1")
-    else:
-        WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
-        monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
+    WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
+    monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
     respDF = pds.concat([WTbivDF, monDF])
+    if singleCell:
+        WTbivDFbin = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellDataBin.csv"), encoding="latin1")
+        monDFbin = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellDataBin.csv"), encoding="latin1")
+        respDFbin = pds.concat([WTbivDFbin, monDFbin])
+        respDFbin = respDFbin.loc[respDFbin["Bin"].isin([1, 3])]
+        respDFbin.loc[respDFbin["Bin"] == 1, "Cell"] += r" $IL2Ra^{lo}$"
+        respDFbin.loc[respDFbin["Bin"] == 3, "Cell"] += r" $IL2Ra^{hi}$"
+        respDF = pds.concat([respDF, respDFbin])
 
     respDF.loc[(respDF.Bivalent == 0), "Ligand"] = (respDF.loc[(respDF.Bivalent == 0)].Ligand + " (Mono)").values
     respDF.loc[(respDF.Bivalent == 1), "Ligand"] = (respDF.loc[(respDF.Bivalent == 1)].Ligand + " (Biv)").values
@@ -103,3 +107,15 @@ def getBindDict():
     path = os.path.dirname(os.path.dirname(__file__))
     bindingDF = pds.read_csv(join(path, "ckine/data/BindingConvDict.csv"), encoding="latin1")
     return bindingDF
+
+
+def importReceptors():
+    """Makes Complete receptor expression Dict"""
+    path = os.path.dirname(os.path.dirname(__file__))
+    recDF = pds.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
+    recDFbin = pds.read_csv(join(path_here, "ckine/data/BinnedReceptorData.csv"))
+    recDFbin = recDFbin.loc[recDFbin["Bin"].isin([1, 3])]
+    recDFbin.loc[recDFbin["Bin"] == 1, "Cell Type"] += r" $IL2Ra^{lo}$"
+    recDFbin.loc[recDFbin["Bin"] == 3, "Cell Type"] += r" $IL2Ra^{hi}$"
+    recDF = pds.concat([recDF, recDFbin])
+    return recDF

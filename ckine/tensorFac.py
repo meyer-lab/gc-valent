@@ -105,3 +105,4 @@ def plot_tFac_Cells(ax, tFac, respDF):
 
     sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
     ax.set(ylabel="Component Value")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
