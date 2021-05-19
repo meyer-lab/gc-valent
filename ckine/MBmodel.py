@@ -137,6 +137,7 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
             predVal = cytBindingModel(ligName, val, conc, cell, x)
             masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
                                                          "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
+
     for date in dates:
         for cell in masterSTAT.Cell.unique():
             if cell[-1] == "$":  # if it is a binned pop, use ave fit
