@@ -71,11 +71,11 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     return Rbound
 
 
-def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=False):
+def cytBindingModel(mut, val, doseVec, cellType, recDF, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    recQuantDF = importReceptors()
-    recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL2Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values,
-                             recQuantDF.loc[(recQuantDF.Receptor == "IL2Rb") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
+    
+    recCount = np.ravel([recDF.loc[(recDF.Receptor == "IL2Ra") & (recDF["Cell Type"] == cellType)].Mean.values,
+                             recDF.loc[(recDF.Receptor == "IL2Rb") & (recDF["Cell Type"] == cellType)].Mean.values])
 
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
@@ -105,6 +105,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False, binNum=Fal
 def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all(singleCell)
+    print(statDF.size)
     statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)") & (statDF.Ligand != "IL15 (Mono)")]
     statDF = statDF.loc[(statDF.Time.isin(time))]
 
@@ -117,6 +118,7 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
 
     dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
     masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Time", "Dose", "Valency", "Experimental", "Predicted"})
+    recQuantDF = importReceptors()
     dates = statDF.Date.unique()
 
     for (date, lig, conc, cell, time), group in statDF.groupby(["Date", "Ligand", "Dose", "Cell", "Time"]):
@@ -130,7 +132,7 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
             entry = group.Mean.values
             if len(entry) >= 1:
                 expVal = np.mean(entry)
-                predVal = cytBindingModel(ligName, val, conc, cell, x)
+                predVal = cytBindingModel(ligName, val, conc, cell, recQuantDF, x)
                 masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
                                                              "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
         for date in dates:
