@@ -22,7 +22,7 @@ def makeFigure():
     ax[6].axis("off")
 
     # Imports receptor levels from .csv created by figC5
-    respDF = import_pstat_all()
+    respDF = import_pstat_all(True)
     respTensor = makeTensor(respDF)
     tFacAllM = factorTensor(respTensor, 3)
     tFacAllM.normalize()

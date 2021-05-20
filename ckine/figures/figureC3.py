@@ -25,9 +25,10 @@ def makeFigure():
     subplotLabel(axlabel)
     ax[5].axis("off")
 
-    minSolved = minimize(runFullModel, x0=-12.0, args=[0.5, False, False])
+    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5], False, True))
     print(minSolved)
-    modelDF = runFullModel(time=[0.5, 1.0], saveDict=False)  # Change to save
+    modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
+
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
 
@@ -63,6 +64,7 @@ def R2_Plot_Cells(ax, df):
 
     sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
 
 def R2_Plot_Ligs(ax, df):
@@ -83,7 +85,6 @@ def MonVsBivalent(ax, dfAll, ligs=True):
     """Compares accuracy of monovalent vs bivalent predictions"""
     df = dfAll.loc[(dfAll.Valency == 2)].copy()
     dates = df.Date.unique()
-    #monPredictCol = pd.DataFrame({"MonPredict": np.zeros(df.shape[0])})
     df["MonPredict"] = np.zeros(df.shape[0])
 
     for date in dates:
@@ -102,10 +103,17 @@ def MonVsBivalent(ax, dfAll, ligs=True):
 
     for date in dates:
         for cell in cellTypes:
-            expVec = df.loc[(df.Date == date) & (df.Cell == cell)].Experimental.values
-            predVec = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
-            slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
-            df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVec * slope
+            if cell[-1] == "$":  # if it is a binned pop, use ave fit
+                predVecBin = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
+                expVec = df.loc[(df.Date == date) & (df.Cell == cell[0:-13])].Experimental.values
+                predVec = df.loc[(df.Date == date) & (df.Cell == cell[0:-13])].MonPredict.values
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+                df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVecBin * slope
+            else:
+                expVec = df.loc[(df.Date == date) & (df.Cell == cell)].Experimental.values
+                predVec = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+                df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVec * slope
 
     if ligs:
         accDF = pd.DataFrame(columns={"Ligand", "Prediction Valency", "Accuracy"})

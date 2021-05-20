@@ -8,7 +8,7 @@ import seaborn as sns
 from scipy.optimize import minimize
 from .figureCommon import subplotLabel, getSetup
 from ..MBmodel import polyc, getKxStar
-from ..imports import getBindDict
+from ..imports import getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
 
@@ -27,20 +27,18 @@ def makeFigure():
 
 def cytBindingModelOpt(x, val, cellType, IL7=False):
     """Runs binding model for a given mutein, valency, dose, and cell type. """
-    recQuantDF = pd.read_csv(join(path_here, "data/RecQuantitation.csv"))
+    recQuantDF = importReceptors()
     convDict = getBindDict()
-    recCount = recQuantDF[["Receptor", cellType]]
     Kx = getKxStar()
 
     if IL7:
         affs = [[np.power(10, x[0])]]
-        recCount = [recCount.loc[(recCount.Receptor == "IL7Ra")][cellType].values]
-        recCount = np.ravel(np.power(10, recCount))
+        recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL7Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
         output = polyc(1e-9 / val, Kx, recCount, [[val]], [1.0], affs)[0][0]  # IL7Ra binding only
     else:
         affs = [[np.power(10, x[0]), 1e2], [1e2, np.power(10, x[1])]]
-        recCount = [recCount.loc[(recCount.Receptor == "IL2Ra")][cellType].values, recCount.loc[(recCount.Receptor == "IL2Rb")][cellType].values]
-        recCount = np.ravel(np.power(10, recCount))
+        recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL2Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values,
+                             recQuantDF.loc[(recQuantDF.Receptor == "IL2Rb") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
         output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[0][1]  # IL2RB binding only
 
     if not IL7:
