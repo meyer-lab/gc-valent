@@ -19,11 +19,11 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 5), (2, 4), multz={4: 1})
+    ax, f = getSetup((10, 6), (2, 4), multz={5: 1})
     axlabel = copy(ax)
-    del axlabel[5]
+    del axlabel[1]
     subplotLabel(axlabel)
-    ax[5].axis("off")
+    ax[1].axis("off")
 
     minSolved = minimize(runFullModel, x0=-12.0, args=([0.5], False, True))
     print(minSolved)
@@ -31,16 +31,16 @@ def makeFigure():
 
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
     Pred_Exp_plot(ax[0], modelDF)
-
-    R2_Plot_Cells(ax[1], modelDF)
-    R2_Plot_Ligs(ax[2], modelDF)
-    MonVsBivalent(ax[3], modelDF, ligs=True)
-
-    EC50comp(ax[4], modelDF, time=0.5)
-    legend = ax[4].get_legend()
+    legend = ax[0].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[5].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    ax[4].get_legend().remove()
+    ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8})  # use this to place universal legend later
+    ax[0].get_legend().remove()
+
+    R2_Plot_Cells(ax[2], modelDF)
+    R2_Plot_Ligs(ax[3], modelDF)
+    MonVsBivalent(ax[4], modelDF, ligs=True)
+
+    R2_Plot_Conc(ax[5], modelDF)
     timePlot(ax[6])
 
     return f
@@ -53,7 +53,7 @@ def Pred_Exp_plot(ax, df):
 
 
 def R2_Plot_Cells(ax, df):
-    """Plots all experimental vs. Predicted Values"""
+    """Plots all accuracies per cell"""
     accDF = pd.DataFrame(columns={"Cell Type", "Valency", "Accuracy"})
     for cell in df.Cell.unique():
         for val in df.Valency.unique():
@@ -68,7 +68,7 @@ def R2_Plot_Cells(ax, df):
 
 
 def R2_Plot_Ligs(ax, df):
-    """Plots all experimental vs. Predicted Values"""
+    """Plots all accuracies per ligand"""
     accDF = pd.DataFrame(columns={"Ligand", "Valency", "Accuracy"})
     for ligand in df.Ligand.unique():
         for val in df.loc[df.Ligand == ligand].Valency.unique():
@@ -79,6 +79,19 @@ def R2_Plot_Ligs(ax, df):
     sns.barplot(x="Ligand", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+
+
+def R2_Plot_Conc(ax, df):
+    """Plots all accuracies per concentration"""
+    accDF = pd.DataFrame(columns={"Concentration", "Valency", "Accuracy"})
+    for conc in df.Dose.unique():
+        for val in df.loc[(df.Dose == conc)].Valency.unique():
+            preds = df.loc[(df.Dose == conc) & (df.Valency == val)].Predicted.values
+            exps = df.loc[(df.Dose == conc) & (df.Valency == val)].Experimental.values
+            r2 = r2_score(exps, preds)
+            accDF = accDF.append(pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]}))
+    sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
 
 
 def MonVsBivalent(ax, dfAll, ligs=True):
@@ -100,13 +113,14 @@ def MonVsBivalent(ax, dfAll, ligs=True):
                     predVal = cytBindingModel(lig, 1, conc * 2, cell)
                     for time in times:
                         df.loc[(df.Date == date) & (df.Ligand == lig) & (df.Dose == conc) & (df.Cell == cell) & (df.Time == time), "MonPredict"] = predVal
+    dfCopy = copy(df)
 
     for date in dates:
         for cell in cellTypes:
             if cell[-1] == "$":  # if it is a binned pop, use ave fit
                 predVecBin = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
-                expVec = df.loc[(df.Date == date) & (df.Cell == cell[0:-13])].Experimental.values
-                predVec = df.loc[(df.Date == date) & (df.Cell == cell[0:-13])].MonPredict.values
+                expVec = dfCopy.loc[(dfCopy.Date == date) & (dfCopy.Cell == cell[0:-13])].Experimental.values
+                predVec = dfCopy.loc[(dfCopy.Date == date) & (dfCopy.Cell == cell[0:-13])].MonPredict.values
                 slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
                 df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVecBin * slope
             else:

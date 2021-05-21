@@ -172,6 +172,7 @@ def StatMV():
                         MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose", "Mean", "Bin", "NumCells", "Bivalent"})
 
     masterMVdf.Mean = masterMVdf.Mean.clip(lower=0)
+    masterMVdf = masterMVdf.loc[masterMVdf.Ligand != "H16L N-term"]
     masterMVdf.to_csv("WTDimericMutSingleCellDataBin.csv", index=False)
 
     return MVdf

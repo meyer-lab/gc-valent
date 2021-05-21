@@ -9,7 +9,7 @@ from scipy.optimize import root
 from .imports import import_pstat_all, getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
-KxStarP = 1.4e-12
+KxStarP = 2e-12
 
 
 def getKxStar():
