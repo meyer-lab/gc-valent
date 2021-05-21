@@ -7,8 +7,7 @@ from scipy.optimize import least_squares
 import numpy as np
 import pandas as pd
 import warnings
-from FlowCytometryTools import FCMeasurement
-from FlowCytometryTools import QuadGate, ThresholdGate
+from FlowCytometryTools import FCMeasurement, QuadGate, ThresholdGate, PolyGate
 
 path_here = dirname(dirname(__file__))
 
