@@ -60,7 +60,7 @@ def minSelecFunc(x, val, targCell, offTCells, IL7=False):
 
 def optimizeDesign(ax, targCell, offTcells, IL7=False):
     """ A more general purpose optimizer """
-    vals = np.arange(1, 9, step=1)
+    vals = np.arange(1, 12, step=0.25)
     sigDF = pd.DataFrame()
 
     if IL7:
