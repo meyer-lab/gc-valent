@@ -18,10 +18,9 @@ if __name__ == '__main__':
     exec('from ckine.figures import ' + nameOut)
     ff = eval(nameOut + '.makeFigure()')
     ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
-
     if sys.argv[1] == 'C2':
         # Overlay Figure 2 cartoon
         overlayCartoon(fdir + 'figureC2.svg',
-                       './ckine/data/tensor4D.svg', 3, 13, scalee=1.4)
+                       './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
 
     logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
