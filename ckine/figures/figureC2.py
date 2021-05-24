@@ -14,12 +14,9 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((12, 6), (2, 4), multz={0: 1})
-    axlabel = copy(ax)
-    del axlabel[6]
-    subplotLabel(axlabel)
+    ax, f = getSetup((12, 6), (2, 4), multz={0: 2})
+    subplotLabel(ax)
     ax[0].axis("off")
-    ax[6].axis("off")
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all(True)
