@@ -108,9 +108,8 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
     # Normalize to valency 1
     for cell in targCell + offTcells:
         sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"] = sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"].div(sigDF.loc[(sigDF["Cell Type"] == cell) & (sigDF.Valency == 1)].pSTAT.values[0])
-    
-    sigDF = sigDF.replace(cellTypeDict)
 
+    sigDF = sigDF.replace(cellTypeDict)
 
     if IL7:
         sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")

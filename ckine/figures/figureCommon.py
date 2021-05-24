@@ -91,25 +91,29 @@ def plotDoseResponses(ax, df, mut, cellType, val=False):
         valList = expData.Valency.unique()
 
         if val:
-            sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax)
-            sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax)
             if val == 1:
+                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, palette="darkblue")
+                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, palette="darkblue")
                 ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
             if val == 2:
+                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, palette="springgreen")
+                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, palette="springgreen")
                 ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
         else:
             if len(valList) > 1:
-                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", hue="Valency", ax=ax, legend="brief")
-                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Valency", ax=ax, legend="brief")
+                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", hue="Valency", ax=ax, legend="brief", palette=["darkblue", "seagreen"])
+                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Valency", ax=ax, legend="brief", palette=["darkblue", "seagreen"])
                 ax.set(title=cellType, xlabel=r"$log_{10}$ " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
                 handles, labels = ax.get_legend_handles_labels()
                 ax.legend([handles[0]] + handles[4::], [labels[0]] + labels[4::])
             else:
-                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax)
-                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax)
                 if valList == 1:
+                    sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, palette="darkblue")
+                    sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, palette="darkblue")
                     ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
                 if valList == 2:
+                    sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, palette="springgreen")
+                    sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, palette="springgreen")
                     ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
     else:
         expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell.isin(cellType))]
