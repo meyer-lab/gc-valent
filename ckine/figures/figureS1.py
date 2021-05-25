@@ -5,7 +5,7 @@ import scipy as sp
 import numpy as np
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup
-from ..imports import channels
+from ..imports import channels, importReceptors
 from ..flow import bead_regression
 from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates, importF
 from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate
@@ -18,7 +18,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 8), (3, 4), multz={8: 1})
+    ax, f = getSetup((10, 8), (3, 4), multz={8: 1, 10: 1})
     subplotLabel(ax)
 
     Tcell_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
@@ -138,7 +138,8 @@ def makeFigure():
         if i != 0:
             axs.grid()
 
-    receptorPlot(ax[8], ax[9], ax[10])
+    receptorPlot(ax[8])
+    IL2RahiLoPlot(ax[9])
 
     return f
 
@@ -168,7 +169,7 @@ def importF2(pathname, WellRow):
     return sample, file
 
 
-def receptorPlot(ax1, ax2, ax3):
+def receptorPlot(ax1):
 
     df_rec = getReceptors()
     df_test = df_rec.loc[(df_rec['Cell Type'] == 'T-helper') & (df_rec['Receptor'] == 'CD122')]
@@ -187,7 +188,7 @@ def receptorPlot(ax1, ax2, ax3):
     # plots log10 of mean on
     print(df_stats.loc[(df_stats['Cell Type'] == 'T-helper') & (df_stats['Receptor'] == 'CD122')])
     celltype_pointplot(ax1, df_stats, "Mean")
-
+    """
     receptor_levels_Beta = getReceptors(correlation="CD122")
     receptor_levels_Gamma = getReceptors(correlation="CD132")
 
@@ -226,6 +227,7 @@ def receptorPlot(ax1, ax2, ax3):
         hex2.set_xlabel('CD25 (IL2RA)')
         hex2.set_ylabel('CD132 (IL2RG)')
         hex2.set_title(cell_type + ' Alpha-Gamma correlation')
+    """
 
     return
 
@@ -324,3 +326,25 @@ def run_regression():
     _, lsq_cd127 = bead_regression(sampleI, channels["I"], recQuant3)
 
     return lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127
+
+
+cellTypeDict = {"Treg": r"$T_{reg}$",
+                "Treg $IL2Ra^{lo}$": r"$T_{reg}$ $IL2Ra^{lo}$",
+                "Treg $IL2Ra^{hi}$": r"$T_{reg}$ $IL2Ra^{hi}$",
+                "Thelper": r"$T_{helper}$",
+                "Thelper $IL2Ra^{lo}$": r"$T_{helper}$ $IL2Ra^{lo}$",
+                "Thelper $IL2Ra^{hi}$": r"$T_{helper}$ $IL2Ra^{hi}$"}
+
+receptorDict = {"IL2Ra": "IL2Rα",
+                "IL2Rb": r"$IL2·β$"}
+
+hiLoCells = ["$T_{reg}$", "$T_{reg}$ $IL2Ra^{lo}$", "$T_{reg}$ $IL2Ra^{hi}$", "$T_{helper}$", "$T_{helper}$ $IL2Ra^{lo}$", "$T_{helper}$ $IL2Ra^{hi}$"]
+
+
+def IL2RahiLoPlot(ax):
+    """Quickly plots IL2Ra and IL2Rb for given population"""
+    receptorDF = importReceptors()
+    receptorDF = receptorDF.replace(cellTypeDict)
+    receptorDF = receptorDF.replace(receptorDict)
+    receptorDF = receptorDF.loc[(receptorDF["Receptor"].isin(["IL2Rα", "$IL2·β$"]) & (receptorDF["Cell Type"].isin(hiLoCells)))]
+    sns.barplot(x="Cell Type", y="Mean", hue="Receptor", data=receptorDF, ax=ax)
