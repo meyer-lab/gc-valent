@@ -5,7 +5,7 @@ import scipy as sp
 import numpy as np
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup
-from ..imports import channels
+from ..imports import channels, importReceptors
 from ..flow import bead_regression
 from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates, importF
 from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate
@@ -20,6 +20,7 @@ def makeFigure():
 
     ax, f = getSetup((10, 8), (3, 4), multz={8: 1})
     subplotLabel(ax)
+    print(importReceptors())
 
     Tcell_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
     NK_CD8_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
