@@ -31,6 +31,9 @@ cellTypeDict = {"Treg": r"$T_{reg}$",
                 "CD8": r"$CD8^{+}$"}
 
 
+cell_order = ["$T_{reg}$", "$T_{helper}$", "NK", "$CD8^{+}$"]
+
+
 def cytBindingModelOpt(x, val, cellType, IL7=False):
     """Runs binding model for a given mutein, valency, dose, and cell type. """
     recQuantDF = importReceptors()
@@ -112,8 +115,8 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
     sigDF = sigDF.replace(cellTypeDict)
 
     if IL7:
-        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
-        ax[0].set(title=cellTypeDict[targCell[0]] + " Selectivity with IL-7 mutein")
+        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cell_order)
+        ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-7 mutein", fontsize=7)
         ax[0].set_ylim(bottom=0.0, top=4)
 
         sns.lineplot(x="Valency", y="IL7Rα", data=optDF, ax=ax[1], palette="crest")
@@ -121,8 +124,8 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
         ax[1].set_yticks([10, np.power(10, 2), np.power(10, 3)])
 
     else:
-        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl")
-        ax[0].set(title=cellTypeDict[targCell[0]] + " Selectivity with IL-2 mutein")
+        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cell_order)
+        ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-2 mutein", fontsize=7)
         ax[0].set_ylim(bottom=0.0, top=3)
 
         if targCell == ["NK"]:
