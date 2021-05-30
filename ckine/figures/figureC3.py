@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
@@ -19,29 +20,30 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 6), (2, 4), multz={5: 1})
+    ax, f = getSetup((10, 7), (3, 4), multz={0: 3, 9: 1})
     axlabel = copy(ax)
-    del axlabel[1]
+    del axlabel[2]
     subplotLabel(axlabel)
-    ax[1].axis("off")
+    ax[2].axis("off")
+    ax[0].axis("off")
 
     minSolved = minimize(runFullModel, x0=-12.0, args=([0.5], False, True))
     print(minSolved)
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
 
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
-    Pred_Exp_plot(ax[0], modelDF)
-    legend = ax[0].get_legend()
+    Pred_Exp_plot(ax[1], modelDF)
+    legend = ax[1].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8})  # use this to place universal legend later
-    ax[0].get_legend().remove()
+    ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8.5})  # use this to place universal legend later
+    ax[1].get_legend().remove()
 
-    R2_Plot_Cells(ax[2], modelDF)
-    R2_Plot_Ligs(ax[3], modelDF)
-    MonVsBivalent(ax[4], modelDF, ligs=True)
+    R2_Plot_Cells(ax[3], modelDF)
+    R2_Plot_Ligs(ax[4], modelDF)
+    MonVsBivalent(ax[5], modelDF, ligs=True)
 
-    R2_Plot_Conc(ax[5], modelDF)
-    timePlot(ax[6])
+    R2_Plot_Conc(ax[6], modelDF)
+    timePlot(ax[7])
 
     return f
 
@@ -49,7 +51,7 @@ def makeFigure():
 def Pred_Exp_plot(ax, df):
     """Plots all experimental vs. Predicted Values"""
     sns.scatterplot(x="Experimental", y="Predicted", hue="Cell", style="Valency", data=df, ax=ax, alpha=0.35)
-    ax.set(xlim=(0, 75000), ylim=(0, 75000))
+    ax.set(xlim=(0, 60000), ylim=(0, 60000))
 
 
 def R2_Plot_Cells(ax, df):
