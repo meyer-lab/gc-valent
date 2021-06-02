@@ -27,6 +27,6 @@ if __name__ == '__main__':
     if sys.argv[1] == 'C3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figureC3.svg',
-                       './ckine/graphics/ModelCartoon.svg', 5, 6, scalee=1.62)
+                       './ckine/graphics/ModelCartoon.svg', 1450, 0, scalee=0.023)
 
     logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
