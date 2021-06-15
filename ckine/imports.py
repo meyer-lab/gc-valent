@@ -109,6 +109,7 @@ def getBindDict():
     return bindingDF
 
 
+@lru_cache(maxsize=None)
 def importReceptors():
     """Makes Complete receptor expression Dict"""
     path = os.path.dirname(os.path.dirname(__file__))

@@ -1,11 +1,11 @@
 """
 Figure 6. Optimization of Ligands
 """
-from os.path import dirname, join
+from os.path import dirname
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import minimize
+from scipy.optimize import minimize, BFGS
 from .figureCommon import subplotLabel, getSetup
 from ..MBmodel import polyc, getKxStar
 from ..imports import getBindDict, importReceptors
@@ -64,16 +64,15 @@ def minSelecFunc(x, val, targCell, offTCells, IL7=False):
     for cellT in offTCells:
         offTargetBound += cytBindingModelOpt(x, val, cellT, IL7)
 
-    return (offTargetBound) / (targetBound)
+    return offTargetBound / targetBound
 
 
 def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
     """ A more general purpose optimizer """
-    vals = np.arange(1, 10, step=0.25)
+    vals = np.arange(1.01, 10, step=0.5)
     sigDF = pd.DataFrame()
 
     if IL7:
-        vals = np.arange(1.1, 10.1, step=0.25)
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Rα"})
         X0 = [8]
         optBnds = [(6, 11)]  # Ka IL7, Kx
@@ -85,16 +84,17 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
 
     for i, val in enumerate(vals):
         if i == 0:
-            optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point")
+            optKW = {"args": (val, targCell, offTcells, IL7), "jac": "2-point", "bounds": optBnds}
+
+            optimized = minimize(minSelecFunc, X0, **optKW)
             initialTargBind = cytBindingModelOpt(optimized.x, val, targCell[0], IL7)
 
             def bindConstraintFun(x):
                 return cytBindingModelOpt(x, val, targCell[0], IL7) - 0.5 * initialTargBind
 
             bindConst = {'type': 'ineq', 'fun': bindConstraintFun}
-
         else:
-            optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point", constraints=bindConst)
+            optimized = minimize(minSelecFunc, optimized.x, hess=BFGS(), method="trust-constr", **optKW, constraints=bindConst, options={"verbose": 1})
         if IL7:
             IL7RaKD = 1e9 / np.power(10, optimized.x[0])
             optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL7Rα": IL7RaKD}))
