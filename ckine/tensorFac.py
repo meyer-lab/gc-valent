@@ -13,7 +13,7 @@ def makeTensor(sigDF, Variance=False):
     ligands = sigDF.Ligand.unique()
     tps = sigDF.Time.unique()
     concs = sigDF.Dose.unique()
-    cellTypes = sigDF.Cell.unique()
+    cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
     tensor = np.empty((len(ligands), len(tps), len(concs), len(cellTypes)))
     tensor[:] = np.nan
     for i, lig in enumerate(ligands):
@@ -64,7 +64,7 @@ def plot_tFac_Ligs(ax, tFac, respDF):
         tFacDFlig = tFacDFlig.append(pd.DataFrame({"Component_Val": mutFacs[:, i], "Component": (i + 1), "Ligand": ligands}))
 
     sns.barplot(data=tFacDFlig, ax=ax, x="Component_Val", y="Ligand", hue="Component")
-    ax.set(xlabel="Component Value")
+    ax.set(xlabel="Component Weight")
 
 
 def plot_tFac_Time(ax, tFac, respDF):
@@ -79,7 +79,7 @@ def plot_tFac_Time(ax, tFac, respDF):
         ax.plot(tps, timeFacs[:, i], marker=markersTimes[i], label="Component " + str(i + 1), markersize=5)
 
     ax.legend()
-    ax.set(title="Time", xlabel="Time (hrs)", xlim=(0, 4), ylabel="Component Value", ylim=(0, 1))
+    ax.set(title="Time", xlabel="Time (hrs)", xlim=(0, 4), ylabel="Component Weight", ylim=(0, 1))
 
 
 def plot_tFac_Conc(ax, tFac, respDF):
@@ -92,7 +92,7 @@ def plot_tFac_Conc(ax, tFac, respDF):
         ax.plot(concs, concFacs[:, i], marker=markersConcs[i], label="Component " + str(i + 1), markersize=5)
 
     ax.legend()
-    ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component Value", ylim=(0, 1), xscale='log')
+    ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component Weight", ylim=(0, 1), xscale='log')
 
 
 def plot_tFac_Cells(ax, tFac, respDF):
@@ -104,5 +104,5 @@ def plot_tFac_Cells(ax, tFac, respDF):
         tFacDFcell = tFacDFcell.append(pd.DataFrame({"Component_Val": cellFacs[:, i], "Component": (i + 1), "Cell": cells}))
 
     sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
-    ax.set(ylabel="Component Value")
+    ax.set(ylabel="Component Weight")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
