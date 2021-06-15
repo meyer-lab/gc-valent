@@ -34,7 +34,7 @@ def makeFigure():
     ax[3].axis("off")
     ax[5].axis("off")
 
-    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5], False, True))
+    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
     print(minSolved)
 
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
@@ -64,7 +64,8 @@ def Pred_Exp_plot(ax, df):
 def R2_Plot_Cells(ax, df):
     """Plots all accuracies per cell"""
     accDF = pd.DataFrame(columns={"Cell Type", "Valency", "Accuracy"})
-    for cell in df.Cell.unique():
+    cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+    for cell in cellTypes:
         for val in df.Valency.unique():
             preds = df.loc[(df.Cell == cell) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Cell == cell) & (df.Valency == val)].Experimental.values

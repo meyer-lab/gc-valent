@@ -9,7 +9,7 @@ from scipy.optimize import root
 from .imports import import_pstat_all, getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
-KxStarP = 2e-12
+KxStarP = 2.24e-12
 
 
 def getKxStar():
@@ -107,17 +107,6 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
     statDF = import_pstat_all(singleCell)
     statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)") & (statDF.Ligand != "IL15 (Mono)")]
     statDF = statDF.loc[(statDF.Time.isin(time))]
-
-    if x:
-        # If Minimizing, scale all so that cells are weighted identically
-        statDF.loc[(statDF.Cell == "Treg"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "Treg $IL2Ra^{lo}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg $IL2Ra^{lo}$"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "Treg $IL2Ra^{hi}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Treg $IL2Ra^{hi}$"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "Thelper"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{lo}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{lo}$"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{hi}$"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "Thelper $IL2Ra^{hi}$"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "CD8"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "CD8"), "Mean"].mean()
-        statDF.loc[(statDF.Cell == "NK"), "Mean"] *= 1000 / statDF.loc[(statDF.Cell == "NK"), "Mean"].mean()
 
     dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
     masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Time", "Dose", "Valency", "Experimental", "Predicted"})
