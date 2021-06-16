@@ -71,13 +71,13 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
 
     if IL7:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Rα"})
-        X0 = [8] # Ka IL7
+        X0 = [8]  # Ka IL7
     else:
         optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Rα", r"IL-2Rβ/γ$_c$"})
         if targCell[0] == "NK":
-            X0 = [6.0, 8] # IL2Ra, IL2Rb
+            X0 = [6.0, 8]  # IL2Ra, IL2Rb
         else:
-            X0 = [9.0, 6.0] # IL2Ra, IL2Rb
+            X0 = [9.0, 6.0]  # IL2Ra, IL2Rb
 
     optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
 
