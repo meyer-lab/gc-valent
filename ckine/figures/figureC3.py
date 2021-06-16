@@ -85,8 +85,11 @@ def R2_Plot_Ligs(ax, df):
             preds = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]}))
-    sns.barplot(x="Ligand", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+            if val == 1:
+                accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Mono)"], "Valency": [val], "Accuracy": [r2]}))
+            else:
+                accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Biv)"], "Valency": [val], "Accuracy": [r2]}))
+    sns.barplot(x="Ligand", y="Accuracy", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
@@ -140,29 +143,29 @@ def MonVsBivalent(ax, dfAll, ligs=True):
                 df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVec * slope
 
     if ligs:
-        accDF = pd.DataFrame(columns={"Ligand", "Prediction Valency", "Accuracy"})
+        accDF = pd.DataFrame(columns={"Ligand", "Prediction Label", "Accuracy"})
         for ligand in df.Ligand.unique():
             BivPreds = df.loc[(df.Ligand == ligand)].Predicted.values
             MonPreds = df.loc[(df.Ligand == ligand)].MonPredict.values
             exps = df.loc[(df.Ligand == ligand)].Experimental.values
             r2Biv = r2_score(exps, BivPreds)
             r2Mon = r2_score(exps, MonPreds)
-            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Valency": [1], "Accuracy": [r2Mon]}))
-            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Valency": [2], "Accuracy": [r2Biv]}))
-        sns.barplot(x="Ligand", y="Accuracy", hue="Prediction Valency", data=accDF, ax=ax)
+            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Monovalent (Incorrect)", "Accuracy": [r2Mon]}))
+            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Bivalent (Correct)", "Accuracy": [r2Biv]}))
+        sns.barplot(x="Ligand", y="Accuracy", hue="Prediction Label", data=accDF, ax=ax)
         ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     else:
-        accDF = pd.DataFrame(columns={"Cell Type", "Prediction Valency", "Accuracy"})
+        accDF = pd.DataFrame(columns={"Cell Type", "Prediction Label", "Accuracy"})
         for cellType in df.Cell.unique():
             BivPreds = df.loc[(df.Cell == cellType)].Predicted.values
             MonPreds = df.loc[(df.Cell == cellType)].MonPredict.values
             exps = df.loc[(df.Cell == cellType)].Experimental.values
             r2Biv = r2_score(exps, BivPreds)
             r2Mon = r2_score(exps, MonPreds)
-            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Valency": [1], "Accuracy": [r2Mon]}))
-            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Valency": [2], "Accuracy": [r2Biv]}))
-        sns.barplot(x="Cell Type", y="Accuracy", hue="Prediction Valency", data=accDF, ax=ax)
+            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [1], "Accuracy": [r2Mon]}))
+            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [2], "Accuracy": [r2Biv]}))
+        sns.barplot(x="Cell Type", y="Accuracy", hue="Prediction Label", data=accDF, ax=ax)
         ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 
