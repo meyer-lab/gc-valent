@@ -9,11 +9,10 @@ from scipy.optimize import root
 from .imports import import_pstat_all, getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
-KxStarP = 2.24e-12
 
 
 def getKxStar():
-    return KxStarP
+    return 2.24e-12
 
 
 def Req_func2(Req, L0, KxStar, Rtot, Cplx, Ctheta, Kav):
@@ -42,7 +41,7 @@ def polyc(L0, KxStar, Rtot, Cplx, Ctheta, Kav):
     # Consistency check
     Kav = np.array(Kav)
     assert Kav.ndim == 2
-    Rtot = np.array(Rtot, dtype=np.float)
+    Rtot = np.array(Rtot, dtype=float)
     assert Rtot.ndim == 1
     Cplx = np.array(Cplx)
     assert Cplx.ndim == 2
@@ -92,7 +91,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
         if x:
             output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
         else:
-            output[i] = polyc(dose / 1e9, KxStarP, recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
     if date:
         convDict = getBindDict()
         if cellType[-1] == "$":  # if it is a binned pop, use ave fit
