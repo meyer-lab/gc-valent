@@ -14,6 +14,7 @@ path_here = dirname(dirname(__file__))
 def combineWells(samples):
     """Accepts sample array returned from importF, and array of channels, returns combined well data"""
     combinedSamples = samples[0]
+    print("Running combine wells")
     for sample in samples[1:]:
         combinedSamples.data = combinedSamples.data.append(sample.data, ignore_index=True)
     return combinedSamples
