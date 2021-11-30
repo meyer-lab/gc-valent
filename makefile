@@ -13,5 +13,5 @@ output/figure%.svg: ckine/figures/figure%.py
 clean:
 	rm -rf output
 
-test: venv
+test:
 	poetry run pytest -s -v -x
