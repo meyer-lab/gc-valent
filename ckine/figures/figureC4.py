@@ -109,24 +109,24 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
     sigDF = sigDF.replace(cellTypeDict)
 
     if IL7:
-        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
+        sns.scatterplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
         ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-7 mutein", fontsize=7)
 
-        sns.lineplot(x="Valency", y="IL7Rα", data=optDF, ax=ax[1], palette="crest")
+        sns.scatterplot(x="Valency", y="IL7Rα", data=optDF, ax=ax[1], palette="crest")
         ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
 
     else:
-        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
+        sns.scatterplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
         ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-2 mutein", fontsize=7)
 
         if targCell[0] == "NK":
             affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=[r"IL-2Rβ/γ$_c$"])
-            sns.lineplot(x="Valency", y="value", data=affDF, ax=ax[1])
+            sns.scatterplot(x="Valency", y="value", data=affDF, ax=ax[1])
             ax[1].set(yscale="log", ylabel=r"IL2·β/γ$_c$ K$_D$ (nM)")
         else:
             affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Rα', r"IL-2Rβ/γ$_c$"])
             affDF = affDF.rename(columns={"variable": "Receptor"})
-            sns.lineplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
+            sns.scatterplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
             ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
 
     ax[0].set_ylim(bottom=0.0, top=3)
