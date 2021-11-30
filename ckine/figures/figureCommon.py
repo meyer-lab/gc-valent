@@ -1,13 +1,18 @@
 """
 This file contains functions that are used in multiple figures.
 """
+import sys
+import logging
+import time
 from string import ascii_lowercase
+import matplotlib
 import seaborn as sns
 import numpy as np
-import matplotlib
-import matplotlib.patches as mpatches
 import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
+
+matplotlib.use('AGG')
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 
 matplotlib.rcParams["legend.labelspacing"] = 0.2
@@ -75,6 +80,29 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
+def genFigure():
+    """ Main figure generation function. """
+    fdir = './output/'
+    start = time.time()
+    nameOut = 'figure' + sys.argv[1]
+
+    exec('from ckine.figures import ' + nameOut)
+    ff = eval(nameOut + '.makeFigure()')
+    ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
+
+    if sys.argv[1] == 'C2':
+        # Overlay Figure 2 cartoon
+        overlayCartoon(fdir + 'figureC2.svg',
+                       './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
+
+    if sys.argv[1] == 'C3':
+        # Overlay Figure 3 cartoon
+        overlayCartoon(fdir + 'figureC3.svg',
+                       './ckine/graphics/ModelCartoon.svg', 1450, 0, scalee=0.023)
+
+    logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
+
+
 cellSTATlimDict = {"Treg": (0, 60000),
                    "Thelper": (0, 40000),
                    "CD8": (0, 30000),
@@ -93,36 +121,36 @@ def plotDoseResponses(ax, df, mut, cellType, val=False):
         if val:
             if val == 1:
                 sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, hue="Valency", palette=["darkblue"])
-                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, hue="Valency", palette=["darkblue"])
+                sns.scatterplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, hue="Valency", palette=["darkblue"])
                 ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
             if val == 2:
                 sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, hue="Valency", palette=["springgreen"])
-                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, hue="Valency", palette=["springgreen"])
+                sns.scatterplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, hue="Valency", palette=["springgreen"])
                 ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
         else:
             if len(valList) > 1:
                 sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", hue="Valency", ax=ax, legend="brief", palette=["darkblue", "seagreen"])
-                sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Valency", ax=ax, legend="brief", palette=["darkblue", "seagreen"])
+                sns.scatterplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Valency", ax=ax, legend="brief", palette=["darkblue", "seagreen"])
                 ax.set(title=cellType, xlabel=r"$log_{10}$ " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
                 handles, labels = ax.get_legend_handles_labels()
                 ax.legend([handles[0]] + handles[4::], [labels[0]] + labels[4::])
             else:
                 if valList[0] == 1:
                     sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, hue="Valency", palette=["darkblue"])
-                    sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, color="darkblue")
+                    sns.scatterplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, color="darkblue")
                     ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
                     handles, labels = ax.get_legend_handles_labels()
                     ax.legend(handles[0:2] + handles[4::], labels[0:2] + labels[4::])
                 if valList[0] == 2:
                     sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", ax=ax, hue="Valency", palette=["seagreen"])
-                    sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, color="seagreen")
+                    sns.scatterplot(x="Dose", y="Predicted", data=expData, label="Predicted", ax=ax, color="seagreen")
                     ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
                     handles, labels = ax.get_legend_handles_labels()
                     ax.legend(handles[0:2] + handles[4::], labels[0:2] + labels[4::])
     else:
         expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell.isin(cellType))]
         sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", hue="Cell", ax=ax)
-        sns.lineplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Cell", ax=ax)
+        sns.scatterplot(x="Dose", y="Predicted", data=expData, label="Predicted", hue="Cell", ax=ax)
         if val == 1:
             ax.set(title=cellType[0] + "s", xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType[0]])
         if val == 2:

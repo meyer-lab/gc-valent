@@ -103,7 +103,7 @@ def R2_Plot_Conc(ax, df):
             exps = df.loc[(df.Dose == conc) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]}))
-    sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    sns.scatterplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
 
 
