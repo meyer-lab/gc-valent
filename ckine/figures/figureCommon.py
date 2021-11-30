@@ -1,13 +1,18 @@
 """
 This file contains functions that are used in multiple figures.
 """
+import sys
+import logging
+import time
 from string import ascii_lowercase
+import matplotlib
 import seaborn as sns
 import numpy as np
-import matplotlib
-import matplotlib.patches as mpatches
 import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
+
+matplotlib.use('AGG')
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 
 matplotlib.rcParams["legend.labelspacing"] = 0.2
@@ -73,6 +78,29 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
     template.append(cartoon)
     template.save(figFile)
+
+
+def genFigure():
+    """ Main figure generation function. """
+    fdir = './output/'
+    start = time.time()
+    nameOut = 'figure' + sys.argv[1]
+
+    exec('from ckine.figures import ' + nameOut)
+    ff = eval(nameOut + '.makeFigure()')
+    ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
+
+    if sys.argv[1] == 'C2':
+        # Overlay Figure 2 cartoon
+        overlayCartoon(fdir + 'figureC2.svg',
+                       './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
+
+    if sys.argv[1] == 'C3':
+        # Overlay Figure 3 cartoon
+        overlayCartoon(fdir + 'figureC3.svg',
+                       './ckine/graphics/ModelCartoon.svg', 1450, 0, scalee=0.023)
+
+    logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
 
 
 cellSTATlimDict = {"Treg": (0, 60000),
