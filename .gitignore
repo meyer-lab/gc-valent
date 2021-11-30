@@ -6,3 +6,5 @@ ckine/ckine.so
 **/.DS_Store
 .vscode/settings.json
 ckine/data/flow
+
+output

@@ -51,6 +51,39 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "decorator"
+version = "5.1.0"
+description = "Decorators for Humans"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
+name = "fcsparser"
+version = "0.2.4"
+description = "A python package for reading raw fcs files"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+numpy = "*"
+pandas = "*"
+six = "*"
+
+[[package]]
+name = "flowcytometrytools"
+version = "0.5.1"
+description = "A python package for performing flow cytometry analysis"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+decorator = "*"
+fcsparser = ">=0.1.1"
+
+[[package]]
 name = "fonttools"
 version = "4.28.2"
 description = "Tools to manipulate font files"
@@ -127,6 +160,14 @@ pillow = ">=6.2.0"
 pyparsing = ">=2.2.1"
 python-dateutil = ">=2.7"
 setuptools_scm = ">=4"
+
+[[package]]
+name = "nose"
+version = "1.3.7"
+description = "nose extends unittest to make testing easier"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "numpy"
@@ -342,6 +383,19 @@ python-versions = "*"
 lxml = "*"
 
 [[package]]
+name = "tensorly"
+version = "0.7.0"
+description = "Tensor learning in Python."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+nose = "*"
+numpy = "*"
+scipy = "*"
+
+[[package]]
 name = "threadpoolctl"
 version = "3.0.0"
 description = "threadpoolctl"
@@ -368,7 +422,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "b86eaa788d7ba5e18c5c752c5690c102bdf8917e7be4c3e37aa3ee8e61e75210"
+content-hash = "d289716b544491c9b7594325e6be0dad8ae891c629b84928a38169eb04bd97e3"
 
 [metadata.files]
 atomicwrites = [
@@ -435,6 +489,18 @@ coverage = [
 cycler = [
     {file = "cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
     {file = "cycler-0.11.0.tar.gz", hash = "sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f"},
+]
+decorator = [
+    {file = "decorator-5.1.0-py3-none-any.whl", hash = "sha256:7b12e7c3c6ab203a29e157335e9122cb03de9ab7264b137594103fd4a683b374"},
+    {file = "decorator-5.1.0.tar.gz", hash = "sha256:e59913af105b9860aa2c8d3272d9de5a56a4e608db9a2f167a8480b323d529a7"},
+]
+fcsparser = [
+    {file = "fcsparser-0.2.4-py3-none-any.whl", hash = "sha256:52e07e96ec21c5915c78c0481aa796888890f704e56a0c7114f5c198ef6de46e"},
+    {file = "fcsparser-0.2.4.tar.gz", hash = "sha256:fa8e60d1bbda2fd592b6fd387e7bf3048fa357359e06e0b263e7034469f617b3"},
+]
+flowcytometrytools = [
+    {file = "FlowCytometryTools-0.5.1-py3-none-any.whl", hash = "sha256:9380ffb968469e3f0a97113add1c10e82cab6131462cf47b6826d36d1679e354"},
+    {file = "FlowCytometryTools-0.5.1.tar.gz", hash = "sha256:2a2a151f6d0bc53318848c7bb2d5dfa61412e7c81fc5efcbb4643aee471e5393"},
 ]
 fonttools = [
     {file = "fonttools-4.28.2-py3-none-any.whl", hash = "sha256:eff1da7ea274c54cb8842853005a139f711646cbf6f1bcfb6c9b86a627f35ff0"},
@@ -592,6 +658,11 @@ matplotlib = [
     {file = "matplotlib-3.5.0-pp37-pypy37_pp73-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:dc8c5c23e7056e126275dbf29efba817b3d94196690930d0968873ac3a94ab82"},
     {file = "matplotlib-3.5.0-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:a0ea10faa3bab0714d3a19c7e0921279a68d57552414d6eceaea99f97d7735db"},
     {file = "matplotlib-3.5.0.tar.gz", hash = "sha256:38892a254420d95594285077276162a5e9e9c30b6da08bdc2a4d53331ad9a6fa"},
+]
+nose = [
+    {file = "nose-1.3.7-py2-none-any.whl", hash = "sha256:dadcddc0aefbf99eea214e0f1232b94f2fa9bd98fa8353711dacb112bfcbbb2a"},
+    {file = "nose-1.3.7-py3-none-any.whl", hash = "sha256:9ff7c6cc443f8c51994b34a667bbcf45afd6d945be7477b52e97516fd17c53ac"},
+    {file = "nose-1.3.7.tar.gz", hash = "sha256:f1bffef9cbc82628f6e7d7b40d7e255aefaa1adb6a1b1d26c69a8b79e6208a98"},
 ]
 numpy = [
     {file = "numpy-1.21.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:8890b3360f345e8360133bc078d2dacc2843b6ee6059b568781b15b97acbe39f"},
@@ -796,6 +867,10 @@ six = [
 svgutils = [
     {file = "svgutils-0.3.4-py3-none-any.whl", hash = "sha256:4d08524a08126553c1a9bf2639616cf31290adea6fd235a3eb67d77c748abc00"},
     {file = "svgutils-0.3.4.tar.gz", hash = "sha256:9ef48f44cb1d460a7747dd02694200fda25eb9faf6dea392118def2695e0e053"},
+]
+tensorly = [
+    {file = "tensorly-0.7.0-py3-none-any.whl", hash = "sha256:484c6da50c34f23b3428d0d59b9dcbe5ff904d52f644ab4d62425f4fea3fa670"},
+    {file = "tensorly-0.7.0.tar.gz", hash = "sha256:fbfca8d0499f1b07530f5a2566a9a9f61ca3a31cfdec9f05155ad3f08332b3cc"},
 ]
 threadpoolctl = [
     {file = "threadpoolctl-3.0.0-py3-none-any.whl", hash = "sha256:4fade5b3b48ae4b1c30f200b28f39180371104fccc642e039e0f2435ec8cc211"},

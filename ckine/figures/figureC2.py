@@ -3,7 +3,6 @@ This creates Figure 3, tensor factorization of mutant and WT biv and monovalent 
 """
 
 import os
-from copy import copy
 from .figureCommon import subplotLabel, getSetup
 from ..imports import import_pstat_all
 from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Time, plot_tFac_Conc, plot_tFac_Cells
