@@ -98,6 +98,7 @@ def plot_tFac_Conc(ax, tFac, respDF):
 def plot_tFac_Cells(ax, tFac, respDF):
     """Plots tensor factorization of cells"""
     cells = respDF.Cell.unique()
+    print(cells)
     cellFacs = tFac[1][3]
     tFacDFcell = pd.DataFrame()
     for i in range(0, 3):

@@ -3,6 +3,7 @@ This creates Figure 3, tensor factorization of mutant and WT biv and monovalent 
 """
 
 import os
+import numpy as np
 from copy import copy
 from .figureCommon import subplotLabel, getSetup
 from ..imports import import_pstat_all
@@ -21,6 +22,7 @@ def makeFigure():
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all(True)
     respTensor = makeTensor(respDF)
+    np.save("IL2_Response_Tensor.npy", respTensor)
     tFacAllM = factorTensor(respTensor, 3)
     tFacAllM.normalize()
 
