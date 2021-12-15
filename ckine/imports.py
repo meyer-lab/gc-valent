@@ -81,7 +81,7 @@ receptors["I"] = ["CD127", "CD127", "CD127", "CD127", "CD127"]
 
 
 @lru_cache(maxsize=None)
-def import_pstat_all(singleCell=False):
+def import_pstat_all(singleCell=False, updateLigs=True):
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
     WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
     monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
@@ -95,8 +95,9 @@ def import_pstat_all(singleCell=False):
         respDFbin.loc[respDFbin["Bin"] == 3, "Cell"] += r" $IL2Ra^{hi}$"
         respDF = pds.concat([respDF, respDFbin])
 
-    respDF.loc[(respDF.Bivalent == 0), "Ligand"] = (respDF.loc[(respDF.Bivalent == 0)].Ligand + " (Mono)").values
-    respDF.loc[(respDF.Bivalent == 1), "Ligand"] = (respDF.loc[(respDF.Bivalent == 1)].Ligand + " (Biv)").values
+    if updateLigs:
+        respDF.loc[(respDF.Bivalent == 0), "Ligand"] = (respDF.loc[(respDF.Bivalent == 0)].Ligand + " (Mono)").values
+        respDF.loc[(respDF.Bivalent == 1), "Ligand"] = (respDF.loc[(respDF.Bivalent == 1)].Ligand + " (Biv)").values
 
     return respDF
 

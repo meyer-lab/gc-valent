@@ -1,138 +1,227 @@
 """
-Figure 6. Optimization of Ligands
+This creates Figure 4, fitting of multivalent binding model to Gc Data.
 """
-from os.path import dirname
+
+import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import minimize, Bounds, NonlinearConstraint
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+from scipy.optimize import minimize
+from copy import copy
 from .figureCommon import subplotLabel, getSetup
-from ..MBmodel import polyc, getKxStar
-from ..imports import getBindDict, importReceptors
+from ..PCA import nllsq_EC50
+from ..MBmodel import runFullModel, cytBindingModel
 
-path_here = dirname(dirname(__file__))
+path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 def makeFigure():
-    """ Make figure 6. """
-    # Get list of axis objects
-    ax, f = getSetup((6, 4.5), (2, 3))
-    subplotLabel(ax)
-    optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
-    optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
-    optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
+    """Get a list of the axis objects and create a figure"""
 
+    ax, f = getSetup((10, 7), (3, 4), multz={9: 1})
+    axlabel = copy(ax)
+    del axlabel[1]
+    del axlabel[1]
+    del axlabel[1]
+    del axlabel[2]
+    subplotLabel(axlabel)
+
+    ax[0].axis("off")
+    ax[1].axis("off")
+    ax[2].axis("off")
+    ax[3].axis("off")
+    ax[5].axis("off")
+
+    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
+    print(minSolved)
+
+    modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
+
+    print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
+    Pred_Exp_plot(ax[4], modelDF)
+    legend = ax[4].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[5].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8.5})  # use this to place universal legend later
+    ax[4].get_legend().remove()
+
+    R2_Plot_Cells(ax[6], modelDF)
+    R2_Plot_Ligs(ax[7], modelDF)
+    MonVsBivalent(ax[8], modelDF, ligs=True)
+
+    R2_Plot_Conc(ax[9], modelDF)
+    timePlot(ax[10])
     return f
 
 
-cellTypeDict = {"Treg": r"T$_{reg}$",
-                "Thelper": r"T$_{helper}$",
-                "NK": "NK",
-                "CD8": r"CD8$^{+}$"}
+def Pred_Exp_plot(ax, df):
+    """Plots all experimental vs. Predicted Values"""
+    sns.scatterplot(x="Experimental", y="Predicted", hue="Cell", style="Valency", data=df, ax=ax, alpha=0.35)
+    ax.set(xlim=(0, 60000), ylim=(0, 60000))
 
 
-def cytBindingModelOpt(x, val, cellType, IL7=False):
-    """Runs binding model for a given mutein, valency, dose, and cell type. """
-    recQuantDF = importReceptors()
-    convDict = getBindDict()
-    Kx = getKxStar()
+def R2_Plot_Cells(ax, df):
+    """Plots all accuracies per cell"""
+    accDF = pd.DataFrame(columns={"Cell Type", "Valency", "Accuracy"})
+    cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+    for cell in cellTypes:
+        for val in df.Valency.unique():
+            preds = df.loc[(df.Cell == cell) & (df.Valency == val)].Predicted.values
+            exps = df.loc[(df.Cell == cell) & (df.Valency == val)].Experimental.values
+            r2 = r2_score(exps, preds)
+            accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
 
-    if IL7:
-        affs = [[np.power(10, x[0])]]
-        recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL7Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
-        output = polyc(1e-9 / val, Kx, recCount, [[val]], [1.0], affs)[0][0]  # IL7Ra binding only
+    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+
+
+def R2_Plot_Ligs(ax, df):
+    """Plots all accuracies per ligand"""
+    accDF = pd.DataFrame(columns={"Ligand", "Valency", "Accuracy"})
+    for ligand in df.Ligand.unique():
+        for val in df.loc[df.Ligand == ligand].Valency.unique():
+            preds = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Predicted.values
+            exps = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Experimental.values
+            r2 = r2_score(exps, preds)
+            if val == 1:
+                accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Mono)"], "Valency": [val], "Accuracy": [r2]}))
+            else:
+                accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Biv)"], "Valency": [val], "Accuracy": [r2]}))
+    sns.barplot(x="Ligand", y="Accuracy", data=accDF, ax=ax)
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+
+
+def R2_Plot_Conc(ax, df):
+    """Plots all accuracies per concentration"""
+    accDF = pd.DataFrame(columns={"Concentration", "Valency", "Accuracy"})
+    for conc in df.Dose.unique():
+        for val in df.loc[(df.Dose == conc)].Valency.unique():
+            preds = df.loc[(df.Dose == conc) & (df.Valency == val)].Predicted.values
+            exps = df.loc[(df.Dose == conc) & (df.Valency == val)].Experimental.values
+            r2 = r2_score(exps, preds)
+            accDF = accDF.append(pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]}))
+    sns.scatterplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
+
+
+def MonVsBivalent(ax, dfAll, ligs=True):
+    """Compares accuracy of monovalent vs bivalent predictions"""
+    df = dfAll.loc[(dfAll.Valency == 2)].copy()
+    dates = df.Date.unique()
+    df["MonPredict"] = np.zeros(df.shape[0])
+
+    for date in dates:
+        dfDate = df.loc[(df.Date == date)]
+        ligands = dfDate.Ligand.unique()
+        concs = dfDate.Dose.unique()
+        cellTypes = dfDate.Cell.unique()
+        times = dfDate.Time.unique()
+
+        for lig in ligands:
+            for conc in concs:
+                for cell in cellTypes:
+                    predVal = cytBindingModel(lig, 1, conc * 2, cell)
+                    for time in times:
+                        df.loc[(df.Date == date) & (df.Ligand == lig) & (df.Dose == conc) & (df.Cell == cell) & (df.Time == time), "MonPredict"] = predVal
+    dfCopy = copy(df)
+
+    for date in dates:
+        for cell in cellTypes:
+            if cell[-1] == "$":  # if it is a binned pop, use ave fit
+                predVecBin = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
+                expVec = dfCopy.loc[(dfCopy.Date == date) & (dfCopy.Cell == cell[0:-13])].Experimental.values
+                predVec = dfCopy.loc[(dfCopy.Date == date) & (dfCopy.Cell == cell[0:-13])].MonPredict.values
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+                df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVecBin * slope
+            else:
+                expVec = df.loc[(df.Date == date) & (df.Cell == cell)].Experimental.values
+                predVec = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+                df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVec * slope
+
+    if ligs:
+        accDF = pd.DataFrame(columns={"Ligand", "Prediction Label", "Accuracy"})
+        for ligand in df.Ligand.unique():
+            BivPreds = df.loc[(df.Ligand == ligand)].Predicted.values
+            MonPreds = df.loc[(df.Ligand == ligand)].MonPredict.values
+            exps = df.loc[(df.Ligand == ligand)].Experimental.values
+            r2Biv = r2_score(exps, BivPreds)
+            r2Mon = r2_score(exps, MonPreds)
+            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Monovalent (Incorrect)", "Accuracy": [r2Mon]}))
+            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Bivalent (Correct)", "Accuracy": [r2Biv]}))
+        sns.barplot(x="Ligand", y="Accuracy", hue="Prediction Label", data=accDF, ax=ax)
+        ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     else:
-        affs = [[np.power(10, x[0]), 1e2], [1e2, np.power(10, x[1])]]
-        recCount = np.ravel([recQuantDF.loc[(recQuantDF.Receptor == "IL2Ra") & (recQuantDF["Cell Type"] == cellType)].Mean.values,
-                             recQuantDF.loc[(recQuantDF.Receptor == "IL2Rb") & (recQuantDF["Cell Type"] == cellType)].Mean.values])
-        output = polyc(1e-9 / val, Kx, recCount, [[val, val]], [1.0], affs)[0][1]  # IL2RB binding only
+        accDF = pd.DataFrame(columns={"Cell Type", "Prediction Label", "Accuracy"})
+        for cellType in df.Cell.unique():
+            BivPreds = df.loc[(df.Cell == cellType)].Predicted.values
+            MonPreds = df.loc[(df.Cell == cellType)].MonPredict.values
+            exps = df.loc[(df.Cell == cellType)].Experimental.values
+            r2Biv = r2_score(exps, BivPreds)
+            r2Mon = r2_score(exps, MonPreds)
+            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [1], "Accuracy": [r2Mon]}))
+            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [2], "Accuracy": [r2Biv]}))
+        sns.barplot(x="Cell Type", y="Accuracy", hue="Prediction Label", data=accDF, ax=ax)
+        ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 
-    if not IL7:
-        output *= np.mean(convDict.loc[(convDict.Cell == cellType)].Scale.values)
-
-    return output
-
-
-def minSelecFunc(x, val, targCell, offTCells, IL7=False):
-    """Provides the function to be minimized to get optimal selectivity"""
-    offTargetBound = 0
-
-    targetBound = cytBindingModelOpt(x, val, targCell[0], IL7)
-    for cellT in offTCells:
-        offTargetBound += cytBindingModelOpt(x, val, cellT, IL7)
-
-    return (offTargetBound) / (targetBound)
+    return df
 
 
-def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
-    """ A more general purpose optimizer """
-    vals = np.arange(1.01, 10, step=0.15)
-    sigDF = pd.DataFrame()
+def EC50comp(ax, dfAll, time):
+    """Predicts EC50s for each drug for 4 cell types, and plots"""
+    x0exp = [4, 2.0, 1000.0]
+    x0pred = [4, 2.0, 1000.0]
+    df = dfAll.loc[(dfAll.Time == time)].copy()
+    Ligands = df.Ligand.unique()
+    Cells = df.Cell.unique()
 
-    if IL7:
-        optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Rα"})
-        X0 = [8]  # Ka IL7
-    else:
-        optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Rα", r"IL-2Rβ/γ$_c$"})
-        if targCell[0] == "NK":
-            X0 = [6.0, 8]  # IL2Ra, IL2Rb
-        else:
-            X0 = [9.0, 6.0]  # IL2Ra, IL2Rb
+    EC50df = pd.DataFrame(columns=["Cell Type", "Ligand", "EC50", "Exp/Pred"])
 
-    optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
+    for ligand in Ligands:
+        Valencies = df.loc[(df.Ligand == ligand), "Valency"].unique()
+        for valency in Valencies:
+            for cell in Cells:
+                #dates = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Date.values
+                dosesExp = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Dose.values
+                doseMax, doseMin = np.log10(np.amax(dosesExp)) + 4, np.log10(np.amin(dosesExp))
+                dosesPredMB = np.logspace(doseMin, doseMax, 40)
+                dosesPred = np.log10(dosesPredMB) + 4
+                dosesExp = np.log10(dosesExp) + 4
 
-    for i, val in enumerate(vals):
-        if i == 0:
-            optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point")
+                expVals = df.loc[(df.Ligand == ligand) & (df.Cell == cell) & (df.Valency == valency)].Experimental.values
+                predVals = cytBindingModel(ligand, valency, dosesPredMB, cell)
+                EC50exp = nllsq_EC50(x0exp, dosesExp, expVals) - 4
+                EC50pred = nllsq_EC50(x0pred, dosesPred, predVals) - 4
 
-            targLB = cytBindingModelOpt(optimized.x, val, targCell[0], IL7) / 1.01
-            bindConst = NonlinearConstraint(lambda x: cytBindingModelOpt(x, val, targCell[0], IL7), targLB, np.inf)
-        else:
-            optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(val, targCell, offTcells, IL7), jac="3-point", constraints=bindConst)
+                if valency == 1:
+                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]}))
+                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]}))
+                else:
+                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]}))
+                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]}))
 
-        fitX = 1.0e9 / np.power(10.0, optimized.x)
+    EC50df = EC50df.loc[(EC50df["Cell Type"].isin(["Treg", "Thelper"]))]
+    sns.scatterplot(x="Ligand", y="EC50", hue="Cell Type", style="Exp/Pred", data=EC50df, ax=ax)
+    ax.set(ylabel=r"log$_{10}$EC50 (nM)", ylim=(-2, 6))
+    ax.set_xticklabels(EC50df.Ligand.unique(), rotation=45)
 
-        if IL7:
-            optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL7Rα": fitX[0]}))
-            sigDF = sigDF.append(pd.DataFrame({"Cell Type": [targCell[0]], "Target": ["Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, targCell[0], IL7)]}))
-            for cell in offTcells:
-                sigDF = sigDF.append(pd.DataFrame({"Cell Type": [cell], "Target": ["Off-Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, cell, IL7)]}))
-        else:
-            optDF = optDF.append(pd.DataFrame({"Valency": [val], "Selectivity": [len(offTcells) / optimized.fun], "IL2Rα": fitX[0], r"IL-2Rβ/γ$_c$": fitX[1]}))
-            sigDF = sigDF.append(pd.DataFrame({"Cell Type": [targCell[0]], "Target": ["Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, targCell[0], IL7)]}))
-            for cell in offTcells:
-                sigDF = sigDF.append(pd.DataFrame({"Cell Type": [cell], "Target": ["Off-Target"], "Valency": [val], "pSTAT": [cytBindingModelOpt(optimized.x, val, cell, IL7)]}))
-    # Normalize to valency 1
-    for cell in targCell + offTcells:
-        sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"] = sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"].div(sigDF.loc[(sigDF["Cell Type"] == cell) & (sigDF.Valency == vals[0])].pSTAT.values[0])
 
-    sigDF = sigDF.replace(cellTypeDict)
-
-    if IL7:
-        sns.scatterplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
-        ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-7 mutein", fontsize=7)
-
-        sns.scatterplot(x="Valency", y="IL7Rα", data=optDF, ax=ax[1], palette="crest")
-        ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
-
-    else:
-        sns.scatterplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
-        ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-2 mutein", fontsize=7)
-
-        if targCell[0] == "NK":
-            affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=[r"IL-2Rβ/γ$_c$"])
-            sns.scatterplot(x="Valency", y="value", data=affDF, ax=ax[1])
-            ax[1].set(yscale="log", ylabel=r"IL2·β/γ$_c$ K$_D$ (nM)")
-        else:
-            affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Rα', r"IL-2Rβ/γ$_c$"])
-            affDF = affDF.rename(columns={"variable": "Receptor"})
-            sns.scatterplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
-            ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
-
-    ax[0].set_ylim(bottom=0.0, top=3)
-    ax[1].set_ylim(bottom=0.1, top=2000)
-
-    ax[0].set_xticks(np.arange(1, 11))
-    ax[1].set_xticks(np.arange(1, 11))
-    if not legend:
-        ax[0].get_legend().remove()
+def timePlot(ax):
+    """Plots all experimental vs. Predicted Values"""
+    times = [[0.5], [1.], [2.], [4.]]
+    accDF = pd.DataFrame(columns={"Time", "Valency", "Accuracy"})
+    for time in times:
+        df = runFullModel(time=time, saveDict=False)
+        for val in df.Valency.unique():
+            preds = df.loc[(df.Time == time[0]) & (df.Valency == val)].Predicted.values
+            exps = df.loc[(df.Time == time[0]) & (df.Valency == val)].Experimental.values
+            r2 = r2_score(exps, preds)
+            accDF = accDF.append(pd.DataFrame({"Time": time, "Valency": [val], "Accuracy": [r2]}))
+    sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
