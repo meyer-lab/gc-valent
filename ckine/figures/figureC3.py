@@ -16,7 +16,7 @@ def makeFigure():
     ax, f = getSetup((12, 6), (2, 4), multz={0: 2})
     subplotLabel(ax)
     ax[0].axis("off")
-    numComps=3
+    numComps = 3
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all(True)

@@ -12,7 +12,6 @@ from FlowCytometryTools import FCMeasurement, QuadGate, ThresholdGate, PolyGate
 path_here = dirname(dirname(__file__))
 
 
-
 def importF(pathname, WellRow):
     """
     Import FCS files. Variable input: name of path name to file. Output is a list of Data File Names in FCT Format

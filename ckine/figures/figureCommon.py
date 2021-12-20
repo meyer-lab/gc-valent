@@ -90,13 +90,13 @@ def genFigure():
     ff = eval(nameOut + '.makeFigure()')
     ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
 
-    if sys.argv[1] == 'C2':
-        # Overlay Figure 2 cartoon
+    if sys.argv[1] == 'C3':
+        # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figureC2.svg',
                        './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
 
-    if sys.argv[1] == 'C3':
-        # Overlay Figure 3 cartoon
+    if sys.argv[1] == 'C4':
+        # Overlay Figure 4 cartoon
         overlayCartoon(fdir + 'figureC3.svg',
                        './ckine/graphics/ModelCartoon.svg', 1450, 0, scalee=0.023)
 
