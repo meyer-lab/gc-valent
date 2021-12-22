@@ -7,16 +7,19 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 from os.path import dirname, join
-from .figureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, get_cellTypeDict
 from ..imports import import_pstat_all
 from scipy.optimize import least_squares
 
 path_here = os.path.dirname(os.path.dirname(__file__))
+ligDict = getLigDict()
+limDict = get_doseLimDict()
+cellDict = get_cellTypeDict()
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((12, 6), (2, 4))
+    ax, f = getSetup((12, 12), (4, 4), multz={0: 1})
     subplotLabel(ax)
     ax[0].axis("off")
     ax[1].axis("off")
@@ -26,6 +29,7 @@ def makeFigure():
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all(True, False)
+    respDF = respDF.replace(cellDict)
     respDF = respDF.rename({"Bivalent": "Valency"}, axis=1)
     respDF["Valency"] = respDF["Valency"] + 1
     respDF = respDF.loc[respDF.Ligand != "IL15"]
@@ -36,10 +40,18 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     ax[2].get_legend().remove()
-    dosePlot(ax[3], respDF, 1, "Treg")
-    dosePlot(ax[4], respDF, 1, "Thelper")
-    dosePlot(ax[5], respDF, 1, "CD8")
+    dosePlot(ax[3], respDF, 1, r"T$_{reg}$")
+    dosePlot(ax[4], respDF, 1, r"T$_{helper}$")
+    dosePlot(ax[5], respDF, 1, r"CD8$^{+}$")
     dosePlot(ax[6], respDF, 1, "NK")
+    dosePlot(ax[7], respDF, 4, r"T$_{reg}$")
+    dosePlot(ax[8], respDF, 4, r"T$_{helper}$")
+    dosePlot(ax[9], respDF, 4, r"CD8$^{+}$")
+    dosePlot(ax[10], respDF, 4, "NK")
+    dosePlot(ax[11], respDF, 1, r"T$_{reg}$ $IL2Ra^{hi}$")
+    dosePlot(ax[12], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$")
+    dosePlot(ax[13], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$")
+    dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$")
 
     return f
 
@@ -55,7 +67,7 @@ def affPlot(ax, respDF, mutAffDF):
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Monovalent"
         elif valencies == 2:
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Bivalent"
-    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Valency", ax=ax)
+    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Valency", ax=ax, palette=ligDict)
 
 
 def dosePlot(ax, respDF, time, cell):
@@ -73,10 +85,10 @@ def dosePlot(ax, respDF, time, cell):
             hillDF = hillDF.append(pd.DataFrame({"Ligand": ligand, "Valency": valency, "Dose": np.power(10, doses - 4), "pSTAT": hill_equation(fit.x, doses)}))
     hillDF = hillDF.groupby(["Ligand", "Valency", "Dose"]).pSTAT.mean().reset_index()
     respDF = respDF.groupby(["Ligand", "Valency", "Cell", "Dose"]).Mean.mean().reset_index()
-    sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", style="Valency", ax=ax)
+    sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", style="Valency", ax=ax, palette=ligDict)
 
-    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", ax=ax, legend=False)
-    ax.set(xscale="Log")
+    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", ax=ax, legend=False, palette=ligDict)
+    ax.set(xscale="Log", title=cell + " at " + str(time) + " hours", ylim=limDict[cell])
 
 
 def hill_equation(x, dose):
