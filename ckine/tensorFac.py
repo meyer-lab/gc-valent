@@ -55,12 +55,12 @@ def calcR2X(tensorIn, tensorFac):
     return 1.0 - tErr / np.nanvar(tensorIn)
 
 
-def plot_tFac_Ligs(ax, tFac, respDF):
+def plot_tFac_Ligs(ax, tFac, respDF, numComps=3):
     """Plots tensor factorization of Ligands"""
     ligands = respDF.Ligand.unique()
     mutFacs = tFac[1][0]
     tFacDFlig = pd.DataFrame()
-    for i in range(0, 3):
+    for i in range(0, numComps):
         tFacDFlig = tFacDFlig.append(pd.DataFrame({"Component_Val": mutFacs[:, i], "Component": (i + 1), "Ligand": ligands}))
 
     sns.barplot(data=tFacDFlig, ax=ax, x="Component_Val", y="Ligand", hue="Component")
@@ -74,7 +74,7 @@ def plot_tFac_Time(ax, tFac, respDF):
     tps = np.append(tps, [0])
     timeFacs = np.append(timeFacs, np.zeros((1, timeFacs.shape[1])), axis=0)
 
-    markersTimes = [".", ".", "."]
+    markersTimes = [".", ".", ".", "."]
     for i in range(0, timeFacs.shape[1]):
         ax.plot(tps, timeFacs[:, i], marker=markersTimes[i], label="Component " + str(i + 1), markersize=5)
 
@@ -87,7 +87,7 @@ def plot_tFac_Conc(ax, tFac, respDF):
     concs = respDF.Dose.unique()
     concFacs = tFac[1][2]
 
-    markersConcs = [".", ".", "."]
+    markersConcs = [".", ".", ".", "."]
     for i in range(0, concFacs.shape[1]):
         ax.plot(concs, concFacs[:, i], marker=markersConcs[i], label="Component " + str(i + 1), markersize=5)
 
@@ -95,12 +95,12 @@ def plot_tFac_Conc(ax, tFac, respDF):
     ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component Weight", ylim=(0, 1), xscale='log')
 
 
-def plot_tFac_Cells(ax, tFac, respDF):
+def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
     """Plots tensor factorization of cells"""
     cells = respDF.Cell.unique()
     cellFacs = tFac[1][3]
     tFacDFcell = pd.DataFrame()
-    for i in range(0, 3):
+    for i in range(0, numComps):
         tFacDFcell = tFacDFcell.append(pd.DataFrame({"Component_Val": cellFacs[:, i], "Component": (i + 1), "Cell": cells}))
 
     sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
