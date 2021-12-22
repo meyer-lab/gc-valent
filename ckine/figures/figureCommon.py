@@ -10,6 +10,7 @@ import seaborn as sns
 import numpy as np
 import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
+from ..imports import import_pstat_all
 
 matplotlib.use('AGG')
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -155,3 +156,43 @@ def plotDoseResponses(ax, df, mut, cellType, val=False):
             ax.set(title=cellType[0] + "s", xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType[0]])
         if val == 2:
             ax.set(title=cellType[0] + "s", xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType[0]])
+
+
+def getLigDict():
+    """Gives hue dict for ligands - consistency across """
+    pSTATDF = import_pstat_all(True, False)
+    ligands = pSTATDF.Ligand.unique()
+    palette = sns.color_palette("bright", ligands.size)
+    ligDict = {}
+    for i, ligand in enumerate(ligands):
+        ligDict[ligand] = palette[i]
+    return ligDict
+
+
+cellTypeDict = {"Treg": r"T$_{reg}$",
+                "Treg $IL2Ra^{hi}$": r"T$_{reg}$ $IL2Ra^{hi}$",
+                "Treg $IL2Ra^{lo}$": r"T$_{reg}$ $IL2Ra^{lo}$",
+                "Thelper $IL2Ra^{hi}$": r"T$_{helper}$ $IL2Ra^{hi}$",
+                "Thelper $IL2Ra^{lo}$": r"T$_{helper}$ $IL2Ra^{lo}$",
+                "Thelper": r"T$_{helper}$",
+                "NK": "NK",
+                "CD8": r"CD8$^{+}$"}
+
+doseLimDict = {r"T$_{reg}$": (0, 50000),
+               r"T$_{reg}$ $IL2Ra^{hi}$": (0, 50000),
+               r"T$_{reg}$ $IL2Ra^{lo}$": (0, 50000),
+               r"T$_{helper}$": (0, 25000),
+               r"T$_{helper}$ $IL2Ra^{hi}$": (0, 25000),
+               r"T$_{helper}$ $IL2Ra^{lo}$": (0, 25000),
+               "NK": (0, 5000),
+               r"CD8$^{+}$": (0, 8000)}
+
+
+def get_cellTypeDict():
+    """Returns dict for beautifying cell type names"""
+    return cellTypeDict
+
+
+def get_doseLimDict():
+    """Returns dict for dose response limits"""
+    return doseLimDict
