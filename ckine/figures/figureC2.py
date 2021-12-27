@@ -15,6 +15,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
 cellDict = get_cellTypeDict()
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     ax, f = getSetup((12, 12), (4, 4))
@@ -37,7 +38,7 @@ def makeFigure():
     ratioConc(ax[4:7], respDF, r"T$_{reg}$", "NK", 4, mutAffDF)
     ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF)
     ratioConc(ax[12:15], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF)
-    
+
     pSTATcomp(ax[1], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{reg}$", 4, dose, legend=True)
     pSTATcomp(ax[2], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", "NK", 4, dose)
     pSTATcomp(ax[3], respDF, mutAffDF, "IL2Rβ  $K_{D}$ (nM)", r"CD8$^{+}$", 4, dose)
@@ -121,9 +122,8 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF):
         valData = fitDF.loc[fitDF.Valency == valency]
         mMax, bMax = np.polyfit(np.log10(valData["IL2Rα $K_{D}$ (nM)"].values), valData[cell2 + " Max"], 1)
         mDose, bDose = np.polyfit(np.log10(valData["IL2Rα $K_{D}$ (nM)"].values), np.log10(valData[cell2 + " Dose"]), 1)
-        maxLineDF = maxLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Max": mMax*affs + bMax}))
-        doseLineDF = doseLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Dose": np.power(10, mDose*affs + bDose)}))
-
+        maxLineDF = maxLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Max": mMax * affs + bMax}))
+        doseLineDF = doseLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Dose": np.power(10, mDose * affs + bDose)}))
 
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", hue="Ligand", style="Valency", ax=ax[1], palette=ligDict, legend=False)
     sns.lineplot(data=maxLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", style="Valency", ax=ax[1], color="k", legend=False)
