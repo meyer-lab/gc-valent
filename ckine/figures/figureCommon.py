@@ -93,12 +93,12 @@ def genFigure():
 
     if sys.argv[1] == 'C3':
         # Overlay Figure 3 cartoon
-        overlayCartoon(fdir + 'figureC2.svg',
+        overlayCartoon(fdir + 'figureC3.svg',
                        './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
 
     if sys.argv[1] == 'C4':
         # Overlay Figure 4 cartoon
-        overlayCartoon(fdir + 'figureC3.svg',
+        overlayCartoon(fdir + 'figureC4.svg',
                        './ckine/graphics/ModelCartoon.svg', 1450, 0, scalee=0.023)
 
     logging.info('%s is done after %s seconds.', nameOut, time.time() - start)

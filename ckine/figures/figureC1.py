@@ -6,10 +6,10 @@ import os
 import pandas as pd
 import seaborn as sns
 import numpy as np
+from scipy.optimize import least_squares
 from os.path import dirname, join
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, get_cellTypeDict
 from ..imports import import_pstat_all
-from scipy.optimize import least_squares
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
