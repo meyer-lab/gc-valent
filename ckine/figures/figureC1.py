@@ -40,15 +40,15 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     ax[2].get_legend().remove()
-    dosePlot(ax[3], respDF, 1, r"T$_{reg}$")
+    dosePlot(ax[3], respDF, 1, r"T$_{reg}$", legend=True)
     dosePlot(ax[4], respDF, 1, r"T$_{helper}$")
     dosePlot(ax[5], respDF, 1, r"CD8$^{+}$")
     dosePlot(ax[6], respDF, 1, "NK")
-    dosePlot(ax[7], respDF, 4, r"T$_{reg}$")
+    dosePlot(ax[7], respDF, 4, r"T$_{reg}$", legend=True)
     dosePlot(ax[8], respDF, 4, r"T$_{helper}$")
     dosePlot(ax[9], respDF, 4, r"CD8$^{+}$")
     dosePlot(ax[10], respDF, 4, "NK")
-    dosePlot(ax[11], respDF, 1, r"T$_{reg}$ $IL2Ra^{hi}$")
+    dosePlot(ax[11], respDF, 1, r"T$_{reg}$ $IL2Ra^{hi}$", legend=True)
     dosePlot(ax[12], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$")
     dosePlot(ax[13], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$")
     dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$")
@@ -70,7 +70,7 @@ def affPlot(ax, respDF, mutAffDF):
     sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Valency", ax=ax, palette=ligDict)
 
 
-def dosePlot(ax, respDF, time, cell):
+def dosePlot(ax, respDF, time, cell, legend=False):
     """Plots the various affinities for IL-2 Muteins"""
     doses = np.log10(np.logspace(np.log10(respDF.Dose.min()), np.log10(respDF.Dose.max()), 100)) + 4
     x0 = [4, 1, 2]
@@ -89,6 +89,11 @@ def dosePlot(ax, respDF, time, cell):
 
     sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", ax=ax, legend=False, palette=ligDict)
     ax.set(xscale="Log", title=cell + " at " + str(time) + " hours", ylim=limDict[cell])
+    if legend:
+        h, l = ax.get_legend_handles_labels()
+        ax.legend(h[-3:], l[-3:])
+    else:
+        ax.get_legend().remove()
 
 
 def hill_equation(x, dose):

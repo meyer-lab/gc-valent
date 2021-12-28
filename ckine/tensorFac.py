@@ -63,8 +63,19 @@ def plot_tFac_Ligs(ax, tFac, respDF, numComps=3):
     for i in range(0, numComps):
         tFacDFlig = tFacDFlig.append(pd.DataFrame({"Component_Val": mutFacs[:, i], "Component": (i + 1), "Ligand": ligands}))
 
+    tFacDFlig["Valency"], tFacDFlig["Lig Name"] = 0, 0
+    tFacDFlig = tFacDFlig.reset_index()
+    for index, row in tFacDFlig.iterrows():
+        if row.Ligand.split(" ")[-1] == "(Mono)":
+            valency = 1
+        elif row.Ligand.split(" ")[-1] == "(Biv)":
+            valency = 2
+        tFacDFlig.iloc[index, tFacDFlig.columns.get_loc("Valency")] = valency
+        tFacDFlig.iloc[index, tFacDFlig.columns.get_loc("Lig Name")] = " ".join(row.Ligand.split(" ")[0:-1])
+
     sns.barplot(data=tFacDFlig, ax=ax, x="Component_Val", y="Ligand", hue="Component")
     ax.set(xlabel="Component Weight")
+    return tFacDFlig
 
 
 def plot_tFac_Time(ax, tFac, respDF):

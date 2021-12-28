@@ -18,12 +18,13 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((12, 12), (4, 4))
+    ax, f = getSetup((14, 15), (5, 4), multz={0: 2, 8: 1, 12: 1, 16: 1})
     subplotLabel(ax)
     ax[0].axis("off")
+    ax[1].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
-    mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ  $K_{D}$ (nM)"}, axis=1)
+    mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all(True, False)
@@ -35,23 +36,20 @@ def makeFigure():
 
     doses = respDF.Dose.unique()
     dose = doses[3]
-    ratioConc(ax[4:7], respDF, r"T$_{reg}$", "NK", 4, mutAffDF)
-    ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF)
-    ratioConc(ax[12:15], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF)
 
-    pSTATcomp(ax[1], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{reg}$", 4, dose, legend=True)
-    pSTATcomp(ax[2], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", "NK", 4, dose)
-    pSTATcomp(ax[3], respDF, mutAffDF, "IL2Rβ  $K_{D}$ (nM)", r"CD8$^{+}$", 4, dose)
-    """
-    pSTATcomp(ax[4], respDF, mutAffDF, "IL2Rβ  $K_{D}$ (nM)", "NK", 1, dose)
-    pSTATcomp(ax[5], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"CD8$^{+}$", 1, dose)
-    pSTATcomp(ax[6], respDF, mutAffDF, "IL2Rβ  $K_{D}$ (nM)", r"CD8$^{+}$", 1, dose)
-    """
+    pSTATcomp(ax[2], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{reg}$", 4, dose, legend=True)
+    pSTATcomp(ax[3], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{helper}$", 4, dose)
+    pSTATcomp(ax[4], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", "NK", 4, dose)
+    pSTATcomp(ax[5], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"CD8$^{+}$", 4, dose)
 
-    legend = ax[1].get_legend()
+    ratioConc(ax[6:9], respDF, r"T$_{reg}$", "NK", 4, mutAffDF, legend=True)
+    ratioConc(ax[9:12], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF, legend=True)
+    ratioConc(ax[12:15], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF, legend=True)
+
+    legend = ax[2].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[0].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8})  # use this to place universal legend later
-    ax[1].get_legend().remove()
+    ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    ax[2].get_legend().remove()
 
     return f
 
@@ -77,7 +75,7 @@ def gaussian_residuals(x, concs, ratios):
     return gaussian(x, concs) - ratios
 
 
-def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF):
+def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, legend=False):
     """Plots Ratio of cell 1 to cell 2 over a range of concentrations"""
     respDF1 = respDF.loc[(respDF.Cell == cell1) & ((respDF.Time == time))]
     respDF2 = respDF.loc[(respDF.Cell == cell2) & ((respDF.Time == time))]
@@ -111,8 +109,13 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF):
     ratioDF["Ratio"] = np.power(10, ratioDF["Ratio"].values)
 
     sns.scatterplot(data=ratioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", ax=ax[0], palette=ligDict, legend=False)
-    sns.lineplot(data=gaussDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", ax=ax[0], palette=ligDict, legend=False)
+    sns.lineplot(data=gaussDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", ax=ax[0], palette=ligDict, legend=legend)
     ax[0].set(xscale="log", title="Ratio of " + cell1 + " to " + cell2)
+
+    if legend:
+        h, l = ax[0].get_legend_handles_labels()
+        ax[0].legend(h[-3:], l[-3:])
+
     fitDF = fitDF.merge(mutAffDF)
 
     maxLineDF = pd.DataFrame()
@@ -127,9 +130,9 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF):
 
     maxLineDF, doseLineDF = maxLineDF.reset_index(), doseLineDF.reset_index()
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", hue="Ligand", style="Valency", ax=ax[1], palette=ligDict, legend=False)
-    sns.lineplot(data=maxLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", style="Valency", ax=ax[1], color="k", legend=False)
+    sns.lineplot(data=maxLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", style="Valency", ax=ax[1], color="k", linewidth=1., legend=False)
     ax[1].set(xscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(0, None))
 
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", hue="Ligand", style="Valency", ax=ax[2], palette=ligDict, legend=False)
-    sns.lineplot(data=doseLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", style="Valency", ax=ax[2], color="k", legend=False)
+    sns.lineplot(data=doseLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", style="Valency", ax=ax[2], color="k", linewidth=1., legend=False)
     ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2))
