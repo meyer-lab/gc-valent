@@ -125,6 +125,7 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF):
         maxLineDF = maxLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Max": mMax * affs + bMax}))
         doseLineDF = doseLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Dose": np.power(10, mDose * affs + bDose)}))
 
+    print(maxLineDF)
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", hue="Ligand", style="Valency", ax=ax[1], palette=ligDict, legend=False)
     sns.lineplot(data=maxLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", style="Valency", ax=ax[1], color="k", legend=False)
     ax[1].set(xscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(0, None))
