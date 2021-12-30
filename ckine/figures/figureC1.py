@@ -56,6 +56,7 @@ def makeFigure():
 
     return f
 
+
 def affPlot(ax, respDF, mutAffDF):
     """Plots the various affinities for IL-2 Muteins"""
     mutAffDF["Valency"] = 0
