@@ -19,7 +19,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((12, 12), (4, 4), multz={0: 1})
+    ax, f = getSetup((15, 18), (6, 4), multz={0: 1, 4: 7})
     subplotLabel(ax)
     ax[0].axis("off")
     ax[1].axis("off")
@@ -40,18 +40,19 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     ax[2].get_legend().remove()
-    dosePlot(ax[3], respDF, 1, r"T$_{reg}$", legend=True)
-    dosePlot(ax[4], respDF, 1, r"T$_{helper}$")
-    dosePlot(ax[5], respDF, 1, r"CD8$^{+}$")
-    dosePlot(ax[6], respDF, 1, "NK")
-    dosePlot(ax[7], respDF, 4, r"T$_{reg}$", legend=True)
-    dosePlot(ax[8], respDF, 4, r"T$_{helper}$")
-    dosePlot(ax[9], respDF, 4, r"CD8$^{+}$")
-    dosePlot(ax[10], respDF, 4, "NK")
-    dosePlot(ax[11], respDF, 1, r"T$_{reg}$ $IL2Ra^{hi}$", legend=True)
-    dosePlot(ax[12], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$")
-    dosePlot(ax[13], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$")
-    dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$")
+    fullHeatMap(ax[3], respDF)
+    dosePlot(ax[4], respDF, 1, r"T$_{reg}$", legend=True)
+    dosePlot(ax[5], respDF, 1, r"T$_{helper}$")
+    dosePlot(ax[6], respDF, 1, r"CD8$^{+}$")
+    dosePlot(ax[7], respDF, 1, "NK")
+    dosePlot(ax[8], respDF, 1, r"T$_{reg}$", ligList=["WT N-term", "WT C-term"], legend=True)
+    dosePlot(ax[9], respDF, 1, r"CD8$^{+}$", ligList=["WT N-term", "WT C-term"])
+    dosePlot(ax[10], respDF, 4, r"T$_{reg}$", ligList=["WT N-term", "WT C-term"])
+    dosePlot(ax[11], respDF, 4, r"CD8$^{+}$", ligList=["WT N-term", "WT C-term"])
+    dosePlot(ax[12], respDF, 1, r"T$_{reg}$ $IL2Ra^{hi}$", ligList=["F42Q N-Term", "H16N N-term"], legend=True)
+    dosePlot(ax[13], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$", ligList=["F42Q N-Term", "H16N N-term"])
+    dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$")
+    dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$")
 
     return f
 
@@ -70,12 +71,42 @@ def affPlot(ax, respDF, mutAffDF):
     sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Valency", ax=ax, palette=ligDict)
 
 
-def dosePlot(ax, respDF, time, cell, legend=False):
+def fullHeatMap(ax, respDF):
+    """Plots the various affinities for IL-2 Muteins"""
+    heatmapDF = pd.DataFrame()
+    respDF = respDF.groupby(["Ligand", "Cell", "Dose", "Time"]).Mean.mean().reset_index()
+    for ligand in respDF.Ligand.unique():
+        for dose in respDF.Dose.unique():
+            row = pd.DataFrame()
+            row["Ligand/Dose"] = [ligand + " - " + str(dose) + " (nM)"]
+            for cell in respDF.Cell.unique():
+                normMax = entry = respDF.loc[(respDF.Ligand == ligand) & (respDF.Cell == cell)].Mean.max()
+                for time in respDF.Time.unique():
+                    entry = respDF.loc[(respDF.Ligand == ligand) & (respDF.Dose == dose) & (respDF.Cell == cell) & (respDF.Time == time)].Mean.values / normMax
+                    if np.isnan(entry):
+                        row[cell + " - " + str(time) + " hrs"] = 0
+                    elif entry.size < 1:
+                        row[cell + " - " + str(time) + " hrs"] = 0
+                    else:
+                        row[cell + " - " + str(time) + " hrs"] = entry
+            heatmapDF = heatmapDF.append(row)
+    heatmapDF = heatmapDF.set_index("Ligand/Dose")
+    sns.heatmap(data=heatmapDF, vmin=0, vmax=1, ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+
+
+def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
     """Plots the various affinities for IL-2 Muteins"""
     doses = np.log10(np.logspace(np.log10(respDF.Dose.min()), np.log10(respDF.Dose.max()), 100)) + 4
     x0 = [4, 1, 2]
     hillDF = pd.DataFrame()
-    respDF = respDF.loc[(respDF.Cell == cell) & (respDF.Time == time)]
+    if not ligList:
+        Ligands = respDF.Ligand.unique()
+    else:
+        Ligands = ligList
+
+    respDF = respDF.loc[(respDF.Cell == cell) & (respDF.Time == time) & (respDF.Ligand.isin(Ligands))]
+
     for ligand in respDF.Ligand.unique():
         for valency in respDF.loc[respDF.Ligand == ligand].Valency.unique():
             isoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency)]
