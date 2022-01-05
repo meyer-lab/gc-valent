@@ -41,18 +41,18 @@ def makeFigure():
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     ax[2].get_legend().remove()
     fullHeatMap(ax[3], respDF)
-    dosePlot(ax[4], respDF, 1, r"T$_{reg}$", legend=True)
-    dosePlot(ax[5], respDF, 1, r"T$_{helper}$")
-    dosePlot(ax[6], respDF, 1, r"CD8$^{+}$")
-    dosePlot(ax[7], respDF, 1, "NK")
+    dosePlot(ax[4], respDF, 1, r"T$_{reg}$", ligList=["IL2", "R38Q N-term", "N88D C-term", "WT N-term"], legend=True)
+    dosePlot(ax[5], respDF, 1, r"T$_{helper}$", ligList=["IL2", "R38Q N-term", "N88D C-term", "WT N-term"])
+    dosePlot(ax[6], respDF, 1, r"CD8$^{+}$", ligList=["IL2", "R38Q N-term", "N88D C-term", "WT N-term"])
+    dosePlot(ax[7], respDF, 1, "NK", ligList=["IL2", "R38Q N-term", "N88D C-term", "WT N-term"])
     dosePlot(ax[8], respDF, 1, r"T$_{reg}$", ligList=["WT N-term", "WT C-term"], legend=True)
     dosePlot(ax[9], respDF, 1, r"CD8$^{+}$", ligList=["WT N-term", "WT C-term"])
     dosePlot(ax[10], respDF, 4, r"T$_{reg}$", ligList=["WT N-term", "WT C-term"])
     dosePlot(ax[11], respDF, 4, r"CD8$^{+}$", ligList=["WT N-term", "WT C-term"])
     dosePlot(ax[12], respDF, 1, r"T$_{reg}$ $IL2Ra^{hi}$", ligList=["F42Q N-Term", "H16N N-term"], legend=True)
     dosePlot(ax[13], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$", ligList=["F42Q N-Term", "H16N N-term"])
-    dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$")
-    dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$")
+    dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$", ligList=["F42Q N-Term", "H16N N-term"])
+    dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$", ligList=["F42Q N-Term", "H16N N-term"])
 
     return f
 
