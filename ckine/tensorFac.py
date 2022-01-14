@@ -120,3 +120,9 @@ def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
     sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
     ax.set(ylabel="Component Weight")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+
+
+def swarmPlotFac(ax, tFacDFLig):
+    """Plots tensor factorization of cells"""
+    sns.swarmplot(data=tFacDFLig, x="Component", y="Component_Val", hue="Valency", ax=ax)
+    ax.set(ylabel="Component Weight")
