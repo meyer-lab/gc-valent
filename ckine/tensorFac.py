@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorly as tl
-from tensorly.decomposition import non_negative_parafac
+from tensorly.decomposition import non_negative_parafac, non_negative_parafac_hals
 
 
 def makeTensor(sigDF, Variance=False):
@@ -35,7 +35,10 @@ def makeTensor(sigDF, Variance=False):
 
 def factorTensor(tensor, numComps):
     """ Takes Tensor, and mask and returns tensor factorized form. """
-    return non_negative_parafac(np.nan_to_num(tensor), rank=numComps, mask=np.isfinite(tensor), n_iter_max=5000, tol=1e-9)
+    tfac = non_negative_parafac(np.nan_to_num(tensor), rank=numComps, mask=np.isfinite(tensor), n_iter_max=5000, tol=1e-9)
+    tensor = tensor.copy()
+    tensor[np.isnan(tensor)] = tl.cp_to_tensor(tfac)[np.isnan(tensor)]
+    return non_negative_parafac_hals(tensor, numComps, n_iter_max=5000)
 
 
 def R2Xplot(ax, tensor, compNum):
