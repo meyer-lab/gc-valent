@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import numpy as np
+from copy import copy
 from scipy.optimize import least_squares
 from os.path import dirname, join
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, get_cellTypeDict
@@ -74,15 +75,18 @@ def affPlot(ax, respDF, mutAffDF):
 def fullHeatMap(ax, respDF):
     """Plots the various affinities for IL-2 Muteins"""
     heatmapDF = pd.DataFrame()
-    respDF = respDF.groupby(["Ligand", "Cell", "Dose", "Time"]).Mean.mean().reset_index()
-    for ligand in respDF.Ligand.unique():
-        for dose in respDF.Dose.unique():
+    respDFhm = copy(respDF)
+    respDFhm.loc[respDF.Valency == 1, "Ligand"] = respDFhm.loc[respDFhm.Valency == 1, "Ligand"] + " (Mon)"
+    respDFhm.loc[respDF.Valency == 2, "Ligand"] = respDFhm.loc[respDFhm.Valency == 2, "Ligand"] + " (Biv)"
+    respDFhm = respDFhm.groupby(["Ligand", "Cell", "Dose", "Time"]).Mean.mean().reset_index()
+    for ligand in respDFhm.Ligand.unique():
+        for dose in respDFhm.Dose.unique():
             row = pd.DataFrame()
             row["Ligand/Dose"] = [ligand + " - " + str(dose) + " (nM)"]
             for cell in respDF.Cell.unique():
-                normMax = entry = respDF.loc[(respDF.Ligand == ligand) & (respDF.Cell == cell)].Mean.max()
-                for time in respDF.Time.unique():
-                    entry = respDF.loc[(respDF.Ligand == ligand) & (respDF.Dose == dose) & (respDF.Cell == cell) & (respDF.Time == time)].Mean.values / normMax
+                normMax = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Cell == cell)].Mean.max()
+                for time in respDFhm.Time.unique():
+                    entry = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Dose == dose) & (respDFhm.Cell == cell) & (respDFhm.Time == time)].Mean.values / normMax
                     if np.isnan(entry):
                         row[cell + " - " + str(time) + " hrs"] = 0
                     elif entry.size < 1:

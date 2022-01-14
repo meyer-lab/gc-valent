@@ -196,3 +196,12 @@ def get_cellTypeDict():
 def get_doseLimDict():
     """Returns dict for dose response limits"""
     return doseLimDict
+
+def getLigandLegend():
+    """Creates dummy plot and returns handles for ligands"""
+    f, ax = plt.subplots()
+    ligDict = getLigDict()
+    respDF = import_pstat_all(True, False)
+    respDF = respDF.groupby(["Ligand", "Dose"]).Mean.mean().reset_index()
+    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", legend=True, palette=ligDict, ax=ax)
+    return ax.get_legend()

@@ -8,7 +8,7 @@ import seaborn as sns
 import numpy as np
 from scipy.optimize import least_squares
 from os.path import dirname, join
-from .figureCommon import subplotLabel, getSetup, getLigDict, get_cellTypeDict
+from .figureCommon import subplotLabel, getSetup, getLigDict, get_cellTypeDict, getLigandLegend
 from ..imports import import_pstat_all
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -18,7 +18,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((14, 15), (5, 4), multz={0: 2, 8: 1, 12: 1, 16: 1})
+    ax, f = getSetup((14, 12), (4, 4), multz={0: 2, 4: 1, 8: 1, 12: 1})
     subplotLabel(ax)
     ax[0].axis("off")
     ax[1].axis("off")
@@ -37,19 +37,23 @@ def makeFigure():
     doses = respDF.Dose.unique()
     dose = doses[3]
 
-    pSTATcomp(ax[2], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{reg}$", 4, dose, legend=True)
-    pSTATcomp(ax[3], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{helper}$", 4, dose)
-    pSTATcomp(ax[4], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", "NK", 4, dose)
-    pSTATcomp(ax[5], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"CD8$^{+}$", 4, dose)
+    #pSTATcomp(ax[2], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{reg}$", 4, dose, legend=True)
+    #pSTATcomp(ax[3], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{helper}$", 4, dose)
+    #pSTATcomp(ax[4], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", "NK", 4, dose)
+    #pSTATcomp(ax[5], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"CD8$^{+}$", 4, dose)
 
-    ratioConc(ax[6:9], respDF, r"T$_{reg}$", "NK", 4, mutAffDF, legend=True)
-    ratioConc(ax[9:12], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF, legend=True)
-    ratioConc(ax[12:15], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF, legend=True)
+    ratioConc(ax[2:5], respDF, r"T$_{reg}$", "NK", 4, mutAffDF, legend=True)
+    ratioConc(ax[5:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF, legend=True)
+    ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF, legend=True)
 
-    legend = ax[2].get_legend()
+    legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    ax[2].get_legend().remove()
+    #ax[2].get_legend().remove()
+
+    #legend = ax[5].get_legend()
+    #labels = (x.get_text() for x in legend.get_texts())
+    #ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
 
     return f
 
