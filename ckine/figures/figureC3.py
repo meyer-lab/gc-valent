@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, getLigDict
 from ..imports import import_pstat_all
-from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Time, plot_tFac_Conc, plot_tFac_Cells
+from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Time, plot_tFac_Conc, plot_tFac_Cells, swarmPlotFac
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
@@ -33,6 +33,7 @@ def makeFigure():
     plot_tFac_Conc(ax[3], tFacAllM, respDF)
     plot_tFac_Cells(ax[4], tFacAllM, respDF, numComps=numComps)
     plot_tFac_Time(ax[5], tFacAllM, respDF)
+    swarmPlotFac(ax[7], ligCompDF)
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
@@ -40,7 +41,6 @@ def makeFigure():
     ligCompDF = ligCompDF.loc[(ligCompDF["Lig Name"] != "IL15") & (ligCompDF["Lig Name"] != "IL2")]
     mutAffDF = mutAffDF.rename({"Ligand": "Lig Name"}, axis=1)
     affCompPlot(ax[6], ligCompDF, mutAffDF, "IL2Rα $K_{D}$ (nM)")
-    affCompPlot(ax[7], ligCompDF, mutAffDF, "IL2Rβ $K_{D}$ (nM)")
 
     return f
 

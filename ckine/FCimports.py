@@ -262,3 +262,52 @@ def cellGateDat(cellType):
     assert tchannels != []
 
     return tchannels, subPopName, row, panel
+
+
+def getChannelDict(Tcell=True, LiveCell=True, cellType=False, IL7=False):
+    """Gives channel to protein dictionary for fixed/live and NK/T cell flow experiments"""
+    if IL7:
+        channelDict = {"BL1-H": "CD127",
+                       "VL1-H": "CD25",
+                       "VL4-H": "CD3",
+                       "VL6-H": "CD4",
+                       "BL3-H": "CD45RA",
+                       "BL5-H": "CD56",
+                       "RL1-H": "CD8"}
+    else:
+        if Tcell:
+            if LiveCell:
+                channelDict = {"VL4-H": "CD3",
+                               "VL6-H": "CD4",
+                               "BL1-H": "CD127",
+                               "VL1-H": "CD25",
+                               "VL5-H": "CD122",
+                               "RL1-H": "CD132",
+                               "BL3-H": "CD45RA"}
+            else:
+                channelDict = {"BL1-H": "Foxp3",
+                               "VL1-H": "CD25",
+                               "VL4-H": "CD4",
+                               "BL3-H": "CD45RA",
+                               "RL1-H": "pSTAT5"}
+        else:
+            if LiveCell:
+                if cellType == "NK":
+                    channelDict = {"VL-4H": "CD3",
+                                   "BL3-H": "CD56",
+                                   "VL1-H": "CD25",
+                                   "VL5-H": "CD122",
+                                   "RL1-H": "CD132", }
+                else:
+                    channelDict = {"VL-4H": "CD3",
+                                   "BL3-H": "CD45RA",
+                                   "VL6-H": "CD8",
+                                   "VL1-H": "CD25",
+                                   "VL5-H": "CD122",
+                                   "RL1-H": "CD132", }
+            else:
+                channelDict = {"BL1-H": "CD56",
+                               "VL4-H": "CD3",
+                               "BL2-H": "pSTAT5",
+                               "RL1-H": "CD8"}
+    return channelDict

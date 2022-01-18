@@ -49,11 +49,11 @@ def makeFigure():
     legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    #ax[2].get_legend().remove()
+    # ax[2].get_legend().remove()
 
     #legend = ax[5].get_legend()
     #labels = (x.get_text() for x in legend.get_texts())
-    #ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    # ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
 
     return f
 

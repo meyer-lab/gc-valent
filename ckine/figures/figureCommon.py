@@ -197,6 +197,7 @@ def get_doseLimDict():
     """Returns dict for dose response limits"""
     return doseLimDict
 
+
 def getLigandLegend():
     """Creates dummy plot and returns handles for ligands"""
     f, ax = plt.subplots()
