@@ -126,13 +126,13 @@ def cellData(sample_i, gate, Tcells=True, Mut=False):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', category=RuntimeWarning)
             smpl = sample_i.transform("tlog", channels=channels_)
-    # Apply T reg gate to overall data --> i.e. step that detrmines which cells are T reg
-    cells = smpl.gate(gate)
+    # Apply T reg gate to overall data --> i.e. step that determines which cells are T reg
+    cells = smpl.gate(gate, apply_now=False)
 
     # Number of events (AKA number of cells)
     cell_data = cells.get_data()
     cell_count = cells.get_data().shape[0]
-    return cell_data, cell_count
+    return cell_data, cell_count, cell_data.index
 
 
 channel_data = {}
@@ -150,14 +150,16 @@ def count_data(sampleType, gate, Tcells=True, Mut=False):
     # declare the arrays to store the data
     count_array = []
     data_array = []
+    index_array = []
     # create the for loop to file through the data and save to the arrays
     # using the functions created above for a singular file
-    for _, sample in enumerate(sampleType):
-        rawData, cellCount = cellData(sample, gate, Tcells, Mut)
+    for i, sample in enumerate(sampleType):
+        rawData, cellCount, indices = cellData(sample, gate, Tcells, Mut)
         count_array.append(cellCount)
         data_array.append(rawData)
+        index_array.append(indices)
     # returns the array for count of cells and the array where each entry is the data for the specific cell population in that .fcs file
-    return count_array, data_array
+    return count_array, data_array, index_array
 
 
 def exp_dec(x, pp, soln=0):
