@@ -12,7 +12,8 @@ from scipy.optimize import minimize
 from copy import copy
 from .figureCommon import subplotLabel, getSetup
 from ..PCA import nllsq_EC50
-from ..MBmodel import runFullModel, cytBindingModel
+from ..MBmodel import getKxStar, runFullModel, cytBindingModel, polyc
+from ..imports import getBindDict, importReceptors
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -20,7 +21,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 7), (3, 4), multz={9: 1})
+    ax, f = getSetup((10, 9), (4, 4), multz={9: 1})
     axlabel = copy(ax)
     del axlabel[1]
     del axlabel[1]
@@ -34,8 +35,8 @@ def makeFigure():
     ax[3].axis("off")
     ax[5].axis("off")
 
-    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
-    print(minSolved)
+    #minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
+    # print(minSolved)
 
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
 
@@ -52,6 +53,11 @@ def makeFigure():
 
     R2_Plot_Conc(ax[9], modelDF)
     timePlot(ax[10])
+
+    IL2RaEffPlot(ax[11], modelDF, "Treg", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
+    IL2RaEffPlot(ax[12], modelDF, "Thelper", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
+    IL2RaEffPlot(ax[13], modelDF, "CD8", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
+    IL2RaEffPlot(ax[14], modelDF, "NK", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
     return f
 
 
@@ -225,3 +231,30 @@ def timePlot(ax):
     sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+
+
+def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs):
+    """Tracks interactions of Valency and ligand affinity on Treg activation"""
+    concs = np.logspace(start=np.log10(modelDF.Dose.min()), stop=np.log10(modelDF.Dose.max()), num=101, endpoint=True)
+    bindDict = getBindDict().groupby(["Cell"])['Scale'].mean().reset_index()
+    convFact = bindDict.loc[bindDict.Cell == cell].Scale.values
+    recDF = importReceptors()
+    recCount = np.ravel([recDF.loc[(recDF.Receptor == "IL2Ra") & (recDF["Cell Type"] == cell)].Mean.values,
+                         recDF.loc[(recDF.Receptor == "IL2Rb") & (recDF["Cell Type"] == cell)].Mean.values])
+    valencies = [1, 2]
+    outputDF = pd.DataFrame()
+
+    for val in valencies:
+        for alphAff in IL2Ra_affs:
+            for dose in concs:
+                Affs = np.array([alphAff, IL2RBaff])
+                Affs = np.reshape(Affs, (1, -1))
+                Affs = np.repeat(Affs, 2, axis=0)
+                np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
+                predVal = polyc(dose / 1e9 / val, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1] * convFact
+                alphAffKDnM = (1 / alphAff) / 1e-9
+                outputDF = outputDF.append(pd.DataFrame({r"IL2·α$_c$ K$_D$ (nM)": [alphAffKDnM], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
+
+    outputDF = outputDF.reset_index()
+    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", style="Valency", hue=r"IL2·α$_c$ K$_D$ (nM)", ax=ax)
+    ax.set(xscale="log")
