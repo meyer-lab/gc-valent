@@ -35,8 +35,8 @@ def makeFigure():
     ax[3].axis("off")
     ax[5].axis("off")
 
-    #minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
-    # print(minSolved)
+    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
+    print(minSolved)
 
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
 
@@ -55,9 +55,9 @@ def makeFigure():
     timePlot(ax[10])
 
     IL2RaEffPlot(ax[11], modelDF, "Treg", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
-    IL2RaEffPlot(ax[12], modelDF, "Thelper", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
-    IL2RaEffPlot(ax[13], modelDF, "CD8", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
-    IL2RaEffPlot(ax[14], modelDF, "NK", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
+    IL2RaEffPlot(ax[12], modelDF, "NK", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
+    recSigPlot(ax[13], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=2e8, IL2Ra_aff=1e8)
+    recSigPlot(ax[14], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=2e8, IL2Ra_aff=1e10)
     return f
 
 
@@ -78,7 +78,7 @@ def R2_Plot_Cells(ax, df):
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
 
-    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, color='k', ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
@@ -253,8 +253,31 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs):
                 np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
                 predVal = polyc(dose / 1e9 / val, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1] * convFact
                 alphAffKDnM = (1 / alphAff) / 1e-9
-                outputDF = outputDF.append(pd.DataFrame({r"IL2·α$_c$ K$_D$ (nM)": [alphAffKDnM], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
+                outputDF = outputDF.append(pd.DataFrame({r"IL2Rα $K_D$ (nM)": [alphAffKDnM], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
 
     outputDF = outputDF.reset_index()
-    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", style="Valency", hue=r"IL2·α$_c$ K$_D$ (nM)", ax=ax)
+    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", style="Valency", hue=r"IL2Rα $K_D$ (nM)", ax=ax)
+    ax.set(xscale="log")
+
+
+def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff):
+    """Tracks interactions of Valency and ligand affinity on Treg activation"""
+    concs = np.logspace(start=np.log10(modelDF.Dose.min()), stop=np.log10(modelDF.Dose.max()), num=101, endpoint=True)
+    valencies = [1, 2, 4]
+    outputDF = pd.DataFrame()
+    Affs = np.array([IL2Ra_aff, IL2RBaff])
+    Affs = np.reshape(Affs, (1, -1))
+    Affs = np.repeat(Affs, 2, axis=0)
+    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
+
+    for val in valencies:
+        for alphaRec in IL2Rarecs:
+            for dose in concs:
+                recCount = np.ravel([alphaRec,
+                                    IL2RBrec])
+                predVal = polyc(dose / 1e9 / val, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]
+                outputDF = outputDF.append(pd.DataFrame({r"IL2Rα Abundance": [alphaRec], "Concentration": [dose], "Valency": [val], "Active Binding Complexes": predVal}))
+
+    outputDF = outputDF.reset_index()
+    sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", style="Valency", hue=r"IL2Rα Abundance", ax=ax)
     ax.set(xscale="log")
