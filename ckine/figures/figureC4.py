@@ -78,7 +78,7 @@ def R2_Plot_Cells(ax, df):
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
 
-    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, color='k', ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
@@ -109,7 +109,7 @@ def R2_Plot_Conc(ax, df):
             exps = df.loc[(df.Dose == conc) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]}))
-    sns.scatterplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, palette='k', ax=ax)
+    sns.scatterplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
 
 
@@ -279,6 +279,5 @@ def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff):
                 outputDF = outputDF.append(pd.DataFrame({r"IL2Rα Abundance": [alphaRec], "Concentration": [dose], "Valency": [val], "Active Binding Complexes": predVal}))
 
     outputDF = outputDF.reset_index()
-    print(outputDF)
     sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", style="Valency", hue=r"IL2Rα Abundance", ax=ax)
     ax.set(xscale="log")
