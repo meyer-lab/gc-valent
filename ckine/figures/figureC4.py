@@ -10,12 +10,15 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
-from .figureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict
 from ..PCA import nllsq_EC50
 from ..MBmodel import getKxStar, runFullModel, cytBindingModel, polyc
 from ..imports import getBindDict, importReceptors
 
+
 path_here = os.path.dirname(os.path.dirname(__file__))
+cellTypeDict = get_cellTypeDict()
+doseLimDict = get_doseLimDict()
 
 
 def makeFigure():
@@ -35,8 +38,8 @@ def makeFigure():
     ax[3].axis("off")
     ax[5].axis("off")
 
-    minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
-    print(minSolved)
+    # minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
+    # print(minSolved)
 
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
 
@@ -54,10 +57,11 @@ def makeFigure():
     R2_Plot_Conc(ax[9], modelDF)
     timePlot(ax[10])
 
-    IL2RaEffPlot(ax[11], modelDF, "Treg", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
-    IL2RaEffPlot(ax[12], modelDF, "NK", IL2RBaff=2e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]))
-    recSigPlot(ax[13], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=2e8, IL2Ra_aff=1e8)
-    recSigPlot(ax[14], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=2e8, IL2Ra_aff=1e10)
+    IL2RaEffPlot(ax[11], modelDF, "Treg", IL2RBaff=1e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]), labels=["0.1", "1", "10"])
+    IL2RaEffPlot(ax[12], modelDF, "NK", IL2RBaff=1e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]), labels=["0.1", "1", "10"])
+    recSigPlot(ax[13], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=1e8, IL2Ra_aff=1e8, label="0.1")
+    recSigPlot(ax[14], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=1e8, IL2Ra_aff=1e9, label="1")
+
     return f
 
 
@@ -78,7 +82,7 @@ def R2_Plot_Cells(ax, df):
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
 
-    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, color='k', ax=ax)
+    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
@@ -95,7 +99,7 @@ def R2_Plot_Ligs(ax, df):
                 accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Mono)"], "Valency": [val], "Accuracy": [r2]}))
             else:
                 accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Biv)"], "Valency": [val], "Accuracy": [r2]}))
-    sns.barplot(x="Ligand", y="Accuracy", data=accDF, ax=ax)
+    sns.barplot(x="Ligand", y="Accuracy", data=accDF, color='k', ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
@@ -233,7 +237,7 @@ def timePlot(ax):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 
 
-def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs):
+def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs, labels):
     """Tracks interactions of Valency and ligand affinity on Treg activation"""
     concs = np.logspace(start=np.log10(modelDF.Dose.min()), stop=np.log10(modelDF.Dose.max()), num=101, endpoint=True)
     bindDict = getBindDict().groupby(["Cell"])['Scale'].mean().reset_index()
@@ -245,7 +249,7 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs):
     outputDF = pd.DataFrame()
 
     for val in valencies:
-        for alphAff in IL2Ra_affs:
+        for i, alphAff in enumerate(IL2Ra_affs):
             for dose in concs:
                 Affs = np.array([alphAff, IL2RBaff])
                 Affs = np.reshape(Affs, (1, -1))
@@ -253,14 +257,14 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs):
                 np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
                 predVal = polyc(dose / 1e9 / val, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1] * convFact
                 alphAffKDnM = (1 / alphAff) / 1e-9
-                outputDF = outputDF.append(pd.DataFrame({r"IL2Rα $K_D$ (nM)": [alphAffKDnM], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
+                outputDF = outputDF.append(pd.DataFrame({r"IL2Rα $K_D$ (nM)": labels[i], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
 
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", style="Valency", hue=r"IL2Rα $K_D$ (nM)", ax=ax)
-    ax.set(xscale="log")
+    ax.set(xscale="log", ylim=doseLimDict[cellTypeDict[cell]], title=cell)
 
 
-def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff):
+def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
     """Tracks interactions of Valency and ligand affinity on Treg activation"""
     concs = np.logspace(start=np.log10(modelDF.Dose.min()), stop=np.log10(modelDF.Dose.max()), num=101, endpoint=True)
     valencies = [1, 2, 4]
@@ -280,4 +284,4 @@ def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff):
 
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", style="Valency", hue=r"IL2Rα Abundance", ax=ax)
-    ax.set(xscale="log")
+    ax.set(xscale="log", ylim=(0, IL2RBrec), title=(r"IL2Rα $K_D$ (nM) = " + label))
