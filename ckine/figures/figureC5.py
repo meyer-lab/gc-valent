@@ -5,12 +5,14 @@ from os.path import dirname
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib import rcParams
 from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from .figureCommon import subplotLabel, getSetup
 from ..MBmodel import polyc, getKxStar
 from ..imports import getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
+rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():
@@ -107,26 +109,28 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
         sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"] = sigDF.loc[sigDF["Cell Type"] == cell, "pSTAT"].div(sigDF.loc[(sigDF["Cell Type"] == cell) & (sigDF.Valency == vals[0])].pSTAT.values[0])
 
     sigDF = sigDF.replace(cellTypeDict)
+    sigDF = sigDF.reset_index()
+    optDF = optDF.reset_index()
 
     if IL7:
-        sns.scatterplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
+        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
         ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-7 mutein", fontsize=7)
 
-        sns.scatterplot(x="Valency", y="IL7Rα", data=optDF, ax=ax[1], palette="crest")
+        sns.lineplot(x="Valency", y="IL7Rα", data=optDF, ax=ax[1], palette="crest")
         ax[1].set(yscale="log", ylabel=r"IL7·7Rα $K_D$ (nM)")
 
     else:
-        sns.scatterplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
+        sns.lineplot(x="Valency", y="pSTAT", hue="Cell Type", style="Target", data=sigDF, ax=ax[0], palette="husl", hue_order=cellTypeDict.values())
         ax[0].set_title(cellTypeDict[targCell[0]] + " selectivity with IL-2 mutein", fontsize=7)
 
         if targCell[0] == "NK":
             affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=[r"IL-2Rβ/γ$_c$"])
-            sns.scatterplot(x="Valency", y="value", data=affDF, ax=ax[1])
+            sns.lineplot(x="Valency", y="value", data=affDF, ax=ax[1])
             ax[1].set(yscale="log", ylabel=r"IL2·β/γ$_c$ K$_D$ (nM)")
         else:
             affDF = pd.melt(optDF, id_vars=['Valency'], value_vars=['IL2Rα', r"IL-2Rβ/γ$_c$"])
             affDF = affDF.rename(columns={"variable": "Receptor"})
-            sns.scatterplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
+            sns.lineplot(x="Valency", y="value", hue="Receptor", data=affDF, ax=ax[1])
             ax[1].set(yscale="log", ylabel=r"IL2· $K_D$ (nM)")
 
     ax[0].set_ylim(bottom=0.0, top=3)
