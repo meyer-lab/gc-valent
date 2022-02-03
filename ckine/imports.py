@@ -121,3 +121,9 @@ def importReceptors():
     recDFbin.loc[recDFbin["Bin"] == 3, "Cell Type"] += r" $IL2Ra^{hi}$"
     recDF = pds.concat([recDF, recDFbin])
     return recDF
+
+
+def importCITE():
+    """Downloads all surface markers and cell types"""
+    CITEmarkerDF = pds.read_csv(join(path_here, "ckine/data/CITEdata_SurfMarkers.zip"))
+    return CITEmarkerDF

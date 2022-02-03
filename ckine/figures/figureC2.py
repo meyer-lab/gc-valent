@@ -7,9 +7,16 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 from scipy.optimize import least_squares
-from os.path import dirname, join
+from os.path import join
+from sklearn.preprocessing import StandardScaler, LabelEncoder, LabelBinarizer
+from sklearn.linear_model import RidgeClassifierCV
+from scipy import stats
+from sklearn.neighbors import KernelDensity
+from sklearn.svm import SVC
+from copy import copy
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_cellTypeDict, getLigandLegend
-from ..imports import import_pstat_all
+from ..imports import import_pstat_all, importCITE
+
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
@@ -18,7 +25,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((14, 12), (4, 4), multz={0: 2, 4: 1, 8: 1, 12: 1})
+    ax, f = getSetup((14, 15), (5, 4), multz={0: 2, 4: 1, 8: 1, 12: 1})
     subplotLabel(ax)
     ax[0].axis("off")
     ax[1].axis("off")
@@ -35,13 +42,6 @@ def makeFigure():
     mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
 
     doses = respDF.Dose.unique()
-    dose = doses[3]
-
-    #pSTATcomp(ax[2], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{reg}$", 4, dose, legend=True)
-    #pSTATcomp(ax[3], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"T$_{helper}$", 4, dose)
-    #pSTATcomp(ax[4], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", "NK", 4, dose)
-    #pSTATcomp(ax[5], respDF, mutAffDF, "IL2Rα $K_{D}$ (nM)", r"CD8$^{+}$", 4, dose)
-
     ratioConc(ax[2:5], respDF, r"T$_{reg}$", "NK", 4, mutAffDF, legend=True)
     ratioConc(ax[5:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF, legend=True)
     ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF, legend=True)
@@ -49,11 +49,10 @@ def makeFigure():
     legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    # ax[2].get_legend().remove()
-
-    #legend = ax[5].get_legend()
-    #labels = (x.get_text() for x in legend.get_texts())
-    # ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    cellTarget = "Treg"
+    Wass_KL_Dist(ax[11:13], cellTarget, 10)
+    CITE_RIDGE(ax[13], cellTarget)
+    CITE_SVM(ax[14], cellTarget, sampleFrac=0.2)
 
     return f
 
@@ -140,3 +139,100 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, legend=False):
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", hue="Ligand", style="Valency", ax=ax[2], palette=ligDict, legend=False)
     sns.lineplot(data=doseLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", style="Valency", ax=ax[2], color="k", linewidth=1., legend=False)
     ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2))
+
+
+def Wass_KL_Dist(ax, targCell, numFactors):
+    """Finds markers which have average greatest difference from other cells"""
+    CITE_DF = importCITE()
+
+    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
+    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
+        markAvg = np.mean(CITE_DF[marker].values)
+        targCellMark = CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
+        offTargCellMark = CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
+        if np.mean(targCellMark) > np.mean(offTargCellMark):
+            kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
+            kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
+            minVal = np.minimum(targCellMark.min(), offTargCellMark.min()) - 10
+            maxVal = np.maximum(targCellMark.max(), offTargCellMark.max()) + 10
+            outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
+            distTarg = np.exp(kdeTarg.score_samples(outcomes))
+            distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
+            KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
+            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div}))
+
+    for i, distance in enumerate(["Wasserstein Distance", "KL Divergence"]):
+        ratioDF = markerDF.sort_values(by=distance)
+        posCorrs = ratioDF.tail(numFactors).Marker.values
+
+        markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
+
+        sns.barplot(data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color='k')
+        ax[i].set(yscale="log")
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=45)
+
+
+def CITE_RIDGE(ax, targCell, numFactors=10):
+    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
+    ridgeMod = RidgeClassifierCV()
+    RIDGE_DF = importCITE()
+    cellToI = RIDGE_DF.CellType2.unique()
+    RIDGE_DF = RIDGE_DF.loc[(RIDGE_DF["CellType2"].isin(cellToI)), :]
+    cellTypeCol = RIDGE_DF.CellType2.values
+    RIDGE_DF = RIDGE_DF.loc[:, ((RIDGE_DF.columns != 'CellType1') & (RIDGE_DF.columns != 'CellType2') & (RIDGE_DF.columns != 'CellType3') & (RIDGE_DF.columns != 'Cell'))]
+    factors = RIDGE_DF.columns
+    X = RIDGE_DF.values
+    X = StandardScaler().fit_transform(X)
+
+    le = LabelEncoder()
+    le.fit(cellTypeCol)
+    y = le.transform(cellTypeCol)
+
+    ridgeMod = RidgeClassifierCV(cv=5)
+    ridgeMod.fit(X, y)
+    TargCoefs = ridgeMod.coef_[np.where(le.classes_ == targCell), :].ravel()
+    TargCoefsDF = pd.DataFrame({"Marker": factors, "Coefficient": TargCoefs}).sort_values(by="Coefficient")
+    TargCoefsDF = TargCoefsDF.tail(numFactors)
+    sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax, color='k')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+
+
+def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5):
+    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
+    SVMmod = SVC()
+    SVC_DF = importCITE()
+    cellToI = SVC_DF.CellType2.unique()
+    SVC_DF = SVC_DF.loc[(SVC_DF["CellType2"].isin(cellToI)), :]
+    SVC_DF = SVC_DF.sample(frac=sampleFrac, random_state=1)
+    cellTypeCol = SVC_DF.CellType2.values
+    SVC_DF = SVC_DF.loc[:, ((SVC_DF.columns != 'CellType1') & (SVC_DF.columns != 'CellType2') & (SVC_DF.columns != 'CellType3') & (SVC_DF.columns != 'Cell'))]
+    factors = SVC_DF.columns
+    X = SVC_DF.values
+    X = StandardScaler().fit_transform(X)
+    CD122col = X[:, np.where(factors == "CD122")].reshape(-1, 1)
+
+    enc = LabelBinarizer()
+    y = enc.fit_transform(cellTypeCol)
+    TregY = y[:, np.where(enc.classes_ == targCell)].ravel()
+
+    AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
+    baselineAcc = SVMmod.fit(CD122col, TregY).score(CD122col, TregY)
+    print(baselineAcc)
+    print(np.where((factors == "CD122")))
+    for marker in factors:
+        SVMmod = SVC()
+        print(marker)
+        markerCol = X[:, np.where(factors == marker)]
+        CD122MarkX = np.hstack((CD122col, markerCol.reshape(-1, 1)))
+        markAcc = SVMmod.fit(CD122MarkX, TregY).score(CD122MarkX, TregY)
+        print(markAcc)
+        AccDF = AccDF.append(pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]}))
+
+    AccDF = AccDF.sort_values(by="Accuracy")
+    markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
+    AccDF.Markers = "CD122 + " + AccDF.Markers
+
+    plot_DF = AccDF.tail(numFactors).append(pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]}))
+    sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color='k')
+    ax.set(ylim=(0.95, 1))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
