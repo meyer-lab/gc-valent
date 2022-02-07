@@ -6,6 +6,7 @@ import pandas as pd
 import seaborn as sns
 import tensorly as tl
 from tensorly.decomposition import non_negative_parafac, non_negative_parafac_hals
+from copy import copy
 
 
 def makeTensor(sigDF, Variance=False):
@@ -122,7 +123,13 @@ def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
 
-def swarmPlotFac(ax, tFacDFLig):
+def facScatterPlot(ax, tFacDFLig):
     """Plots tensor factorization of cells"""
-    sns.swarmplot(data=tFacDFLig, x="Component", y="Component_Val", hue="Valency", ax=ax)
-    ax.set(ylabel="Component Weight")
+    scattDF = copy(tFacDFLig.drop("index", axis=1))
+    for ligand in scattDF.Ligand.unique():
+        for valency in scattDF.loc[scattDF.Ligand == ligand].Valency.unique():
+            isoDF = scattDF.loc[(scattDF.Ligand == ligand) & (scattDF.Valency == valency)]
+            scattDF = scattDF.append(pd.DataFrame({"Component 1 + 3": isoDF.loc[isoDF.Component == 1].Component_Val.values + isoDF.loc[isoDF.Component == 3].Component_Val.values,
+                                                   "Component 2": isoDF.loc[isoDF.Component == 2].Component_Val.values, "Valency": valency}))
+    sns.scatterplot(data=scattDF, x="Component 1 + 3", y="Component 2", hue="Valency", style="Valency", ax=ax)
+    ax.set(xlim=(0, 0.8), ylim=(0, 0.8))
