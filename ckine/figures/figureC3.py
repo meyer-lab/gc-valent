@@ -17,7 +17,7 @@ ligDict = getLigDict()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((15, 6), (2, 5), multz={0: 2})
+    ax, f = getSetup((9.2, 6.5), (2, 3), multz={0: 2})
     subplotLabel(ax)
     ax[0].axis("off")
     numComps = 3
@@ -28,19 +28,19 @@ def makeFigure():
     tFacAllM = factorTensor(respTensor, numComps=numComps)
     tFacAllM.normalize()
 
-    R2Xplot(ax[1], respTensor, 5)
-    ligCompDF = plot_tFac_Ligs(ax[2], tFacAllM, respDF, numComps=numComps)
-    plot_tFac_Conc(ax[3], tFacAllM, respDF)
-    plot_tFac_Cells(ax[4], tFacAllM, respDF, numComps=numComps)
-    plot_tFac_Time(ax[5], tFacAllM, respDF)
-    facScatterPlot(ax[7], ligCompDF)
+    #R2Xplot(ax[1], respTensor, 5)
+    ligCompDF = plot_tFac_Ligs(ax[1], tFacAllM, respDF, numComps=numComps)
+    #plot_tFac_Conc(ax[4], tFacAllM, respDF)
+    plot_tFac_Cells(ax[2], tFacAllM, respDF, numComps=numComps)
+    #plot_tFac_Time(ax[5], tFacAllM, respDF)
+    facScatterPlot(ax[3], ligCompDF)
 
-    mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
-    mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
-    mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
-    ligCompDF = ligCompDF.loc[(ligCompDF["Lig Name"] != "IL15") & (ligCompDF["Lig Name"] != "IL2")]
-    mutAffDF = mutAffDF.rename({"Ligand": "Lig Name"}, axis=1)
-    affCompPlot(ax[6], ligCompDF, mutAffDF, "IL2Rα $K_{D}$ (nM)")
+    #mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
+    #mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
+    #mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
+    #ligCompDF = ligCompDF.loc[(ligCompDF["Lig Name"] != "IL15") & (ligCompDF["Lig Name"] != "IL2")]
+    #mutAffDF = mutAffDF.rename({"Ligand": "Lig Name"}, axis=1)
+    #affCompPlot(ax[6], ligCompDF, mutAffDF, "IL2Rα $K_{D}$ (nM)")
 
     return f
 

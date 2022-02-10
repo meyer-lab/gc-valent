@@ -4,7 +4,7 @@ This file contains functions that are used in multiple figures.
 import sys
 import logging
 import time
-from string import ascii_lowercase
+from string import ascii_lowercase, ascii_uppercase
 import matplotlib
 import seaborn as sns
 import numpy as np
@@ -64,7 +64,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
 def subplotLabel(axs):
     """ Place subplot labels on figure. """
     for ii, ax in enumerate(axs):
-        ax.text(-0.2, 1.25, ascii_lowercase[ii], transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
+        ax.text(-0.2, 1.25, ascii_uppercase[ii], transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):

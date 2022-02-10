@@ -8,25 +8,27 @@ import pandas as pd
 import seaborn as sns
 from os.path import join
 from copy import copy
+from matplotlib import rcParams
 from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, getLigDict
 from ..MBmodel import getKxStar, polyc
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
+rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 9), (4, 4))
+    ax, f = getSetup((3, 3), (1, 1))
     subplotLabel(ax)
 
     # minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
     # print(minSolved)
 
     YT1_Plot(ax[0], estRec=500)
-    YT1_Plot(ax[1], estRec=2500)
-    YT1_Plot(ax[2], estRec=5000)
+    #YT1_Plot(ax[1], estRec=2500)
+    #YT1_Plot(ax[2], estRec=5000)
 
     return f
 
@@ -67,6 +69,6 @@ def YT1_Plot(ax, estRec):
                 outputDF = outputDF.append(pd.DataFrame({"Concentration": [dose], "Valency": [valency], "Ligand": mut, "pSTAT5": predVal, "Type": "Predicted"}))
     print(outputDF)
     outputDF = outputDF.reset_index()
-    sns.lineplot(data=outputDF, x="Concentration", y="pSTAT5", style="Valency", hue="Ligand", palette=ligDict, ax=ax)
+    #sns.lineplot(data=outputDF, x="Concentration", y="pSTAT5", style="Valency", hue="Ligand", palette=ligDict, ax=ax)
     sns.scatterplot(data=expData, x="Concentration", y="Mean", style="Valency", hue="Ligand", palette=ligDict, ax=ax)
-    ax.set(xscale="log", ylabel="pSTAT5")
+    ax.set(xscale="log", xlim=(0.01, 1000), ylabel="pSTAT5")
