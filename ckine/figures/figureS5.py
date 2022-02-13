@@ -20,13 +20,12 @@ from sklearn.preprocessing import LabelBinarizer
 path_here = dirname(dirname(__file__))
 
 
-# Later can we test by making a fake cell with 0 or -1 for every value and verifying positions are maintained?
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((9, 12), (2, 2))
+    ax, f = getSetup((12, 10),(1,1))
 
-    epitopesDF = pd.DataFrame(columns={"Classifier", "Epitope", "Selectivity"})
-    epitopesDF = pd.read_csv(join(path_here, "data/epitopeList.csv"))
+    epitopesDF = pd.DataFrame(columns={"Epitope", "Selectivity"})
+    epitopesDF = pd.read_csv(join(path_here, "data/epitopeListUnique.csv"))
 
     CITE_DF = importCITE()
 
@@ -89,9 +88,6 @@ def makeFigure():
 
     targCell = 'Treg'
 
-    # Feed actual abundance into modeling
-    abundanceDF = pd.DataFrame(columns={"Receptor", "Cell Type", "Abundance"})
-
     standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
     standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
     standardDF = standardDF.append(standard2DF)
@@ -99,7 +95,6 @@ def makeFigure():
     # For each epitope
 
     for epitope in epitopesDF['Epitope'].unique():
-        # print(epitope)
 
         selectedDF = epitopesDF.loc[(epitopesDF.Epitope == epitope)].sample()
         selectedDF['Type'] = 'Epitope'
@@ -109,30 +104,25 @@ def makeFigure():
         # New form
         optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
 
-        # print(optSelectivity)
         epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
 
     if saveFile:
-        epitopesDF = epitopesDF[["Classifier", "Epitope", "Selectivity"]]  # drops single cell info
+        epitopesDF = epitopesDF[["Epitope", "Selectivity"]]  # drops single cell info
         epitopesDF.to_csv(join(path_here, "data/epitopeSelectivityList.csv"), index=False)
         print("File Saved")
 
     # generate figures
-
-    classifiers = ['CITE_SVM', 'CITE_RIDGE', 'distMetricF', 'distMetricT']
-    # for each classifier
-    for i, classifier in enumerate(classifiers):
-        # bar plot of each epitope
-        print(i)
-        epitopesDF = epitopesDF.sort_values(by=['Selectivity'])
-        xvalues = epitopesDF.loc[epitopesDF['Classifier'] == classifier, 'Epitope']
-        yvalues = (((epitopesDF.loc[epitopesDF['Classifier'] == classifier, 'Selectivity']) / baseSelectivity) * 100) - 100
-        print(yvalues)
-        cmap = sns.color_palette("husl", 10)
-        sns.barplot(x=xvalues, y=yvalues, palette=cmap, ax=ax[i]).set_title(classifier)
-        ax[i].set_ylabel("Selectivity (% increase over standard IL2)")
+    
+    # bar of each epitope
+    epitopesDF = epitopesDF.sort_values(by=['Selectivity'])
+    xvalues = epitopesDF['Epitope']
+    yvalues = (((epitopesDF['Selectivity']) / baseSelectivity) * 100) - 100
+    print(yvalues)
+    cmap = sns.color_palette("husl", 10)
+    sns.barplot(x=xvalues, y=yvalues, palette=cmap, ax=ax[0])
+    ax[0].set_ylabel("Selectivity (% increase over WT IL2)")
         
 
     return f
@@ -143,10 +133,7 @@ def cytBindingModel(counts, x=False, date=False):
     mut = 'IL2'
     val = 1
     doseVec = np.array([0.1])
-
-    #
     recCount = np.ravel(counts)
-    #
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
@@ -188,7 +175,6 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     np.fill_diagonal(holder, Affs)
     Affs = holder
 
-    # Check that values are in correct placement, can invert
 
     if doseVec.size == 1:
         doseVec = np.array([doseVec])
@@ -253,11 +239,6 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
 
 def optimizeDesign(targCell, offTcells, selectedDF, epitope):
     """ A more general purpose optimizer """
-    ###
-    #vals = np.arange(1.01, 10, step=0.15)
-    #sigDF = pd.DataFrame()
-    #optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Rα", r"IL-2Rβ/γ$_c$"})
-    ###
 
     if targCell == "NK":
         X0 = [6.0, 8]
