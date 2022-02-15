@@ -91,6 +91,11 @@ def genFigure():
     ff = eval(nameOut + '.makeFigure()')
     ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
 
+    if sys.argv[1] == 'C1':
+        # Overlay Figure 1 cartoon
+        overlayCartoon(fdir + 'figureC1.svg',
+                       './ckine/graphics/muteinsCartoon.svg', 5, 6, scalee=1.62)
+
     if sys.argv[1] == 'C3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figureC3.svg',
