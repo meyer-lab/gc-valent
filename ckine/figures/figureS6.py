@@ -11,11 +11,6 @@ from copy import copy
 import pandas as pd
 import seaborn as sns
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import RidgeClassifierCV
-from sklearn.preprocessing import LabelEncoder
-from sklearn.svm import SVC
-from sklearn.preprocessing import LabelBinarizer
 
 path_here = dirname(dirname(__file__))
 
@@ -26,16 +21,15 @@ def makeFigure():
 
     epitopesDF = pd.DataFrame(columns={"Epitope", "Selectivity"})
 
-    epitopesDF = pd.read_csv(join(path_here, "data/epitopeListUnique.csv"))
+    epitopesDF = pd.read_csv(join(path_here, "data/epitopeList.csv"))
+
+    #epitopesDF = ['CD25','CD122']
 
     CITE_DF = importCITE()
 
     # Get conv factors, average them
     convFact = convFactCalc(ax[0])
     meanConv = convFact.Weight.mean()
-
-    # If selectivity values are stored in CSV at end of run
-    saveFile = True
 
     # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
 
@@ -93,37 +87,18 @@ def makeFigure():
     standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
     standardDF = standardDF.append(standard2DF)
     standardDF['Type'] = 'Standard'
+
+    print(standardDF.columns())
     # For each epitope
 
-    for epitope in epitopesDF['Epitope'].unique():
-
-        selectedDF = epitopesDF.loc[(epitopesDF.Epitope == epitope)].sample()
-        selectedDF['Type'] = 'Epitope'
-        selectedDF = selectedDF.append(standardDF)
-        selectedDF.reset_index()
 
         # New form
-        optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
+    optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
 
-        epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
+    epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
 
-    if saveFile:
-        epitopesDF = epitopesDF[["Epitope", "Selectivity"]]  # drops single cell info
-        epitopesDF.to_csv(join(path_here, "data/epitopeSelectivityList.csv"), index=False)
-        print("File Saved")
-
-    # generate figures
-
-    # bar of each epitope
-    epitopesDF = epitopesDF.sort_values(by=['Selectivity'])
-    xvalues = epitopesDF['Epitope']
-    yvalues = (((epitopesDF['Selectivity']) / baseSelectivity) * 100) - 100
-    print(yvalues)
-    cmap = sns.color_palette("husl", 10)
-    sns.barplot(x=xvalues, y=yvalues, palette=cmap, ax=ax[0])
-    ax[0].set_ylabel("Selectivity (% increase over WT IL2)")
 
     return f
 
@@ -250,113 +225,6 @@ def optimizeDesign(targCell, offTcells, selectedDF, epitope):
     optSelectivity = optimized.fun[0]
 
     return optSelectivity
-
-
-def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.2):
-    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
-    SVMmod = SVC()
-    SVC_DF = importCITE()
-    cellToI = SVC_DF.CellType2.unique()
-    SVC_DF = SVC_DF.loc[(SVC_DF["CellType2"].isin(cellToI)), :]
-    SVC_DF = SVC_DF.sample(frac=sampleFrac, random_state=1)
-    cellTypeCol = SVC_DF.CellType2.values
-    SVC_DF = SVC_DF.loc[:, ((SVC_DF.columns != 'CellType1') & (SVC_DF.columns != 'CellType2') & (SVC_DF.columns != 'CellType3') & (SVC_DF.columns != 'Cell'))]
-    factors = SVC_DF.columns
-    X = SVC_DF.values
-    X = StandardScaler().fit_transform(X)
-    CD25col = X[:, np.where(factors == "CD25")].reshape(-1, 1)
-
-    enc = LabelBinarizer()
-    y = enc.fit_transform(cellTypeCol)
-    TregY = y[:, np.where(enc.classes_ == targCell)].ravel()
-
-    AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
-    baselineAcc = SVMmod.fit(CD25col, TregY).score(CD25col, TregY)
-    # print(baselineAcc)
-    #print(np.where((factors == "CD25")))
-    for marker in factors:
-        SVMmod = SVC()
-        # print(marker)
-        markerCol = X[:, np.where(factors == marker)]
-        CD25MarkX = np.hstack((CD25col, markerCol.reshape(-1, 1)))
-        markAcc = SVMmod.fit(CD25MarkX, TregY).score(CD25MarkX, TregY)
-        # print(markAcc)
-        AccDF = AccDF.append(pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]}))
-
-    AccDF = AccDF.sort_values(by="Accuracy")
-    markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
-    AccDF.Markers = "CD25 + " + AccDF.Markers
-
-    print(markers)
-    return markers
-
-
-def CITE_RIDGE(ax, targCell, numFactors=10):
-    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
-    ridgeMod = RidgeClassifierCV()
-    RIDGE_DF = importCITE()
-    cellToI = RIDGE_DF.CellType2.unique()
-    RIDGE_DF = RIDGE_DF.loc[(RIDGE_DF["CellType2"].isin(cellToI)), :]
-    cellTypeCol = RIDGE_DF.CellType2.values
-    RIDGE_DF = RIDGE_DF.loc[:, ((RIDGE_DF.columns != 'CellType1') & (RIDGE_DF.columns != 'CellType2') & (RIDGE_DF.columns != 'CellType3') & (RIDGE_DF.columns != 'Cell'))]
-    factors = RIDGE_DF.columns
-    X = RIDGE_DF.values
-    X = StandardScaler().fit_transform(X)
-
-    le = LabelEncoder()
-    le.fit(cellTypeCol)
-    y = le.transform(cellTypeCol)
-
-    ridgeMod = RidgeClassifierCV(cv=5)
-    ridgeMod.fit(X, y)
-    TargCoefs = ridgeMod.coef_[np.where(le.classes_ == targCell), :].ravel()
-    TargCoefsDF = pd.DataFrame({"Marker": factors, "Coefficient": TargCoefs}).sort_values(by="Coefficient")
-    TargCoefsDF = pd.concat([TargCoefsDF.head(numFactors), TargCoefsDF.tail(numFactors)])
-    #sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax)
-    #ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-    posCorrs = TargCoefsDF.tail(numFactors).Marker.values
-    negCorrs = TargCoefsDF.head(numFactors).Marker.values
-
-    return posCorrs, negCorrs
-
-
-def distMetricScatt(ax, targCell, numFactors, weight=False):
-    """Finds markers which have average greatest difference from other cells"""
-    CITE_DF = importCITE()
-    cellToI = CITE_DF.CellType2.unique()
-    offTargs = copy(cellToI)
-    offTargs = np.delete(offTargs, np.where(offTargs == targCell))
-    CITE_DF = CITE_DF.loc[(CITE_DF["CellType2"].isin(cellToI)), :]
-    cellTypeCol = CITE_DF.CellType2.values
-
-    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
-    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
-        for cell in cellToI:
-            cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
-
-    ratioDF = pd.DataFrame(columns=["Marker", "Ratio"])
-    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
-        if weight:
-            offT = 0
-            targ = markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Amount.mean()
-            for cell in offTargs:
-                offT += markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Amount.mean()
-            ratioDF = ratioDF.append(pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT}))
-        else:
-            offT = 0
-            targ = markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Amount.values * \
-                markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Number.values
-            for cell in offTargs:
-                offT += markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Amount.values * \
-                    markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Number.values
-            ratioDF = ratioDF.append(pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT}))
-
-    ratioDF = ratioDF.sort_values(by="Ratio")
-    posCorrs = ratioDF.tail(numFactors).Marker.values
-
-    markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
-    return(posCorrs)
 
 
 cellDict = {"CD4 Naive": "Thelper",
