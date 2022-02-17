@@ -22,9 +22,10 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((12, 10),(1,1))
+    ax, f = getSetup((12, 10), (1, 1))
 
     epitopesDF = pd.DataFrame(columns={"Epitope", "Selectivity"})
+
     epitopesDF = pd.read_csv(join(path_here, "data/epitopeListUnique.csv"))
 
     CITE_DF = importCITE()
@@ -114,7 +115,7 @@ def makeFigure():
         print("File Saved")
 
     # generate figures
-    
+
     # bar of each epitope
     epitopesDF = epitopesDF.sort_values(by=['Selectivity'])
     xvalues = epitopesDF['Epitope']
@@ -123,7 +124,6 @@ def makeFigure():
     cmap = sns.color_palette("husl", 10)
     sns.barplot(x=xvalues, y=yvalues, palette=cmap, ax=ax[0])
     ax[0].set_ylabel("Selectivity (% increase over WT IL2)")
-        
 
     return f
 
@@ -174,7 +174,6 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     holder = np.full((3, 3), 1e2)
     np.fill_diagonal(holder, Affs)
     Affs = holder
-
 
     if doseVec.size == 1:
         doseVec = np.array([doseVec])
