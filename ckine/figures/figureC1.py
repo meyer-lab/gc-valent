@@ -1,5 +1,5 @@
 """
-This creates Figure 3, tensor factorization of mutant and WT biv and monovalent ligands.
+This creates Figure 1. Initial look at flow data.
 """
 
 import os
@@ -21,7 +21,9 @@ cellDict = get_cellTypeDict()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     ax, f = getSetup((15, 18), (6, 4), multz={0: 1, 4: 7})
-    subplotLabel(ax)
+    axlabel = copy(ax)
+    del axlabel[1]
+    subplotLabel(axlabel)
     ax[0].axis("off")
     ax[1].axis("off")
 
@@ -120,9 +122,9 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
             hillDF = hillDF.append(pd.DataFrame({"Ligand": ligand, "Valency": valency, "Dose": np.power(10, doses - 4), "pSTAT": hill_equation(fit.x, doses)}))
     hillDF = hillDF.groupby(["Ligand", "Valency", "Dose"]).pSTAT.mean().reset_index()
     respDF = respDF.groupby(["Ligand", "Valency", "Cell", "Dose"]).Mean.mean().reset_index()
-    sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", style="Valency", ax=ax, palette=ligDict)
+    sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1, 2.5))
 
-    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", ax=ax, legend=False, palette=ligDict)
+    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", size="Valency", ax=ax, legend=False, palette=ligDict)
     ax.set(xscale="Log", title=cell + " at " + str(time) + " hours", ylim=limDict[cell])
     if legend:
         h, l = ax.get_legend_handles_labels()
