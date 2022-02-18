@@ -99,7 +99,7 @@ def genFigure():
     if sys.argv[1] == 'C3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figureC3.svg',
-                       './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
+                       './ckine/graphics/tensor4D.svg', 20, 6, scalee=1.62)
 
     if sys.argv[1] == 'C4':
         # Overlay Figure 4 cartoon

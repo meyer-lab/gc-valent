@@ -125,7 +125,7 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
     sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1, 2.5))
 
     sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", size="Valency", ax=ax, legend=False, palette=ligDict)
-    ax.set(xscale="Log", title=cell + " at " + str(time) + " hours", ylim=limDict[cell])
+    ax.set(xscale="log", xlim=(1e-4, 1e2), title=cell + " at " + str(time) + " hours", ylim=limDict[cell])
     if legend:
         h, l = ax.get_legend_handles_labels()
         ax.legend(h[-3:], l[-3:])
