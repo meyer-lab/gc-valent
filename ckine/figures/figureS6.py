@@ -17,13 +17,11 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((12, 10), (1, 1))
+    ax, f = getSetup((6, 6), (1, 1))
 
-    epitopesDF = pd.DataFrame(columns={"Epitope", "Selectivity"})
+    receoptors = {'Epitope':['CD25','CD122']}
+    epitopesDF = pd.DataFrame(receoptors)
 
-    epitopesDF = pd.read_csv(join(path_here, "data/epitopeList.csv"))
-
-    #epitopesDF = ['CD25','CD122']
 
     CITE_DF = importCITE()
 
@@ -34,7 +32,6 @@ def makeFigure():
     # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
 
     cellList = CITE_DF["CellType2"].unique().tolist()
-    print(cellList)
 
     sampleSizes = []
     for cellType in cellList:
@@ -46,8 +43,13 @@ def makeFigure():
         meanSize = np.mean(cellSample)
         sampleSizes.append(int(meanSize))
 
-    offTCells = cellList.copy()
-    offTCells.remove('Treg')
+    #offTCells = cellList.copy()
+    #offTCells.remove('Treg')
+    
+
+    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 Proliferating','NK Proliferating','NK_CD56bright']
+
+    print(offTCells)
 
     # For each  cellType in list
     for i, cellType in enumerate(cellList):
@@ -77,8 +79,6 @@ def makeFigure():
 
         epitopesDF[cellType] = cellType_abdundances
 
-    # EpitopeDF now contains a data of single cell abundances for each cell type for each epitope
-    epitopesDF['Selectivity'] = -1
     # New column which will hold selectivity per epitope
 
     targCell = 'Treg'
@@ -88,22 +88,33 @@ def makeFigure():
     standardDF = standardDF.append(standard2DF)
     standardDF['Type'] = 'Standard'
 
-    print(standardDF.columns())
-    # For each epitope
+    #print(standardDF)
+    # For each model eventually
+
+    #range from 0.01 <-> 100
+    betaAffs = np.logspace(-4,2,20)
+
+    treg_sigs = []
+    offTarg_sigs = []
+    for aff in betaAffs:
+        print(aff)
+        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells,aff)
+        treg_sigs.append(treg_sig)
+        offTarg_sigs.append(offTarg_sig)
+
+    
+
+    ax[0].plot(treg_sigs,offTarg_sigs)
+    
 
 
-        # New form
-    optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
 
-    epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
-
-    baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
 
 
     return f
 
 
-def cytBindingModel(counts, x=False, date=False):
+def cytBindingModel(counts,betaAffs, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     mut = 'IL2'
     val = 1
@@ -112,10 +123,15 @@ def cytBindingModel(counts, x=False, date=False):
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, [betaAffs]]) / 1e9, -1)
+
+    #print('Affs: ', Affs)
+    
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
     np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
+    
 
     if doseVec.size == 1:
         doseVec = np.array([doseVec])
@@ -125,9 +141,30 @@ def cytBindingModel(counts, x=False, date=False):
         if x:
             output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
         else:
-            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1] 
 
     return output
+
+def bindingCalc(df, targCell, offTCells,betaAffs):
+    """Calculates selectivity for no additional epitope"""
+    targetBound = 0
+    offTargetBound = 0
+
+    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
+    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
+
+    for i, cd25Count in enumerate(cd25DF[targCell].item()):
+        cd122Count = cd122DF[targCell].item()[i]
+        counts = [cd25Count, cd122Count]
+        targetBound += cytBindingModel(counts,betaAffs)
+
+    for cellT in offTCells:
+        for i, cd25Count in enumerate(cd25DF[cellT].item()):
+            cd122Count = cd122DF[cellT].item()[i]
+            counts = [cd25Count, cd122Count]
+            offTargetBound += cytBindingModel(counts,betaAffs)
+
+    return targetBound, offTargetBound
 
 
 def cytBindingModel_bispecOpt(counts, recXaff, x=False):
@@ -158,30 +195,9 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
         if x:
             output[i] = polyc(dose / (val * 1e9), np.power(10, x[0]), recCount, [[val, val, val]], [1.0], Affs)[0][1]
         else:
-            output[i] = polyc(dose / (val * 1e9), getKxStar(), recCount, [[val, val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+            output[i] = polyc(dose / (val * 1e9), getKxStar(), recCount, [[val, val, val]], [1.0], Affs)[0][1] 
 
     return output
-
-
-def selecCalc(df, targCell, offTCells):
-    """Calculates selectivity for no additional epitope"""
-    targetBound = 0
-    offTargetBound = 0
-
-    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
-    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
-
-    for i, cd25Count in enumerate(cd25DF[targCell].item()):
-        cd122Count = cd122DF[targCell].item()[i]
-        counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts)
-    for cellT in offTCells:
-        for i, cd25Count in enumerate(cd25DF[cellT].item()):
-            cd122Count = cd122DF[cellT].item()[i]
-            counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts)
-
-    return (offTargetBound) / (targetBound)
 
 
 def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
