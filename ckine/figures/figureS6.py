@@ -6,7 +6,7 @@ from os.path import dirname, join
 
 from matplotlib.pyplot import xlim,ylim
 from .figureCommon import getSetup
-from ..imports import importCITE, importReceptors, getBindDict
+from ..imports import importCITE, importReceptors
 from ..MBmodel import polyc, getKxStar
 from copy import copy
 import pandas as pd
@@ -18,7 +18,7 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((6, 6), (1, 1))
+    ax, f = getSetup((8, 8), (1, 1))
 
     receoptors = {'Epitope':['CD25','CD122']}
     epitopesDF = pd.DataFrame(receoptors)
@@ -93,37 +93,55 @@ def makeFigure():
     #range from 0.01 <-> 100
     betaAffs = np.logspace(-4,2,20)
 
-    treg_sigs = np.zeros((4,20))
-    offTarg_sigs = np.zeros((4,20))
+    treg_sigs = np.zeros((5,20))
+    offTarg_sigs = np.zeros((5,20))
 
     for i, aff in enumerate(betaAffs):
         print(aff)
-        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff)
+        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, 1)
         treg_sigs[0,i] = treg_sig
         offTarg_sigs[0,i] = offTarg_sig
 
-        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, aff)
-        treg_sigs[1,i] = treg_sig_bi
-        offTarg_sigs[1,i] = offTarg_sig_bi
+        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, 2)
+        treg_sigs[1,i] = treg_sig
+        offTarg_sigs[1,i] = offTarg_sig
+
+        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, 4)
+        treg_sigs[2,i] = treg_sig
+        offTarg_sigs[2,i] = offTarg_sig
+
+        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, aff, 1)
+        treg_sigs[3,i] = treg_sig_bi
+        offTarg_sigs[3,i] = offTarg_sig_bi
+
+        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, aff, 2)
+        treg_sigs[4,i] = treg_sig_bi
+        offTarg_sigs[4,i] = offTarg_sig_bi
+
         #print(treg_sigs)
 
     print(treg_sigs)
+    def norm(data):
+        return data/max(data)
 
     
-
-    ax[0].plot(treg_sigs[0],offTarg_sigs[0],label='WT')
-    ax[0].plot(treg_sigs[1],offTarg_sigs[1],label='CD25 Bispec')
+    ##print(y_ticks)
+    ax[0].plot(norm(treg_sigs[0]),norm(offTarg_sigs[0]),label='WT')
+    ax[0].plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival')
+    ax[0].plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval')
+    ax[0].plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='CD25 Bispec')
+    ax[0].plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='CD25 Bispec/Bival (tetra?)')
     ax[0].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+    #ax[0].set_aspect('equal',adjustable='box')
     ax[0].legend()
 
 
     return f
 
 
-def cytBindingModel(counts,betaAffs, x=False, date=False):
+def cytBindingModel(counts, betaAffs, val, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     mut = 'IL2'
-    val = 1
     doseVec = np.array([0.1])
     recCount = np.ravel(counts)
 
@@ -149,7 +167,7 @@ def cytBindingModel(counts,betaAffs, x=False, date=False):
 
     return output
 
-def bindingCalc(df, targCell, offTCells,betaAffs):
+def bindingCalc(df, targCell, offTCells, betaAffs, val):
     """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
@@ -160,22 +178,21 @@ def bindingCalc(df, targCell, offTCells,betaAffs):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts,betaAffs)
+        targetBound += cytBindingModel(counts, betaAffs, val)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts,betaAffs)
+            offTargetBound += cytBindingModel(counts,betaAffs, val)
 
     return targetBound, offTargetBound
 
 
-def cytBindingModel_bispec(counts, betaAffs, recXaff, x=False):
+def cytBindingModel_bispec(counts, betaAffs, recXaff, val, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
 
     mut = 'IL2'
-    val = 1
     doseVec = np.array([0.1])
 
     recXaff = np.power(10, recXaff)
@@ -204,7 +221,7 @@ def cytBindingModel_bispec(counts, betaAffs, recXaff, x=False):
     return output
 
 
-def bindingCalc_bispec(df, targCell, offTCells,betaAffs):
+def bindingCalc_bispec(df, targCell, offTCells,betaAffs,val):
     """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
@@ -215,15 +232,41 @@ def bindingCalc_bispec(df, targCell, offTCells,betaAffs):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count,cd25Count]
-        targetBound += cytBindingModel_bispec(counts, betaAffs, 9.0)
+        targetBound += cytBindingModel_bispec(counts, betaAffs, 9.0, val)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count,cd25Count]
-            offTargetBound += cytBindingModel_bispec(counts, betaAffs, 9.0)
+            offTargetBound += cytBindingModel_bispec(counts, betaAffs, 9.0, val)
 
     return targetBound, offTargetBound
+
+
+def cytBindingModel_tetra(counts, betaAffs, val, x=False, date=False):
+    """Runs binding model for a given mutein, valency, dose, and cell type."""
+    mut = 'IL2'
+    doseVec = np.array([0.1])
+    recCount = np.ravel(counts)
+
+    mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
+    Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, [betaAffs]]) / 1e9, -1)
+    Affs = np.reshape(Affs, (1, -1))
+    Affs = np.repeat(Affs, 2, axis=0)
+    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
+
+    if doseVec.size == 1:
+        doseVec = np.array([doseVec])
+    output = np.zeros(doseVec.size)
+
+    for i, dose in enumerate(doseVec):
+        if x:
+            output[i] = polyc(dose / (val * 1e9), np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
+        else:
+            output[i] = polyc(dose / (val * 1e9), getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+    
+    return output
 
 cellDict = {"CD4 Naive": "Thelper",
             "CD4 CTL": "Thelper",
