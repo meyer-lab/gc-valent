@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
-from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict
+from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, get_cellTypeDict
 from ..PCA import nllsq_EC50
 from ..MBmodel import getKxStar, runFullModel, cytBindingModel, polyc
 from ..imports import getBindDict, importReceptors
 
-
+cellDict = get_cellTypeDict()
 path_here = os.path.dirname(os.path.dirname(__file__))
 cellTypeDict = get_cellTypeDict()
 doseLimDict = get_doseLimDict()
@@ -67,6 +67,7 @@ def makeFigure():
 
 def Pred_Exp_plot(ax, df):
     """Plots all experimental vs. Predicted Values"""
+    df = df.replace(cellDict)
     sns.scatterplot(x="Experimental", y="Predicted", hue="Cell", style="Valency", data=df, ax=ax, alpha=0.35)
     ax.set(xlim=(0, 60000), ylim=(0, 60000))
 
@@ -82,6 +83,7 @@ def R2_Plot_Cells(ax, df):
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
 
+    accDF = accDF.replace(cellDict)
     sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
@@ -113,7 +115,8 @@ def R2_Plot_Conc(ax, df):
             exps = df.loc[(df.Dose == conc) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
             accDF = accDF.append(pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]}))
-    sns.scatterplot(x="Concentration", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    accDF = accDF.reset_index()
+    sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", size="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
 
 
@@ -260,8 +263,8 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs, labels):
                 outputDF = outputDF.append(pd.DataFrame({r"IL2Rα $K_D$ (nM)": labels[i], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
 
     outputDF = outputDF.reset_index()
-    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", style="Valency", hue=r"IL2Rα $K_D$ (nM)", ax=ax)
-    ax.set(xscale="log", ylim=doseLimDict[cellTypeDict[cell]], title=cell)
+    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", size="Valency", hue=r"IL2Rα $K_D$ (nM)", ax=ax)
+    ax.set(xscale="log", ylim=doseLimDict[cellTypeDict[cell]], title=cellDict[cell])
 
 
 def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
@@ -283,5 +286,5 @@ def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
                 outputDF = outputDF.append(pd.DataFrame({r"IL2Rα Abundance": [alphaRec], "Concentration": [dose], "Valency": [val], "Active Binding Complexes": predVal}))
 
     outputDF = outputDF.reset_index()
-    sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", style="Valency", hue=r"IL2Rα Abundance", ax=ax)
+    sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", hue=r"IL2Rα Abundance", ax=ax, size="Valency")
     ax.set(xscale="log", ylim=(0, IL2RBrec), title=(r"IL2Rα $K_D$ (nM) = " + label))
