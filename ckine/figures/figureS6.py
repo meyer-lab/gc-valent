@@ -3,10 +3,11 @@ This creates Figure S6, comparing optimum selectivity for different IL2 formats.
 """
 from email.mime import base
 from os.path import dirname, join
+
+from matplotlib.pyplot import xlim,ylim
 from .figureCommon import getSetup
 from ..imports import importCITE, importReceptors, getBindDict
 from ..MBmodel import polyc, getKxStar
-from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from copy import copy
 import pandas as pd
 import seaborn as sns
@@ -88,27 +89,32 @@ def makeFigure():
     standardDF = standardDF.append(standard2DF)
     standardDF['Type'] = 'Standard'
 
-    #print(standardDF)
-    # For each model eventually
 
     #range from 0.01 <-> 100
     betaAffs = np.logspace(-4,2,20)
 
-    treg_sigs = []
-    offTarg_sigs = []
-    for aff in betaAffs:
+    treg_sigs = np.zeros((4,20))
+    offTarg_sigs = np.zeros((4,20))
+
+    for i, aff in enumerate(betaAffs):
         print(aff)
-        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells,aff)
-        treg_sigs.append(treg_sig)
-        offTarg_sigs.append(offTarg_sig)
+        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff)
+        treg_sigs[0,i] = treg_sig
+        offTarg_sigs[0,i] = offTarg_sig
+
+        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, aff)
+        treg_sigs[1,i] = treg_sig_bi
+        offTarg_sigs[1,i] = offTarg_sig_bi
+        #print(treg_sigs)
+
+    print(treg_sigs)
 
     
 
-    ax[0].plot(treg_sigs,offTarg_sigs)
-    
-
-
-
+    ax[0].plot(treg_sigs[0],offTarg_sigs[0],label='WT')
+    ax[0].plot(treg_sigs[1],offTarg_sigs[1],label='CD25 Bispec')
+    ax[0].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+    ax[0].legend()
 
 
     return f
@@ -125,8 +131,6 @@ def cytBindingModel(counts,betaAffs, x=False, date=False):
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
 
     Affs = np.power(np.array([Affs["IL2RaKD"].values, [betaAffs]]) / 1e9, -1)
-
-    #print('Affs: ', Affs)
     
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
@@ -167,7 +171,7 @@ def bindingCalc(df, targCell, offTCells,betaAffs):
     return targetBound, offTargetBound
 
 
-def cytBindingModel_bispecOpt(counts, recXaff, x=False):
+def cytBindingModel_bispec(counts, betaAffs, recXaff, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
 
     mut = 'IL2'
@@ -180,7 +184,7 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, [betaAffs]]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
@@ -200,48 +204,26 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     return output
 
 
-def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
-    """Provides the function to be minimized to get optimal selectivity"""
+def bindingCalc_bispec(df, targCell, offTCells,betaAffs):
+    """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
 
-    recXaff = x
+    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
+    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
 
-    epitopeDF = selectedDF.loc[(selectedDF.Type == 'Epitope')]
-    cd25DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Epitope == 'CD25')]
-    cd122DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Epitope == 'CD122')]
-
-    for i, epCount in enumerate(epitopeDF[targCell].item()):
-        cd25Count = cd25DF[targCell].item()[i]
+    for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
-        counts = [cd25Count, cd122Count, epCount]
-        targetBound += cytBindingModel_bispecOpt(counts, recXaff)
+        counts = [cd25Count, cd122Count,cd25Count]
+        targetBound += cytBindingModel_bispec(counts, betaAffs, 9.0)
+
     for cellT in offTCells:
-        for i, epCount in enumerate(epitopeDF[cellT].item()):
-            cd25Count = cd25DF[cellT].item()[i]
+        for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
-            counts = [cd25Count, cd122Count, epCount]
+            counts = [cd25Count, cd122Count,cd25Count]
+            offTargetBound += cytBindingModel_bispec(counts, betaAffs, 9.0)
 
-            offTargetBound += cytBindingModel_bispecOpt(counts, recXaff)
-
-    return (offTargetBound) / (targetBound)
-
-
-def optimizeDesign(targCell, offTcells, selectedDF, epitope):
-    """ A more general purpose optimizer """
-
-    if targCell == "NK":
-        X0 = [6.0, 8]
-    else:
-        X0 = [7.0]
-
-    optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
-
-    optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, epitope), jac="3-point")
-    optSelectivity = optimized.fun[0]
-
-    return optSelectivity
-
+    return targetBound, offTargetBound
 
 cellDict = {"CD4 Naive": "Thelper",
             "CD4 CTL": "Thelper",
