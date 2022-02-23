@@ -1,5 +1,5 @@
 """
-This creates Figure S6, comparing optimum selectivity for different IL2 formats.
+This creates Figure S6, plotting Treg to off target signaling for vaying IL2Rb affinity for different IL2 formats
 """
 from email.mime import base
 from os.path import dirname, join
@@ -69,6 +69,7 @@ def makeFigure():
             elif e == 'CD122':
                 convFact = 332.680090
             else:
+                assert(False)
                 convFact = meanConv
 
             citeVal = cellDF[e].to_numpy()
@@ -105,7 +106,6 @@ def makeFigure():
         for j, mut in enumerate(muts):
             for k, val in enumerate(vals):
                 n = (3*j)+k
-                print(n)
                 treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, val, mut)
                 treg_sigs[n,i] = treg_sig
                 offTarg_sigs[n,i] = offTarg_sig
@@ -125,32 +125,27 @@ def makeFigure():
         return data/max(data)
 
     ##print(y_ticks)
-    ax[0].plot(norm(treg_sigs[0]),norm(offTarg_sigs[0]),label='WT')
-    ax[0].plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival')
-    ax[0].plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval')
-    ax[0].plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),label='CD25 Live/Dead')
-    ax[0].plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),label='CD25 Bivalent Live/Dead')
-    ax[0].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-    ax[0].legend()
+    def plotSignals(types,ax):
+        #Add standard colors/line types
+        if 'WT' in types:
+            ax.plot(norm(treg_sigs[0]),norm(offTarg_sigs[0]),label='WT', c='blue')
+            ax.plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival', c='green')
+            ax.plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval', c='c')
+        if 'R38Q/H16N' in types:
+            ax.plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='R38Q/H16N', c='red')
+            ax.plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='R38Q/H16N Bival', c='y')
+            ax.plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),label='R38Q/H16N Tetraval', c='orange')
+        if 'Live/Dead' in types:
+            ax.plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),label='CD25 Live/Dead',c='indigo')
+            ax.plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),label='CD25 Bivalent Live/Dead',c='magenta')
+        
+        ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+        ax.legend()
 
-    ax[1].plot(norm(treg_sigs[0]),norm(offTarg_sigs[0]),label='WT')
-    ax[1].plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival')
-    ax[1].plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval')
-    ax[1].plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='R38Q/H16N')
-    ax[1].plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='R38Q/H16N Bival')
-    ax[1].plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),label='R38Q/H16N Tetraval')
-    ax[1].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-    ax[1].legend()
-
-    ax[2].plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='R38Q/H16N')
-    ax[2].plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='R38Q/H16N Bival')
-    ax[2].plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),label='R38Q/H16N Tetraval')
-    ax[2].plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),label='CD25 Live/Dead')
-    ax[2].plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),label='CD25 Bivalent Live/Dead')
-    ax[2].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-    ax[2].legend()
-
-
+    
+    plotSignals(['WT','R38Q/H16N'],ax[0])
+    plotSignals(['WT','Live/Dead'],ax[1])
+    plotSignals(['R38Q/H16N','Live/Dead'],ax[2])
 
     return f
 
