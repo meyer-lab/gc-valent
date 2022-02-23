@@ -18,7 +18,7 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((8, 8), (1, 1))
+    ax, f = getSetup((26, 8), (1, 3))
 
     receoptors = {'Epitope':['CD25','CD122']}
     epitopesDF = pd.DataFrame(receoptors)
@@ -68,8 +68,6 @@ def makeFigure():
                 convFact = 77.136987
             elif e == 'CD122':
                 convFact = 332.680090
-            elif e == "CD127":
-                convFact = 594.379215
             else:
                 convFact = meanConv
 
@@ -91,57 +89,75 @@ def makeFigure():
 
 
     #range from 0.01 <-> 100
-    betaAffs = np.logspace(-4,2,20)
+    betaAffs = np.logspace(-4,2,10)
 
-    treg_sigs = np.zeros((5,20))
-    offTarg_sigs = np.zeros((5,20))
+    treg_sigs = np.zeros((8,20))
+    offTarg_sigs = np.zeros((8,20))
+
+    #0-2 IL2 WT
+    #3-5 R38Q
+    #6-7 Live/Dead
+    muts = ['IL2', 'R38Q/H16N']
+    vals = [1,2,4]
 
     for i, aff in enumerate(betaAffs):
         print(aff)
-        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, 1)
-        treg_sigs[0,i] = treg_sig
-        offTarg_sigs[0,i] = offTarg_sig
-
-        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, 2)
-        treg_sigs[1,i] = treg_sig
-        offTarg_sigs[1,i] = offTarg_sig
-
-        treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, 4)
-        treg_sigs[2,i] = treg_sig
-        offTarg_sigs[2,i] = offTarg_sig
+        for j, mut in enumerate(muts):
+            for k, val in enumerate(vals):
+                n = (3*j)+k
+                print(n)
+                treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, aff, val, mut)
+                treg_sigs[n,i] = treg_sig
+                offTarg_sigs[n,i] = offTarg_sig
 
         treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, aff, 1)
-        treg_sigs[3,i] = treg_sig_bi
-        offTarg_sigs[3,i] = offTarg_sig_bi
+        treg_sigs[6,i] = treg_sig_bi
+        offTarg_sigs[6,i] = offTarg_sig_bi
 
         treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, aff, 2)
-        treg_sigs[4,i] = treg_sig_bi
-        offTarg_sigs[4,i] = offTarg_sig_bi
+        treg_sigs[7,i] = treg_sig_bi
+        offTarg_sigs[7,i] = offTarg_sig_bi
 
         #print(treg_sigs)
 
-    print(treg_sigs)
+    # Normalizes data to 1
     def norm(data):
         return data/max(data)
 
-    
     ##print(y_ticks)
     ax[0].plot(norm(treg_sigs[0]),norm(offTarg_sigs[0]),label='WT')
     ax[0].plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival')
     ax[0].plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval')
-    ax[0].plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='CD25 Bispec')
-    ax[0].plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='CD25 Bispec/Bival (tetra?)')
+    ax[0].plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),label='CD25 Live/Dead')
+    ax[0].plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),label='CD25 Bivalent Live/Dead')
     ax[0].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-    #ax[0].set_aspect('equal',adjustable='box')
     ax[0].legend()
+
+    ax[1].plot(norm(treg_sigs[0]),norm(offTarg_sigs[0]),label='WT')
+    ax[1].plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival')
+    ax[1].plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval')
+    ax[1].plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='R38Q/H16N')
+    ax[1].plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='R38Q/H16N Bival')
+    ax[1].plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),label='R38Q/H16N Tetraval')
+    ax[1].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+    ax[1].legend()
+
+    ax[2].plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='R38Q/H16N')
+    ax[2].plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='R38Q/H16N Bival')
+    ax[2].plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),label='R38Q/H16N Tetraval')
+    ax[2].plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),label='CD25 Live/Dead')
+    ax[2].plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),label='CD25 Bivalent Live/Dead')
+    ax[2].set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+    ax[2].legend()
+
 
 
     return f
 
 
-def cytBindingModel(counts, betaAffs, val, x=False, date=False):
+def cytBindingModel(counts, betaAffs, val, mut, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    mut = 'IL2'
+    #mut = mut
     doseVec = np.array([0.1])
     recCount = np.ravel(counts)
 
@@ -167,7 +183,7 @@ def cytBindingModel(counts, betaAffs, val, x=False, date=False):
 
     return output
 
-def bindingCalc(df, targCell, offTCells, betaAffs, val):
+def bindingCalc(df, targCell, offTCells, betaAffs, val, mut):
     """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
@@ -178,13 +194,13 @@ def bindingCalc(df, targCell, offTCells, betaAffs, val):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts, betaAffs, val)
+        targetBound += cytBindingModel(counts, betaAffs, val, mut)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts,betaAffs, val)
+            offTargetBound += cytBindingModel(counts,betaAffs, val, mut)
 
     return targetBound, offTargetBound
 
