@@ -90,10 +90,10 @@ def makeFigure():
 
 
     #range from 0.01 <-> 100
-    betaAffs = np.logspace(-4,2,10)
+    betaAffs = np.logspace(-4,2,40)
 
-    treg_sigs = np.zeros((8,20))
-    offTarg_sigs = np.zeros((8,20))
+    treg_sigs = np.zeros((8,40))
+    offTarg_sigs = np.zeros((8,40))
 
     #0-2 IL2 WT
     #3-5 R38Q
@@ -132,12 +132,12 @@ def makeFigure():
             ax.plot(norm(treg_sigs[1]),norm(offTarg_sigs[1]),label='WT Bival', c='green')
             ax.plot(norm(treg_sigs[2]),norm(offTarg_sigs[2]),label='WT Tetraval', c='c')
         if 'R38Q/H16N' in types:
-            ax.plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),label='R38Q/H16N', c='red')
-            ax.plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),label='R38Q/H16N Bival', c='y')
-            ax.plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),label='R38Q/H16N Tetraval', c='orange')
+            ax.plot(norm(treg_sigs[3]),norm(offTarg_sigs[3]),'--',label='R38Q/H16N', c='red')
+            ax.plot(norm(treg_sigs[4]),norm(offTarg_sigs[4]),'--',label='R38Q/H16N Bival', c='y')
+            ax.plot(norm(treg_sigs[5]),norm(offTarg_sigs[5]),'--',label='R38Q/H16N Tetraval', c='orange')
         if 'Live/Dead' in types:
-            ax.plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),label='CD25 Live/Dead',c='indigo')
-            ax.plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),label='CD25 Bivalent Live/Dead',c='magenta')
+            ax.plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),'-.',label='CD25 Live/Dead',c='indigo')
+            ax.plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),'-.',label='CD25 Bivalent Live/Dead',c='magenta')
         
         ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
         ax.legend()
@@ -146,6 +146,7 @@ def makeFigure():
     plotSignals(['WT','R38Q/H16N'],ax[0])
     plotSignals(['WT','Live/Dead'],ax[1])
     plotSignals(['R38Q/H16N','Live/Dead'],ax[2])
+    f.suptitle('Treg vs. Off Target Signaling Varing Beta Affinity', fontsize=10)
 
     return f
 
