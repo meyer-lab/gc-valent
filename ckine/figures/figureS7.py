@@ -1,5 +1,5 @@
 """
-This creates Figure S6, plotting Treg to off target signaling for vaying IL2Rb affinity for different IL2 formats
+This creates Figure S6, plotting Treg to off target signaling for vaying mutein dose for different IL2 formats
 """
 from email.mime import base
 from os.path import dirname, join
@@ -90,7 +90,7 @@ def makeFigure():
 
 
     #range from 0.01 <-> 100
-    betaAffs = np.logspace(-4,2,10)
+    doseVec = np.logspace(-12,-6,10)
 
     treg_sigs = np.zeros((8,20))
     offTarg_sigs = np.zeros((8,20))
@@ -101,7 +101,7 @@ def makeFigure():
     muts = ['IL2', 'R38Q/H16N']
     vals = [1,2,4]
 
-    for i, aff in enumerate(betaAffs):
+    for i, aff in enumerate(doseVec):
         print(aff)
         for j, mut in enumerate(muts):
             for k, val in enumerate(vals):
@@ -150,16 +150,16 @@ def makeFigure():
     return f
 
 
-def cytBindingModel(counts, betaAffs, val, mut, x=False, date=False):
+def cytBindingModel(counts, doseVec, val, mut, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     #mut = mut
-    doseVec = np.array([0.1])
+    #doseVec = np.array([0.1])
     recCount = np.ravel(counts)
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
 
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, [betaAffs]]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
     
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
@@ -178,7 +178,7 @@ def cytBindingModel(counts, betaAffs, val, mut, x=False, date=False):
 
     return output
 
-def bindingCalc(df, targCell, offTCells, betaAffs, val, mut):
+def bindingCalc(df, targCell, offTCells, doseVec, val, mut):
     """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
@@ -189,22 +189,22 @@ def bindingCalc(df, targCell, offTCells, betaAffs, val, mut):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts, betaAffs, val, mut)
+        targetBound += cytBindingModel(counts, doseVec, val, mut)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts,betaAffs, val, mut)
+            offTargetBound += cytBindingModel(counts, doseVec, val, mut)
 
     return targetBound, offTargetBound
 
 
-def cytBindingModel_bispec(counts, betaAffs, recXaff, val, x=False):
+def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
 
-    mut = 'R38Q/H16N' #Try switching this to R38Q
-    doseVec = np.array([0.1])
+    mut = 'R38Q/H16N' 
+    #doseVec = np.array([0.1])
 
     recXaff = np.power(10, recXaff)
 
@@ -212,7 +212,7 @@ def cytBindingModel_bispec(counts, betaAffs, recXaff, val, x=False):
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, [betaAffs]]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
@@ -232,7 +232,7 @@ def cytBindingModel_bispec(counts, betaAffs, recXaff, val, x=False):
     return output
 
 
-def bindingCalc_bispec(df, targCell, offTCells,betaAffs,val):
+def bindingCalc_bispec(df, targCell, offTCells,doseVec,val):
     """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
@@ -243,13 +243,13 @@ def bindingCalc_bispec(df, targCell, offTCells,betaAffs,val):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count,cd25Count]
-        targetBound += cytBindingModel_bispec(counts, betaAffs, 9.0, val)
+        targetBound += cytBindingModel_bispec(counts, doseVec, 9.0, val)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count,cd25Count]
-            offTargetBound += cytBindingModel_bispec(counts, betaAffs, 9.0, val)
+            offTargetBound += cytBindingModel_bispec(counts, doseVec, 9.0, val)
 
     return targetBound, offTargetBound
 
