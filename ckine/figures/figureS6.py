@@ -3,10 +3,9 @@ This creates Figure S6, plotting Treg to off target signaling for vaying IL2Rb a
 """
 from email.mime import base
 from os.path import dirname, join
-
-from matplotlib.pyplot import xlim,ylim
+from scipy.optimize import minimize, Bounds
 from .figureCommon import getSetup
-from ..imports import importCITE, importReceptors
+from ..imports import importCITE
 from ..MBmodel import polyc, getKxStar
 from copy import copy
 import pandas as pd
@@ -26,10 +25,6 @@ def makeFigure():
 
     CITE_DF = importCITE()
 
-    # Get conv factors, average them
-    convFact = convFactCalc(ax[0])
-    meanConv = convFact.Weight.mean()
-
     # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
 
     cellList = CITE_DF["CellType2"].unique().tolist()
@@ -46,9 +41,11 @@ def makeFigure():
 
     #offTCells = cellList.copy()
     #offTCells.remove('Treg')
+
     
 
-    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 Proliferating','NK Proliferating','NK_CD56bright']
+    #offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM','CD8 Proliferating','NK Proliferating','NK_CD56bright']
+    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM','CD8 ']
 
     print(offTCells)
 
@@ -100,6 +97,8 @@ def makeFigure():
     #6-7 Live/Dead
     muts = ['IL2', 'R38Q/H16N']
     vals = [1,2,4]
+
+    
 
     for i, aff in enumerate(betaAffs):
         print(aff)
@@ -254,51 +253,44 @@ def bindingCalc_bispec(df, targCell, offTCells,betaAffs,val):
 
     return targetBound, offTargetBound
 
-cellDict = {"CD4 Naive": "Thelper",
-            "CD4 CTL": "Thelper",
-            "CD4 TCM": "Thelper",
-            "CD4 TEM": "Thelper",
-            "NK": "NK",
-            "CD8 Naive": "CD8",
-            "CD8 TCM": "CD8",
-            "CD8 TEM": "CD8",
-            "Treg": "Treg"}
+def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
+    """Provides the function to be minimized to get optimal selectivity"""
+    targetBound = 0
+    offTargetBound = 0
+
+    recXaff = x
+
+    epitopeDF = selectedDF.loc[(selectedDF.Type == 'Epitope')]
+    cd25DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Epitope == 'CD25')]
+    cd122DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Epitope == 'CD122')]
+
+    for i, epCount in enumerate(epitopeDF[targCell].item()):
+        cd25Count = cd25DF[targCell].item()[i]
+        cd122Count = cd122DF[targCell].item()[i]
+        counts = [cd25Count, cd122Count, epCount]
+        targetBound += cytBindingModel_bispec(counts, recXaff)
+    for cellT in offTCells:
+        for i, epCount in enumerate(epitopeDF[cellT].item()):
+            cd25Count = cd25DF[cellT].item()[i]
+            cd122Count = cd122DF[cellT].item()[i]
+            counts = [cd25Count, cd122Count, epCount]
+
+            offTargetBound += cytBindingModel_bispec(counts, recXaff)
+
+    return (offTargetBound) / (targetBound)
 
 
-markDict = {"CD25": "IL2Ra",
-            "CD122": "IL2Rb",
-            "CD127": "IL7Ra",
-            "CD132": "gc"}
+def optimizeDesign(targCell, offTcells, selectedDF, epitope):
+    """ A more general purpose optimizer """
 
+    if targCell == "NK":
+        X0 = [6.0, 8]
+    else:
+        X0 = [7.0]
 
-def convFactCalc(ax):
-    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
-    CITE_DF = importCITE()
-    cellToI = ["CD4 TCM", "CD8 Naive", "NK", "CD8 TEM", "CD4 Naive", "CD4 CTL", "CD8 TCM", "Treg", "CD4 TEM"]
-    markers = ["CD122", "CD127", "CD25"]
-    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount", "Number"])
-    for marker in markers:
-        for cell in cellToI:
-            cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
+    optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
 
-    markerDF = markerDF.replace({"Marker": markDict, "Cell Type": cellDict})
-    markerDFw = pd.DataFrame(columns=["Marker", "Cell Type", "Average"])
-    for marker in markerDF.Marker.unique():
-        for cell in markerDF["Cell Type"].unique():
-            subDF = markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)]
-            wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(subDF.Number.values)
-            markerDFw = markerDFw.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg}))
+    optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, epitope), jac="3-point")
+    optSelectivity = optimized.fun[0]
 
-    recDF = importReceptors()
-    weightDF = pd.DataFrame(columns=["Receptor", "Weight"])
-
-    for rec in markerDFw.Marker.unique():
-        CITEval = np.array([])
-        Quantval = np.array([])
-        for cell in markerDF["Cell Type"].unique():
-            CITEval = np.concatenate((CITEval, markerDFw.loc[(markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)].Average.values))
-            Quantval = np.concatenate((Quantval, recDF.loc[(recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)].Mean.values))
-        weightDF = weightDF.append(pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)), Quantval, rcond=None)[0]}))
-
-    return weightDF
+    return optSelectivity
