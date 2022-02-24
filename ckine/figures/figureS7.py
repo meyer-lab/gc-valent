@@ -27,30 +27,30 @@ def makeFigure():
     CITE_DF = importCITE()
 
     # Get conv factors, average them
-    convFact = convFactCalc(ax[0])
-    meanConv = convFact.Weight.mean()
+    #convFact = convFactCalc(ax[0])
+    #meanConv = convFact.Weight.mean()
 
     # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
 
-    cellList = CITE_DF["CellType2"].unique().tolist()
+    #cellList = CITE_DF["CellType2"].unique().tolist()
+    cellList = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM','Treg']
 
     sampleSizes = []
     for cellType in cellList:
         cellSample = []
-        for i in np.arange(3):
+        for i in np.arange(10):
             sampleDF = CITE_DF.sample(1000)
             sampleSize = int(len(sampleDF.loc[sampleDF["CellType2"] == cellType]))
             cellSample.append(sampleSize)
         meanSize = np.mean(cellSample)
         sampleSizes.append(int(meanSize))
+    print(sampleSizes)
 
     #offTCells = cellList.copy()
     #offTCells.remove('Treg')
     
 
-    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 Proliferating','NK Proliferating','NK_CD56bright']
-
-    print(offTCells)
+    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM']
 
     # For each  cellType in list
     for i, cellType in enumerate(cellList):
@@ -58,7 +58,7 @@ def makeFigure():
         # Generate sample size
         sampleSize = sampleSizes[i]
 
-        cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(sampleSize)
+        cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(sampleSize,random_state=45) #45 is okay
 
         cellType_abdundances = []
         # For each epitope (being done on per cell basis)
@@ -213,7 +213,7 @@ def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, [1]]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
@@ -244,61 +244,12 @@ def bindingCalc_bispec(df, targCell, offTCells,doseVec,val):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count,cd25Count]
-        targetBound += cytBindingModel_bispec(counts, doseVec, 9.0, val)
+        targetBound += cytBindingModel_bispec(counts, doseVec, 9, val)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count,cd25Count]
-            offTargetBound += cytBindingModel_bispec(counts, doseVec, 9.0, val)
+            offTargetBound += cytBindingModel_bispec(counts, doseVec, 9, val)
 
     return targetBound, offTargetBound
-
-cellDict = {"CD4 Naive": "Thelper",
-            "CD4 CTL": "Thelper",
-            "CD4 TCM": "Thelper",
-            "CD4 TEM": "Thelper",
-            "NK": "NK",
-            "CD8 Naive": "CD8",
-            "CD8 TCM": "CD8",
-            "CD8 TEM": "CD8",
-            "Treg": "Treg"}
-
-
-markDict = {"CD25": "IL2Ra",
-            "CD122": "IL2Rb",
-            "CD127": "IL7Ra",
-            "CD132": "gc"}
-
-
-def convFactCalc(ax):
-    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
-    CITE_DF = importCITE()
-    cellToI = ["CD4 TCM", "CD8 Naive", "NK", "CD8 TEM", "CD4 Naive", "CD4 CTL", "CD8 TCM", "Treg", "CD4 TEM"]
-    markers = ["CD122", "CD127", "CD25"]
-    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount", "Number"])
-    for marker in markers:
-        for cell in cellToI:
-            cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
-
-    markerDF = markerDF.replace({"Marker": markDict, "Cell Type": cellDict})
-    markerDFw = pd.DataFrame(columns=["Marker", "Cell Type", "Average"])
-    for marker in markerDF.Marker.unique():
-        for cell in markerDF["Cell Type"].unique():
-            subDF = markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)]
-            wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(subDF.Number.values)
-            markerDFw = markerDFw.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg}))
-
-    recDF = importReceptors()
-    weightDF = pd.DataFrame(columns=["Receptor", "Weight"])
-
-    for rec in markerDFw.Marker.unique():
-        CITEval = np.array([])
-        Quantval = np.array([])
-        for cell in markerDF["Cell Type"].unique():
-            CITEval = np.concatenate((CITEval, markerDFw.loc[(markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)].Average.values))
-            Quantval = np.concatenate((Quantval, recDF.loc[(recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)].Mean.values))
-        weightDF = weightDF.append(pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)), Quantval, rcond=None)[0]}))
-
-    return weightDF
