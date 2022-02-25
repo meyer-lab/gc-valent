@@ -22,7 +22,7 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((12, 10), (1, 1))
+    ax, f = getSetup((4, 3), (1, 1))
 
     epitopesDF = pd.DataFrame(columns={"Epitope", "Selectivity"})
 
@@ -117,13 +117,13 @@ def makeFigure():
     # generate figures
 
     # bar of each epitope
-    epitopesDF = epitopesDF.sort_values(by=['Selectivity'])
+    epitopesDF = epitopesDF.sort_values(by=['Selectivity']).tail(10)
     xvalues = epitopesDF['Epitope']
     yvalues = (((epitopesDF['Selectivity']) / baseSelectivity) * 100) - 100
     print(yvalues)
-    cmap = sns.color_palette("husl", 10)
-    sns.barplot(x=xvalues, y=yvalues, palette=cmap, ax=ax[0])
+    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
     ax[0].set_ylabel("Selectivity (% increase over WT IL2)")
+    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
 
