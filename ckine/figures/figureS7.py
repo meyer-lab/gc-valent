@@ -90,7 +90,7 @@ def makeFigure():
 
 
     #range from pico <-> micromolar
-    doseVec = np.logspace(-12,-6,40)
+    doseVec = np.logspace(-12,-6,20)
 
     treg_sigs = np.zeros((8,40))
     offTarg_sigs = np.zeros((8,40))
@@ -209,11 +209,12 @@ def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
 
     recXaff = np.power(10, recXaff)
 
+
     recCount = np.ravel(counts)
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, [1]]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, [0.1]]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
