@@ -17,10 +17,10 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((26, 8), (1, 3))
+    ax, f = getSetup((13, 4), (1, 3))
 
-    receoptors = {'Epitope':['CD25','CD122']}
-    epitopesDF = pd.DataFrame(receoptors)
+    receptors = {'Epitope':['CD25','CD122']}
+    epitopesDF = pd.DataFrame(receptors)
 
 
     CITE_DF = importCITE()
@@ -29,7 +29,7 @@ def makeFigure():
     #convFact = convFactCalc(ax[0])
     #meanConv = convFact.Weight.mean()
 
-    # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
+    # weighting idea: take sample of everything of  times and then average each types amount and use that as the size
 
     #cellList = CITE_DF["CellType2"].unique().tolist()
     cellList = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM','Treg']

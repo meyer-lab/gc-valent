@@ -18,10 +18,10 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((26, 8), (1, 3))
+    ax, f = getSetup((13, 4), (1, 3))
 
-    receoptors = {'Epitope':['CD25','CD122']}
-    epitopesDF = pd.DataFrame(receoptors)
+    receptors = {'Epitope':['CD25','CD122']}
+    epitopesDF = pd.DataFrame(receptors)
 
 
     CITE_DF = importCITE()
@@ -32,13 +32,13 @@ def makeFigure():
 
     # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
 
-    cellList = CITE_DF["CellType2"].unique().tolist()
+    cellList = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM','Treg']
 
     sampleSizes = []
     for cellType in cellList:
         cellSample = []
         for i in np.arange(10):
-            sampleDF = CITE_DF.sample(1000,random_state)
+            sampleDF = CITE_DF.sample(1000)
             sampleSize = int(len(sampleDF.loc[sampleDF["CellType2"] == cellType]))
             cellSample.append(sampleSize)
         meanSize = np.mean(cellSample)
@@ -48,7 +48,7 @@ def makeFigure():
     #offTCells.remove('Treg')
     
 
-    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 Proliferating','NK Proliferating','NK_CD56bright']
+    offTCells = ['CD8 Naive','NK', 'CD8 TEM','CD8 TCM']
 
     print(offTCells)
 
@@ -139,14 +139,15 @@ def makeFigure():
             ax.plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),'-.',label='CD25 Live/Dead',c='indigo')
             ax.plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),'-.',label='CD25 Bivalent Live/Dead',c='magenta')
         
-        ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+        ax.set_xlabel('Treg Signaling',fontsize=12)
+        ax.set_ylabel('Off Target Signaling',fontsize=12)
         ax.legend()
 
     
     plotSignals(['WT','R38Q/H16N'],ax[0])
     plotSignals(['WT','Live/Dead'],ax[1])
     plotSignals(['R38Q/H16N','Live/Dead'],ax[2])
-    f.suptitle('Treg vs. Off Target Signaling Varing Beta Affinity', fontsize=10)
+    f.suptitle('Treg vs. Off Target Signaling Varing Beta Affinity', fontsize=18)
 
     return f
 
