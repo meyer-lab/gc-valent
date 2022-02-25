@@ -3,7 +3,6 @@ This creates Figure S6, plotting Treg to off target signaling for vaying mutein 
 """
 from email.mime import base
 from os.path import dirname, join
-
 from matplotlib.pyplot import xlim,ylim
 from .figureCommon import getSetup
 from ..imports import importCITE, importReceptors
@@ -90,7 +89,7 @@ def makeFigure():
 
 
     #range from pico <-> micromolar
-    doseVec = np.logspace(-12,-6,20)
+    doseVec = np.logspace(-12,-6,40)
 
     treg_sigs = np.zeros((8,40))
     offTarg_sigs = np.zeros((8,40))
@@ -139,14 +138,16 @@ def makeFigure():
             ax.plot(norm(treg_sigs[6]),norm(offTarg_sigs[6]),'-.',label='CD25 Live/Dead',c='indigo')
             ax.plot(norm(treg_sigs[7]),norm(offTarg_sigs[7]),'-.',label='CD25 Bivalent Live/Dead',c='magenta')
         
-        ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+        #ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+        ax.set_xlabel('Treg Signaling',fontsize=12)
+        ax.set_ylabel('Off Target Signaling',fontsize=12)
         ax.legend()
 
     
     plotSignals(['WT','R38Q/H16N'],ax[0])
     plotSignals(['WT','Live/Dead'],ax[1])
     plotSignals(['R38Q/H16N','Live/Dead'],ax[2])
-    f.suptitle('Treg vs. Off Target Signaling Varing Dose Concentration', fontsize=10)
+    f.suptitle('Treg vs. Off Target Signaling Varing Dose Concentration', fontsize=18)
 
     return f
 
@@ -214,7 +215,7 @@ def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, [0.1]]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, [1]]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
