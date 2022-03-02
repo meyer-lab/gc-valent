@@ -75,10 +75,10 @@ def makeFigure():
     standardDF['Type'] = 'Standard'
 
     # range from pico <-> micromolar
-    doseVec = np.logspace(-14, -6, 10)
+    doseVec = np.logspace(-18, -6, 60)
 
-    treg_sigs = np.zeros((8, 10))
-    offTarg_sigs = np.zeros((8, 10))
+    treg_sigs = np.zeros((8, 60))
+    offTarg_sigs = np.zeros((8, 60))
 
     # 0-2 IL2 WT
     # 3-5 R38Q
@@ -119,20 +119,20 @@ def makeFigure():
     def plotSignals(types, ax):
         # Add standard colors/line types
         if 'WT' in types:
-            ax.plot(norm(treg_sigs[0], tregMax), norm(offTarg_sigs[0], offMax), label='WT', c='blue')
-            ax.plot(norm(treg_sigs[1], tregMax), norm(offTarg_sigs[1], offMax), label='WT Bival', c='green')
-            ax.plot(norm(treg_sigs[2], tregMax), norm(offTarg_sigs[2], offMax), label='WT Tetraval', c='c')
+            ax.plot(norm(offTarg_sigs[0], offMax), norm(treg_sigs[0], tregMax), label='WT', c='blue')
+            ax.plot(norm(offTarg_sigs[1], offMax), norm(treg_sigs[1], tregMax), label='WT Bival', c='green')
+            ax.plot(norm(offTarg_sigs[2], offMax), norm(treg_sigs[2], tregMax), label='WT Tetraval', c='c')
         if 'R38Q/H16N' in types:
-            ax.plot(norm(treg_sigs[3], tregMax), norm(offTarg_sigs[3], offMax), '--', label='R38Q/H16N', c='red')
-            ax.plot(norm(treg_sigs[4], tregMax), norm(offTarg_sigs[4], offMax), '--', label='R38Q/H16N Bival', c='y')
-            ax.plot(norm(treg_sigs[5], tregMax), norm(offTarg_sigs[5], offMax), '--', label='R38Q/H16N Tetraval', c='orange')
+            ax.plot(norm(offTarg_sigs[3], offMax), norm(treg_sigs[3], tregMax), '--', label='R38Q/H16N', c='red')
+            ax.plot(norm(offTarg_sigs[4], offMax), norm(treg_sigs[4], tregMax), '--', label='R38Q/H16N Bival', c='y')
+            ax.plot(norm(offTarg_sigs[5], offMax), norm(treg_sigs[5], tregMax), '--', label='R38Q/H16N Tetraval', c='orange')
         if 'Live/Dead' in types:
-            ax.plot(norm(treg_sigs[6], tregMax), norm(offTarg_sigs[6], offMax), '-.', label='CD25 Live/Dead', c='indigo')
-            ax.plot(norm(treg_sigs[7], tregMax), norm(offTarg_sigs[7], offMax), '-.', label='CD25 Bivalent Live/Dead', c='magenta')
+            ax.plot(norm(offTarg_sigs[6], offMax), norm(treg_sigs[6], tregMax), '-.', label='CD25 Live/Dead', c='indigo')
+            ax.plot(norm(offTarg_sigs[7], offMax), norm(treg_sigs[7], tregMax), '-.', label='CD25 Bivalent Live/Dead', c='magenta')
 
         #ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-        ax.set_xlabel('Treg Signaling', fontsize=12)
-        ax.set_ylabel('Off Target Signaling', fontsize=12)
+        ax.set_xlabel('Off Target Signaling', fontsize=12)
+        ax.set_ylabel('Treg Signaling', fontsize=12)
         ax.legend()
 
     plotSignals(['WT', 'R38Q/H16N'], ax[0])
