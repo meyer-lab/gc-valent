@@ -7,6 +7,9 @@ import seaborn as sns
 import tensorly as tl
 from tensorly.decomposition import non_negative_parafac, non_negative_parafac_hals
 from copy import copy
+from .figures.figureCommon import get_cellTypeDict
+
+cellDict = get_cellTypeDict()
 
 
 def makeTensor(sigDF, Variance=False):
@@ -50,7 +53,7 @@ def R2Xplot(ax, tensor, compNum):
         varHold[i - 1] = calcR2X(tensor, tFac)
 
     ax.scatter(np.arange(1, compNum + 1), varHold, c='k', s=20.)
-    ax.set(title="R2X", ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum), xticks=np.arange(0, compNum + 1))
+    ax.set(title="R2X", ylabel="Variance Explained", xlabel="Number of Components", ylim=(0, 1), xlim=(0, compNum + 0.5), xticks=np.arange(0, compNum + 1))
 
 
 def calcR2X(tensorIn, tensorFac):
@@ -93,7 +96,6 @@ def plot_tFac_Time(ax, tFac, respDF):
     for i in range(0, timeFacs.shape[1]):
         ax.plot(tps, timeFacs[:, i], marker=markersTimes[i], label="Component " + str(i + 1), markersize=5)
 
-    ax.legend()
     ax.set(title="Time", xlabel="Time (hrs)", xlim=(0, 4), ylabel="Component Weight", ylim=(0, 1))
 
 
@@ -106,7 +108,6 @@ def plot_tFac_Conc(ax, tFac, respDF):
     for i in range(0, concFacs.shape[1]):
         ax.plot(concs, concFacs[:, i], marker=markersConcs[i], label="Component " + str(i + 1), markersize=5)
 
-    ax.legend()
     ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component Weight", ylim=(0, 1), xscale='log')
 
 
@@ -118,6 +119,7 @@ def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
     for i in range(0, numComps):
         tFacDFcell = tFacDFcell.append(pd.DataFrame({"Component_Val": cellFacs[:, i], "Component": (i + 1), "Cell": cells}))
 
+    tFacDFcell = tFacDFcell.replace(cellDict)
     sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
     ax.set(ylabel="Component Weight")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
@@ -131,5 +133,5 @@ def facScatterPlot(ax, tFacDFLig):
             isoDF = scattDF.loc[(scattDF.Ligand == ligand) & (scattDF.Valency == valency)]
             scattDF = scattDF.append(pd.DataFrame({"Component 1 + 3": isoDF.loc[isoDF.Component == 1].Component_Val.values + isoDF.loc[isoDF.Component == 3].Component_Val.values,
                                                    "Component 2": isoDF.loc[isoDF.Component == 2].Component_Val.values, "Valency": valency}))
-    sns.scatterplot(data=scattDF, x="Component 1 + 3", y="Component 2", hue="Valency", style="Valency", ax=ax)
+    sns.scatterplot(data=scattDF, x="Component 1 + 3", y="Component 2", hue="Valency", style="Valency", size="Valency", ax=ax)
     ax.set(xlim=(0, 0.8), ylim=(0, 0.8))

@@ -19,13 +19,11 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
     ax, f = getSetup((15, 6), (2, 5), multz={0: 2})
-
-    subplotLabel(ax)
     axlabel = copy(ax)
-    del axlabel[7]
+    del axlabel[2]
     subplotLabel(axlabel)
     ax[0].axis("off")
-    ax[7].axis("off")
+    ax[2].axis("off")
     numComps = 3
 
     # Imports receptor levels from .csv created by figC5
@@ -35,11 +33,17 @@ def makeFigure():
     tFacAllM.normalize()
 
     R2Xplot(ax[1], respTensor, 5)
-    ligCompDF = plot_tFac_Ligs(ax[2], tFacAllM, respDF, numComps=numComps)
-    plot_tFac_Conc(ax[3], tFacAllM, respDF)
-    plot_tFac_Cells(ax[4], tFacAllM, respDF, numComps=numComps)
-    plot_tFac_Time(ax[5], tFacAllM, respDF)
-    facScatterPlot(ax[6], ligCompDF)
+    ligCompDF = plot_tFac_Ligs(ax[3], tFacAllM, respDF, numComps=numComps)
+    plot_tFac_Conc(ax[4], tFacAllM, respDF)
+    plot_tFac_Cells(ax[5], tFacAllM, respDF, numComps=numComps)
+    plot_tFac_Time(ax[6], tFacAllM, respDF)
+    facScatterPlot(ax[7], ligCompDF)
+
+    legend = ax[3].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    ax[3].get_legend().remove()
+    ax[5].get_legend().remove()
 
     #mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     #mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)

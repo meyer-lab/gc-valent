@@ -94,12 +94,20 @@ def genFigure():
     if sys.argv[1] == 'C1':
         # Overlay Figure 1 cartoon
         overlayCartoon(fdir + 'figureC1.svg',
-                       './ckine/graphics/muteinsCartoon.svg', 5, 6, scalee=1.62)
+                       './ckine/graphics/muteinsCartoon.svg', 1200, 350, scalee=0.040)
+
+    if sys.argv[1] == 'C2':
+        # Overlay Figure 2 cartoon
+        overlayCartoon(fdir + 'figureC2.svg',
+                       './ckine/graphics/selectivityCartoon.svg', 1200, 350, scalee=0.039)
+
+        overlayCartoon(fdir + 'figureC2.svg',
+                       './ckine/graphics/citeCartoon.svg', 2300, 20500, scalee=0.043)
 
     if sys.argv[1] == 'C3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figureC3.svg',
-                       './ckine/graphics/tensor4D.svg', 5, 6, scalee=1.62)
+                       './ckine/graphics/tensor4D.svg', 20, 6, scalee=1.62)
 
     if sys.argv[1] == 'C4':
         # Overlay Figure 4 cartoon
