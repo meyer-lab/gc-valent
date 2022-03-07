@@ -208,8 +208,10 @@ def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
     Affs = np.power(np.array([Affs["IL2RaKD"].values, [1]]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
-    holder = np.full((3, 3), 1e2)
-    np.fill_diagonal(holder, Affs)
+    holder = np.full((3, 2), 1e2)
+    holder[0, 0] = Affs[0]
+    holder[1, 1] = Affs[1]
+    holder[2, 0] = Affs[2]
     Affs = holder
 
     if doseVec.size == 1:
@@ -235,13 +237,13 @@ def bindingCalc_bispec(df, targCell, offTCells, doseVec, val):
 
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
-        counts = [cd25Count, cd122Count, cd25Count]
+        counts = [cd25Count, cd122Count]
         targetBound += cytBindingModel_bispec(counts, doseVec, 9, val)
 
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
-            counts = [cd25Count, cd122Count, cd25Count]
+            counts = [cd25Count, cd122Count]
             offTargetBound += cytBindingModel_bispec(counts, doseVec, 9, val)
 
     return targetBound, offTargetBound
