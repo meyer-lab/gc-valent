@@ -8,6 +8,8 @@ import seaborn as sns
 import numpy as np
 from copy import copy
 from scipy.optimize import least_squares
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 from os.path import dirname, join
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, get_cellTypeDict
 from ..imports import import_pstat_all
@@ -71,7 +73,7 @@ def affPlot(ax, respDF, mutAffDF):
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Monovalent"
         elif valencies == 2:
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Bivalent"
-    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Valency", ax=ax, palette=ligDict)
+    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", ax=ax, palette=ligDict)
 
 
 def fullHeatMap(ax, respDF):
@@ -111,7 +113,8 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
     else:
         Ligands = ligList
 
-    respDF = respDF.loc[(respDF.Cell == cell) & (respDF.Time == time) & (respDF.Ligand.isin(Ligands))]
+    #maxobs = respDF.loc[(respDF.Dose == respDF.Dose.max()) & (respDF.Cell == cell) & (respDF.Ligand == "IL2")].Mean.max()
+    respDF = respDF.loc[(respDF.Cell == cell) & (respDF.Time == time) & (respDF.Ligand.isin(Ligands + ["IL2"]))]
 
     for ligand in respDF.Ligand.unique():
         for valency in respDF.loc[respDF.Ligand == ligand].Valency.unique():
@@ -120,12 +123,18 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
             yData = np.nan_to_num(isoData.Mean.values)
             fit = least_squares(hill_residuals, x0, args=(xData, yData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
             hillDF = hillDF.append(pd.DataFrame({"Ligand": ligand, "Valency": valency, "Dose": np.power(10, doses - 4), "pSTAT": hill_equation(fit.x, doses)}))
+
+    maxobs = hillDF.loc[(hillDF.Ligand == "IL2")].pSTAT.max()
+    respDF = respDF.loc[(respDF.Cell == cell) & (respDF.Time == time) & (respDF.Ligand.isin(Ligands))]
+    hillDF = hillDF.loc[(hillDF.Ligand.isin(Ligands))]
+
     hillDF = hillDF.groupby(["Ligand", "Valency", "Dose"]).pSTAT.mean().reset_index()
     respDF = respDF.groupby(["Ligand", "Valency", "Cell", "Dose"]).Mean.mean().reset_index()
+    hillDF["pSTAT"] /= maxobs
+    respDF["Mean"] /= maxobs
     sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1, 2.5))
-
-    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", style="Valency", size="Valency", ax=ax, legend=False, palette=ligDict)
-    ax.set(xscale="log", xlim=(1e-4, 1e2), title=cell + " at " + str(time) + " hours", ylim=limDict[cell])
+    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", size="Valency", ax=ax, legend=False, palette=ligDict)
+    ax.set(xscale="log", xlim=(1e-4, 1e2), title=cell + " at " + str(time) + " hours", ylim=(0, 1.2))
     if legend:
         h, l = ax.get_legend_handles_labels()
         ax.legend(h[-3:], l[-3:])
@@ -145,3 +154,67 @@ def hill_equation(x, dose):
 def hill_residuals(x, dose, y):
     """ Residual function for Hill Equation. """
     return hill_equation(x, dose) - y
+
+
+def PCAheatmap(ax, respDF):
+    """Plots the various affinities for IL-2 Muteins"""
+    heatmapDF = pd.DataFrame()
+    respDFhm = copy(respDF)
+    respDFhm.loc[respDF.Valency == 1, "Ligand"] = respDFhm.loc[respDFhm.Valency == 1, "Ligand"] + " (Mon)"
+    respDFhm.loc[respDF.Valency == 2, "Ligand"] = respDFhm.loc[respDFhm.Valency == 2, "Ligand"] + " (Biv)"
+    respDFhm = respDFhm.groupby(["Ligand", "Cell", "Dose", "Time"]).Mean.mean().reset_index()
+    ligCol = []
+    doseCol = []
+    cellCol = []
+    timeCol = []
+    valCol = []
+
+    for i, ligand in enumerate(respDFhm["Ligand"].unique()):
+        for dose in respDFhm.Dose.unique():
+            row = pd.DataFrame()
+            row["Ligand/Dose"] = [ligand + " - " + str(dose) + " (nM)"]
+            for cell in respDF.Cell.unique():
+                normMax = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Cell == cell)].Mean.max()
+                for time in respDFhm.Time.unique():
+                    entry = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Dose == dose) & (respDFhm.Cell == cell) & (respDFhm.Time == time)].Mean.values / normMax
+                    if np.isnan(entry):
+                        row[cell + " - " + str(time) + " hrs"] = 0
+                    elif entry.size < 1:
+                        row[cell + " - " + str(time) + " hrs"] = 0
+                    else:
+                        row[cell + " - " + str(time) + " hrs"] = entry
+            if len(ligand.split(" ")) == 2:
+                ligentry = ligand.split(" ")[0]
+            else:
+                ligentry = ligand.split(" ")[0] + " " + ligand.split(" ")[1]
+            if ligand.split(" ")[-1] == "(Mon)":
+                valentry = 1
+            else:
+                valentry = 2
+            ligCol.append(ligentry)
+            doseCol.append(np.log10(dose))
+            valCol.append(valentry)
+            heatmapDF = heatmapDF.append(row)
+
+    for cell in respDF.Cell.unique():
+        for time in respDFhm.Time.unique():
+            cellCol.append(cell)
+            timeCol.append(time)
+
+    heatmapDF = heatmapDF.set_index("Ligand/Dose")
+
+    PCAmat = heatmapDF.to_numpy()
+    scaler = StandardScaler()
+    pSTATpca = scaler.fit_transform(PCAmat)
+    pca = PCA(n_components=2)
+    scores = pca.fit_transform(pSTATpca)
+    varExp = pca.explained_variance_ratio_ * 100
+    loadings = pca.components_
+    scoresDF = pd.DataFrame({"Ligand": ligCol, "Dose (log)": doseCol, "Valency": valCol, "Component 1": scores[:, 0], "Component 2": scores[:, 1]})
+    loadingsDF = pd.DataFrame({"Cell": cellCol, "Time": timeCol, "Component 1": loadings[0, :], "Component 2": loadings[1, :]})
+
+    sns.scatterplot(data=scoresDF, x="Component 1", y="Component 2", hue="Ligand", size="Dose (log)", style="Valency", palette=ligDict, ax=ax[0])
+    ax[0].set(xlim=(-13, 13), ylim=(-6, 6), xlabel="PC1 (" + str(varExp[0])[0:4] + "%)", ylabel="PC2 (" + str(varExp[1])[0:4] + "%)")
+    #ax[0].legend(loc="lower left")
+    sns.scatterplot(data=loadingsDF, x="Component 1", y="Component 2", hue="Cell", style="Time", ax=ax[1])
+    ax[1].set(xlim=(-0.3, 0.3), ylim=(-0.4, 0.4), xlabel="PC1 (" + str(varExp[0])[0:4] + "%)", ylabel="PC2 (" + str(varExp[1])[0:4] + "%)")
