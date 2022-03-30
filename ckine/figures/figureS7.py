@@ -65,8 +65,6 @@ def makeFigure():
         epitopesDF[cellType] = cellType_abdundances
 
     # New column which will hold selectivity per epitope
-    print(epitopesDF)
-
     targCell = 'Treg'
 
     standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
