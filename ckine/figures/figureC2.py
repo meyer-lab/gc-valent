@@ -55,6 +55,7 @@ def makeFigure():
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     cellTarget = "Treg"
     Wass_KL_Dist(ax[13:15], cellTarget, 10)
+    #Wass_KL_Dist(ax[17:19], cellTarget, 10, RNA=True)
     CITE_RIDGE(ax[17], cellTarget)
     CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
 
