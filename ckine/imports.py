@@ -3,7 +3,11 @@ import os
 from functools import lru_cache
 from os.path import join
 import numpy as np
-import pandas as pds
+import pandas as pd
+import numpy as np
+from scipy.io import mmread
+from copy import copy
+from scipy.sparse import coo_matrix
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -12,7 +16,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
+    data = np.array(pd.read_csv(join(path, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
     ckineConc = data[4, 2:14]
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     # 4 time points, 10 cell types, 12 concentrations, 2 replicates
@@ -45,7 +49,7 @@ def import_pstat(combine_samples=True):
             IL2_data[i, j] = np.nanmean(np.array([IL2_data[i, j], IL2_data2[i, j]]))
             IL15_data[i, j] = np.nanmean(np.array([IL15_data[i, j], IL15_data2[i, j]]))
 
-    dataMean = pds.DataFrame(
+    dataMean = pd.DataFrame(
         {
             "Cells": np.tile(np.repeat(cell_names, 48), 2),
             "Ligand": np.concatenate((np.tile(np.array("IL2"), 480), np.tile(np.array("IL15"), 480))),
@@ -83,17 +87,17 @@ receptors["I"] = ["CD127", "CD127", "CD127", "CD127", "CD127"]
 @lru_cache(maxsize=None)
 def import_pstat_all(singleCell=False, updateLigs=True):
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
-    WTbivDF = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
-    monDF = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
-    respDF = pds.concat([WTbivDF, monDF])
+    WTbivDF = pd.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellData.csv"), encoding="latin1")
+    monDF = pd.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellData.csv"), encoding="latin1")
+    respDF = pd.concat([WTbivDF, monDF])
     if singleCell:
-        WTbivDFbin = pds.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellDataBin.csv"), encoding="latin1")
-        monDFbin = pds.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellDataBin.csv"), encoding="latin1")
-        respDFbin = pds.concat([WTbivDFbin, monDFbin])
+        WTbivDFbin = pd.read_csv(join(path_here, "ckine/data/WTDimericMutSingleCellDataBin.csv"), encoding="latin1")
+        monDFbin = pd.read_csv(join(path_here, "ckine/data/MonomericMutSingleCellDataBin.csv"), encoding="latin1")
+        respDFbin = pd.concat([WTbivDFbin, monDFbin])
         respDFbin = respDFbin.loc[respDFbin["Bin"].isin([1, 3])]
         respDFbin.loc[respDFbin["Bin"] == 1, "Cell"] += r" $IL2Ra^{lo}$"
         respDFbin.loc[respDFbin["Bin"] == 3, "Cell"] += r" $IL2Ra^{hi}$"
-        respDF = pds.concat([respDF, respDFbin])
+        respDF = pd.concat([respDF, respDFbin])
 
     if updateLigs:
         respDF.loc[(respDF.Bivalent == 0), "Ligand"] = (respDF.loc[(respDF.Bivalent == 0)].Ligand + " (Mono)").values
@@ -106,7 +110,7 @@ def import_pstat_all(singleCell=False, updateLigs=True):
 def getBindDict():
     """Gets binding to pSTAT fluorescent conversion dictionary"""
     path = os.path.dirname(os.path.dirname(__file__))
-    bindingDF = pds.read_csv(join(path, "ckine/data/BindingConvDict.csv"), encoding="latin1")
+    bindingDF = pd.read_csv(join(path, "ckine/data/BindingConvDict.csv"), encoding="latin1")
     return bindingDF
 
 
@@ -114,16 +118,52 @@ def getBindDict():
 def importReceptors():
     """Makes Complete receptor expression Dict"""
     path = os.path.dirname(os.path.dirname(__file__))
-    recDF = pds.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
-    recDFbin = pds.read_csv(join(path_here, "ckine/data/BinnedReceptorData.csv"))
+    recDF = pd.read_csv(join(path_here, "ckine/data/RecQuantitation.csv"))
+    recDFbin = pd.read_csv(join(path_here, "ckine/data/BinnedReceptorData.csv"))
     recDFbin = recDFbin.loc[recDFbin["Bin"].isin([1, 3])]
     recDFbin.loc[recDFbin["Bin"] == 1, "Cell Type"] += r" $IL2Ra^{lo}$"
     recDFbin.loc[recDFbin["Bin"] == 3, "Cell Type"] += r" $IL2Ra^{hi}$"
-    recDF = pds.concat([recDF, recDFbin])
+    recDF = pd.concat([recDF, recDFbin])
     return recDF
 
 
 def importCITE():
     """Downloads all surface markers and cell types"""
-    CITEmarkerDF = pds.read_csv(join(path_here, "ckine/data/CITEdata_SurfMarkers.zip"))
+    CITEmarkerDF = pd.read_csv(join(path_here, "ckine/data/CITEdata_SurfMarkers.zip"))
     return CITEmarkerDF
+
+
+def makeRNAseqDF():
+    """Makes surface RNAseq DF"""
+    matrix = mmread(join(path_here, "ckine/data/GSM5008737_RNA_3P-matrix.mtx.gz"))
+    surfGenes = pd.read_csv("ckine/data/SurfaceGenes.csv")
+    featuresGenes = pd.read_csv("ckine/data/RNAfeatures.csv")
+    surfaceList = surfGenes["Gene"].values
+    allFeatures = featuresGenes["Gene"].values
+    surfInd = np.isin(allFeatures, surfaceList)
+    cols = [i for i, x in enumerate(surfInd) if x]
+    dataCoords = np.isin(matrix.row, cols)
+    locList = np.where(surfInd == True)[0].tolist()
+    newCoords = np.arange(0, len(locList)).tolist()
+
+    colDict = {}
+    for key in locList:
+        for value in newCoords:
+            colDict[key] = value
+            newCoords.remove(value)
+            break
+
+    def vec_translate(a, my_dict):
+        return np.vectorize(my_dict.__getitem__)(a)
+    matrix2 = coo_matrix((matrix.data[dataCoords], (matrix.col[dataCoords], vec_translate(matrix.row[dataCoords], colDict))), shape=(matrix.shape[1], np.count_nonzero(surfInd)))
+    geneCols = allFeatures[surfInd]
+    GeneDF = pd.DataFrame(data=matrix2.toarray(), columns=geneCols)
+    cellTypesDF = pd.read_csv(join(path_here, "ckine/data/CITEcellTypes.csv"))
+    GeneDF = pd.concat([GeneDF, cellTypesDF], axis=1)
+    GeneDF.to_csv(join(path_here, "ckine/data/RNAseqSurface.csv"))
+
+
+def importRNACITE():
+    """Downloads all surface markers and cell types"""
+    RNAsurfDF = pd.read_csv(join(path_here, "ckine/data/RNAseqSurface.csv"))
+    return RNAsurfDF
