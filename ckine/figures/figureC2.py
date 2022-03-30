@@ -15,7 +15,7 @@ from sklearn.neighbors import KernelDensity
 from sklearn.svm import SVC
 from copy import copy
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_cellTypeDict, getLigandLegend
-from ..imports import import_pstat_all, importCITE
+from ..imports import import_pstat_all, importCITE, importRNACITE
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -61,6 +61,7 @@ def makeFigure():
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     cellTarget = "Treg"
     Wass_KL_Dist(ax[13:15], cellTarget, 10)
+    #Wass_KL_Dist(ax[17:19], cellTarget, 10, RNA=True)
     CITE_RIDGE(ax[17], cellTarget)
     CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
 
@@ -151,25 +152,29 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, pseudo, cutoff, legend=F
     ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2), ylabel=cell1 + " to " + cell2 + " Ratio Max Dose")
 
 
-def Wass_KL_Dist(ax, targCell, numFactors):
+def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
     """Finds markers which have average greatest difference from other cells"""
-    CITE_DF = importCITE()
+    if RNA:
+        CITE_DF = importRNACITE()
+    else:
+        CITE_DF = importCITE()
 
     markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
     for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
         markAvg = np.mean(CITE_DF[marker].values)
-        targCellMark = CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
-        offTargCellMark = CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
-        if np.mean(targCellMark) > np.mean(offTargCellMark):
-            kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
-            kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
-            minVal = np.minimum(targCellMark.min(), offTargCellMark.min()) - 10
-            maxVal = np.maximum(targCellMark.max(), offTargCellMark.max()) + 10
-            outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
-            distTarg = np.exp(kdeTarg.score_samples(outcomes))
-            distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
-            KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div}))
+        if markAvg > 0.0001:
+            targCellMark = CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
+            offTargCellMark = CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
+            if np.mean(targCellMark) > np.mean(offTargCellMark):
+                kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
+                kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
+                minVal = np.minimum(targCellMark.min(), offTargCellMark.min()) - 10
+                maxVal = np.maximum(targCellMark.max(), offTargCellMark.max()) + 10
+                outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
+                distTarg = np.exp(kdeTarg.score_samples(outcomes))
+                distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
+                KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
+                markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div}))
 
     for i, distance in enumerate(["Wasserstein Distance", "KL Divergence"]):
         ratioDF = markerDF.sort_values(by=distance)
