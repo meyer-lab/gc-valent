@@ -1,157 +1,120 @@
 """
-This creates Figure S6, plotting Treg to off target signaling for vaying mutein dose for different IL2 formats
+This creates Figure S7, RNA optimized Gene ID with Model
 """
 from email.mime import base
 from os.path import dirname, join
-from matplotlib.pyplot import xlim, ylim
 from .figureCommon import getSetup
-from ..imports import importCITE, importReceptors
+from ..imports import importRNACITE, importReceptors
 from ..MBmodel import polyc, getKxStar
-from copy import copy
+from scipy.optimize import minimize, Bounds
 import pandas as pd
 import seaborn as sns
 import numpy as np
+
 
 path_here = dirname(dirname(__file__))
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((13, 4), (1, 3))
+    ax, f = getSetup((4, 3), (1, 1))
+    GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
+    GenesDF = GenesDF.append({"Gene": "IL2RB"}, ignore_index=True)
+    CITE_DF = importRNACITE()
 
-    receptors = {'Epitope': ['CD25', 'CD122']}
-    epitopesDF = pd.DataFrame(receptors)
+    # Get conv factors, average them
+    convFactDF = convFactCalcRNA()
+    meanConv = convFactDF.Weight.mean()
 
-    CITE_DF = importCITE()
-    cellList = ['CD8 Naive', 'CD8 Proliferating', 'CD8 TCM', 'CD8 TEM', 'CD4 Naive', 'CD4 TEM', 'CD4 TCM', 'NK', 'NK Proliferating', 'Treg']
+    # If selectivity values are stored in CSV at end of run
+    saveFile = True
+
+    # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
+
+    cellList = CITE_DF["CellType2"].unique().tolist()
 
     sampleSizes = []
     for cellType in cellList:
         cellSample = []
-        for i in np.arange(10):
-            sampleDF = CITE_DF.sample(1000)
+        for i in np.arange(3):
+            sampleDF = CITE_DF.sample(10000)
             sampleSize = int(len(sampleDF.loc[sampleDF["CellType2"] == cellType]))
             cellSample.append(sampleSize)
         meanSize = np.mean(cellSample)
         sampleSizes.append(int(meanSize))
 
-    offTCells = ['CD8 Naive', 'CD8 Proliferating', 'CD8 TCM', 'CD8 TEM', 'CD4 Naive', 'CD4 TEM', 'CD4 TCM', 'NK', 'NK Proliferating']
+    offTCells = cellList.copy()
+    offTCells.remove('Treg')
 
     # For each  cellType in list
     for i, cellType in enumerate(cellList):
-
-        # Generate sample size
         sampleSize = sampleSizes[i]
-
-        cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(sampleSize, random_state=45)  # 45 is okay
-
+        cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(sampleSize)
         cellType_abdundances = []
-        # For each epitope (being done on per cell basis)
-        for e in epitopesDF.Epitope:
-            # calculate abundance based on converstion factor
-            if e == 'CD25':
-                convFact = 77.136987
-            elif e == 'CD122':
-                convFact = 332.680090
+        # For each Gene (being done on per cell basis)
+        for gene in GenesDF.Gene:
+            # calculate abundance based on conversion factor
+            if gene == 'IL2RA':
+                convFact = convFactDF.loc[convFactDF["Receptor"] == "IL2Ra"].Weight.values
+            elif gene == 'IL2RB':
+                convFact = convFactDF.loc[convFactDF["Receptor"] == "IL2Rb"].Weight.values
+            elif gene == "IL7R":
+                convFact = convFactDF.loc[convFactDF["Receptor"] == "IL7Ra"].Weight.values
             else:
-                assert(False)
                 convFact = meanConv
 
-            citeVal = cellDF[e].to_numpy()
+            citeVal = cellDF[gene].to_numpy()
             abundance = citeVal * convFact
             cellType_abdundances.append(abundance)
-            # add column with this name to epitopesDF and abundances list
+            # add column with this name to GenesDF and abundances list
+        GenesDF[cellType] = cellType_abdundances
 
-        epitopesDF[cellType] = cellType_abdundances
+    # GeneDF now contains a data of single cell abundances for each cell type for each Gene
+    GenesDF['Selectivity'] = -1
+    # New column which will hold selectivity per Gene
 
-    # New column which will hold selectivity per epitope
     targCell = 'Treg'
 
-    standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
-    standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
+    standardDF = GenesDF.loc[(GenesDF.Gene == 'IL2RA')].sample()
+    standard2DF = GenesDF.loc[(GenesDF.Gene == 'IL2RB')].sample()
     standardDF = standardDF.append(standard2DF)
     standardDF['Type'] = 'Standard'
 
-    # range from pico <-> micromolar
-    doseVec = np.logspace(-18, -6, 60)
+    for Gene in GenesDF['Gene'].unique():
+        selectedDF = GenesDF.loc[(GenesDF.Gene == Gene)].sample()
+        selectedDF['Type'] = 'Gene'
+        selectedDF = selectedDF.append(standardDF)
+        selectedDF.reset_index()
+        # New form
+        optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, Gene))
+        GenesDF.loc[GenesDF['Gene'] == Gene, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
-    treg_sigs = np.zeros((8, 60))
-    offTarg_sigs = np.zeros((8, 60))
+    baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
 
-    # 0-2 IL2 WT
-    # 3-5 R38Q
-    # 6-7 Live/Dead
-    muts = ['IL2', 'R38Q/H16N']
-    vals = [1, 2, 4]
+    if saveFile:
+        GenesDF = GenesDF[["Gene", "Selectivity"]]  # drops single cell info
+        GenesDF.to_csv(join(path_here, "data/GeneSelectivityListRNA.csv"), index=False)
 
-    for i, dose in enumerate(doseVec):
-        print(dose)
-        for j, mut in enumerate(muts):
-            for k, val in enumerate(vals):
-                n = (3 * j) + k
-                treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, dose, val, mut)
-                treg_sigs[n, i] = treg_sig
-                offTarg_sigs[n, i] = offTarg_sig
-
-        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, dose, 1)
-        treg_sigs[6, i] = treg_sig_bi
-        offTarg_sigs[6, i] = offTarg_sig_bi
-
-        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, dose, 2)
-        treg_sigs[7, i] = treg_sig_bi
-        offTarg_sigs[7, i] = offTarg_sig_bi
-
-    tregMax = np.amax(treg_sigs)
-    offMax = np.amax(offTarg_sigs)
-    print(tregMax)
-    print(offMax)
-
-    print(treg_sigs)
-    print(offTarg_sigs)
-
-    # Normalizes data to 1
-    def norm(data, maxVal):
-        copData = copy(data)
-        return copData / maxVal
-
-    def plotSignals(types, ax):
-        # Add standard colors/line types
-        if 'WT' in types:
-            ax.plot(norm(offTarg_sigs[0], offMax), norm(treg_sigs[0], tregMax), label='WT', c='blue')
-            ax.plot(norm(offTarg_sigs[1], offMax), norm(treg_sigs[1], tregMax), label='WT Bival', c='green')
-            ax.plot(norm(offTarg_sigs[2], offMax), norm(treg_sigs[2], tregMax), label='WT Tetraval', c='c')
-        if 'R38Q/H16N' in types:
-            ax.plot(norm(offTarg_sigs[3], offMax), norm(treg_sigs[3], tregMax), '--', label='R38Q/H16N', c='red')
-            ax.plot(norm(offTarg_sigs[4], offMax), norm(treg_sigs[4], tregMax), '--', label='R38Q/H16N Bival', c='y')
-            ax.plot(norm(offTarg_sigs[5], offMax), norm(treg_sigs[5], tregMax), '--', label='R38Q/H16N Tetraval', c='orange')
-        if 'Live/Dead' in types:
-            ax.plot(norm(offTarg_sigs[6], offMax), norm(treg_sigs[6], tregMax), '-.', label='CD25 Live/Dead', c='indigo')
-            ax.plot(norm(offTarg_sigs[7], offMax), norm(treg_sigs[7], tregMax), '-.', label='CD25 Bivalent Live/Dead', c='magenta')
-
-        #ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-        ax.set_xlabel('Off Target Signaling', fontsize=12)
-        ax.set_ylabel('Treg Signaling', fontsize=12)
-        ax.legend()
-
-    plotSignals(['WT', 'R38Q/H16N'], ax[0])
-    plotSignals(['WT', 'Live/Dead'], ax[1])
-    plotSignals(['R38Q/H16N', 'Live/Dead'], ax[2])
-    f.suptitle('Treg vs. Off Target Signaling Varing Dose Concentration', fontsize=18)
+    # bar of each Gene
+    GenesDF = GenesDF.sort_values(by=['Selectivity']).tail(10)
+    xvalues = GenesDF['Gene']
+    yvalues = (((GenesDF['Selectivity']) / baseSelectivity) * 100) - 100
+    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
+    ax[0].set_ylabel("Selectivity (% increase over WT IL2)")
+    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
 
 
-def cytBindingModel(counts, doseVec, val, mut, x=False, date=False):
+def cytBindingModel(counts, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    #mut = mut
-    #doseVec = np.array([0.1])
+    mut = 'IL2'
+    val = 1
+    doseVec = np.array([0.1])
     recCount = np.ravel(counts)
-
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-
     Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
-
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
     np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
@@ -162,54 +125,28 @@ def cytBindingModel(counts, doseVec, val, mut, x=False, date=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            output[i] = polyc(dose / (val), np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
         else:
-            output[i] = polyc(dose / (val), getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
 
     return output
 
 
-def bindingCalc(df, targCell, offTCells, doseVec, val, mut):
-    """Calculates selectivity for no additional epitope"""
-    targetBound = 0
-    offTargetBound = 0
-
-    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
-    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
-
-    for i, cd25Count in enumerate(cd25DF[targCell].item()):
-        cd122Count = cd122DF[targCell].item()[i]
-        counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts, doseVec, val, mut)
-
-    for cellT in offTCells:
-        for i, cd25Count in enumerate(cd25DF[cellT].item()):
-            cd122Count = cd122DF[cellT].item()[i]
-            counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts, doseVec, val, mut)
-
-    return targetBound, offTargetBound
-
-
-def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
+def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-
-    mut = 'R38Q/H16N'
-    #doseVec = np.array([0.1])
-
+    mut = 'IL2'
+    val = 1
+    doseVec = np.array([0.1])
     recXaff = np.power(10, recXaff)
-
     recCount = np.ravel(counts)
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, [1]]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
-    holder = np.full((3, 2), 1e2)
-    holder[0, 0] = Affs[0]
-    holder[1, 1] = Affs[1]
-    holder[2, 0] = Affs[2]
+    holder = np.full((3, 3), 1e2)
+    np.fill_diagonal(holder, Affs)
     Affs = holder
 
     if doseVec.size == 1:
@@ -218,30 +155,116 @@ def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            output[i] = polyc(dose / (val), np.power(10, x[0]), recCount, [[val, val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(dose / (val * 1e9), np.power(10, x[0]), recCount, [[val, val, val]], [1.0], Affs)[0][1]
         else:
-            output[i] = polyc(dose / (val), getKxStar(), recCount, [[val, val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(dose / (val * 1e9), getKxStar(), recCount, [[val, val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
 
     return output
 
 
-def bindingCalc_bispec(df, targCell, offTCells, doseVec, val):
-    """Calculates selectivity for no additional epitope"""
+def selecCalc(df, targCell, offTCells):
+    """Calculates selectivity for no additional Gene"""
     targetBound = 0
     offTargetBound = 0
-
-    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
-    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
+    cd25DF = df.loc[(df.Type == 'Standard') & (df.Gene == 'IL2RA')]
+    cd122DF = df.loc[(df.Type == 'Standard') & (df.Gene == 'IL2RB')]
 
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel_bispec(counts, doseVec, 9, val)
-
+        targetBound += cytBindingModel(counts)
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel_bispec(counts, doseVec, 9, val)
+            offTargetBound += cytBindingModel(counts)
 
-    return targetBound, offTargetBound
+    return (offTargetBound) / (targetBound)
+
+
+def minSelecFunc(x, selectedDF, targCell, offTCells, Gene):
+    """Provides the function to be minimized to get optimal selectivity"""
+    targetBound = 0
+    offTargetBound = 0
+    recXaff = x
+    GeneDF = selectedDF.loc[(selectedDF.Type == 'Gene')]
+    cd25DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Gene == 'IL2RA')]
+    cd122DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Gene == 'IL2RB')]
+
+    for i, epCount in enumerate(GeneDF[targCell].item()):
+        cd25Count = cd25DF[targCell].item()[i]
+        cd122Count = cd122DF[targCell].item()[i]
+        counts = [cd25Count, cd122Count, epCount]
+        targetBound += cytBindingModel_bispecOpt(counts, recXaff)
+    for cellT in offTCells:
+        for i, epCount in enumerate(GeneDF[cellT].item()):
+            cd25Count = cd25DF[cellT].item()[i]
+            cd122Count = cd122DF[cellT].item()[i]
+            counts = [cd25Count, cd122Count, epCount]
+
+            offTargetBound += cytBindingModel_bispecOpt(counts, recXaff)
+
+    return (offTargetBound) / (targetBound)
+
+
+def optimizeDesign(targCell, offTcells, selectedDF, Gene):
+    """ A more general purpose optimizer """
+    if targCell == "NK":
+        X0 = [6.0, 8]
+    else:
+        X0 = [7.0]
+    optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
+    optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, Gene), jac="3-point")
+    optSelectivity = optimized.fun[0]
+
+    return optSelectivity
+
+
+cellDict = {"CD4 Naive": "Thelper",
+            "CD4 CTL": "Thelper",
+            "CD4 TCM": "Thelper",
+            "CD4 TEM": "Thelper",
+            "NK": "NK",
+            "CD8 Naive": "CD8",
+            "CD8 TCM": "CD8",
+            "CD8 TEM": "CD8",
+            "Treg": "Treg"}
+
+
+markDict = {"IL2RA": "IL2Ra",
+            "IL2RB": "IL2Rb",
+            "IL7R": "IL7Ra",
+            "IL2RG": "gc"}
+
+
+def convFactCalcRNA():
+    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
+    CITE_DF = importRNACITE()
+    cellToI = ["CD4 TCM", "CD8 Naive", "NK", "CD8 TEM", "CD4 Naive", "CD4 CTL", "CD8 TCM", "Treg", "CD4 TEM"]
+    markers = ["IL2RB", "IL7R", "IL2RA", "IL2RG"]
+    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount", "Number"])
+    for marker in markers:
+        for cell in cellToI:
+            cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
+            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
+
+    markerDF = markerDF.replace({"Marker": markDict, "Cell Type": cellDict})
+    markerDFw = pd.DataFrame(columns=["Marker", "Cell Type", "Average"])
+    for marker in markerDF.Marker.unique():
+        for cell in markerDF["Cell Type"].unique():
+            subDF = markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)]
+            wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(subDF.Number.values)
+            markerDFw = markerDFw.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg}))
+
+    recDF = importReceptors()
+    weightDF = pd.DataFrame(columns=["Receptor", "Weight"])
+
+    for rec in markerDFw.Marker.unique():
+        CITEval = np.array([])
+        Quantval = np.array([])
+        for cell in markerDF["Cell Type"].unique():
+            CITEval = np.concatenate((CITEval, markerDFw.loc[(markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)].Average.values))
+            Quantval = np.concatenate((Quantval, recDF.loc[(recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)].Mean.values))
+        weightDF = weightDF.append(pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)), Quantval, rcond=None)[0]}))
+
+    return weightDF
