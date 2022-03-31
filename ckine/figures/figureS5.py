@@ -24,8 +24,6 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     ax, f = getSetup((4, 3), (1, 1))
 
-    epitopesDF = pd.DataFrame(columns={"Epitope", "Selectivity"})
-
     epitopesDF = pd.read_csv(join(path_here, "data/epitopeListUnique.csv"))
 
     CITE_DF = importCITE()
@@ -38,9 +36,7 @@ def makeFigure():
     saveFile = True
 
     # weighting idea: take sample of everything of ~3 times and then average each types amount and use that as the size
-
     cellList = CITE_DF["CellType2"].unique().tolist()
-    print(cellList)
 
     sampleSizes = []
     for cellType in cellList:
@@ -57,16 +53,11 @@ def makeFigure():
 
     # For each  cellType in list
     for i, cellType in enumerate(cellList):
-
-        # Generate sample size
         sampleSize = sampleSizes[i]
-
         cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(sampleSize)
-
         cellType_abdundances = []
-        # For each epitope (being done on per cell basis)
+
         for e in epitopesDF.Epitope:
-            # calculate abundance based on converstion factor
             if e == 'CD25':
                 convFact = 77.136987
             elif e == 'CD122':
@@ -75,36 +66,25 @@ def makeFigure():
                 convFact = 594.379215
             else:
                 convFact = meanConv
-
             citeVal = cellDF[e].to_numpy()
             abundance = citeVal * convFact
             cellType_abdundances.append(abundance)
-            # add column with this name to epitopesDF and abundances list
 
         epitopesDF[cellType] = cellType_abdundances
 
-    # EpitopeDF now contains a data of single cell abundances for each cell type for each epitope
     epitopesDF['Selectivity'] = -1
-    # New column which will hold selectivity per epitope
-
     targCell = 'Treg'
-
     standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
     standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
     standardDF = standardDF.append(standard2DF)
     standardDF['Type'] = 'Standard'
-    # For each epitope
 
     for epitope in epitopesDF['Epitope'].unique():
-
         selectedDF = epitopesDF.loc[(epitopesDF.Epitope == epitope)].sample()
         selectedDF['Type'] = 'Epitope'
         selectedDF = selectedDF.append(standardDF)
         selectedDF.reset_index()
-
-        # New form
         optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
-
         epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
@@ -114,9 +94,6 @@ def makeFigure():
         epitopesDF.to_csv(join(path_here, "data/epitopeSelectivityList.csv"), index=False)
         print("File Saved")
 
-    # generate figures
-
-    # bar of each epitope
     epitopesDF = epitopesDF.sort_values(by=['Selectivity']).tail(10)
     xvalues = epitopesDF['Epitope']
     yvalues = (((epitopesDF['Selectivity']) / baseSelectivity) * 100) - 100
@@ -157,15 +134,11 @@ def cytBindingModel(counts, x=False, date=False):
 
 def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-
     mut = 'IL2'
     val = 1
     doseVec = np.array([0.1])
-
     recXaff = np.power(10, recXaff)
-
     recCount = np.ravel(counts)
-
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
     Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
@@ -174,7 +147,6 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     holder = np.full((3, 3), 1e2)
     np.fill_diagonal(holder, Affs)
     Affs = holder
-
     if doseVec.size == 1:
         doseVec = np.array([doseVec])
     output = np.zeros(doseVec.size)
@@ -192,10 +164,8 @@ def selecCalc(df, targCell, offTCells):
     """Calculates selectivity for no additional epitope"""
     targetBound = 0
     offTargetBound = 0
-
     cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
     cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
-
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
@@ -213,9 +183,7 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
     """Provides the function to be minimized to get optimal selectivity"""
     targetBound = 0
     offTargetBound = 0
-
     recXaff = x
-
     epitopeDF = selectedDF.loc[(selectedDF.Type == 'Epitope')]
     cd25DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Epitope == 'CD25')]
     cd122DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Epitope == 'CD122')]
@@ -238,14 +206,11 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
 
 def optimizeDesign(targCell, offTcells, selectedDF, epitope):
     """ A more general purpose optimizer """
-
     if targCell == "NK":
         X0 = [6.0, 8]
     else:
         X0 = [7.0]
-
     optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
-
     optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, epitope), jac="3-point")
     optSelectivity = optimized.fun[0]
 
@@ -272,22 +237,17 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.2):
 
     AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
     baselineAcc = SVMmod.fit(CD25col, TregY).score(CD25col, TregY)
-    # print(baselineAcc)
-    #print(np.where((factors == "CD25")))
     for marker in factors:
         SVMmod = SVC()
-        # print(marker)
         markerCol = X[:, np.where(factors == marker)]
         CD25MarkX = np.hstack((CD25col, markerCol.reshape(-1, 1)))
         markAcc = SVMmod.fit(CD25MarkX, TregY).score(CD25MarkX, TregY)
-        # print(markAcc)
         AccDF = AccDF.append(pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]}))
 
     AccDF = AccDF.sort_values(by="Accuracy")
     markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
     AccDF.Markers = "CD25 + " + AccDF.Markers
 
-    print(markers)
     return markers
 
 

@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import numpy as np
 from scipy.io import mmread
-from copy import copy
 from scipy.sparse import coo_matrix
 
 path_here = os.path.dirname(os.path.dirname(__file__))
