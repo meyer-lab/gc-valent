@@ -50,7 +50,6 @@ def makeFigure():
     ratioConc(ax[5:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF, legend=True)
     ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF, legend=True)
 
-    """
     legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
@@ -59,7 +58,6 @@ def makeFigure():
     #Wass_KL_Dist(ax[17:19], cellTarget, 10, RNA=True)
     CITE_RIDGE(ax[17], cellTarget)
     CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
-    """
 
     return f
 
