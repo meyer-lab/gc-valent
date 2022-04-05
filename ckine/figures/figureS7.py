@@ -37,7 +37,7 @@ def makeFigure():
     for cellType in cellList:
         cellSample = []
         for i in np.arange(3):
-            sampleDF = CITE_DF.sample(10000)
+            sampleDF = CITE_DF.sample(30000)
             sampleSize = int(len(sampleDF.loc[sampleDF["CellType2"] == cellType]))
             cellSample.append(sampleSize)
         meanSize = np.mean(cellSample)
