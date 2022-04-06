@@ -9,8 +9,15 @@ import matplotlib
 import seaborn as sns
 import numpy as np
 import svgutils.transform as st
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, LabelEncoder, LabelBinarizer
+from sklearn.linear_model import RidgeClassifierCV
+from scipy import stats
+from sklearn.neighbors import KernelDensity
+from sklearn.svm import SVC
+from copy import copy
 from matplotlib import gridspec, pyplot as plt
-from ..imports import import_pstat_all
+from ..imports import import_pstat_all, importCITE, importRNACITE
 
 matplotlib.use('AGG')
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -223,3 +230,115 @@ def getLigandLegend():
     respDF = respDF.groupby(["Ligand", "Dose"]).Mean.mean().reset_index()
     sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", legend=True, palette=ligDict, ax=ax)
     return ax.get_legend()
+
+
+def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
+    """Finds markers which have average greatest difference from other cells"""
+    if RNA:
+        CITE_DF = importRNACITE()
+    else:
+        CITE_DF = importCITE()
+
+    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
+    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
+        markAvg = np.mean(CITE_DF[marker].values)
+        if markAvg > 0.0001:
+            targCellMark = CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
+            offTargCellMark = CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
+            if np.mean(targCellMark) > np.mean(offTargCellMark):
+                kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
+                kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
+                minVal = np.minimum(targCellMark.min(), offTargCellMark.min()) - 10
+                maxVal = np.maximum(targCellMark.max(), offTargCellMark.max()) + 10
+                outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
+                distTarg = np.exp(kdeTarg.score_samples(outcomes))
+                distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
+                KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
+                markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div}))
+
+    corrsDF = pd.DataFrame()
+    for i, distance in enumerate(["Wasserstein Distance", "KL Divergence"]):
+        ratioDF = markerDF.sort_values(by=distance)
+        posCorrs = ratioDF.tail(numFactors).Marker.values
+        corrsDF = corrsDF.append(pd.DataFrame({"Distance": distance, "Marker": posCorrs}))
+        markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
+        sns.barplot(data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color='k')
+        ax[i].set(yscale="log")
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=45)
+    return corrsDF
+
+
+def CITE_RIDGE(ax, targCell, numFactors=10, RNA=False):
+    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
+    ridgeMod = RidgeClassifierCV()
+    if RNA:
+        RIDGE_DF = importRNACITE()
+    else:
+        RIDGE_DF = importCITE()
+    cellToI = RIDGE_DF.CellType2.unique()
+    RIDGE_DF = RIDGE_DF.loc[(RIDGE_DF["CellType2"].isin(cellToI)), :]
+    cellTypeCol = RIDGE_DF.CellType2.values
+    RIDGE_DF = RIDGE_DF.loc[:, ((RIDGE_DF.columns != 'CellType1') & (RIDGE_DF.columns != 'CellType2') & (RIDGE_DF.columns != 'CellType3') & (RIDGE_DF.columns != 'Cell'))]
+    factors = RIDGE_DF.columns
+    X = RIDGE_DF.values
+    X = StandardScaler().fit_transform(X)
+
+    le = LabelEncoder()
+    le.fit(cellTypeCol)
+    y = le.transform(cellTypeCol)
+
+    ridgeMod = RidgeClassifierCV(cv=5)
+    ridgeMod.fit(X, y)
+    TargCoefs = ridgeMod.coef_[np.where(le.classes_ == targCell), :].ravel()
+    TargCoefsDF = pd.DataFrame({"Marker": factors, "Coefficient": TargCoefs}).sort_values(by="Coefficient")
+    TargCoefsDF = TargCoefsDF.tail(numFactors)
+    sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax, color='k')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    return TargCoefsDF
+
+
+def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
+    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
+    SVMmod = SVC()
+    if RNA:
+        SVC_DF = importRNACITE()
+        IL2RB = "IL2RB"
+    else:
+        SVC_DF = importCITE()
+        IL2RB = "CD122"
+    cellToI = SVC_DF.CellType2.unique()
+    SVC_DF = SVC_DF.loc[(SVC_DF["CellType2"].isin(cellToI)), :]
+    SVC_DF = SVC_DF.sample(frac=sampleFrac, random_state=1)
+    cellTypeCol = SVC_DF.CellType2.values
+    SVC_DF = SVC_DF.loc[:, ((SVC_DF.columns != 'CellType1') & (SVC_DF.columns != 'CellType2') & (SVC_DF.columns != 'CellType3') & (SVC_DF.columns != 'Cell'))]
+    factors = SVC_DF.columns
+    X = SVC_DF.values
+    X = StandardScaler().fit_transform(X)
+    CD122col = X[:, np.where(factors == IL2RB)].reshape(-1, 1)
+
+    enc = LabelBinarizer()
+    y = enc.fit_transform(cellTypeCol)
+    TregY = y[:, np.where(enc.classes_ == targCell)].ravel()
+
+    AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
+    baselineAcc = SVMmod.fit(CD122col, TregY).score(CD122col, TregY)
+    print(baselineAcc)
+    print(np.where((factors == IL2RB)))
+    for marker in factors:
+        SVMmod = SVC()
+        print(marker)
+        markerCol = X[:, np.where(factors == marker)]
+        CD122MarkX = np.hstack((CD122col, markerCol.reshape(-1, 1)))
+        markAcc = SVMmod.fit(CD122MarkX, TregY).score(CD122MarkX, TregY)
+        print(markAcc)
+        AccDF = AccDF.append(pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]}))
+
+    AccDF = AccDF.sort_values(by="Accuracy")
+    markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
+    AccDF.Markers = IL2RB + " + " + AccDF.Markers
+
+    plot_DF = AccDF.tail(numFactors).append(pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]}))
+    sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color='k')
+    ax.set(ylim=(0.95, 1))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    return markers
