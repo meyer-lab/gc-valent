@@ -18,9 +18,9 @@ def makeFigure():
     SVMdf = CITE_SVM(ax[3], cellTarget, sampleFrac=0.05, RNA=True)
 
     selectiveDF = pd.DataFrame()
-    selectiveDF = selectiveDF.append(pd.DataFrame({"Method": "Distance", "Marker": distDF.Marker.values}))
-    selectiveDF = selectiveDF.append(pd.DataFrame({"Method": "RIDGE", "Marker": RIDGEdf.Marker.values}))
-    selectiveDF = selectiveDF.append(pd.DataFrame({"Method": "SVM", "Marker": SVMdf}))
+    selectiveDF = pd.concat([selectiveDF, pd.DataFrame({"Method": "Distance", "Marker": distDF.Marker.values})])
+    selectiveDF = pd.concat([selectiveDF, pd.DataFrame({"Method": "RIDGE", "Marker": RIDGEdf.Marker.values})])
+    selectiveDF = pd.concat([selectiveDF, pd.DataFrame({"Method": "SVM", "Marker": SVMdf})])
     RNAuniqueDF = pd.DataFrame({"Gene": selectiveDF.Marker.unique()})
 
     RNAuniqueDF.to_csv(join(path_here, "data/RNAseq_TregUnique.csv"))

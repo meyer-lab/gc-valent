@@ -51,7 +51,7 @@ def YT1_Plot(ax, estRec):
         val = row.Valency
         dose = row.Concentration
         predVal = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]
-        recBoundDF = recBoundDF.append(pd.DataFrame({"Concentration": [dose], "Valency": [val], "Ligand": row.Ligand, "Active Binding Complexes": predVal}))
+        recBoundDF = pd.concat([recBoundDF, pd.DataFrame({"Concentration": [dose], "Valency": [val], "Ligand": row.Ligand, "Active Binding Complexes": predVal})])
 
     convFact = expData.Mean.mean() / recBoundDF["Active Binding Complexes"].mean()
 
@@ -64,7 +64,7 @@ def YT1_Plot(ax, estRec):
                 Affs = np.repeat(Affs, 2, axis=0)
                 np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
                 predVal = polyc(dose / 1e9, getKxStar(), recCount, [[valency, valency]], [1.0], Affs)[0][1] * convFact
-                outputDF = outputDF.append(pd.DataFrame({"Concentration": [dose], "Valency": [valency], "Ligand": mut, "pSTAT5": predVal, "Type": "Predicted"}))
+                outputDF = pd.concat([outputDF, pd.DataFrame({"Concentration": [dose], "Valency": [valency], "Ligand": mut, "pSTAT5": predVal, "Type": "Predicted"})])
     print(outputDF)
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="pSTAT5", style="Valency", hue="Ligand", palette=ligDict, ax=ax)

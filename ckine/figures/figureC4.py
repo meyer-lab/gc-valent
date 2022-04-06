@@ -81,7 +81,7 @@ def R2_Plot_Cells(ax, df):
             preds = df.loc[(df.Cell == cell) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Cell == cell) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            accDF = accDF.append(pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]}))
+            accDF = pd.concat([accDF, pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]})])
 
     accDF = accDF.replace(cellDict)
     sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
@@ -98,9 +98,9 @@ def R2_Plot_Ligs(ax, df):
             exps = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
             if val == 1:
-                accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Mono)"], "Valency": [val], "Accuracy": [r2]}))
+                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand + " (Mono)"], "Valency": [val], "Accuracy": [r2]})])
             else:
-                accDF = accDF.append(pd.DataFrame({"Ligand": [ligand + " (Biv)"], "Valency": [val], "Accuracy": [r2]}))
+                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand + " (Biv)"], "Valency": [val], "Accuracy": [r2]})])
     sns.barplot(x="Ligand", y="Accuracy", data=accDF, color='k', ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
@@ -114,7 +114,7 @@ def R2_Plot_Conc(ax, df):
             preds = df.loc[(df.Dose == conc) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Dose == conc) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            accDF = accDF.append(pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]}))
+            accDF = pd.concat([accDF, pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]})])
     accDF = accDF.reset_index()
     sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", size="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
@@ -163,8 +163,8 @@ def MonVsBivalent(ax, dfAll, ligs=True):
             exps = df.loc[(df.Ligand == ligand)].Experimental.values
             r2Biv = r2_score(exps, BivPreds)
             r2Mon = r2_score(exps, MonPreds)
-            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Monovalent (Incorrect)", "Accuracy": [r2Mon]}))
-            accDF = accDF.append(pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Bivalent (Correct)", "Accuracy": [r2Biv]}))
+            accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Monovalent (Incorrect)", "Accuracy": [r2Mon]})])
+            accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Prediction Label": "Bivalent (Correct)", "Accuracy": [r2Biv]})])
         sns.barplot(x="Ligand", y="Accuracy", hue="Prediction Label", data=accDF, ax=ax)
         ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
@@ -176,8 +176,8 @@ def MonVsBivalent(ax, dfAll, ligs=True):
             exps = df.loc[(df.Cell == cellType)].Experimental.values
             r2Biv = r2_score(exps, BivPreds)
             r2Mon = r2_score(exps, MonPreds)
-            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [1], "Accuracy": [r2Mon]}))
-            accDF = accDF.append(pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [2], "Accuracy": [r2Biv]}))
+            accDF = pd.concat([accDF, pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [1], "Accuracy": [r2Mon]})])
+            accDF = pd.concat([accDF, pd.DataFrame({"Cell Type": [cellType], "Prediction Label": [2], "Accuracy": [r2Biv]})])
         sns.barplot(x="Cell Type", y="Accuracy", hue="Prediction Label", data=accDF, ax=ax)
         ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
@@ -212,11 +212,11 @@ def EC50comp(ax, dfAll, time):
                 EC50pred = nllsq_EC50(x0pred, dosesPred, predVals) - 4
 
                 if valency == 1:
-                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]}))
-                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]}))
+                    EC50df = pd.concat([EC50df, pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]})])
+                    EC50df = pd.concat([EC50df, pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Mono)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]})])
                 else:
-                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]}))
-                    EC50df = EC50df.append(pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]}))
+                    EC50df = pd.concat([EC50df, pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50exp], "Exp/Pred": ["Experimental"]})])
+                    EC50df = pd.concat([EC50df, pd.DataFrame({"Cell Type": [cell], "Ligand": [ligand + " (Biv)"], "EC50": [EC50pred], "Exp/Pred": ["Predicted"]})])
 
     EC50df = EC50df.loc[(EC50df["Cell Type"].isin(["Treg", "Thelper"]))]
     sns.scatterplot(x="Ligand", y="EC50", hue="Cell Type", style="Exp/Pred", data=EC50df, ax=ax)
@@ -234,7 +234,7 @@ def timePlot(ax):
             preds = df.loc[(df.Time == time[0]) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Time == time[0]) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            accDF = accDF.append(pd.DataFrame({"Time": time, "Valency": [val], "Accuracy": [r2]}))
+            accDF = pd.concat([accDF, pd.DataFrame({"Time": time, "Valency": [val], "Accuracy": [r2]})])
     sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
@@ -260,7 +260,7 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs, labels):
                 np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
                 predVal = polyc(dose / 1e9 / val, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1] * convFact
                 alphAffKDnM = (1 / alphAff) / 1e-9
-                outputDF = outputDF.append(pd.DataFrame({r"IL2Rα $K_D$ (nM)": labels[i], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal}))
+                outputDF = pd.concat([outputDF, pd.DataFrame({r"IL2Rα $K_D$ (nM)": labels[i], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal})])
 
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", size="Valency", hue=r"IL2Rα $K_D$ (nM)", ax=ax)
@@ -283,7 +283,7 @@ def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
                 recCount = np.ravel([alphaRec,
                                     IL2RBrec])
                 predVal = polyc(dose / 1e9 / val, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]
-                outputDF = outputDF.append(pd.DataFrame({r"IL2Rα Abundance": [alphaRec], "Concentration": [dose], "Valency": [val], "Active Binding Complexes": predVal}))
+                outputDF = pd.concat([outputDF, pd.DataFrame({r"IL2Rα Abundance": [alphaRec], "Concentration": [dose], "Valency": [val], "Active Binding Complexes": predVal})])
 
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", hue=r"IL2Rα Abundance", ax=ax, size="Valency")

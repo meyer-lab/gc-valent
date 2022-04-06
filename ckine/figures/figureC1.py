@@ -97,7 +97,7 @@ def fullHeatMap(ax, respDF):
                         row[cell + " - " + str(time) + " hrs"] = 0
                     else:
                         row[cell + " - " + str(time) + " hrs"] = entry
-            heatmapDF = heatmapDF.append(row)
+            heatmapDF = pd.concat([heatmapDF, row])
     heatmapDF = heatmapDF.set_index("Ligand/Dose")
     sns.heatmap(data=heatmapDF, vmin=0, vmax=1, ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
@@ -122,7 +122,7 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
             xData = np.nan_to_num(np.log10(isoData.Dose.values)) + 4
             yData = np.nan_to_num(isoData.Mean.values)
             fit = least_squares(hill_residuals, x0, args=(xData, yData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
-            hillDF = hillDF.append(pd.DataFrame({"Ligand": ligand, "Valency": valency, "Dose": np.power(10, doses - 4), "pSTAT": hill_equation(fit.x, doses)}))
+            hillDF = pd.concat([hillDF, pd.DataFrame({"Ligand": ligand, "Valency": valency, "Dose": np.power(10, doses - 4), "pSTAT": hill_equation(fit.x, doses)})])
 
     maxobs = hillDF.loc[(hillDF.Ligand == "IL2")].pSTAT.max()
     respDF = respDF.loc[(respDF.Cell == cell) & (respDF.Time == time) & (respDF.Ligand.isin(Ligands))]
@@ -194,7 +194,7 @@ def PCAheatmap(ax, respDF):
             ligCol.append(ligentry)
             doseCol.append(np.log10(dose))
             valCol.append(valentry)
-            heatmapDF = heatmapDF.append(row)
+            heatmapDF = pd.concat([heatmapDF, row])
 
     for cell in respDF.Cell.unique():
         for time in respDFhm.Time.unique():

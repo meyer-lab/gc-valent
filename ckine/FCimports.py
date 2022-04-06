@@ -116,7 +116,7 @@ def compMatrix(date, plate, panel, invert=True):
         if channelName not in addedChannels:  # Ensures a diagonal value is only added once for each channel
             addedChannels.append(channelName)
             df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1', 'Channel2', 'Comp'])  # Creates new row for dataframe
-            df_comp = df_comp.append(df2, ignore_index=True)  # Adds row
+            df_comp = pd.concat([df_comp, df2, ignore_index=True])  # Adds row
     # Create square matrix from compensation values
     df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)  # df_matrix is now a square and has exactly one row and one column for each channel
     for i in df_matrix.index:
@@ -170,7 +170,7 @@ def apply_gates(date, plate, gates_df, subpopulations=False, correlation=None):
             else:
                 df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, cellType, r, correlation, subPop=subpopulations)
                 df2 = subtract_unstained_signal(df2, channels, receptors, unstainedWell2, isotypes2)
-                df = df.append(df2)
+                df = pd.concat([df, df2])
 
     return df
 
@@ -220,7 +220,7 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, correlation, subPop=Fal
     df_add = pd.DataFrame({"Cell Type": np.tile(cellType, sample.counts), "Date": np.tile(date, sample.counts), "Plate": np.tile(plate, sample.counts),
                            "VL1-H": panel.data[["VL1-H"]].values.reshape((sample.counts,)), "BL5-H": panel.data[["BL5-H"]].values.reshape((sample.counts,)),
                            "RL1-H": panel.data[["RL1-H"]].values.reshape((sample.counts,)), "BL1-H": panel.data[["BL1-H"]].values.reshape((sample.counts,))})
-    df = df.append(df_add)
+    df = pd.concat([df, df_add])
     df['Receptor'] = str(receptor)
 
     # Separates memory and naive populations and adds to dataframe
@@ -233,7 +233,7 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, correlation, subPop=Fal
             df_add = pd.DataFrame({"Cell Type": np.tile(subpopulation, sampleSub.counts), "Date": np.tile(date, sampleSub.counts), "Plate": np.tile(plate, sampleSub.counts),
                                    "VL1-H": panel_S.data[["VL1-H"]].values.reshape((sampleSub.counts,)), "BL5-H": panel_S.data[["BL5-H"]].values.reshape((sampleSub.counts,)),
                                    "RL1-H": panel_S.data[["RL1-H"]].values.reshape((sampleSub.counts,))})
-            df = df.append(df_add)
+            df = pd.concat([df, df_add])
 
     return df, unstainedWell, isotypes
 

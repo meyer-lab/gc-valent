@@ -68,7 +68,7 @@ def plot_tFac_Ligs(ax, tFac, respDF, numComps=3):
     mutFacs = tFac[1][0]
     tFacDFlig = pd.DataFrame()
     for i in range(0, numComps):
-        tFacDFlig = tFacDFlig.append(pd.DataFrame({"Component_Val": mutFacs[:, i], "Component": (i + 1), "Ligand": ligands}))
+        tFacDFlig = pd.concat([tFacDFlig, pd.DataFrame({"Component_Val": mutFacs[:, i], "Component": (i + 1), "Ligand": ligands})])
 
     tFacDFlig["Valency"], tFacDFlig["Lig Name"] = 0, 0
     tFacDFlig = tFacDFlig.reset_index()
@@ -117,7 +117,7 @@ def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
     cellFacs = tFac[1][3]
     tFacDFcell = pd.DataFrame()
     for i in range(0, numComps):
-        tFacDFcell = tFacDFcell.append(pd.DataFrame({"Component_Val": cellFacs[:, i], "Component": (i + 1), "Cell": cells}))
+        tFacDFcell = pd.concat([tFacDFcell, pd.DataFrame({"Component_Val": cellFacs[:, i], "Component": (i + 1), "Cell": cells})])
 
     tFacDFcell = tFacDFcell.replace(cellDict)
     sns.barplot(data=tFacDFcell, ax=ax, x="Cell", y="Component_Val", hue="Component")
@@ -131,7 +131,7 @@ def facScatterPlot(ax, tFacDFLig):
     for ligand in scattDF.Ligand.unique():
         for valency in scattDF.loc[scattDF.Ligand == ligand].Valency.unique():
             isoDF = scattDF.loc[(scattDF.Ligand == ligand) & (scattDF.Valency == valency)]
-            scattDF = scattDF.append(pd.DataFrame({"Component 1 + 3": isoDF.loc[isoDF.Component == 1].Component_Val.values + isoDF.loc[isoDF.Component == 3].Component_Val.values,
-                                                   "Component 2": isoDF.loc[isoDF.Component == 2].Component_Val.values, "Valency": valency}))
+            scattDF = pd.concat([scattDF, pd.DataFrame({"Component 1 + 3": isoDF.loc[isoDF.Component == 1].Component_Val.values + isoDF.loc[isoDF.Component == 3].Component_Val.values,
+                                                        "Component 2": isoDF.loc[isoDF.Component == 2].Component_Val.values, "Valency": valency})])
     sns.scatterplot(data=scattDF, x="Component 1 + 3", y="Component 2", hue="Valency", style="Valency", size="Valency", ax=ax)
     ax.set(xlim=(0, 0.8), ylim=(0, 0.8))

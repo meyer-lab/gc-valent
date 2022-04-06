@@ -19,7 +19,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     ax, f = getSetup((4, 3), (1, 1))
     GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
-    GenesDF = GenesDF.append({"Gene": "IL2RB"}, ignore_index=True)
+    GenesDF = pd.concat([GenesDF, {"Gene": "IL2RB"}, ignore_index=True])
     CITE_DF = importRNACITE()
 
     # Get conv factors, average them
@@ -77,13 +77,13 @@ def makeFigure():
 
     standardDF = GenesDF.loc[(GenesDF.Gene == 'IL2RA')].sample()
     standard2DF = GenesDF.loc[(GenesDF.Gene == 'IL2RB')].sample()
-    standardDF = standardDF.append(standard2DF)
+    standardDF = pd.concat([standardDF, standard2DF])
     standardDF['Type'] = 'Standard'
 
     for Gene in GenesDF['Gene'].unique():
         selectedDF = GenesDF.loc[(GenesDF.Gene == Gene)].sample()
         selectedDF['Type'] = 'Gene'
-        selectedDF = selectedDF.append(standardDF)
+        selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
         # New form
         optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, Gene))
@@ -246,7 +246,7 @@ def convFactCalcRNA():
     for marker in markers:
         for cell in cellToI:
             cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
+            markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size})])
 
     markerDF = markerDF.replace({"Marker": markDict, "Cell Type": cellDict})
     markerDFw = pd.DataFrame(columns=["Marker", "Cell Type", "Average"])
@@ -254,7 +254,7 @@ def convFactCalcRNA():
         for cell in markerDF["Cell Type"].unique():
             subDF = markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)]
             wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(subDF.Number.values)
-            markerDFw = markerDFw.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg}))
+            markerDFw = pd.concat([markerDFw, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg})])
 
     recDF = importReceptors()
     weightDF = pd.DataFrame(columns=["Receptor", "Weight"])
@@ -265,6 +265,6 @@ def convFactCalcRNA():
         for cell in markerDF["Cell Type"].unique():
             CITEval = np.concatenate((CITEval, markerDFw.loc[(markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)].Average.values))
             Quantval = np.concatenate((Quantval, recDF.loc[(recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)].Mean.values))
-        weightDF = weightDF.append(pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)), Quantval, rcond=None)[0]}))
+        weightDF = pd.concat([weightDF, pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)), Quantval, rcond=None)[0]})])
 
     return weightDF

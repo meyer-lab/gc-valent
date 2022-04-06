@@ -79,7 +79,7 @@ def plotAlphaHistogram(ax1, ax2, cell_type, receptor_levels, numBins):
     print("Beta", betaMeans)
 
     binnedRecCounts = pd.DataFrame({"Receptor": "IL2Ra", "Bin": np.arange(1, numBins + 1), "Mean": alphaMeans, "Cell Type": cellTypeDict[cell_type]})
-    binnedRecCounts = binnedRecCounts.append(pd.DataFrame({"Receptor": "IL2Rb", "Bin": np.arange(1, numBins + 1), "Mean": betaMeans, "Cell Type": cellTypeDict[cell_type]}))
+    binnedRecCounts = pd.concat([binnedRecCounts, pd.DataFrame({"Receptor": "IL2Rb", "Bin": np.arange(1, numBins + 1), "Mean": betaMeans, "Cell Type": cellTypeDict[cell_type]})])
 
     ax2.scatter(alphaMeans, betaMeans)
     title = cell_type + " alpha/beta mean correlation"
@@ -96,9 +96,9 @@ def getReceptors():
 
     df_gates = import_gates()
     df_signal = apply_gates("4-23", "1", df_gates, correlation="CD122")
-    df_signal = df_signal.append(apply_gates("4-23", "2", df_gates, correlation="CD122"))
-    df_signal = df_signal.append(apply_gates("4-26", "1", df_gates, correlation="CD122"))
-    df_signal = df_signal.append(apply_gates("4-26", "2", df_gates, correlation="CD122"))
+    df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates, correlation="CD122")])
+    df_signal = pd.concat([df_signal, apply_gates("4-26", "1", df_gates, correlation="CD122")])
+    df_signal = pd.concat([df_signal, apply_gates("4-26", "2", df_gates, correlation="CD122")])
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -122,7 +122,7 @@ def getReceptors():
                         rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    df_rec = df_rec.append(df_add)
+                    df_rec = pd.concat([df_rec, df_add])
 
     return df_rec
 
