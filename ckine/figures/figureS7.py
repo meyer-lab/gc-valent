@@ -132,7 +132,7 @@ def cytBindingModel(counts, x=False, date=False):
     return output
 
 
-def cytBindingModel_bispecOpt(counts, recXaff, x=False):
+def cytBindingModel_bispecOpt(counts, recXaff, IL2RA=False, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
     mut = 'IL2'
     val = 1
@@ -147,6 +147,9 @@ def cytBindingModel_bispecOpt(counts, recXaff, x=False):
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
     np.fill_diagonal(holder, Affs)
+    if CD25:
+        holder[2, 0] = holder[2, 2]
+        holder[2, 2] = 1e2
     Affs = holder
 
     if doseVec.size == 1:
@@ -190,19 +193,21 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, Gene):
     GeneDF = selectedDF.loc[(selectedDF.Type == 'Gene')]
     cd25DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Gene == 'IL2RA')]
     cd122DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Gene == 'IL2RB')]
+    if Gene == "IL2RA":
+        IL2RA = True
 
     for i, epCount in enumerate(GeneDF[targCell].item()):
         cd25Count = cd25DF[targCell].item()[i]
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count, epCount]
-        targetBound += cytBindingModel_bispecOpt(counts, recXaff)
+        targetBound += cytBindingModel_bispecOpt(counts, recXaff, IL2RA=IL2RA)
     for cellT in offTCells:
         for i, epCount in enumerate(GeneDF[cellT].item()):
             cd25Count = cd25DF[cellT].item()[i]
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count, epCount]
 
-            offTargetBound += cytBindingModel_bispecOpt(counts, recXaff)
+            offTargetBound += cytBindingModel_bispecOpt(counts, recXaff, IL2RA=IL2RA)
 
     return (offTargetBound) / (targetBound)
 
