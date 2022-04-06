@@ -69,7 +69,7 @@ def makeFigure():
 
     standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
     standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
-    standardDF = standardDF.append(standard2DF)
+    standardDF = pd.concat([standardDF, standard2DF])
     standardDF['Type'] = 'Standard'
 
     # range from pico <-> micromolar

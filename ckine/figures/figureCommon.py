@@ -254,13 +254,13 @@ def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
                 distTarg = np.exp(kdeTarg.score_samples(outcomes))
                 distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
                 KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
-                markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div}))
+                markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div})])
 
     corrsDF = pd.DataFrame()
     for i, distance in enumerate(["Wasserstein Distance", "KL Divergence"]):
         ratioDF = markerDF.sort_values(by=distance)
         posCorrs = ratioDF.tail(numFactors).Marker.values
-        corrsDF = corrsDF.append(pd.DataFrame({"Distance": distance, "Marker": posCorrs}))
+        corrsDF = pd.concat([corrsDF, pd.DataFrame({"Distance": distance, "Marker": posCorrs})])
         markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
         sns.barplot(data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color='k')
         ax[i].set(yscale="log")
@@ -331,13 +331,13 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
         CD122MarkX = np.hstack((CD122col, markerCol.reshape(-1, 1)))
         markAcc = SVMmod.fit(CD122MarkX, TregY).score(CD122MarkX, TregY)
         print(markAcc)
-        AccDF = AccDF.append(pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]}))
+        AccDF = pd.concat([AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})])
 
     AccDF = AccDF.sort_values(by="Accuracy")
     markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
     AccDF.Markers = IL2RB + " + " + AccDF.Markers
 
-    plot_DF = AccDF.tail(numFactors).append(pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]}))
+    plot_DF = pd.concat([AccDF.tail(numFactors), pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]})])
     sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color='k')
     ax.set(ylim=(0.95, 1))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
