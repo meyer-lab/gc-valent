@@ -125,8 +125,8 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
         if len(entry) >= 1:
             expVal = np.mean(entry)
             predVal = cytBindingModel(ligName, val, conc, cell, x)
-            masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
-                                                         "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
+            masterSTAT = pd.concat([masterSTAT, pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
+                                                              "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal})])
 
     masterSTAT["Predicted"] = masterSTAT["Predicted"].astype(float)
     masterSTAT["Experimental"] = masterSTAT["Experimental"].astype(float)
@@ -140,9 +140,9 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
             else:
                 expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
                 predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
-                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)), np.reshape(expVec, (-1, 1)), rcond=None)[0][0]
+                slope = np.linalg.lstsq(np.reshape(predVec.astype(np.float), (-1, 1)), np.reshape(expVec.astype(np.float), (-1, 1)), rcond=None)[0][0]
                 masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
-                dateConvDF = dateConvDF.append(pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell}))
+                dateConvDF = pd.concat([dateConvDF, pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell})])
     if saveDict:
         dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
 

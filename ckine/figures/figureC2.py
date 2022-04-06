@@ -90,8 +90,8 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, legend=False):
     for ligand in hillDF.Ligand.unique():
         for valency in hillDF.loc[hillDF.Ligand == ligand].Valency.unique():
             isoData = hillDF.loc[(hillDF.Ligand == ligand) & (hillDF.Valency == valency)]
-            fitDF = fitDF.append(pd.DataFrame({"Ligand": [ligand], "Valency": valency, cell2 + " Max": isoData.Ratio.max(),
-                                 cell2 + " Dose": isoData.loc[isoData.Ratio == isoData.Ratio.max()].Dose.values}))
+            fitDF = pd.concat([fitDF, pd.DataFrame({"Ligand": [ligand], "Valency": valency, cell2 + " Max": isoData.Ratio.max(),
+                                                    cell2 + " Dose": isoData.loc[isoData.Ratio == isoData.Ratio.max()].Dose.values})])
 
     ax[0].set(title="Ratio of " + cell1 + " to " + cell2)
 
@@ -108,8 +108,8 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, legend=False):
         valData = fitDF.loc[fitDF.Valency == valency]
         mMax, bMax = np.polyfit(np.log10(valData["IL2Rα $K_{D}$ (nM)"].values), valData[cell2 + " Max"], 1)
         mDose, bDose = np.polyfit(np.log10(valData["IL2Rα $K_{D}$ (nM)"].values), np.log10(valData[cell2 + " Dose"]), 1)
-        maxLineDF = maxLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Max": mMax * affs + bMax}))
-        doseLineDF = doseLineDF.append(pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Dose": np.power(10, mDose * affs + bDose)}))
+        maxLineDF = pd.concat([maxLineDF, pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Max": mMax * affs + bMax})])
+        doseLineDF = pd.concat([doseLineDF, pd.DataFrame({"Valency": valency, "IL2Rα $K_{D}$ (nM)": np.power(10, affs), cell2 + " Dose": np.power(10, mDose * affs + bDose)})])
 
     maxLineDF, doseLineDF = maxLineDF.reset_index(), doseLineDF.reset_index()
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", hue="Ligand", style="Valency", ax=ax[1], palette=ligDict, legend=False)
@@ -140,8 +140,8 @@ def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell):
             offTargXData = np.nan_to_num(np.log10(offTIsoData.Dose.values)) + 4
             offTargYData = np.nan_to_num(offTIsoData.Mean.values)
             offTargFit = least_squares(hill_residuals, x0, args=(offTargXData, offTargYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
-            hillDF = hillDF.append(pd.DataFrame({"Ligand": ligand, "Valency": valency, "Cell": targCell, "Dose": np.power(
-                10, doses - 4), targCell: hill_equation(targFit.x, doses), offTargCell: hill_equation(offTargFit.x, doses)}))
+            hillDF = pd.concat([hillDF, pd.DataFrame({"Ligand": ligand, "Valency": valency, "Cell": targCell, "Dose": np.power(
+                10, doses - 4), targCell: hill_equation(targFit.x, doses), offTargCell: hill_equation(offTargFit.x, doses)})])
 
     for cell in [targCell, offTargCell]:
         maxobs = hillDF.loc[(hillDF.Ligand == "IL2")][cell].max()

@@ -245,7 +245,7 @@ def calculate_moments(df, cell_names, receptors):
                     skew_ = np.log10(df_subset.skew())
                     df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
                     df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
-                    df_stats = df_stats.append(df_new)
+                    df_stats = pd.concat([df_stats, df_new])
 
     return df_stats
 
@@ -266,21 +266,21 @@ def getReceptors(correlation=None):
 
     if correlation == 'CD122':
         df_signal = apply_gates("4-23", "1", df_gates, correlation="CD122")
-        df_signal = df_signal.append(apply_gates("4-23", "2", df_gates, correlation="CD122"))
-        df_signal = df_signal.append(apply_gates("4-26", "1", df_gates, correlation="CD122"))
-        df_signal = df_signal.append(apply_gates("4-26", "2", df_gates, correlation="CD122"))
+        df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates, correlation="CD122")])
+        df_signal = pd.concat([df_signal, apply_gates("4-26", "1", df_gates, correlation="CD122")])
+        df_signal = pd.concat([df_signal, apply_gates("4-26", "2", df_gates, correlation="CD122")])
     elif correlation == 'CD132':
         df_signal = apply_gates("4-23", "1", df_gates, correlation="CD132")
-        df_signal = df_signal.append(apply_gates("4-23", "2", df_gates, correlation="CD132"))
-        df_signal = df_signal.append(apply_gates("4-26", "1", df_gates, correlation="CD132"))
-        df_signal = df_signal.append(apply_gates("4-26", "2", df_gates, correlation="CD132"))
+        df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates, correlation="CD132")])
+        df_signal = pd.concat([df_signal, apply_gates("4-26", "1", df_gates, correlation="CD132")])
+        df_signal = pd.concat([df_signal, apply_gates("4-26", "2", df_gates, correlation="CD132")])
     else:
         df_signal = apply_gates("4-23", "1", df_gates)
-        df_signal = df_signal.append(apply_gates("4-23", "2", df_gates))
-        df_signal = df_signal.append(apply_gates("4-26", "1", df_gates))
-        df_signal = df_signal.append(apply_gates("4-26", "2", df_gates))
-        df_signal = df_signal.append(apply_gates("5-16", "1", df_gates))
-        df_signal = df_signal.append(apply_gates("5-16", "2", df_gates))
+        df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates)])
+        df_signal = pd.concat([df_signal, apply_gates("4-26", "1", df_gates)])
+        df_signal = pd.concat([df_signal, apply_gates("4-26", "2", df_gates)])
+        df_signal = pd.concat([df_signal, apply_gates("5-16", "1", df_gates)])
+        df_signal = pd.concat([df_signal, apply_gates("5-16", "2", df_gates)])
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
@@ -304,7 +304,7 @@ def getReceptors(correlation=None):
                         rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
                     df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
                                            "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
-                    df_rec = df_rec.append(df_add)
+                    df_rec = pd.concat([df_rec, df_add])
 
     return df_rec
 

@@ -76,13 +76,13 @@ def makeFigure():
     targCell = 'Treg'
     standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
     standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
-    standardDF = standardDF.append(standard2DF)
+    standardDF = pd.concat([standardDF, standard2DF])
     standardDF['Type'] = 'Standard'
 
     for epitope in epitopesDF['Epitope'].unique():
         selectedDF = epitopesDF.loc[(epitopesDF.Epitope == epitope)].sample()
         selectedDF['Type'] = 'Epitope'
-        selectedDF = selectedDF.append(standardDF)
+        selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
         optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
         epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
@@ -212,7 +212,7 @@ def optimizeDesign(targCell, offTcells, selectedDF, epitope):
         X0 = [7.0]
     optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
     optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, epitope), jac="3-point")
-    optSelectivity = optimized.fun[0]
+    optSelectivity = optimized.fun
 
     return optSelectivity
 
@@ -242,7 +242,7 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.2):
         markerCol = X[:, np.where(factors == marker)]
         CD25MarkX = np.hstack((CD25col, markerCol.reshape(-1, 1)))
         markAcc = SVMmod.fit(CD25MarkX, TregY).score(CD25MarkX, TregY)
-        AccDF = AccDF.append(pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]}))
+        AccDF = pd.concat([AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})])
 
     AccDF = AccDF.sort_values(by="Accuracy")
     markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
@@ -293,7 +293,7 @@ def distMetricScatt(ax, targCell, numFactors, weight=False):
     for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
         for cell in cellToI:
             cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
+            markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size})])
 
     ratioDF = pd.DataFrame(columns=["Marker", "Ratio"])
     for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
@@ -302,7 +302,7 @@ def distMetricScatt(ax, targCell, numFactors, weight=False):
             targ = markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Amount.mean()
             for cell in offTargs:
                 offT += markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Amount.mean()
-            ratioDF = ratioDF.append(pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT}))
+            ratioDF = pd.concat([ratioDF, pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT})])
         else:
             offT = 0
             targ = markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Amount.values * \
@@ -310,7 +310,7 @@ def distMetricScatt(ax, targCell, numFactors, weight=False):
             for cell in offTargs:
                 offT += markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Amount.values * \
                     markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Number.values
-            ratioDF = ratioDF.append(pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT}))
+            ratioDF = pd.concat([ratioDF, pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT})])
 
     ratioDF = ratioDF.sort_values(by="Ratio")
     posCorrs = ratioDF.tail(numFactors).Marker.values
@@ -345,7 +345,7 @@ def convFactCalc(ax):
     for marker in markers:
         for cell in cellToI:
             cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = markerDF.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size}))
+            markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size})])
 
     markerDF = markerDF.replace({"Marker": markDict, "Cell Type": cellDict})
     markerDFw = pd.DataFrame(columns=["Marker", "Cell Type", "Average"])
@@ -353,7 +353,7 @@ def convFactCalc(ax):
         for cell in markerDF["Cell Type"].unique():
             subDF = markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)]
             wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(subDF.Number.values)
-            markerDFw = markerDFw.append(pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg}))
+            markerDFw = pd.concat([markerDFw, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg})])
 
     recDF = importReceptors()
     weightDF = pd.DataFrame(columns=["Receptor", "Weight"])
@@ -364,6 +364,6 @@ def convFactCalc(ax):
         for cell in markerDF["Cell Type"].unique():
             CITEval = np.concatenate((CITEval, markerDFw.loc[(markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)].Average.values))
             Quantval = np.concatenate((Quantval, recDF.loc[(recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)].Mean.values))
-        weightDF = weightDF.append(pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)), Quantval, rcond=None)[0]}))
+        weightDF = pd.concat([weightDF, pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)).astype(np.float), Quantval.astype(np.float), rcond=None)[0]})])
 
     return weightDF
