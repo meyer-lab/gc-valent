@@ -83,6 +83,8 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
     Affs = np.repeat(Affs, 2, axis=0)
     np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
 
+    doseVec = np.array(doseVec)
+
     if doseVec.size == 1:
         doseVec = np.array([doseVec])
     output = np.zeros(doseVec.size)
@@ -125,6 +127,9 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
             predVal = cytBindingModel(ligName, val, conc, cell, x)
             masterSTAT = masterSTAT.append(pd.DataFrame({"Ligand": ligName, "Date": date, "Cell": cell, "Dose": conc,
                                                          "Time": time, "Valency": val, "Experimental": expVal, "Predicted": predVal}))
+
+    masterSTAT["Predicted"] = masterSTAT["Predicted"].astype(float)
+    masterSTAT["Experimental"] = masterSTAT["Experimental"].astype(float)
 
     for date in dates:
         for cell in masterSTAT.Cell.unique():
