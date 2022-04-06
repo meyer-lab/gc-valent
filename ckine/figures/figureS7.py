@@ -215,7 +215,7 @@ def optimizeDesign(targCell, offTcells, selectedDF, Gene):
         X0 = [7.0]
     optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
     optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, Gene), jac="3-point")
-    optSelectivity = optimized.fun[0]
+    optSelectivity = optimized.fun
 
     return optSelectivity
 
