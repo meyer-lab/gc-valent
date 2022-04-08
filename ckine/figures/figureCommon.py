@@ -186,7 +186,9 @@ def getLigDict():
     """Gives hue dict for ligands - consistency across """
     pSTATDF = import_pstat_all(True, False)
     ligands = pSTATDF.Ligand.unique()
-    palette = sns.color_palette("bright", ligands.size)
+    #palette = sns.color_palette("Spectral", ligands.size)
+    palette = sns.color_palette(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a"])
+
     ligDict = {}
     for i, ligand in enumerate(ligands):
         ligDict[ligand] = palette[i]

@@ -68,7 +68,7 @@ def makeFigure():
 def Pred_Exp_plot(ax, df):
     """Plots all experimental vs. Predicted Values"""
     df = df.replace(cellDict)
-    sns.scatterplot(x="Experimental", y="Predicted", hue="Cell", style="Valency", data=df, ax=ax, alpha=0.35)
+    sns.scatterplot(x="Experimental", y="Predicted", style="Valency", data=df, ax=ax, alpha=0.35)
     ax.set(xlim=(0, 60000), ylim=(0, 60000))
 
 
