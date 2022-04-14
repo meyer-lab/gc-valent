@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from scipy.io import mmread
 from scipy.sparse import coo_matrix
+from zipfile import ZipFile
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 
@@ -159,10 +160,10 @@ def makeRNAseqDF():
     GeneDF = pd.DataFrame(data=matrix2.toarray(), columns=geneCols)
     cellTypesDF = pd.read_csv(join(path_here, "ckine/data/CITEcellTypes.csv"))
     GeneDF = pd.concat([GeneDF, cellTypesDF], axis=1)
-    GeneDF.to_csv(join(path_here, "ckine/data/RNAseqSurface.csv"))
+    GeneDF.to_csv(join(path_here, "ckine/data/RNAseqSurface.csv.zip"))
 
 
 def importRNACITE():
     """Downloads all surface markers and cell types"""
-    RNAsurfDF = pd.read_csv(join(path_here, "ckine/data/RNAseqSurface.csv"))
+    RNAsurfDF = pd.read_csv(ZipFile(join(path_here, "ckine/data/RNAseqSurface.csv.zip")).open("RNAseqSurface.csv"))
     return RNAsurfDF

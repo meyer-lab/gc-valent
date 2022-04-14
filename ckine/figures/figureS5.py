@@ -17,7 +17,7 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((4, 6), (2, 1), multz={2: 1})
+    ax, f = getSetup((4, 6), (2, 2), multz={2: 1})
     GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
     GenesDF = pd.concat([GenesDF, pd.DataFrame({"Gene": ["IL2RB"]})], ignore_index=True)
     CITE_DF = importRNACITE()
@@ -104,8 +104,8 @@ def makeFigure():
     GenesDF = GenesDF.sort_values(by=['Selectivity']).tail(10)
     xvalues = GenesDF['Gene']
     yvalues = (((GenesDF['Selectivity']) / baseSelectivity) * 100) - 100
-    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
-    ax[2].set_ylabel("Selectivity (% increase over WT IL2)", title="RNA")
+    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[2])
+    ax[2].set(ylabel="Selectivity (% increase over WT IL2)", title="RNA")
     ax[2].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
