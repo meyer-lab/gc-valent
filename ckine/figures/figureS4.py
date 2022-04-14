@@ -99,7 +99,7 @@ def makeFigure():
     yvalues = (((epitopesDF['Selectivity']) / baseSelectivity) * 100) - 100
     print(yvalues)
     sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
-    ax[0].set_ylabel("Selectivity (% increase over WT IL2)", title="Surface Markers")
+    ax[0].set(ylabel="Selectivity (% increase over WT IL2)", title="Surface Markers")
     ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
