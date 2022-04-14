@@ -104,8 +104,8 @@ def makeFigure():
     GenesDF = GenesDF.sort_values(by=['Selectivity']).tail(10)
     xvalues = GenesDF['Gene']
     yvalues = (((GenesDF['Selectivity']) / baseSelectivity) * 100) - 100
-    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
-    ax[2].set_ylabel("Selectivity (% increase over WT IL2)", title="RNA")
+    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[2])
+    ax[2].set(ylabel="Selectivity (% increase over WT IL2)", title="RNA")
     ax[2].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
