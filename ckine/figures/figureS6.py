@@ -1,5 +1,5 @@
 """
-This creates Figure S6, RNA seq based epitope ID without binding model.
+This creates Figure S6, RNA seq based epitope ID without binding model (makes DF)
 """
 import pandas as pd
 from os.path import dirname

@@ -24,15 +24,11 @@ def makeFigure():
     axlabel = copy(ax)
     del axlabel[1]
     del axlabel[11]
-    del axlabel[13]
-    del axlabel[13]
     subplotLabel(axlabel)
     ax[0].axis("off")
     ax[1].axis("off")
     ax[11].axis("off")
     ax[12].axis("off")
-    ax[15].axis("off")
-    ax[16].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
@@ -42,20 +38,21 @@ def makeFigure():
     respDF = respDF.replace(cellDict)
     respDF = respDF.rename({"Bivalent": "Valency"}, axis=1)
     respDF["Valency"] = respDF["Valency"] + 1
-    time = 1.0
+    time = 4.0
+    pseudo = 0.15
 
     mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
 
-    ratioConc(ax[2:5], respDF, r"T$_{reg}$", "NK", 4, mutAffDF, legend=True)
-    ratioConc(ax[5:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", 4, mutAffDF, legend=True)
-    ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", 4, mutAffDF, legend=True)
+    ratioConc(ax[2:5], respDF, r"T$_{reg}$", "NK", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[5:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", time, mutAffDF, pseudo=pseudo, legend=True)
 
     legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     cellTarget = "Treg"
     Wass_KL_Dist(ax[13:15], cellTarget, 10)
-    #Wass_KL_Dist(ax[17:19], cellTarget, 10, RNA=True)
+    Wass_KL_Dist(ax[15:17], cellTarget, 10, RNA=True)
     CITE_RIDGE(ax[17], cellTarget)
     CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
 
@@ -83,9 +80,9 @@ def gaussian_residuals(x, concs, ratios):
     return gaussian(x, concs) - ratios
 
 
-def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, legend=False):
+def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, pseudo=0.1, legend=False):
     """Plots Ratio of cell 1 to cell 2 over a range of concentrations"""
-    hillDF = hillRatioDosePlot(ax[0], respDF, time, cell1, cell2)
+    hillDF = hillRatioDosePlot(ax[0], respDF, time, cell1, cell2, pseudo=pseudo)
     fitDF = pd.DataFrame()
     for ligand in hillDF.Ligand.unique():
         for valency in hillDF.loc[hillDF.Ligand == ligand].Valency.unique():
@@ -121,7 +118,7 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, legend=False):
     ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2), ylabel=cell1 + " to " + cell2 + " Ratio Max Dose")
 
 
-def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell):
+def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell, pseudo=0.2):
     """Plots the various affinities for IL-2 Muteins"""
     doses = np.log10(np.logspace(np.log10(respDF.Dose.min()), np.log10(respDF.Dose.max()), 100)) + 4
     x0 = [4, 1, 2]
@@ -146,7 +143,7 @@ def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell):
     for cell in [targCell, offTargCell]:
         maxobs = hillDF.loc[(hillDF.Ligand == "IL2")][cell].max()
         hillDF[cell] /= maxobs
-    hillDF["Ratio"] = hillDF[targCell] / (0.25 + hillDF[offTargCell])
+    hillDF["Ratio"] = hillDF[targCell] / (pseudo + hillDF[offTargCell])
 
     hillDF = hillDF.groupby(["Ligand", "Valency", "Dose"]).Ratio.mean().reset_index()
     hillDF = hillDF.loc[(hillDF.Ligand != "IL15") & (hillDF.Ligand != "IL2")]

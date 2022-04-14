@@ -12,6 +12,7 @@ import svgutils.transform as st
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, LabelEncoder, LabelBinarizer
 from sklearn.linear_model import RidgeClassifierCV
+from sklearn.metrics import balanced_accuracy_score
 from scipy import stats
 from sklearn.neighbors import KernelDensity
 from sklearn.svm import SVC
@@ -108,8 +109,8 @@ def genFigure():
         overlayCartoon(fdir + 'figureC2.svg',
                        './ckine/graphics/selectivityCartoon.svg', 1200, 350, scalee=0.039)
 
-        overlayCartoon(fdir + 'figureC2.svg',
-                       './ckine/graphics/citeCartoon.svg', 2300, 20500, scalee=0.043)
+        # overlayCartoon(fdir + 'figureC2.svg',
+        #               './ckine/graphics/citeCartoon.svg', 2300, 20500, scalee=0.043)
 
     if sys.argv[1] == 'C3':
         # Overlay Figure 3 cartoon
@@ -267,6 +268,12 @@ def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
         sns.barplot(data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color='k')
         ax[i].set(yscale="log")
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=45)
+    if RNA:
+        ax[0].set(title="Wasserstein Distance - RNA")
+        ax[1].set(title="KL Divergence - RNA")
+    else:
+        ax[0].set(title="Wasserstein Distance - Surface Markers")
+        ax[1].set(title="KL Divergence - Surface Markers")
     return corrsDF
 
 
@@ -296,6 +303,10 @@ def CITE_RIDGE(ax, targCell, numFactors=10, RNA=False):
     TargCoefsDF = TargCoefsDF.tail(numFactors)
     sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax, color='k')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    if RNA:
+        ax.set(title="RIDGE Coefficients - RNA")
+    else:
+        ax.set(title="RIDGE Coefficients - Surface Markers")
     return TargCoefsDF
 
 
@@ -323,7 +334,8 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
     TregY = y[:, np.where(enc.classes_ == targCell)].ravel()
 
     AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
-    baselineAcc = SVMmod.fit(CD122col, TregY).score(CD122col, TregY)
+    baselineAccMod = SVMmod.fit(CD122col, TregY)
+    baselineAcc = balanced_accuracy_score(TregY, baselineAccMod.predict(CD122col))
     print(baselineAcc)
     print(np.where((factors == IL2RB)))
     for marker in factors:
@@ -331,7 +343,8 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
         print(marker)
         markerCol = X[:, np.where(factors == marker)]
         CD122MarkX = np.hstack((CD122col, markerCol.reshape(-1, 1)))
-        markAcc = SVMmod.fit(CD122MarkX, TregY).score(CD122MarkX, TregY)
+        fitMod = SVMmod.fit(CD122MarkX, TregY)
+        markAcc = balanced_accuracy_score(TregY, fitMod.predict(CD122MarkX))
         print(markAcc)
         AccDF = pd.concat([AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})])
 
@@ -341,6 +354,10 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
 
     plot_DF = pd.concat([AccDF.tail(numFactors), pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]})])
     sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color='k')
-    ax.set(ylim=(0.95, 1))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    ax.set(ylabel="Balanced Accuracy")
+    if RNA:
+        ax.set(title="SVM Accuracy - RNA", ylim=(0.4, 0.5))
+    else:
+        ax.set(title="SVM Accuracy - Surface Markers", ylim=(0.4, 0.8))
     return markers

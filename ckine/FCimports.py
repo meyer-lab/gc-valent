@@ -116,7 +116,7 @@ def compMatrix(date, plate, panel, invert=True):
         if channelName not in addedChannels:  # Ensures a diagonal value is only added once for each channel
             addedChannels.append(channelName)
             df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1', 'Channel2', 'Comp'])  # Creates new row for dataframe
-            df_comp = pd.concat([df_comp, df2, ignore_index=True])  # Adds row
+            df_comp = pd.concat([df_comp, df2], ignore_index=True)  # Adds row
     # Create square matrix from compensation values
     df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)  # df_matrix is now a square and has exactly one row and one column for each channel
     for i in df_matrix.index:
