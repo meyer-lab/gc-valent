@@ -17,7 +17,7 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((4, 6), (2, 1), multz={2: 1})
+    ax, f = getSetup((4, 6), (2, 2), multz={2: 1})
     GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
     GenesDF = pd.concat([GenesDF, pd.DataFrame({"Gene": ["IL2RB"]})], ignore_index=True)
     CITE_DF = importRNACITE()
