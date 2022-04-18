@@ -113,7 +113,7 @@ def plot_tFac_Conc(ax, tFac, respDF):
 
 def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
     """Plots tensor factorization of cells"""
-    cells = respDF.Cell.unique()
+    cells = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
     cellFacs = tFac[1][3]
     tFacDFcell = pd.DataFrame()
     for i in range(0, numComps):
