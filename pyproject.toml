@@ -16,7 +16,7 @@ matplotlib = "^3.5.0"
 scikit-learn = "^1.0.1"
 tensorly = "^0.7.0"
 pyarrow = "^6.0.1"
-flowcytometrytools = {git = "https://github.com/borcuttjahns/FlowCytometryTools.git"}
+FlowCytometryTools = "^0.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
