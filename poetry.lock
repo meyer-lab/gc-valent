@@ -72,16 +72,27 @@ pandas = "*"
 six = "*"
 
 [[package]]
-name = "flowcytometrytools"
+name = "FlowCytometryTools"
 version = "0.5.1"
 description = "A python package for performing flow cytometry analysis"
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
 decorator = "*"
 fcsparser = ">=0.1.1"
+matplotlib = ">=1.5.3"
+numpy = "*"
+pandas = ">=0.19.0"
+scipy = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/eyurtsev/FlowCytometryTools.git"
+reference = "master"
+resolved_reference = "70edbd6a7f0d5ae882492d56dd4629c5a49a38fe"
 
 [[package]]
 name = "fonttools"
@@ -448,7 +459,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "de94aad9537b8e05cd54a2625e2482e779c0d62ac16054307de2f8519d5ac1f5"
+content-hash = "2d6129c85f0b5e4f41fcfeac0b941676d55930d4a535ab441bdd8805dcfc6230"
 
 [metadata.files]
 atomicwrites = [
@@ -518,10 +529,7 @@ fcsparser = [
     {file = "fcsparser-0.2.4-py3-none-any.whl", hash = "sha256:52e07e96ec21c5915c78c0481aa796888890f704e56a0c7114f5c198ef6de46e"},
     {file = "fcsparser-0.2.4.tar.gz", hash = "sha256:fa8e60d1bbda2fd592b6fd387e7bf3048fa357359e06e0b263e7034469f617b3"},
 ]
-flowcytometrytools = [
-    {file = "FlowCytometryTools-0.5.1-py3-none-any.whl", hash = "sha256:9380ffb968469e3f0a97113add1c10e82cab6131462cf47b6826d36d1679e354"},
-    {file = "FlowCytometryTools-0.5.1.tar.gz", hash = "sha256:2a2a151f6d0bc53318848c7bb2d5dfa61412e7c81fc5efcbb4643aee471e5393"},
-]
+FlowCytometryTools = []
 fonttools = [
     {file = "fonttools-4.33.3-py3-none-any.whl", hash = "sha256:f829c579a8678fa939a1d9e9894d01941db869de44390adb49ce67055a06cc2a"},
     {file = "fonttools-4.33.3.zip", hash = "sha256:c0fdcfa8ceebd7c1b2021240bd46ef77aa8e7408cf10434be55df52384865f8e"},
