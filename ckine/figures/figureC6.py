@@ -41,8 +41,8 @@ def makeFigure():
     return f
 
 
-palette_dict={"R38Q/H16N N-term": "darkorchid",
-"Live/Dead": "Orange"}
+palette_dict = {"R38Q/H16N N-term": "darkorchid",
+                "Live/Dead": "Orange"}
 
 
 def YT1_Plot(ax, estRec):
@@ -102,7 +102,8 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
         for dose in DF.Dose.unique():
             for ligand in DF.Ligand.unique():
                 for valency in DF.loc[DF.Ligand == ligand].Valency.unique():
-                    ratio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].pSTAT5.values / DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].pSTAT5.values
+                    ratio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].pSTAT5.values / \
+                        DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].pSTAT5.values
                     ratioDF = pd.concat([ratioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": ratio})])
 
     else:
@@ -110,7 +111,8 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
         for dose in DF.Dose.unique():
             for ligand in DF.Ligand.unique():
                 for valency in DF.loc[DF.Ligand == ligand].Valency.unique():
-                    ratio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].pSTAT5.values / DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].pSTAT5.values
+                    ratio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].pSTAT5.values / \
+                        DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].pSTAT5.values
                     ratioDF = pd.concat([ratioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": ratio})])
 
     ratioDF = ratioDF.reset_index()

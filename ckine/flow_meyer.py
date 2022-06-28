@@ -19,12 +19,12 @@ gate_df = pd.DataFrame()
 
 
 flow_dict = {"Pacific Blue-A": "FoxP3",
-"FITC-A": "CD8",
-"PE-A": "CD4",
-"BV605-A": "CD56",
-"Alexa Fluor 700-A": "pSTAT5",
-"APC-Cy7-A": "CD25",
-"Alexa Fluor 647-A": "CD3"}
+             "FITC-A": "CD8",
+             "PE-A": "CD4",
+             "BV605-A": "CD56",
+             "Alexa Fluor 700-A": "pSTAT5",
+             "APC-Cy7-A": "CD25",
+             "Alexa Fluor 647-A": "CD3"}
 
 
 def compile_untreated(cellFrac):
@@ -117,10 +117,10 @@ def makeGate(lowerCorner, upperCorner, channels, name):
 
 cellTypes = ["NK", "CD8+", "Thelper", "Treg"]
 
-gate_dict = {"NK": ["NK Gate"], 
-"CD8+": ["CD8 Gate"], 
-"Treg": ["CD4 Gate", "Treg Gate"], 
-"Thelper": ["CD4 Gate", "Thelper Gate"]}
+gate_dict = {"NK": ["NK Gate"],
+             "CD8+": ["CD8 Gate"],
+             "Treg": ["CD4 Gate", "Treg Gate"],
+             "Thelper": ["CD4 Gate", "Thelper Gate"]}
 
 
 def form_gate(gate):
@@ -149,15 +149,15 @@ def pop_gate(sample, cell_type, gateDF):
 
 
 lig_dict = {"01": ["R38Q/H16N N-term", 1],
-"02": ["R38Q/H16N N-term", 1],
-"03": ["R38Q/H16N N-term", 2],
-"04": ["R38Q/H16N N-term", 2],
-"05": ["R38Q/H16N N-term", 4],
-"06": ["R38Q/H16N N-term", 4],
-"07": ["Live/Dead", 2],
-"08": ["Live/Dead", 2], 
-"09": ["Live/Dead", 4], 
-"10": ["Live/Dead", 4]}
+            "02": ["R38Q/H16N N-term", 1],
+            "03": ["R38Q/H16N N-term", 2],
+            "04": ["R38Q/H16N N-term", 2],
+            "05": ["R38Q/H16N N-term", 4],
+            "06": ["R38Q/H16N N-term", 4],
+            "07": ["Live/Dead", 2],
+            "08": ["Live/Dead", 2],
+            "09": ["Live/Dead", 4],
+            "10": ["Live/Dead", 4]}
 
 dose_dict = {"A": 50, "B": 12.954, "C": 3.355, "D": 0.869, "E": 0.2252, "F": 0.058, "G": 0.01512, "H": 0.00392, "I": 0.001}
 
@@ -167,7 +167,7 @@ def make_flow_df(subtract=True):
     columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
     rows = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
     rowminus = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-    
+
     cell_types = ["Treg", "Thelper", "CD8+", "NK"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates.csv"))
     MeyerDF = pd.DataFrame([])
@@ -197,7 +197,8 @@ def make_flow_df(subtract=True):
         for valency in MeyerDF.loc[MeyerDF.Ligand == ligand].Valency.unique():
             for dose in MeyerDF.Dose.unique():
                 for cell in MeyerDF.Cell.unique():
-                    MeyerDF.loc[(MeyerDF.Valency == valency) & (MeyerDF.Ligand == ligand) & (MeyerDF.Cell == cell) & (MeyerDF.Dose == dose), "pSTAT5"] -= untreatedDF.loc[untreatedDF.Cell == cell].pSTAT5.values
+                    MeyerDF.loc[(MeyerDF.Valency == valency) & (MeyerDF.Ligand == ligand) & (MeyerDF.Cell == cell) & (
+                        MeyerDF.Dose == dose), "pSTAT5"] -= untreatedDF.loc[untreatedDF.Cell == cell].pSTAT5.values
     MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
     MeyerDF.to_csv(join(path_here, "ckine/data/Meyer_Flow.csv"))
     return MeyerDF
