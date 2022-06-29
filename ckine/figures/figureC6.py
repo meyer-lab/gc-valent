@@ -124,5 +124,3 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     ratioDF = ratioDF.reset_index()
     sns.lineplot(data=ratioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
-
-

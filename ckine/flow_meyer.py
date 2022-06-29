@@ -184,6 +184,7 @@ def make_flow_df(subtract=True):
                 MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1], "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": "6/25/22"})])
     MeyerDF = MeyerDF.groupby(["Ligand", "Valency", "Dose", "Cell", "Date"]).pSTAT5.mean().reset_index()
 
+
     untreatedDF = pd.DataFrame()
     untreated_sample = compile_untreated(cellFrac=1.0)
     untreated_sample = live_PBMC_gate(sample, gateDF)
