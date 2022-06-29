@@ -115,10 +115,10 @@ def makeGate(lowerCorner, upperCorner, channels, name):
     return PolyGate([(lowerCorner[0], lowerCorner[1]), (upperCorner[0], lowerCorner[1]), (upperCorner[0], upperCorner[1]), (lowerCorner[0], upperCorner[1])], channels, region='in', name=name)
 
 
-cellTypes = ["NK", "CD8+", "Thelper", "Treg"]
+cellTypes = ["NK", "CD8", "Thelper", "Treg"]
 
 gate_dict = {"NK": ["NK Gate"],
-             "CD8+": ["CD8 Gate"],
+             "CD8": ["CD8 Gate"],
              "Treg": ["CD4 Gate", "Treg Gate"],
              "Thelper": ["CD4 Gate", "Thelper Gate"]}
 
@@ -148,12 +148,12 @@ def pop_gate(sample, cell_type, gateDF):
     return pop_sample
 
 
-lig_dict = {"01": ["R38Q/H16N N-term", 1],
-            "02": ["R38Q/H16N N-term", 1],
-            "03": ["R38Q/H16N N-term", 2],
-            "04": ["R38Q/H16N N-term", 2],
-            "05": ["R38Q/H16N N-term", 4],
-            "06": ["R38Q/H16N N-term", 4],
+lig_dict = {"01": ["R38Q/H16N", 1],
+            "02": ["R38Q/H16N", 1],
+            "03": ["R38Q/H16N", 2],
+            "04": ["R38Q/H16N", 2],
+            "05": ["R38Q/H16N", 4],
+            "06": ["R38Q/H16N", 4],
             "07": ["Live/Dead", 2],
             "08": ["Live/Dead", 2],
             "09": ["Live/Dead", 4],
@@ -168,7 +168,7 @@ def make_flow_df(subtract=True):
     rows = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
     rowminus = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
-    cell_types = ["Treg", "Thelper", "CD8+", "NK"]
+    cell_types = ["Treg", "Thelper", "CD8", "NK"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates.csv"))
     MeyerDF = pd.DataFrame([])
 
@@ -181,8 +181,9 @@ def make_flow_df(subtract=True):
                 pop_sample = pop_gate(sample, cell_type, gateDF)
                 mean = pop_sample.data["pSTAT5"]
                 mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
-                MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1], "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean]})])
-    MeyerDF = MeyerDF.groupby(["Ligand", "Valency", "Dose", "Cell"]).pSTAT5.mean().reset_index()
+                MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1], "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": "6/25/22"})])
+    MeyerDF = MeyerDF.groupby(["Ligand", "Valency", "Dose", "Cell", "Date"]).pSTAT5.mean().reset_index()
+
 
     untreatedDF = pd.DataFrame()
     untreated_sample = compile_untreated(cellFrac=1.0)
