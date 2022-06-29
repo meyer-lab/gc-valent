@@ -6,7 +6,7 @@ from os.path import dirname, join
 import numpy as np
 import pandas as pd
 from scipy.optimize import root
-from .imports import import_pstat_all, getBindDict, importReceptors
+from .imports import import_pstat_all, import_pstat_all_meyer, getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
 
@@ -145,6 +145,42 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
                 dateConvDF = pd.concat([dateConvDF, pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell})])
     if saveDict:
         dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDict.csv"))
+
+    if x:
+        return np.linalg.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)
+    else:
+        return masterSTAT
+
+
+def runFullModelMeyer(x=False, saveDict=False):
+    """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
+    statDF = import_pstat_all_meyer()
+    statDF = statDF.loc[statDF.Ligand != "Live/Dead"]
+
+    dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
+    masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"})
+    dates = statDF.Date.unique()
+
+    for (date, lig, val, conc, cell), group in statDF.groupby(["Date", "Ligand", "Valency", "Dose", "Cell"]):
+        entry = group.pSTAT5.values
+        if len(entry) >= 1:
+            expVal = np.mean(entry)
+            predVal = cytBindingModel(lig, val, conc, cell, x)
+            masterSTAT = pd.concat([masterSTAT, pd.DataFrame({"Ligand": lig, "Cell": cell, "Dose": conc, "Date": date,
+                                                              "Valency": val, "Experimental": expVal, "Predicted": predVal})])
+
+    masterSTAT["Predicted"] = masterSTAT["Predicted"].astype(float)
+    masterSTAT["Experimental"] = masterSTAT["Experimental"].astype(float)
+
+    for date in dates:
+        for cell in masterSTAT.Cell.unique():
+            expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
+            predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
+            slope = np.linalg.lstsq(np.reshape(predVec.astype(np.float), (-1, 1)), np.reshape(expVec.astype(np.float), (-1, 1)), rcond=None)[0][0]
+            masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
+            dateConvDF = pd.concat([dateConvDF, pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell})])
+    if saveDict:
+        dateConvDF.set_index("Date").to_csv(join(path_here, "ckine/data/BindingConvDictMeyer.csv"))
 
     if x:
         return np.linalg.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)

@@ -107,6 +107,13 @@ def import_pstat_all(singleCell=False, updateLigs=True):
 
 
 @lru_cache(maxsize=None)
+def import_pstat_all_meyer():
+    """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
+    respDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow.csv"), encoding="latin1")
+    return respDF
+
+
+@lru_cache(maxsize=None)
 def getBindDict():
     """Gets binding to pSTAT fluorescent conversion dictionary"""
     path = os.path.dirname(os.path.dirname(__file__))

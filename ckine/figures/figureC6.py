@@ -7,9 +7,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from os.path import join
-from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, getLigDict
-from ..MBmodel import getKxStar, polyc
+from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, getLigDict, plotDoseResponses
+from ..MBmodel import getKxStar, polyc, runFullModelMeyer
 from ..flow_meyer import make_flow_df
+from sklearn.metrics import r2_score
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
@@ -24,24 +25,28 @@ def makeFigure():
     # minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
     # print(minSolved)
 
-    YT1_Plot(ax[0], estRec=500)
-    YT1_Plot(ax[1], estRec=2500)
-    YT1_Plot(ax[2], estRec=5000)
+    #YT1_Plot(ax[0], estRec=500)
+    #YT1_Plot(ax[1], estRec=2500)
+    #YT1_Plot(ax[2], estRec=5000)
     # make_flow_df()
+    modelDF = runFullModelMeyer().reset_index()
+    ligands = modelDF.Ligand.unique()
+    cells = ["Treg", "Thelper", "NK", "CD8"]
 
-    MeyerDF = pd.read_csv(join(path_here, "data/Meyer_Flow.csv"))
-    ligandPlot(MeyerDF, "Treg", ax[3], live_dead=False)
-    ligandPlot(MeyerDF, "Thelper", ax[4], live_dead=False)
-    ligandPlot(MeyerDF, "NK", ax[5], live_dead=False)
-    ligandPlot(MeyerDF, "CD8+", ax[6], live_dead=False)
-    ligand_ratio_plot(MeyerDF, "Treg", "Thelper", ax[7], live_dead=False)
-    ligand_ratio_plot(MeyerDF, "Treg", "NK", ax[8], live_dead=False)
-    ligand_ratio_plot(MeyerDF, "Treg", "CD8+", ax[9], live_dead=False)
+    # MeyerDF = pd.read_csv(join(path_here, "data/Meyer_Flow.csv"))
+    ligandPlot(modelDF, "Treg", ax[3], live_dead=False)
+    ligandPlot(modelDF, "Thelper", ax[4], live_dead=False)
+    ligandPlot(modelDF, "NK", ax[5], live_dead=False)
+    ligandPlot(modelDF, "CD8", ax[6], live_dead=False)
+    print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
+    #ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[7], live_dead=False)
+    #ligand_ratio_plot(modelDF, "Treg", "NK", ax[8], live_dead=False)
+    #ligand_ratio_plot(modelDF, "Treg", "CD8+", ax[9], live_dead=False)
 
     return f
 
 
-palette_dict = {"R38Q/H16N N-term": "darkorchid",
+palette_dict = {"R38Q/H16N": "darkorchid",
                 "Live/Dead": "Orange"}
 
 
@@ -91,7 +96,8 @@ def ligandPlot(DF, cell, ax, live_dead=False):
         DF = DF.loc[DF.Cell == cell]
     else:
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "Live/Dead")]
-    sns.lineplot(data=DF, x="Dose", y="pSTAT5", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    sns.lineplot(data=DF, x="Dose", y="Predicted", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    sns.scatterplot(data=DF, x="Dose", y="Experimental", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cell)
 
 
@@ -118,3 +124,5 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     ratioDF = ratioDF.reset_index()
     sns.lineplot(data=ratioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+
+
