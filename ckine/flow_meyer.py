@@ -181,9 +181,9 @@ def make_flow_df(subtract=True):
                 pop_sample = pop_gate(sample, cell_type, gateDF)
                 mean = pop_sample.data["pSTAT5"]
                 mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
-                MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1], "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": "6/25/22"})])
+                MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1],
+                                    "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": "6/25/22"})])
     MeyerDF = MeyerDF.groupby(["Ligand", "Valency", "Dose", "Cell", "Date"]).pSTAT5.mean().reset_index()
-
 
     untreatedDF = pd.DataFrame()
     untreated_sample = compile_untreated(cellFrac=1.0)

@@ -361,3 +361,44 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
     else:
         ax.set(title="SVM Accuracy - Surface Markers", ylim=(0.4, 0.8))
     return markers
+
+
+palette_dict = {"R38Q/H16N": "darkorchid",
+                "Live/Dead": "Orange"}
+
+
+def ligandPlot(DF, cell, ax, live_dead=False):
+    """Plots a cell type response"""
+    if live_dead:
+        DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "R38Q/H16N")]
+    else:
+        DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "Live/Dead")]
+    sns.lineplot(data=DF, x="Dose", y="Predicted", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    sns.scatterplot(data=DF, x="Dose", y="Experimental", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+
+
+def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
+    """Plots a cell type response"""
+    expRatioDF = pd.DataFrame()
+    predRatioDF = pd.DataFrame()
+    if live_dead:
+        DF = DF.loc[(DF.Ligand != "R38Q/H16N")]
+    else:
+        DF = DF.loc[(DF.Ligand != "Live/Dead")]
+
+    for dose in DF.Dose.unique():
+        for ligand in DF.Ligand.unique():
+            for valency in DF.loc[DF.Ligand == ligand].Valency.unique():
+                expRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].Experimental.values / \
+                    (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].Experimental.values + 50)
+                predRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].Predicted.values / \
+                    (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].Predicted.values + 50)
+                expRatioDF = pd.concat([expRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": expRatio})])
+                predRatioDF = pd.concat([predRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": predRatio})])
+
+    expRatioDF = expRatioDF.reset_index()
+    predRatioDF = predRatioDF.reset_index()
+    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    #sns.lineplot(data=predRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")

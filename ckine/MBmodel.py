@@ -155,7 +155,7 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
 def runFullModelMeyer(x=False, saveDict=False):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all_meyer()
-    statDF = statDF.loc[statDF.Ligand != "Live/Dead"]
+    #statDF = statDF.loc[statDF.Ligand != "Live/Dead"]
 
     dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
     masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"})
@@ -165,7 +165,10 @@ def runFullModelMeyer(x=False, saveDict=False):
         entry = group.pSTAT5.values
         if len(entry) >= 1:
             expVal = np.mean(entry)
-            predVal = cytBindingModel(lig, val, conc, cell, x)
+            if lig == "Live/Dead":
+                predVal = cytBindingModelLD(lig, val, conc, cell, x)
+            else:
+                predVal = cytBindingModel(lig, val, conc, cell, x)
             masterSTAT = pd.concat([masterSTAT, pd.DataFrame({"Ligand": lig, "Cell": cell, "Dose": conc, "Date": date,
                                                               "Valency": val, "Experimental": expVal, "Predicted": predVal})])
 
@@ -186,3 +189,37 @@ def runFullModelMeyer(x=False, saveDict=False):
         return np.linalg.norm(masterSTAT.Predicted.values - masterSTAT.Experimental.values)
     else:
         return masterSTAT
+
+
+def cytBindingModelLD(mut, val, doseVec, cellType, x=False, date=False):
+    """Runs binding model for a given mutein, valency, dose, and cell type."""
+    recDF = importReceptors()
+    recCount = np.ravel([recDF.loc[(recDF.Receptor == "IL2Ra") & (recDF["Cell Type"] == cellType)].Mean.values,
+                         recDF.loc[(recDF.Receptor == "IL2Rb") & (recDF["Cell Type"] == cellType)].Mean.values])
+
+    mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
+    Affs = mutAffDF.loc[(mutAffDF.Mutein == "R38Q/H16N")]
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.reshape(Affs, (1, -1))
+    Affs = np.repeat(Affs, 2, axis=0)
+    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
+    Affs = np.concatenate((Affs, [[np.power(6e-9, -1), 1e2]]), axis=0)
+
+    doseVec = np.array(doseVec)
+
+    if doseVec.size == 1:
+        doseVec = np.array([doseVec])
+    output = np.zeros(doseVec.size)
+
+    for i, dose in enumerate(doseVec):
+        if x:
+            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val / 2, val / 2, val / 2]], [1.0], Affs)[0][1]
+        else:
+            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val / 2, val / 2, val / 2]], [1.0], Affs)[0][1]  # IL2RB binding only
+    if date:
+        convDict = getBindDict()
+        if cellType[-1] == "$":  # if it is a binned pop, use ave fit
+            output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType[0:-13])].Scale.values
+        else:
+            output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
+    return output
