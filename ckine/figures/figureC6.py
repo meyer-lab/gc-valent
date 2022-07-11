@@ -18,21 +18,19 @@ ligDict = getLigDict()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 9), (4, 4))
+    ax, f = getSetup((9, 9), (3, 3))
     subplotLabel(ax)
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    ligands = modelDF.Ligand.unique()
-    cells = ["Treg", "Thelper", "NK", "CD8"]
 
-    ligandPlot(modelDF, "Treg", ax[3], live_dead=True)
-    ligandPlot(modelDF, "Thelper", ax[4], live_dead=True)
-    ligandPlot(modelDF, "NK", ax[5], live_dead=True)
-    ligandPlot(modelDF, "CD8", ax[6], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[7], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "NK", ax[8], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[9], live_dead=True)
+    ligandPlot(modelDF, "Treg", ax[2], live_dead=True)
+    ligandPlot(modelDF, "Thelper", ax[3], live_dead=True)
+    ligandPlot(modelDF, "NK", ax[4], live_dead=True)
+    ligandPlot(modelDF, "CD8", ax[5], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[6], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "NK", ax[7], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[8], live_dead=True)
 
     return f
 

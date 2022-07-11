@@ -186,9 +186,9 @@ def plotDoseResponses(ax, df, mut, cellType, val=False):
 def getLigDict():
     """Gives hue dict for ligands - consistency across """
     pSTATDF = import_pstat_all(True, False)
-    ligands = pSTATDF.Ligand.unique()
+    ligands = np.append(pSTATDF.Ligand.unique(), "Live/Dead")
     #palette = sns.color_palette("Spectral", ligands.size)
-    palette = sns.color_palette(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a"])
+    palette = sns.color_palette(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "Orange"])
 
     ligDict = {}
     for i, ligand in enumerate(ligands):
@@ -369,17 +369,30 @@ palette_dict = {"R38Q/H16N": "darkorchid",
 
 def ligandPlot(DF, cell, ax, live_dead=False):
     """Plots a cell type response"""
+    ligDict = getLigDict()
     if live_dead:
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "R38Q/H16N")]
     else:
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "Live/Dead")]
-    sns.lineplot(data=DF, x="Dose", y="Predicted", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
-    sns.scatterplot(data=DF, x="Dose", y="Experimental", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
-    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+    sns.lineplot(data=DF, x="Dose", y="Predicted", hue="Ligand", size="Valency", palette=ligDict, ax=ax)
+    sns.scatterplot(data=DF, x="Dose", y="Experimental", hue="Ligand", style="Valency", size="Valency", palette=ligDict, ax=ax)
+    if live_dead:
+        ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+        handles, labels = ax.get_legend_handles_labels()
+        labels[2] += " (Pred.)"
+        labels[7] += " (Exprmt.)"
+        ax.legend(handles[2:5] + handles[7::], labels[2:5] + labels[7::])
+    else:
+        ax.set(xscale="log", xlabel="Dose R38Q/H16N (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+        handles, labels = ax.get_legend_handles_labels()
+        labels[2] += " (Pred.)"
+        labels[8] += " (Exprmt.)"
+        ax.legend(handles[2:6] + handles[8::], labels[2:6] + labels[8::])
 
 
 def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     """Plots a cell type response"""
+    ligDict = getLigDict()
     expRatioDF = pd.DataFrame()
     predRatioDF = pd.DataFrame()
     if live_dead:
@@ -399,6 +412,15 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
 
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
-    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", size="Valency", palette=ligDict, ax=ax)
     #sns.lineplot(data=predRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+    if live_dead:
+        ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+
+    else:
+        ax.set(xscale="log", xlabel="Dose R38Q/H16N (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+
+    handles, labels = ax.get_legend_handles_labels()
+    labels[2] += " (Exprmt.)"
+    ax.legend(handles[2::], labels[2::])
