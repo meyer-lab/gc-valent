@@ -1,5 +1,5 @@
 """
-Figure 6. Optimization of Ligands
+Figure 5. Optimization of Ligands
 """
 from os.path import dirname
 import numpy as np
@@ -12,27 +12,27 @@ from ..MBmodel import polyc, getKxStar, runFullModelMeyer
 from ..imports import getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
-rcParams['svg.fonttype'] = 'none'
+#rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():
-    """ Make figure 6. """
+    """ Make figure 5. """
     # Get list of axis objects
-    ax, f = getSetup((8, 12), (5, 3))
+    ax, f = getSetup((10, 10), (4, 4), multz={6: 1})
     subplotLabel(ax)
-    #optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
-    #optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
-    #optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
+    optimizeDesign([ax[0], ax[1]], ["Treg"], ["Thelper", "NK", "CD8"])
+    optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
+    optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
 
     modelDF = runFullModelMeyer().reset_index()
 
-    ligandPlot(modelDF, "Treg", ax[6], live_dead=False)
-    ligandPlot(modelDF, "Thelper", ax[7], live_dead=False)
-    ligandPlot(modelDF, "NK", ax[8], live_dead=False)
-    ligandPlot(modelDF, "CD8", ax[9], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[10], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "NK", ax[11], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[12], live_dead=False)
+    ligandPlot(modelDF, "Treg", ax[7], live_dead=False)
+    ligandPlot(modelDF, "Thelper", ax[8], live_dead=False)
+    ligandPlot(modelDF, "NK", ax[9], live_dead=False)
+    ligandPlot(modelDF, "CD8", ax[10], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[11], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "NK", ax[12], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[13], live_dead=False)
 
     return f
 

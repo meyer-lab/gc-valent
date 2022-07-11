@@ -18,13 +18,11 @@ ligDict = getLigDict()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 9), (4, 4))
+    ax, f = getSetup((12, 9), (3, 4), multz={2: 1})
     subplotLabel(ax)
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    ligands = modelDF.Ligand.unique()
-    cells = ["Treg", "Thelper", "NK", "CD8"]
 
     ligandPlot(modelDF, "Treg", ax[3], live_dead=True)
     ligandPlot(modelDF, "Thelper", ax[4], live_dead=True)
