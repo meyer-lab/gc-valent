@@ -12,7 +12,7 @@ from ..MBmodel import polyc, getKxStar, runFullModelMeyer
 from ..imports import getBindDict, importReceptors
 
 path_here = dirname(dirname(__file__))
-rcParams['svg.fonttype'] = 'none'
+#rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():
