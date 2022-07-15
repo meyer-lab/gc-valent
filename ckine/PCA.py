@@ -103,11 +103,41 @@ def pcaPlt(xf, pstat, ax, Tcells=True):
     ax.set_xlim(-5, 5)
     ax.set_ylim(-5, 5)
     if Tcells:
-        sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(0, 30000))
-        points = ax.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=0, vmax=30000)  # set style options
+        sns.scatterplot(
+            x="PC1",
+            y="PC2",
+            hue="pSTAT5",
+            palette="viridis",
+            data=df,
+            s=5,
+            ax=ax,
+            legend=False,
+            hue_norm=(0, 30000),
+        )
+        points = ax.scatter(
+            df["PC1"],
+            df["PC2"],
+            c=df["pSTAT5"],
+            s=0,
+            cmap="viridis",
+            vmin=0,
+            vmax=30000,
+        )  # set style options
     else:
-        sns.scatterplot(x="PC1", y="PC2", hue="pSTAT5", palette="viridis", data=df, s=5, ax=ax, legend=False, hue_norm=(0, 8000))
-        points = ax.scatter(df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=0, vmax=8000)  # set style options
+        sns.scatterplot(
+            x="PC1",
+            y="PC2",
+            hue="pSTAT5",
+            palette="viridis",
+            data=df,
+            s=5,
+            ax=ax,
+            legend=False,
+            hue_norm=(0, 8000),
+        )
+        points = ax.scatter(
+            df["PC1"], df["PC2"], c=df["pSTAT5"], s=0, cmap="viridis", vmin=0, vmax=8000
+        )  # set style options
     ax.set_xlabel("PC1", fontsize=15)
     ax.set_ylabel("PC2", fontsize=15)
     # add a color bar
@@ -199,19 +229,33 @@ def sampleTcolor(smpl):
     # Features are the protein channels of interest when analyzing T cells
     features = ["BL1-H", "VL1-H", "VL4-H", "BL3-H"]
     # Transform to put on log scale
-    tform = smpl.transform("hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H", "RL1-H"])
+    tform = smpl.transform(
+        "hlog", channels=["BL1-H", "VL1-H", "VL4-H", "BL3-H", "RL1-H"]
+    )
     # Save the data of each column of the protein channels
     data = tform.data[["BL1-H", "VL1-H", "VL4-H", "BL3-H"]][0:]
     # Save pSTAT5 data
     pstat = tform.data[["RL1-H"]][0:]
     colmat = [] * (len(data) + 1)
     for i in range(len(data)):
-        if data.iat[i, 0] > 5.115e03 and data.iat[i, 0] < 6.258e03 and data.iat[i, 1] > 3.229e03 and data.iat[i, 1] < 5.814e03 and data.iat[i, 2] > 6.512e03:
+        if (
+            data.iat[i, 0] > 5.115e03
+            and data.iat[i, 0] < 6.258e03
+            and data.iat[i, 1] > 3.229e03
+            and data.iat[i, 1] < 5.814e03
+            and data.iat[i, 2] > 6.512e03
+        ):
             if data.iat[i, 3] > 6300:
                 colmat.append("r")  # Treg naive
             else:
                 colmat.append("darkorange")  # Treg mem
-        elif data.iat[i, 0] > 2.586e03 and data.iat[i, 0] < 5.115e03 and data.iat[i, 1] > 3.470e02 and data.iat[i, 1] < 5.245e03 and data.iat[i, 2] > 6.512e03:
+        elif (
+            data.iat[i, 0] > 2.586e03
+            and data.iat[i, 0] < 5.115e03
+            and data.iat[i, 1] > 3.470e02
+            and data.iat[i, 1] < 5.245e03
+            and data.iat[i, 2] > 6.512e03
+        ):
             if data.iat[i, 3] > 6300:
                 colmat.append("g")  # Thelp naive
             else:
@@ -236,13 +280,33 @@ def sampleNKcolor(smpl):
     colmat = [] * (len(data) + 1)
 
     for i in range(len(data)):
-        if data.iat[i, 0] > 5.550e03 and data.iat[i, 0] < 6.468e03 and data.iat[i, 2] > 4.861e03 and data.iat[i, 2] < 5.813e03:
+        if (
+            data.iat[i, 0] > 5.550e03
+            and data.iat[i, 0] < 6.468e03
+            and data.iat[i, 2] > 4.861e03
+            and data.iat[i, 2] < 5.813e03
+        ):
             colmat.append("r")  # nk
-        elif data.iat[i, 0] > 6.533e03 and data.iat[i, 0] < 7.34e03 and data.iat[i, 2] > 4.899e03 and data.iat[i, 2] < 5.751e03:
+        elif (
+            data.iat[i, 0] > 6.533e03
+            and data.iat[i, 0] < 7.34e03
+            and data.iat[i, 2] > 4.899e03
+            and data.iat[i, 2] < 5.751e03
+        ):
             colmat.append("darkgreen")  # bnk
-        elif data.iat[i, 0] > 5.976e03 and data.iat[i, 0] < 7.541e03 and data.iat[i, 1] > 6.825e03 and data.iat[i, 1] < 9.016e03:
+        elif (
+            data.iat[i, 0] > 5.976e03
+            and data.iat[i, 0] < 7.541e03
+            and data.iat[i, 1] > 6.825e03
+            and data.iat[i, 1] < 9.016e03
+        ):
             colmat.append("blueviolet")  # cd8+
-        elif data.iat[i, 0] > 5.50e03 and data.iat[i, 0] < 6.758e03 and data.iat[i, 2] > 6.021e03 and data.iat[i, 2] < 7.013e03:
+        elif (
+            data.iat[i, 0] > 5.50e03
+            and data.iat[i, 0] < 6.758e03
+            and data.iat[i, 2] > 6.021e03
+            and data.iat[i, 2] < 7.013e03
+        ):
             colmat.append("midnightblue")  # nkt
         else:
             colmat.append("c")
@@ -267,18 +331,98 @@ def pcaPltColor(xf, colormat, ax, Tcells=True):
     # lighter --> darker = less --> more pSTAT5 present
     colormat = np.array(colormat)[0:1000]
     if Tcells:
-        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=0.5, c="c", label="Other", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "g"], y[colormat == "g"], s=0.5, c="g", label="T Helper Naive", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "darkorchid"], y[colormat == "darkorchid"], s=0.5, c="darkorchid", label="T Helper Memory", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "darkorange"], y[colormat == "darkorange"], s=0.5, c="darkorange", label="T Reg Memory", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=0.5, c="r", label="T Reg Naive", alpha=0.3, edgecolors="none")
+        ax.scatter(
+            x[colormat == "c"],
+            y[colormat == "c"],
+            s=0.5,
+            c="c",
+            label="Other",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "g"],
+            y[colormat == "g"],
+            s=0.5,
+            c="g",
+            label="T Helper Naive",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "darkorchid"],
+            y[colormat == "darkorchid"],
+            s=0.5,
+            c="darkorchid",
+            label="T Helper Memory",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "darkorange"],
+            y[colormat == "darkorange"],
+            s=0.5,
+            c="darkorange",
+            label="T Reg Memory",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "r"],
+            y[colormat == "r"],
+            s=0.5,
+            c="r",
+            label="T Reg Naive",
+            alpha=0.3,
+            edgecolors="none",
+        )
         ax.legend(markerscale=6.0)
     else:
-        ax.scatter(x[colormat == "darkgreen"], y[colormat == "darkgreen"], s=0.5, c="g", label="BNK", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "r"], y[colormat == "r"], s=0.5, c="r", label="NK", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "blueviolet"], y[colormat == "blueviolet"], s=0.5, c="blueviolet", label="CD8+", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "midnightblue"], y[colormat == "midnightblue"], s=0.5, c="midnightblue", label="NKT", alpha=0.3, edgecolors="none")
-        ax.scatter(x[colormat == "c"], y[colormat == "c"], s=0.5, c="c", label="Other", alpha=0.3, edgecolors="none")
+        ax.scatter(
+            x[colormat == "darkgreen"],
+            y[colormat == "darkgreen"],
+            s=0.5,
+            c="g",
+            label="BNK",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "r"],
+            y[colormat == "r"],
+            s=0.5,
+            c="r",
+            label="NK",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "blueviolet"],
+            y[colormat == "blueviolet"],
+            s=0.5,
+            c="blueviolet",
+            label="CD8+",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "midnightblue"],
+            y[colormat == "midnightblue"],
+            s=0.5,
+            c="midnightblue",
+            label="NKT",
+            alpha=0.3,
+            edgecolors="none",
+        )
+        ax.scatter(
+            x[colormat == "c"],
+            y[colormat == "c"],
+            s=0.5,
+            c="c",
+            label="Other",
+            alpha=0.3,
+            edgecolors="none",
+        )
         ax.legend(markerscale=6.0)
 
 
@@ -329,7 +473,22 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, cell_type, date, Tcells=True):
     Given data from a time Point and two PC bounds, the dose response curve will be calculated and graphed
     (needs folder with FCS from one time point)
     """
-    dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+    dosemat = np.array(
+        [
+            84,
+            28,
+            9.333333,
+            3.111,
+            1.037037,
+            0.345679,
+            0.115226,
+            0.038409,
+            0.012803,
+            0.004268,
+            0.001423,
+            0.000474,
+        ]
+    )
     pSTATvals = np.zeros([1, dosemat.size])
     if cell_type:
         gates = gating(cell_type, date, True)
@@ -351,8 +510,15 @@ def PCADoseResponse(sampleType, PC1Bnds, PC2Bnds, cell_type, date, Tcells=True):
 
         xf = appPCA(data, PCAobj, Tcells)  # get PC1/2 vals
         PCApd = PCdatTransform(xf, pstat)
-        PCApd = PCApd[(PCApd["PC1"] >= PC1Bnds[0]) & (PCApd["PC1"] <= PC1Bnds[1]) & (PCApd["PC2"] >= PC2Bnds[0]) & (PCApd["PC2"] <= PC2Bnds[1])]  # remove data that that is not within given PC bounds
-        pSTATvals[0, i] = PCApd.loc[:, "pSTAT"].mean()  # take average Pstat activity of data fitting criteria
+        PCApd = PCApd[
+            (PCApd["PC1"] >= PC1Bnds[0])
+            & (PCApd["PC1"] <= PC1Bnds[1])
+            & (PCApd["PC2"] >= PC2Bnds[0])
+            & (PCApd["PC2"] <= PC2Bnds[1])
+        ]  # remove data that that is not within given PC bounds
+        pSTATvals[0, i] = PCApd.loc[
+            :, "pSTAT"
+        ].mean()  # take average Pstat activity of data fitting criteria
 
     pSTATvals = pSTATvals.flatten()
 
@@ -364,7 +530,9 @@ def PCdatTransform(xf, pstat):
     PC1, PC2, pstat = np.transpose(xf[:, 0]), np.transpose(xf[:, 1]), pstat.to_numpy()
     PC1, PC2 = np.reshape(PC1, (PC1.size, 1)), np.reshape(PC2, (PC2.size, 1))
     PCAstat = np.concatenate((PC1, PC2, pstat), axis=1)
-    PCApd = pd.DataFrame({"PC1": PCAstat[:, 0], "PC2": PCAstat[:, 1], "pSTAT": PCAstat[:, 2]})  # arrange into pandas datafrome
+    PCApd = pd.DataFrame(
+        {"PC1": PCAstat[:, 0], "PC2": PCAstat[:, 1], "pSTAT": PCAstat[:, 2]}
+    )  # arrange into pandas datafrome
     return PCApd
 
 
@@ -374,7 +542,24 @@ def StatGini(sampleType, ax, cell_type, date, Tcells=True):
     Takes a folder of samples, a timepoint (string), a boolean check for cell type and an optional gate parameter.
     """
     alldata = []
-    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
+    dosemat = np.array(
+        [
+            [
+                84,
+                28,
+                9.333333,
+                3.111,
+                1.037037,
+                0.345679,
+                0.115226,
+                0.038409,
+                0.012803,
+                0.004268,
+                0.001423,
+                0.000474,
+            ]
+        ]
+    )
     ginis = np.zeros([2, dosemat.size])
 
     if Tcells:
@@ -384,7 +569,9 @@ def StatGini(sampleType, ax, cell_type, date, Tcells=True):
 
     if cell_type:
         gates = gating(cell_type, date, True)
-        _, alldata = count_data(sampleType, gates, Tcells)  # returns array of dfs in case of gate or no gate
+        _, alldata = count_data(
+            sampleType, gates, Tcells
+        )  # returns array of dfs in case of gate or no gate
 
     else:
         for i, sample in enumerate(sampleType):
@@ -399,7 +586,9 @@ def StatGini(sampleType, ax, cell_type, date, Tcells=True):
         dat_array = alldata[i]
         stat_array = dat_array[[statcol]]
         stat_array = stat_array.to_numpy()
-        stat_array = stat_array.clip(min=1)  # remove small percentage of negative pstat values
+        stat_array = stat_array.clip(
+            min=1
+        )  # remove small percentage of negative pstat values
         stat_array.tolist()  # manipulate data to be compatible with gin calculation
         stat_sort = np.sort(np.hstack(stat_array))
         num = stat_array.size
@@ -418,17 +607,23 @@ def StatGini(sampleType, ax, cell_type, date, Tcells=True):
 
 
 def nllsq_EC50(x0, xdata, ydata):
-    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0.0, 0.0, 0.0], [10, 10.0, 10 ** 5.0]), jac="3-point")
+    """Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50."""
+    lsq_res = least_squares(
+        residuals,
+        x0,
+        args=(xdata, ydata),
+        bounds=([0.0, 0.0, 0.0], [10, 10.0, 10**5.0]),
+        jac="3-point",
+    )
     return lsq_res.x[0]
 
 
 def hill_equation(x, x0, solution=0):
-    """ Calculates EC50 from Hill Equation. """
+    """Calculates EC50 from Hill Equation."""
     xk = np.power(x / x0[0], x0[1])
     return (x0[2] * xk / (1.0 + xk)) - solution
 
 
 def residuals(x0, x, y):
-    """ Residual function for Hill Equation. """
+    """Residual function for Hill Equation."""
     return hill_equation(x, x0) - y

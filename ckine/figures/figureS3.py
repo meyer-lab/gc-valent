@@ -21,7 +21,10 @@ def makeFigure():
         ligList = np.append(ligList, np.tile(lig, uniqueVals.size))
 
     ax, f = getSetup((10, 10), (6, 4))
-    cellGroups = [["Treg", "Treg $IL2Ra^{lo}$", "Treg $IL2Ra^{hi}$"], ["Thelper", "Thelper $IL2Ra^{lo}$", "Thelper $IL2Ra^{hi}$"]]
+    cellGroups = [
+        ["Treg", "Treg $IL2Ra^{lo}$", "Treg $IL2Ra^{hi}$"],
+        ["Thelper", "Thelper $IL2Ra^{lo}$", "Thelper $IL2Ra^{hi}$"],
+    ]
 
     for i, lig in enumerate(ligList):
         for j, cellgroup in enumerate(cellGroups):
