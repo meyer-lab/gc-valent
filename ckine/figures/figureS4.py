@@ -22,7 +22,7 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((4, 3), (1, 1))
+    ax, f = getSetup((3, 3), (1, 1))
 
     epitopesDF = pd.read_csv(join(path_here, "data/epitopeListUnique.csv"))
 
