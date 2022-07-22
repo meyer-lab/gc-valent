@@ -20,8 +20,8 @@ from copy import copy
 from matplotlib import gridspec, pyplot as plt
 from ..imports import import_pstat_all, importCITE, importRNACITE
 
-matplotlib.use('AGG')
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+matplotlib.use("AGG")
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 
 
 matplotlib.rcParams["legend.labelspacing"] = 0.2
@@ -37,12 +37,33 @@ matplotlib.rcParams["legend.markerscale"] = 0.7
 matplotlib.rcParams["legend.borderpad"] = 0.35
 
 
-dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
+dosemat = np.array(
+    [
+        84,
+        28,
+        9.333333,
+        3.111,
+        1.037037,
+        0.345679,
+        0.115226,
+        0.038409,
+        0.012803,
+        0.004268,
+        0.001423,
+        0.000474,
+    ]
+)
 
 
 def getSetup(figsize, gridd, multz=None, empts=None):
-    """ Establish figure set-up with subplots. """
-    sns.set(style="whitegrid", font_scale=0.7, color_codes=True, palette="colorblind", rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6})
+    """Establish figure set-up with subplots."""
+    sns.set(
+        style="whitegrid",
+        font_scale=0.7,
+        color_codes=True,
+        palette="colorblind",
+        rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6},
+    )
 
     # create empty list if empts isn't specified
     if empts is None:
@@ -62,7 +83,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
         if x not in empts and x not in multz.keys():  # If this is just a normal subplot
             ax.append(f.add_subplot(gs1[x]))
         elif x in multz.keys():  # If this is a subplot that spans grid elements
-            ax.append(f.add_subplot(gs1[x: x + multz[x] + 1]))
+            ax.append(f.add_subplot(gs1[x : x + multz[x] + 1]))
             x += multz[x]
         x += 1
 
@@ -70,13 +91,21 @@ def getSetup(figsize, gridd, multz=None, empts=None):
 
 
 def subplotLabel(axs):
-    """ Place subplot labels on figure. """
+    """Place subplot labels on figure."""
     for ii, ax in enumerate(axs):
-        ax.text(-0.2, 1.25, ascii_lowercase[ii], transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
+        ax.text(
+            -0.2,
+            1.25,
+            ascii_lowercase[ii],
+            transform=ax.transAxes,
+            fontsize=16,
+            fontweight="bold",
+            va="top",
+        )
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
-    """ Add cartoon to a figure file. """
+    """Add cartoon to a figure file."""
 
     # Overlay Figure cartoons
     template = st.fromfile(figFile)
@@ -90,105 +119,294 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
 
 def genFigure():
-    """ Main figure generation function. """
-    fdir = './output/'
+    """Main figure generation function."""
+    fdir = "./output/"
     start = time.time()
-    nameOut = 'figure' + sys.argv[1]
+    nameOut = "figure" + sys.argv[1]
 
-    exec('from ckine.figures import ' + nameOut)
-    ff = eval(nameOut + '.makeFigure()')
-    ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
+    exec("from ckine.figures import " + nameOut)
+    ff = eval(nameOut + ".makeFigure()")
+    ff.savefig(fdir + nameOut + ".svg", dpi=ff.dpi, bbox_inches="tight", pad_inches=0)
 
-    if sys.argv[1] == 'C1':
+    if sys.argv[1] == "C1":
         # Overlay Figure 1 cartoon
-        overlayCartoon(fdir + 'figureC1.svg',
-                       './ckine/graphics/muteinsCartoon.svg', 1200, 350, scalee=0.040)
+        overlayCartoon(
+            fdir + "figureC1.svg",
+            "./ckine/graphics/muteinsCartoon.svg",
+            1200,
+            350,
+            scalee=0.040,
+        )
 
-    if sys.argv[1] == 'C2':
+    if sys.argv[1] == "C2":
         # Overlay Figure 2 cartoon
-        overlayCartoon(fdir + 'figureC2.svg',
-                       './ckine/graphics/selectivityCartoon.svg', 1200, 350, scalee=0.039)
+        overlayCartoon(
+            fdir + "figureC2.svg",
+            "./ckine/graphics/selectivityCartoon.svg",
+            1200,
+            350,
+            scalee=0.039,
+        )
 
         # overlayCartoon(fdir + 'figureC2.svg',
         #               './ckine/graphics/citeCartoon.svg', 2300, 20500, scalee=0.043)
 
-    if sys.argv[1] == 'C3':
+    if sys.argv[1] == "C3":
         # Overlay Figure 3 cartoon
-        overlayCartoon(fdir + 'figureC3.svg',
-                       './ckine/graphics/tensor4D.svg', 20, 6, scalee=1.62)
+        overlayCartoon(
+            fdir + "figureC3.svg", "./ckine/graphics/tensor4D.svg", 20, 6, scalee=1.62
+        )
 
-    if sys.argv[1] == 'C4':
+    if sys.argv[1] == "C4":
         # Overlay Figure 4 cartoon
-        overlayCartoon(fdir + 'figureC4.svg',
-                       './ckine/graphics/ModelCartoon.svg', 1450, 0, scalee=0.023)
+        overlayCartoon(
+            fdir + "figureC4.svg",
+            "./ckine/graphics/ModelCartoon.svg",
+            1450,
+            0,
+            scalee=0.023,
+        )
 
-    logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
+    logging.info("%s is done after %s seconds.", nameOut, time.time() - start)
 
 
-cellSTATlimDict = {"Treg": (0, 60000),
-                   "Thelper": (0, 40000),
-                   "CD8": (0, 30000),
-                   "NK": (0, 8000)}
+cellSTATlimDict = {
+    "Treg": (0, 60000),
+    "Thelper": (0, 40000),
+    "CD8": (0, 30000),
+    "NK": (0, 8000),
+}
 
 
 def plotDoseResponses(ax, df, mut, cellType, val=False):
     """Plots all experimental vs. Predicted Values"""
-    #df = df.groupby(["Cell", "Valency", "Ligand", "Dose", "Time"])["Experimental"].mean().reset_index()
+    # df = df.groupby(["Cell", "Valency", "Ligand", "Dose", "Time"])["Experimental"].mean().reset_index()
     palette = getLigDict()[mut]
     if isinstance(cellType, str):
         if val:
-            expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)]
+            expData = df.loc[
+                (df.Ligand == mut) & (df.Valency == val) & (df.Cell == cellType)
+            ]
         else:
             expData = df.loc[(df.Ligand == mut) & (df.Cell == cellType)]
         valList = expData.Valency.unique()
-        predData = expData.groupby(["Cell", "Valency", "Ligand", "Dose"])["Predicted"].mean().reset_index()
+        predData = (
+            expData.groupby(["Cell", "Valency", "Ligand", "Dose"])["Predicted"]
+            .mean()
+            .reset_index()
+        )
 
         if val:
             if val == 1:
-                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", size="Valency", ax=ax, color=palette)
-                sns.lineplot(x="Dose", y="Predicted", data=predData, label="Predicted", size="Valency", ax=ax, color=palette)
-                ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+                sns.scatterplot(
+                    x="Dose",
+                    y="Experimental",
+                    data=expData,
+                    label="Experimental",
+                    style="Time",
+                    size="Valency",
+                    ax=ax,
+                    color=palette,
+                )
+                sns.lineplot(
+                    x="Dose",
+                    y="Predicted",
+                    data=predData,
+                    label="Predicted",
+                    size="Valency",
+                    ax=ax,
+                    color=palette,
+                )
+                ax.set(
+                    title=cellType,
+                    xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)",
+                    ylabel="pSTAT",
+                    xscale="log",
+                    xlim=(1e-4, 1e2),
+                    ylim=cellSTATlimDict[cellType],
+                )
             if val == 2:
-                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", size="Valency", ax=ax, color=palette)
-                sns.lineplot(x="Dose", y="Predicted", data=predData, label="Predicted", size="Valency", ax=ax, color=palette)
-                ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+                sns.scatterplot(
+                    x="Dose",
+                    y="Experimental",
+                    data=expData,
+                    label="Experimental",
+                    style="Time",
+                    size="Valency",
+                    ax=ax,
+                    color=palette,
+                )
+                sns.lineplot(
+                    x="Dose",
+                    y="Predicted",
+                    data=predData,
+                    label="Predicted",
+                    size="Valency",
+                    ax=ax,
+                    color=palette,
+                )
+                ax.set(
+                    title=cellType,
+                    xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)",
+                    ylabel="pSTAT",
+                    xscale="log",
+                    xlim=(1e-4, 1e2),
+                    ylim=cellSTATlimDict[cellType],
+                )
         else:
             if len(valList) > 1:
-                sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", size="Valency", ax=ax, legend="brief", color=palette)
-                sns.lineplot(x="Dose", y="Predicted", data=predData, label="Predicted", size="Valency", ax=ax, legend="brief", color=palette)
-                ax.set(title=cellType, xlabel=r"$log_{10}$ " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+                sns.scatterplot(
+                    x="Dose",
+                    y="Experimental",
+                    data=expData,
+                    label="Experimental",
+                    style="Time",
+                    size="Valency",
+                    ax=ax,
+                    legend="brief",
+                    color=palette,
+                )
+                sns.lineplot(
+                    x="Dose",
+                    y="Predicted",
+                    data=predData,
+                    label="Predicted",
+                    size="Valency",
+                    ax=ax,
+                    legend="brief",
+                    color=palette,
+                )
+                ax.set(
+                    title=cellType,
+                    xlabel=r"$log_{10}$ " + mut + " (nM)",
+                    ylabel="pSTAT",
+                    xscale="log",
+                    xlim=(1e-4, 1e2),
+                    ylim=cellSTATlimDict[cellType],
+                )
                 handles, labels = ax.get_legend_handles_labels()
                 ax.legend([handles[0]] + handles[4::], [labels[0]] + labels[4::])
             else:
                 if valList[0] == 1:
-                    sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", size="Valency", ax=ax, color=palette)
-                    sns.lineplot(x="Dose", y="Predicted", data=predData, label="Predicted", size="Valency", ax=ax, color=palette)
-                    ax.set(title=cellType, xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+                    sns.scatterplot(
+                        x="Dose",
+                        y="Experimental",
+                        data=expData,
+                        label="Experimental",
+                        style="Time",
+                        size="Valency",
+                        ax=ax,
+                        color=palette,
+                    )
+                    sns.lineplot(
+                        x="Dose",
+                        y="Predicted",
+                        data=predData,
+                        label="Predicted",
+                        size="Valency",
+                        ax=ax,
+                        color=palette,
+                    )
+                    ax.set(
+                        title=cellType,
+                        xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)",
+                        ylabel="pSTAT",
+                        xscale="log",
+                        xlim=(1e-4, 1e2),
+                        ylim=cellSTATlimDict[cellType],
+                    )
                     handles, labels = ax.get_legend_handles_labels()
                     ax.legend(handles[0:2] + handles[4::], labels[0:2] + labels[4::])
                 if valList[0] == 2:
-                    sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", style="Time", size="Valency", ax=ax, color=palette)
-                    sns.lineplot(x="Dose", y="Predicted", data=predData, label="Predicted", size="Valency", ax=ax, color=palette)
-                    ax.set(title=cellType, xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType])
+                    sns.scatterplot(
+                        x="Dose",
+                        y="Experimental",
+                        data=expData,
+                        label="Experimental",
+                        style="Time",
+                        size="Valency",
+                        ax=ax,
+                        color=palette,
+                    )
+                    sns.lineplot(
+                        x="Dose",
+                        y="Predicted",
+                        data=predData,
+                        label="Predicted",
+                        size="Valency",
+                        ax=ax,
+                        color=palette,
+                    )
+                    ax.set(
+                        title=cellType,
+                        xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)",
+                        ylabel="pSTAT",
+                        xscale="log",
+                        xlim=(1e-4, 1e2),
+                        ylim=cellSTATlimDict[cellType],
+                    )
                     handles, labels = ax.get_legend_handles_labels()
                     ax.legend(handles[0:2] + handles[4::], labels[0:2] + labels[4::])
     else:
-        expData = df.loc[(df.Ligand == mut) & (df.Valency == val) & (df.Cell.isin(cellType))]
-        predData = expData.groupby(["Cell", "Valency", "Ligand", "Dose"])["Predicted"].mean().reset_index()
-        sns.scatterplot(x="Dose", y="Experimental", data=expData, label="Experimental", hue="Cell", ax=ax)
-        sns.lineplot(x="Dose", y="Predicted", data=predData, label="Predicted", hue="Cell", ax=ax)
+        expData = df.loc[
+            (df.Ligand == mut) & (df.Valency == val) & (df.Cell.isin(cellType))
+        ]
+        predData = (
+            expData.groupby(["Cell", "Valency", "Ligand", "Dose"])["Predicted"]
+            .mean()
+            .reset_index()
+        )
+        sns.scatterplot(
+            x="Dose",
+            y="Experimental",
+            data=expData,
+            label="Experimental",
+            hue="Cell",
+            ax=ax,
+        )
+        sns.lineplot(
+            x="Dose", y="Predicted", data=predData, label="Predicted", hue="Cell", ax=ax
+        )
         if val == 1:
-            ax.set(title=cellType[0] + "s", xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType[0]])
+            ax.set(
+                title=cellType[0] + "s",
+                xlabel=r"$log_{10}$ Monomeric " + mut + " (nM)",
+                ylabel="pSTAT",
+                xscale="log",
+                xlim=(1e-4, 1e2),
+                ylim=cellSTATlimDict[cellType[0]],
+            )
         if val == 2:
-            ax.set(title=cellType[0] + "s", xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)", ylabel="pSTAT", xscale="log", xlim=(1e-4, 1e2), ylim=cellSTATlimDict[cellType[0]])
+            ax.set(
+                title=cellType[0] + "s",
+                xlabel=r"$log_{10}$ Dimeric " + mut + " (nM)",
+                ylabel="pSTAT",
+                xscale="log",
+                xlim=(1e-4, 1e2),
+                ylim=cellSTATlimDict[cellType[0]],
+            )
 
 
 def getLigDict():
-    """Gives hue dict for ligands - consistency across """
+    """Gives hue dict for ligands - consistency across"""
     pSTATDF = import_pstat_all(True, False)
     ligands = np.append(pSTATDF.Ligand.unique(), "Live/Dead")
-    #palette = sns.color_palette("Spectral", ligands.size)
-    palette = sns.color_palette(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "Orange"])
+    # palette = sns.color_palette("Spectral", ligands.size)
+    palette = sns.color_palette(
+        [
+            "#a6cee3",
+            "#1f78b4",
+            "#b2df8a",
+            "#33a02c",
+            "#fb9a99",
+            "#e31a1c",
+            "#fdbf6f",
+            "#ff7f00",
+            "#cab2d6",
+            "#6a3d9a",
+            "Orange",
+        ]
+    )
 
     ligDict = {}
     for i, ligand in enumerate(ligands):
@@ -196,23 +414,27 @@ def getLigDict():
     return ligDict
 
 
-cellTypeDict = {"Treg": r"T$_{reg}$",
-                "Treg $IL2Ra^{hi}$": r"T$_{reg}$ $IL2Ra^{hi}$",
-                "Treg $IL2Ra^{lo}$": r"T$_{reg}$ $IL2Ra^{lo}$",
-                "Thelper $IL2Ra^{hi}$": r"T$_{helper}$ $IL2Ra^{hi}$",
-                "Thelper $IL2Ra^{lo}$": r"T$_{helper}$ $IL2Ra^{lo}$",
-                "Thelper": r"T$_{helper}$",
-                "NK": "NK",
-                "CD8": r"CD8$^{+}$"}
+cellTypeDict = {
+    "Treg": r"T$_{reg}$",
+    "Treg $IL2Ra^{hi}$": r"T$_{reg}$ $IL2Ra^{hi}$",
+    "Treg $IL2Ra^{lo}$": r"T$_{reg}$ $IL2Ra^{lo}$",
+    "Thelper $IL2Ra^{hi}$": r"T$_{helper}$ $IL2Ra^{hi}$",
+    "Thelper $IL2Ra^{lo}$": r"T$_{helper}$ $IL2Ra^{lo}$",
+    "Thelper": r"T$_{helper}$",
+    "NK": "NK",
+    "CD8": r"CD8$^{+}$",
+}
 
-doseLimDict = {r"T$_{reg}$": (0, 50000),
-               r"T$_{reg}$ $IL2Ra^{hi}$": (0, 50000),
-               r"T$_{reg}$ $IL2Ra^{lo}$": (0, 50000),
-               r"T$_{helper}$": (0, 25000),
-               r"T$_{helper}$ $IL2Ra^{hi}$": (0, 25000),
-               r"T$_{helper}$ $IL2Ra^{lo}$": (0, 25000),
-               "NK": (0, 5000),
-               r"CD8$^{+}$": (0, 8000)}
+doseLimDict = {
+    r"T$_{reg}$": (0, 50000),
+    r"T$_{reg}$ $IL2Ra^{hi}$": (0, 50000),
+    r"T$_{reg}$ $IL2Ra^{lo}$": (0, 50000),
+    r"T$_{helper}$": (0, 25000),
+    r"T$_{helper}$ $IL2Ra^{hi}$": (0, 25000),
+    r"T$_{helper}$ $IL2Ra^{lo}$": (0, 25000),
+    "NK": (0, 5000),
+    r"CD8$^{+}$": (0, 8000),
+}
 
 
 def get_cellTypeDict():
@@ -231,7 +453,15 @@ def getLigandLegend():
     ligDict = getLigDict()
     respDF = import_pstat_all(True, False)
     respDF = respDF.groupby(["Ligand", "Dose"]).Mean.mean().reset_index()
-    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", legend=True, palette=ligDict, ax=ax)
+    sns.scatterplot(
+        data=respDF,
+        x="Dose",
+        y="Mean",
+        hue="Ligand",
+        legend=True,
+        palette=ligDict,
+        ax=ax,
+    )
     return ax.get_legend()
 
 
@@ -243,29 +473,64 @@ def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
         CITE_DF = importCITE()
 
     markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
-    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
+    for marker in CITE_DF.loc[
+        :,
+        (
+            (CITE_DF.columns != "CellType1")
+            & (CITE_DF.columns != "CellType2")
+            & (CITE_DF.columns != "CellType3")
+            & (CITE_DF.columns != "Cell")
+        ),
+    ].columns:
         markAvg = np.mean(CITE_DF[marker].values)
         if markAvg > 0.0001:
-            targCellMark = CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
-            offTargCellMark = CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
+            targCellMark = (
+                CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
+            )
+            offTargCellMark = (
+                CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
+            )
             if np.mean(targCellMark) > np.mean(offTargCellMark):
-                kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
-                kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
+                kdeTarg = KernelDensity(kernel="gaussian").fit(
+                    targCellMark.reshape(-1, 1)
+                )
+                kdeOffTarg = KernelDensity(kernel="gaussian").fit(
+                    offTargCellMark.reshape(-1, 1)
+                )
                 minVal = np.minimum(targCellMark.min(), offTargCellMark.min()) - 10
                 maxVal = np.maximum(targCellMark.max(), offTargCellMark.max()) + 10
                 outcomes = np.arange(minVal, maxVal + 1).reshape(-1, 1)
                 distTarg = np.exp(kdeTarg.score_samples(outcomes))
                 distOffTarg = np.exp(kdeOffTarg.score_samples(outcomes))
-                KL_div = stats.entropy(distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2)
-                markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Wasserstein Distance": stats.wasserstein_distance(targCellMark, offTargCellMark), "KL Divergence": KL_div})])
+                KL_div = stats.entropy(
+                    distOffTarg.flatten() + 1e-200, distTarg.flatten() + 1e-200, base=2
+                )
+                markerDF = pd.concat(
+                    [
+                        markerDF,
+                        pd.DataFrame(
+                            {
+                                "Marker": [marker],
+                                "Wasserstein Distance": stats.wasserstein_distance(
+                                    targCellMark, offTargCellMark
+                                ),
+                                "KL Divergence": KL_div,
+                            }
+                        ),
+                    ]
+                )
 
     corrsDF = pd.DataFrame()
     for i, distance in enumerate(["Wasserstein Distance", "KL Divergence"]):
         ratioDF = markerDF.sort_values(by=distance)
         posCorrs = ratioDF.tail(numFactors).Marker.values
-        corrsDF = pd.concat([corrsDF, pd.DataFrame({"Distance": distance, "Marker": posCorrs})])
+        corrsDF = pd.concat(
+            [corrsDF, pd.DataFrame({"Distance": distance, "Marker": posCorrs})]
+        )
         markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
-        sns.barplot(data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color='k')
+        sns.barplot(
+            data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color="k"
+        )
         ax[i].set(yscale="log")
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=45)
     if RNA:
@@ -287,7 +552,15 @@ def CITE_RIDGE(ax, targCell, numFactors=10, RNA=False):
     cellToI = RIDGE_DF.CellType2.unique()
     RIDGE_DF = RIDGE_DF.loc[(RIDGE_DF["CellType2"].isin(cellToI)), :]
     cellTypeCol = RIDGE_DF.CellType2.values
-    RIDGE_DF = RIDGE_DF.loc[:, ((RIDGE_DF.columns != 'CellType1') & (RIDGE_DF.columns != 'CellType2') & (RIDGE_DF.columns != 'CellType3') & (RIDGE_DF.columns != 'Cell'))]
+    RIDGE_DF = RIDGE_DF.loc[
+        :,
+        (
+            (RIDGE_DF.columns != "CellType1")
+            & (RIDGE_DF.columns != "CellType2")
+            & (RIDGE_DF.columns != "CellType3")
+            & (RIDGE_DF.columns != "Cell")
+        ),
+    ]
     factors = RIDGE_DF.columns
     X = RIDGE_DF.values
     X = StandardScaler().fit_transform(X)
@@ -299,9 +572,11 @@ def CITE_RIDGE(ax, targCell, numFactors=10, RNA=False):
     ridgeMod = RidgeClassifierCV(cv=5)
     ridgeMod.fit(X, y)
     TargCoefs = ridgeMod.coef_[np.where(le.classes_ == targCell), :].ravel()
-    TargCoefsDF = pd.DataFrame({"Marker": factors, "Coefficient": TargCoefs}).sort_values(by="Coefficient")
+    TargCoefsDF = pd.DataFrame(
+        {"Marker": factors, "Coefficient": TargCoefs}
+    ).sort_values(by="Coefficient")
     TargCoefsDF = TargCoefsDF.tail(numFactors)
-    sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax, color='k')
+    sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax, color="k")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     if RNA:
         ax.set(title="RIDGE Coefficients - RNA")
@@ -323,7 +598,15 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
     SVC_DF = SVC_DF.loc[(SVC_DF["CellType2"].isin(cellToI)), :]
     SVC_DF = SVC_DF.sample(frac=sampleFrac, random_state=1)
     cellTypeCol = SVC_DF.CellType2.values
-    SVC_DF = SVC_DF.loc[:, ((SVC_DF.columns != 'CellType1') & (SVC_DF.columns != 'CellType2') & (SVC_DF.columns != 'CellType3') & (SVC_DF.columns != 'Cell'))]
+    SVC_DF = SVC_DF.loc[
+        :,
+        (
+            (SVC_DF.columns != "CellType1")
+            & (SVC_DF.columns != "CellType2")
+            & (SVC_DF.columns != "CellType3")
+            & (SVC_DF.columns != "Cell")
+        ),
+    ]
     factors = SVC_DF.columns
     X = SVC_DF.values
     X = StandardScaler().fit_transform(X)
@@ -346,14 +629,21 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
         fitMod = SVMmod.fit(CD122MarkX, TregY)
         markAcc = balanced_accuracy_score(TregY, fitMod.predict(CD122MarkX))
         print(markAcc)
-        AccDF = pd.concat([AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})])
+        AccDF = pd.concat(
+            [AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})]
+        )
 
     AccDF = AccDF.sort_values(by="Accuracy")
     markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
     AccDF.Markers = IL2RB + " + " + AccDF.Markers
 
-    plot_DF = pd.concat([AccDF.tail(numFactors), pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]})])
-    sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color='k')
+    plot_DF = pd.concat(
+        [
+            AccDF.tail(numFactors),
+            pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]}),
+        ]
+    )
+    sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color="k")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     ax.set(ylabel="Balanced Accuracy")
     if RNA:
@@ -363,8 +653,7 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
     return markers
 
 
-palette_dict = {"R38Q/H16N": "darkorchid",
-                "Live/Dead": "Orange"}
+palette_dict = {"R38Q/H16N": "darkorchid", "Live/Dead": "Orange"}
 
 
 def ligandPlot(DF, cell, ax, live_dead=False):
@@ -374,16 +663,43 @@ def ligandPlot(DF, cell, ax, live_dead=False):
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "R38Q/H16N")]
     else:
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "Live/Dead")]
-    sns.lineplot(data=DF, x="Dose", y="Predicted", hue="Ligand", size="Valency", palette=ligDict, ax=ax)
-    sns.scatterplot(data=DF, x="Dose", y="Experimental", hue="Ligand", style="Valency", size="Valency", palette=ligDict, ax=ax)
+    sns.lineplot(
+        data=DF,
+        x="Dose",
+        y="Predicted",
+        hue="Ligand",
+        size="Valency",
+        palette=ligDict,
+        ax=ax,
+    )
+    sns.scatterplot(
+        data=DF,
+        x="Dose",
+        y="Experimental",
+        hue="Ligand",
+        style="Valency",
+        size="Valency",
+        palette=ligDict,
+        ax=ax,
+    )
     if live_dead:
-        ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+        ax.set(
+            xscale="log",
+            xlabel="Dose Live/Dead (nM)",
+            ylabel="pSTAT5 (MFI)",
+            title=cell,
+        )
         handles, labels = ax.get_legend_handles_labels()
         labels[2] += " (Pred.)"
         labels[7] += " (Exprmt.)"
         ax.legend(handles[2:5] + handles[7::], labels[2:5] + labels[7::])
     else:
-        ax.set(xscale="log", xlabel="Dose R38Q/H16N (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+        ax.set(
+            xscale="log",
+            xlabel="Dose R38Q/H16N (nM)",
+            ylabel="pSTAT5 (MFI)",
+            title=cell,
+        )
         handles, labels = ax.get_legend_handles_labels()
         labels[2] += " (Pred.)"
         labels[8] += " (Exprmt.)"
@@ -403,23 +719,95 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     for dose in DF.Dose.unique():
         for ligand in DF.Ligand.unique():
             for valency in DF.loc[DF.Ligand == ligand].Valency.unique():
-                expRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].Experimental.values / \
-                    (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].Experimental.values + 50)
-                predRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].Predicted.values / \
-                    (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].Predicted.values + 50)
-                expRatioDF = pd.concat([expRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": expRatio})])
-                predRatioDF = pd.concat([predRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": predRatio})])
+                expRatio = DF.loc[
+                    (DF.Ligand == ligand)
+                    & (DF.Dose == dose)
+                    & (DF.Valency == valency)
+                    & (DF.Cell == cell1)
+                ].Experimental.values / (
+                    DF.loc[
+                        (DF.Ligand == ligand)
+                        & (DF.Dose == dose)
+                        & (DF.Valency == valency)
+                        & (DF.Cell == cell2)
+                    ].Experimental.values
+                    + 50
+                )
+                predRatio = DF.loc[
+                    (DF.Ligand == ligand)
+                    & (DF.Dose == dose)
+                    & (DF.Valency == valency)
+                    & (DF.Cell == cell1)
+                ].Predicted.values / (
+                    DF.loc[
+                        (DF.Ligand == ligand)
+                        & (DF.Dose == dose)
+                        & (DF.Valency == valency)
+                        & (DF.Cell == cell2)
+                    ].Predicted.values
+                    + 50
+                )
+                expRatioDF = pd.concat(
+                    [
+                        expRatioDF,
+                        pd.DataFrame(
+                            {
+                                "Dose": dose,
+                                "Ligand": ligand,
+                                "Valency": valency,
+                                "Ratio": expRatio,
+                            }
+                        ),
+                    ]
+                )
+                predRatioDF = pd.concat(
+                    [
+                        predRatioDF,
+                        pd.DataFrame(
+                            {
+                                "Dose": dose,
+                                "Ligand": ligand,
+                                "Valency": valency,
+                                "Ratio": predRatio,
+                            }
+                        ),
+                    ]
+                )
 
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
-    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", size="Valency", palette=ligDict, ax=ax)
-    #sns.lineplot(data=predRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
-    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+    sns.scatterplot(
+        data=expRatioDF,
+        x="Dose",
+        y="Ratio",
+        hue="Ligand",
+        style="Valency",
+        size="Valency",
+        palette=ligDict,
+        ax=ax,
+    )
+    # sns.lineplot(data=predRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    ax.set(
+        xscale="log",
+        xlabel="Dose (nM)",
+        ylabel="Ratio",
+        title=cell1 + " to " + cell2 + " Ratio",
+    )
     if live_dead:
-        ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+        ax.set(
+            xscale="log",
+            xlabel="Dose Live/Dead (nM)",
+            ylabel="Ratio",
+            title=cell1 + " to " + cell2 + " Ratio",
+        )
 
     else:
-        ax.set(xscale="log", xlabel="Dose R38Q/H16N (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+        ax.set(
+            xscale="log",
+            xlabel="Dose R38Q/H16N (nM)",
+            ylabel="Ratio",
+            title=cell1 + " to " + cell2 + " Ratio",
+        )
 
     handles, labels = ax.get_legend_handles_labels()
     labels[2] += " (Exprmt.)"

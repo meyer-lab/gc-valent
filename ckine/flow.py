@@ -38,7 +38,7 @@ def importF(pathname, WellRow):
 
 
 def cd4():
-    """ Function for gating CD4+ cells (generates T cells). """
+    """Function for gating CD4+ cells (generates T cells)."""
     cd41 = ThresholdGate(6.514e03, ("VL4-H"), region="above", name="cd41")
     cd42 = ThresholdGate(7.646e03, ("VL4-H"), region="below", name="cd42")
     cd4_gate = cd41 & cd42
@@ -46,7 +46,7 @@ def cd4():
 
 
 def cd4monMut():
-    """ Function for gating CD4+ cells (generates T cells) - for monomeric Mut Experiments. """
+    """Function for gating CD4+ cells (generates T cells) - for monomeric Mut Experiments."""
     cd41 = ThresholdGate(6400.0, ("VL4-H"), region="above", name="cd41")
     cd42 = ThresholdGate(8000.0, ("VL4-H"), region="below", name="cd42")
     cd4_gate = cd41 & cd42
@@ -56,44 +56,76 @@ def cd4monMut():
 def import_gates_pSTAT(date, cellType, rep):
     """Imports the gates for pSTAT signaling experiments"""
     gateDF = pd.read_csv(path_here + "/ckine/data/pSTATgates.csv")
-    gates = gateDF.loc[(gateDF["Date"] == date) & (gateDF["Cell Type"] == cellType) & (gateDF["Replicate"] == rep)].Gates
+    gates = gateDF.loc[
+        (gateDF["Date"] == date)
+        & (gateDF["Cell Type"] == cellType)
+        & (gateDF["Replicate"] == rep)
+    ].Gates
     return eval(gates.values[0])
 
 
 vert = {}
-vert["treg"] = vert["tregMem"] = vert["tregNaive"] = [(4.814e03, 3.229e03), (6.258e03, 5.814e03)]
-vert["nonTreg"] = vert["THelpMem"] = vert["THelpN"] = [(5.115e03, 3.470e02), (2.586e03, 5.245e03)]
+vert["treg"] = vert["tregMem"] = vert["tregNaive"] = [
+    (4.814e03, 3.229e03),
+    (6.258e03, 5.814e03),
+]
+vert["nonTreg"] = vert["THelpMem"] = vert["THelpN"] = [
+    (5.115e03, 3.470e02),
+    (2.586e03, 5.245e03),
+]
 vert["nk"] = [(6.468e03, 4.861e03), (5.550e03, 5.813e03)]
 vert["nkt"] = [(6.758e03, 6.021e03), (5.550e03, 7.013e03)]
 vert["bnk"] = [(7.342e03, 4.899e03), (6.533e03, 5.751e03)]
 vert["cd"] = [(9.016e03, 5.976e03), (6.825e03, 7.541e03)]
 
 channels = {}
-channels["treg"] = channels["tregMem"] = channels["tregNaive"] = channels["nonTreg"] = channels["THelpMem"] = channels["THelpN"] = ("BL1-H", "VL1-H")
+channels["treg"] = channels["tregMem"] = channels["tregNaive"] = channels[
+    "nonTreg"
+] = channels["THelpMem"] = channels["THelpN"] = ("BL1-H", "VL1-H")
 channels["nk"] = channels["nkt"] = channels["bnk"] = ("BL1-H", "VL4-H")
 channels["cd"] = ("RL1-H", "VL4-H")
 
 regionSpec = {}
-regionSpec["treg"] = regionSpec["tregMem"] = regionSpec["tregNaive"] = ["top right", "bottom left"]
-regionSpec["nonTreg"] = regionSpec["THelpMem"] = regionSpec["THelpN"] = regionSpec["nk"] = regionSpec["nkt"] = regionSpec["bnk"] = regionSpec[
-    "cd"
-] = ["top left", "bottom right"]
+regionSpec["treg"] = regionSpec["tregMem"] = regionSpec["tregNaive"] = [
+    "top right",
+    "bottom left",
+]
+regionSpec["nonTreg"] = regionSpec["THelpMem"] = regionSpec["THelpN"] = regionSpec[
+    "nk"
+] = regionSpec["nkt"] = regionSpec["bnk"] = regionSpec["cd"] = [
+    "top left",
+    "bottom right",
+]
 
 regionSpec_ = {}
-regionSpec_["treg"] = regionSpec_["nonTreg"] = regionSpec_["nk"] = regionSpec_["nkt"] = regionSpec_["bnk"] = regionSpec_["cd"] = None
+regionSpec_["treg"] = regionSpec_["nonTreg"] = regionSpec_["nk"] = regionSpec_[
+    "nkt"
+] = regionSpec_["bnk"] = regionSpec_["cd"] = None
 regionSpec_["tregMem"] = regionSpec_["THelpMem"] = "below"
 regionSpec_["tregNaive"] = regionSpec_["THelpN"] = "above"
 
 
 def gating(cell_type, date=False, Mut=False, rep=0):
-    """ Creates and returns the cell type gate on CD4+ cells. """
+    """Creates and returns the cell type gate on CD4+ cells."""
     if not Mut:
-        cell1 = QuadGate(vert[cell_type][0], channels[cell_type], region=regionSpec[cell_type][0], name=(cell_type + "1"))
-        cell2 = QuadGate(vert[cell_type][1], channels[cell_type], region=regionSpec[cell_type][1], name=(cell_type + "2"))
+        cell1 = QuadGate(
+            vert[cell_type][0],
+            channels[cell_type],
+            region=regionSpec[cell_type][0],
+            name=(cell_type + "1"),
+        )
+        cell2 = QuadGate(
+            vert[cell_type][1],
+            channels[cell_type],
+            region=regionSpec[cell_type][1],
+            name=(cell_type + "2"),
+        )
     else:
         cell1 = import_gates_pSTAT(date, cell_type, rep)
     if regionSpec_[cell_type] is not None:
-        cd45 = ThresholdGate(6300, ("BL3-H"), region=regionSpec_[cell_type], name="cd45")
+        cd45 = ThresholdGate(
+            6300, ("BL3-H"), region=regionSpec_[cell_type], name="cd45"
+        )
         gate = cell1 & cell2 & cd4() & cd45
     else:
         if cell_type in ("nk", "nkt", "bnk", "cd"):
@@ -124,7 +156,7 @@ def cellData(sample_i, gate, Tcells=True, Mut=False):
         smpl = sample_i.transform("hlog", channels=channels_)
     else:
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore', category=RuntimeWarning)
+            warnings.simplefilter("ignore", category=RuntimeWarning)
             smpl = sample_i.transform("tlog", channels=channels_)
     # Apply T reg gate to overall data --> i.e. step that determines which cells are T reg
     cells = smpl.gate(gate, apply_now=False)
@@ -163,24 +195,26 @@ def count_data(sampleType, gate, Tcells=True, Mut=False):
 
 
 def exp_dec(x, pp, soln=0):
-    """ 4PL regression function general format. """
+    """4PL regression function general format."""
     # https://www.myassays.com/four-parameter-logistic-regression.html
     A, B, C, D = pp
-    return ((A - D) / (1.0 + ((x / C)**B))) + D - soln
+    return ((A - D) / (1.0 + ((x / C) ** B))) + D - soln
 
 
 def nllsq(x, y):
-    """ Runs nonlinear least squares for exponential decay function. """
+    """Runs nonlinear least squares for exponential decay function."""
     lower = np.array([0.0, 0.1, 0.0, np.max(y)])
     upper = np.array([1.0, 1.1, 1.0e6, 1.0e9])
     x0 = (upper - lower) / 2.0 + lower
 
-    lsq = least_squares(lambda pp: exp_dec(x, pp) - y, x0, bounds=(lower, upper), jac="3-point")
+    lsq = least_squares(
+        lambda pp: exp_dec(x, pp) - y, x0, bounds=(lower, upper), jac="3-point"
+    )
     return lsq.x
 
 
 def bead_regression(sample, channels_, recQuant, first=0, skip=False):
-    """ Implements regression of signal to bead capacity. """
+    """Implements regression of signal to bead capacity."""
     means = np.zeros(len(recQuant))
     for i, s in enumerate(sample):
         if skip:

@@ -15,7 +15,9 @@ def combineWells(samples):
     """Accepts sample array returned from importF, and array of channels, returns combined well data"""
     combinedSamples = samples[0]
     for sample in samples[1:]:
-        combinedSamples.data = combinedSamples.data.append(sample.data, ignore_index=True)
+        combinedSamples.data = combinedSamples.data.append(
+            sample.data, ignore_index=True
+        )
     return combinedSamples
 
 
@@ -26,7 +28,20 @@ def importF(date, plate, wellRow, panel, receptorType, wellNum, comp=True):
     """
     path_ = os.path.abspath("")
 
-    pathname = path_ + "/ckine/data/flow/" + date + " Live PBMC Receptor Data/Plate " + plate + "/Plate " + plate + " - Panel " + str(panel) + " " + receptorType + "/"
+    pathname = (
+        path_
+        + "/ckine/data/flow/"
+        + date
+        + " Live PBMC Receptor Data/Plate "
+        + plate
+        + "/Plate "
+        + plate
+        + " - Panel "
+        + str(panel)
+        + " "
+        + receptorType
+        + "/"
+    )
     isotypePathname = pathname + "/Isotypes/"
     # Declare arrays and int
     file = []
@@ -51,7 +66,9 @@ def importF(date, plate, wellRow, panel, receptorType, wellNum, comp=True):
         if wellID[0] == wellRow:
             file.append(str(path))
         else:
-            unstainedWell = FCMeasurement(ID="Unstained Sample", datafile=str(path))  # Stores data from unstainedWell separately
+            unstainedWell = FCMeasurement(
+                ID="Unstained Sample", datafile=str(path)
+            )  # Stores data from unstainedWell separately
     file.sort()
     assert file != []
     # Go through each file and assign the file contents to entry in the array sample
@@ -65,7 +82,9 @@ def importF(date, plate, wellRow, panel, receptorType, wellNum, comp=True):
             combinedSamples = combineWells(sample)
             return combinedSamples, unstainedWell, isotypes
         combinedSamples = combineWells(sample)  # Combines all files from samples
-        compSample = applyMatrix(combinedSamples, compMatrix(date, plate, wellRow))  # Applies compensation matrix
+        compSample = applyMatrix(
+            combinedSamples, compMatrix(date, plate, wellRow)
+        )  # Applies compensation matrix
         return compSample, unstainedWell, isotypes
 
     if comp is False:
@@ -75,15 +94,17 @@ def importF(date, plate, wellRow, panel, receptorType, wellNum, comp=True):
 
 
 def subtract_unstained_signal(sample, channels, receptors, unstainedWell, isotypes):
-    """ Subtract larger of mean isotype signal and mean unstained signal from all input channels for a given sample. """
+    """Subtract larger of mean isotype signal and mean unstained signal from all input channels for a given sample."""
     for _, channel in enumerate(channels):
         fileFound = False
         if _ < len(isotypes):
             for i, iso in enumerate(isotypes):
                 if iso.ID == receptors[_]:
-                    assert(isotypes[i].ID == receptors[_])
+                    assert isotypes[i].ID == receptors[_]
                     fileFound = True
-                    meanBackground = compareSignals(isotypes[i], unstainedWell, channel)  # Returns larger of two background signals
+                    meanBackground = compareSignals(
+                        isotypes[i], unstainedWell, channel
+                    )  # Returns larger of two background signals
                     break
         if not fileFound:
             print("Isotype File Not Found")
@@ -94,7 +115,7 @@ def subtract_unstained_signal(sample, channels, receptors, unstainedWell, isotyp
 
 
 def compareSignals(isotype, unstained, channel):
-    """ Compares a mean isotype and mean unstained signal and returns greater of the two"""
+    """Compares a mean isotype and mean unstained signal and returns greater of the two"""
     meanIsotype = np.mean(isotype.data[channel])
     meanUnstained = np.mean(unstained.data[channel])
     if meanIsotype > meanUnstained:
@@ -105,28 +126,54 @@ def compareSignals(isotype, unstained, channel):
 
 def compMatrix(date, plate, panel, invert=True):
     """Creates compensation matrix given parameters date in mm-dd, plate number and panel A, B, or C."""
-    path = path_here + "/ckine/data/compensation/0" + date + "/Plate " + plate + "/Plate " + plate + " - " + panel + ".csv"
+    path = (
+        path_here
+        + "/ckine/data/compensation/0"
+        + date
+        + "/Plate "
+        + plate
+        + "/Plate "
+        + plate
+        + " - "
+        + panel
+        + ".csv"
+    )
     # imports csv file with comp values as a dataframe
-    header_names = ['Channel1', 'Channel2', 'Comp']
+    header_names = ["Channel1", "Channel2", "Comp"]
     df_comp = pd.read_csv(path, header=None, skiprows=1, names=header_names)
     # Add diangonal values of 100 to compensation values
     addedChannels = []
     for i in df_comp.index:
-        channelName = df_comp.iloc[i]['Channel1']
-        if channelName not in addedChannels:  # Ensures a diagonal value is only added once for each channel
+        channelName = df_comp.iloc[i]["Channel1"]
+        if (
+            channelName not in addedChannels
+        ):  # Ensures a diagonal value is only added once for each channel
             addedChannels.append(channelName)
-            df2 = pd.DataFrame([[channelName, channelName, 100]], columns=['Channel1', 'Channel2', 'Comp'])  # Creates new row for dataframe
+            df2 = pd.DataFrame(
+                [[channelName, channelName, 100]],
+                columns=["Channel1", "Channel2", "Comp"],
+            )  # Creates new row for dataframe
             df_comp = pd.concat([df_comp, df2], ignore_index=True)  # Adds row
     # Create square matrix from compensation values
-    df_matrix = pd.DataFrame(index=addedChannels, columns=addedChannels)  # df_matrix is now a square and has exactly one row and one column for each channel
+    df_matrix = pd.DataFrame(
+        index=addedChannels, columns=addedChannels
+    )  # df_matrix is now a square and has exactly one row and one column for each channel
     for i in df_matrix.index:
         for c in df_matrix.columns:
-            df_matrix.at[i, c] = df_comp.loc[(df_comp['Channel1'] == c) & (df_comp['Channel2'] == i), 'Comp'].iloc[0]  # Fills in square matrix by finding corresponding comp value from csv
+            df_matrix.at[i, c] = df_comp.loc[
+                (df_comp["Channel1"] == c) & (df_comp["Channel2"] == i), "Comp"
+            ].iloc[
+                0
+            ]  # Fills in square matrix by finding corresponding comp value from csv
     # df_matrix now has all values in square matrix form
     df_matrix = df_matrix.div(100)
     if invert:  # true by default, inverts matrix before returning it
-        a = np.matrix(df_matrix.values, dtype=float)  # Convert to np to allow for linalg usage
-        df_matrix = pd.DataFrame(np.linalg.inv(a), df_matrix.columns, df_matrix.index)  # Calculate inverse and put pack as dataframe
+        a = np.matrix(
+            df_matrix.values, dtype=float
+        )  # Convert to np to allow for linalg usage
+        df_matrix = pd.DataFrame(
+            np.linalg.inv(a), df_matrix.columns, df_matrix.index
+        )  # Calculate inverse and put pack as dataframe
     return df_matrix
 
 
@@ -135,104 +182,185 @@ def applyMatrix(sample, matrix):
     holder = pd.DataFrame()  # Will hold columns not being compensated
     for c in sample.data.columns:
         if c not in matrix:  # If sample channel column is not found in matrix
-            holder = holder.join(sample.data[[c]], how='right')  # Store for after calculation
-            sample.data = sample.data.drop([c], axis=1)  # Removed column to allow for matrix multiplication
+            holder = holder.join(
+                sample.data[[c]], how="right"
+            )  # Store for after calculation
+            sample.data = sample.data.drop(
+                [c], axis=1
+            )  # Removed column to allow for matrix multiplication
 
     cols = sample.data.columns
     matrix = matrix[cols]
     matrix = matrix.reindex(cols)
-    sample.data = sample.data.dot(matrix)  # Use matrix multiplication to compensate the relevant data
+    sample.data = sample.data.dot(
+        matrix
+    )  # Use matrix multiplication to compensate the relevant data
     sample.data = sample.data.join(holder)  # Restore uncompensated channels to sample
     return sample
 
 
 def import_gates():
-    """ Imports dataframe with gates for all cell types and replicates. """
+    """Imports dataframe with gates for all cell types and replicates."""
     data = pd.read_csv(join(path_here, "ckine/data/fc_gates.csv"))
-    data.dropna(axis=0, how='any', thresh=None, subset=None, inplace=True)
+    data.dropna(axis=0, how="any", thresh=None, subset=None, inplace=True)
     return data
 
 
 def apply_gates(date, plate, gates_df, subpopulations=False, correlation=None):
-    """ Constructs dataframe with channels relevant to receptor quantification. """
+    """Constructs dataframe with channels relevant to receptor quantification."""
     if date == "5-16":
-        receptors = ['CD127']
-        channels = ['BL1-H']
+        receptors = ["CD127"]
+        channels = ["BL1-H"]
     else:
-        receptors = ['CD25', 'CD122', 'CD132']
+        receptors = ["CD25", "CD122", "CD132"]
         channels = ["VL1-H", "BL5-H", "RL1-H"]
     for i, r in enumerate(receptors):
-        cellTypes = ['T-helper', 'T-reg', 'NK', 'CD8+']
+        cellTypes = ["T-helper", "T-reg", "NK", "CD8+"]
         for j, cellType in enumerate(cellTypes):
             if i == 0 and j == 0:
-                df, unstainedWell, isotypes = samp_Gate(date, plate, gates_df, cellType, r, correlation, subPop=subpopulations)
-                df = subtract_unstained_signal(df, channels, receptors, unstainedWell, isotypes)
+                df, unstainedWell, isotypes = samp_Gate(
+                    date,
+                    plate,
+                    gates_df,
+                    cellType,
+                    r,
+                    correlation,
+                    subPop=subpopulations,
+                )
+                df = subtract_unstained_signal(
+                    df, channels, receptors, unstainedWell, isotypes
+                )
             else:
-                df2, unstainedWell2, isotypes2 = samp_Gate(date, plate, gates_df, cellType, r, correlation, subPop=subpopulations)
-                df2 = subtract_unstained_signal(df2, channels, receptors, unstainedWell2, isotypes2)
+                df2, unstainedWell2, isotypes2 = samp_Gate(
+                    date,
+                    plate,
+                    gates_df,
+                    cellType,
+                    r,
+                    correlation,
+                    subPop=subpopulations,
+                )
+                df2 = subtract_unstained_signal(
+                    df2, channels, receptors, unstainedWell2, isotypes2
+                )
                 df = pd.concat([df, df2])
 
     return df
 
 
 def samp_Gate(date, plate, gates_df, cellType, receptor, correlation, subPop=False):
-    """ Returns gated sample for a given date and plate. """
+    """Returns gated sample for a given date and plate."""
     # import data and create transformed df for gating
 
     # correlation argument only implemented for Tcell CD25/CD122 and CD25/CD132, to be used when getting CD25 data
-    if correlation == 'CD122':
-        Dict = {'CD127': 1, 'CD25': 3, 'CD122': 3, 'CD132': 5}
-    elif correlation == 'CD132':
-        Dict = {'CD127': 1, 'CD25': 5, 'CD122': 3, 'CD132': 5}
+    if correlation == "CD122":
+        Dict = {"CD127": 1, "CD25": 3, "CD122": 3, "CD132": 5}
+    elif correlation == "CD132":
+        Dict = {"CD127": 1, "CD25": 5, "CD122": 3, "CD132": 5}
     else:
-        Dict = {'CD127': 1, 'CD25': 1, 'CD122': 3, 'CD132': 5}
+        Dict = {"CD127": 1, "CD25": 1, "CD122": 3, "CD132": 5}
     wellNum = Dict[receptor]
 
-    if receptor == 'CD127':
-        rType = 'IL7R'
+    if receptor == "CD127":
+        rType = "IL7R"
     else:
-        rType = 'IL2R'
+        rType = "IL2R"
 
     tchannels, subPopName, row, panelNum = cellGateDat(cellType)
-    if date == '5-16' and (row == 'C' or row == 'B'):
-        row = 'A'
+    if date == "5-16" and (row == "C" or row == "B"):
+        row = "A"
         panelNum = 1
 
     panel, unstainedWell, isotypes = importF(date, plate, row, panelNum, rType, wellNum)
 
-    panel_t = panel.transform("tlog", channels=tchannels)  # Creates copy of panel to transform and gate
+    panel_t = panel.transform(
+        "tlog", channels=tchannels
+    )  # Creates copy of panel to transform and gate
 
-    df = pd.DataFrame(columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H", "BL1-H"])
+    df = pd.DataFrame(
+        columns=["Cell Type", "Date", "Plate", "VL1-H", "BL5-H", "RL1-H", "BL1-H"]
+    )
 
     # Implement gating, revert tlog, and add to dataframe
-    if cellType in ('T-reg', 'T-helper'):
-        samplecd3cd4 = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == 'CD3CD4') &
-                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
-        sample = samplecd3cd4.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
-                                                     (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+    if cellType in ("T-reg", "T-helper"):
+        samplecd3cd4 = panel_t.gate(
+            eval(
+                gates_df.loc[
+                    (gates_df["Name"] == "CD3CD4")
+                    & (gates_df["Date"] == date)
+                    & (gates_df["Plate"] == float(plate))
+                ]["Gate"].values[0]
+            )
+        )
+        sample = samplecd3cd4.gate(
+            eval(
+                gates_df.loc[
+                    (gates_df["Name"] == cellType)
+                    & (gates_df["Date"] == date)
+                    & (gates_df["Plate"] == float(plate))
+                ]["Gate"].values[0]
+            )
+        )
     else:
-        sample = panel_t.gate(eval(gates_df.loc[(gates_df["Name"] == cellType) &
-                                                (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+        sample = panel_t.gate(
+            eval(
+                gates_df.loc[
+                    (gates_df["Name"] == cellType)
+                    & (gates_df["Date"] == date)
+                    & (gates_df["Plate"] == float(plate))
+                ]["Gate"].values[0]
+            )
+        )
 
     # Gated signals based on gating values from csv
     gated_idx = np.array(sample.data.index)
-    panel.set_data(panel.data.loc[gated_idx])  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
-    df_add = pd.DataFrame({"Cell Type": np.tile(cellType, sample.counts), "Date": np.tile(date, sample.counts), "Plate": np.tile(plate, sample.counts),
-                           "VL1-H": panel.data[["VL1-H"]].values.reshape((sample.counts,)), "BL5-H": panel.data[["BL5-H"]].values.reshape((sample.counts,)),
-                           "RL1-H": panel.data[["RL1-H"]].values.reshape((sample.counts,)), "BL1-H": panel.data[["BL1-H"]].values.reshape((sample.counts,))})
+    panel.set_data(
+        panel.data.loc[gated_idx]
+    )  # Selects only the corresponding data points from panel1(untransformed) based on gated points from panel1_t
+    df_add = pd.DataFrame(
+        {
+            "Cell Type": np.tile(cellType, sample.counts),
+            "Date": np.tile(date, sample.counts),
+            "Plate": np.tile(plate, sample.counts),
+            "VL1-H": panel.data[["VL1-H"]].values.reshape((sample.counts,)),
+            "BL5-H": panel.data[["BL5-H"]].values.reshape((sample.counts,)),
+            "RL1-H": panel.data[["RL1-H"]].values.reshape((sample.counts,)),
+            "BL1-H": panel.data[["BL1-H"]].values.reshape((sample.counts,)),
+        }
+    )
     df = pd.concat([df, df_add])
-    df['Receptor'] = str(receptor)
+    df["Receptor"] = str(receptor)
 
     # Separates memory and naive populations and adds to dataframe
     if subPop:
         for subpopulation in subPopName:
-            sampleSub = sample.gate(eval(gates_df.loc[(gates_df["Name"] == subpopulation) &
-                                                      (gates_df["Date"] == date) & (gates_df["Plate"] == float(plate))]["Gate"].values[0]))
+            sampleSub = sample.gate(
+                eval(
+                    gates_df.loc[
+                        (gates_df["Name"] == subpopulation)
+                        & (gates_df["Date"] == date)
+                        & (gates_df["Plate"] == float(plate))
+                    ]["Gate"].values[0]
+                )
+            )
             gated_idx = np.array(sampleSub.data.index)
             panel_S = panel.data.loc[gated_idx]
-            df_add = pd.DataFrame({"Cell Type": np.tile(subpopulation, sampleSub.counts), "Date": np.tile(date, sampleSub.counts), "Plate": np.tile(plate, sampleSub.counts),
-                                   "VL1-H": panel_S.data[["VL1-H"]].values.reshape((sampleSub.counts,)), "BL5-H": panel_S.data[["BL5-H"]].values.reshape((sampleSub.counts,)),
-                                   "RL1-H": panel_S.data[["RL1-H"]].values.reshape((sampleSub.counts,))})
+            df_add = pd.DataFrame(
+                {
+                    "Cell Type": np.tile(subpopulation, sampleSub.counts),
+                    "Date": np.tile(date, sampleSub.counts),
+                    "Plate": np.tile(plate, sampleSub.counts),
+                    "VL1-H": panel_S.data[["VL1-H"]].values.reshape(
+                        (sampleSub.counts,)
+                    ),
+                    "BL5-H": panel_S.data[["BL5-H"]].values.reshape(
+                        (sampleSub.counts,)
+                    ),
+                    "RL1-H": panel_S.data[["RL1-H"]].values.reshape(
+                        (sampleSub.counts,)
+                    ),
+                }
+            )
             df = pd.concat([df, df_add])
 
     return df, unstainedWell, isotypes
@@ -240,24 +368,24 @@ def samp_Gate(date, plate, gates_df, cellType, receptor, correlation, subPop=Fal
 
 def cellGateDat(cellType):
     "Returns pertinent gating information for a given cell type"
-    if cellType in ('T-reg', 'T-helper'):
-        tchannels = ['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']
-        row = 'A'
+    if cellType in ("T-reg", "T-helper"):
+        tchannels = ["VL6-H", "VL4-H", "BL1-H", "VL1-H", "BL3-H"]
+        row = "A"
         panel = 1
         if cellType == "T-reg":
             subPopName = ["Mem Treg", "Naive Treg"]
         else:
-            subPopName = ['Naive Th', 'Mem Th']
+            subPopName = ["Naive Th", "Mem Th"]
     elif cellType == "CD8+":
-        tchannels = ['VL4-H', 'VL6-H', 'BL3-H']
-        row = 'C'
+        tchannels = ["VL4-H", "VL6-H", "BL3-H"]
+        row = "C"
         panel = 3
-        subPopName = ['Naive CD8+', 'Mem CD8+']
+        subPopName = ["Naive CD8+", "Mem CD8+"]
     elif cellType == "NK":
-        tchannels = ['VL4-H', 'BL3-H']
-        row = 'B'
+        tchannels = ["VL4-H", "BL3-H"]
+        row = "B"
         panel = 2
-        subPopName = ['NKT']
+        subPopName = ["NKT"]
 
     assert tchannels != []
 
@@ -267,47 +395,59 @@ def cellGateDat(cellType):
 def getChannelDict(Tcell=True, LiveCell=True, cellType=False, IL7=False):
     """Gives channel to protein dictionary for fixed/live and NK/T cell flow experiments"""
     if IL7:
-        channelDict = {"BL1-H": "CD127",
-                       "VL1-H": "CD25",
-                       "VL4-H": "CD3",
-                       "VL6-H": "CD4",
-                       "BL3-H": "CD45RA",
-                       "BL5-H": "CD56",
-                       "RL1-H": "CD8"}
+        channelDict = {
+            "BL1-H": "CD127",
+            "VL1-H": "CD25",
+            "VL4-H": "CD3",
+            "VL6-H": "CD4",
+            "BL3-H": "CD45RA",
+            "BL5-H": "CD56",
+            "RL1-H": "CD8",
+        }
     else:
         if Tcell:
             if LiveCell:
-                channelDict = {"VL4-H": "CD3",
-                               "VL6-H": "CD4",
-                               "BL1-H": "CD127",
-                               "VL1-H": "CD25",
-                               "VL5-H": "CD122",
-                               "RL1-H": "CD132",
-                               "BL3-H": "CD45RA"}
+                channelDict = {
+                    "VL4-H": "CD3",
+                    "VL6-H": "CD4",
+                    "BL1-H": "CD127",
+                    "VL1-H": "CD25",
+                    "VL5-H": "CD122",
+                    "RL1-H": "CD132",
+                    "BL3-H": "CD45RA",
+                }
             else:
-                channelDict = {"BL1-H": "Foxp3",
-                               "VL1-H": "CD25",
-                               "VL4-H": "CD4",
-                               "BL3-H": "CD45RA",
-                               "RL1-H": "pSTAT5"}
+                channelDict = {
+                    "BL1-H": "Foxp3",
+                    "VL1-H": "CD25",
+                    "VL4-H": "CD4",
+                    "BL3-H": "CD45RA",
+                    "RL1-H": "pSTAT5",
+                }
         else:
             if LiveCell:
                 if cellType == "NK":
-                    channelDict = {"VL-4H": "CD3",
-                                   "BL3-H": "CD56",
-                                   "VL1-H": "CD25",
-                                   "VL5-H": "CD122",
-                                   "RL1-H": "CD132", }
+                    channelDict = {
+                        "VL-4H": "CD3",
+                        "BL3-H": "CD56",
+                        "VL1-H": "CD25",
+                        "VL5-H": "CD122",
+                        "RL1-H": "CD132",
+                    }
                 else:
-                    channelDict = {"VL-4H": "CD3",
-                                   "BL3-H": "CD45RA",
-                                   "VL6-H": "CD8",
-                                   "VL1-H": "CD25",
-                                   "VL5-H": "CD122",
-                                   "RL1-H": "CD132", }
+                    channelDict = {
+                        "VL-4H": "CD3",
+                        "BL3-H": "CD45RA",
+                        "VL6-H": "CD8",
+                        "VL1-H": "CD25",
+                        "VL5-H": "CD122",
+                        "RL1-H": "CD132",
+                    }
             else:
-                channelDict = {"BL1-H": "CD56",
-                               "VL4-H": "CD3",
-                               "BL2-H": "pSTAT5",
-                               "RL1-H": "CD8"}
+                channelDict = {
+                    "BL1-H": "CD56",
+                    "VL4-H": "CD3",
+                    "BL2-H": "pSTAT5",
+                    "RL1-H": "CD8",
+                }
     return channelDict

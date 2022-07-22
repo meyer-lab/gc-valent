@@ -7,7 +7,14 @@ import pandas as pd
 from .figureCommon import subplotLabel, getSetup
 from ..imports import channels, importReceptors
 from ..flow import bead_regression
-from ..FCimports import combineWells, compMatrix, applyMatrix, import_gates, apply_gates, importF
+from ..FCimports import (
+    combineWells,
+    compMatrix,
+    applyMatrix,
+    import_gates,
+    apply_gates,
+    importF,
+)
 from FlowCytometryTools import FCMeasurement, ThresholdGate, PolyGate
 from matplotlib import pyplot as plt
 from matplotlib import cm
@@ -21,8 +28,14 @@ def makeFigure():
     ax, f = getSetup((10, 8), (3, 4), multz={8: 1, 10: 1})
     subplotLabel(ax)
 
-    Tcell_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
-    NK_CD8_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
+    Tcell_pathname = (
+        path_here
+        + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
+    )
+    NK_CD8_pathname = (
+        path_here
+        + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
+    )
 
     Tcell_sample, _ = importF2(Tcell_pathname, "A")
     NK_CD8_sample, _ = importF2(NK_CD8_pathname, "A")
@@ -30,40 +43,91 @@ def makeFigure():
     Tcell_sample = combineWells(Tcell_sample).subsample(0.2)
     NK_CD8_sample = combineWells(NK_CD8_sample).subsample(0.2)
 
-    Tcell_sample = applyMatrix(Tcell_sample, compMatrix('2019-11-08', '1', 'A'))
-    NK_CD8_sample = applyMatrix(NK_CD8_sample, compMatrix('2019-11-08', '1', 'B'))
+    Tcell_sample = applyMatrix(Tcell_sample, compMatrix("2019-11-08", "1", "A"))
+    NK_CD8_sample = applyMatrix(NK_CD8_sample, compMatrix("2019-11-08", "1", "B"))
 
-    Tcell_sample = Tcell_sample.transform("tlog", channels=['VL1-H', 'VL4-H', 'BL1-H', 'BL3-H'])  # Tlog transformations
-    NK_CD8_sample = NK_CD8_sample.transform("tlog", channels=['RL1-H', 'VL4-H', 'BL1-H', 'BL2-H'])  # Tlog transformations
+    Tcell_sample = Tcell_sample.transform(
+        "tlog", channels=["VL1-H", "VL4-H", "BL1-H", "BL3-H"]
+    )  # Tlog transformations
+    NK_CD8_sample = NK_CD8_sample.transform(
+        "tlog", channels=["RL1-H", "VL4-H", "BL1-H", "BL2-H"]
+    )  # Tlog transformations
 
-    cd4_gate = ThresholdGate(6500.0, ['VL4-H'], region='above') & ThresholdGate(8000.0, ['VL4-H'], region='below')
-    ax[0] = Tcell_sample.plot(['VL4-H'], gates=cd4_gate, ax=ax[0])  # CD4
+    cd4_gate = ThresholdGate(6500.0, ["VL4-H"], region="above") & ThresholdGate(
+        8000.0, ["VL4-H"], region="below"
+    )
+    ax[0] = Tcell_sample.plot(["VL4-H"], gates=cd4_gate, ax=ax[0])  # CD4
     plt.title("Singlet Lymphocytes")
-    #ax.set(xlabel= "CD4", ylabel="Events")
+    # ax.set(xlabel= "CD4", ylabel="Events")
     plt.grid()
 
     sampleCD4 = Tcell_sample.gate(cd4_gate)
-    Treg_gate = PolyGate([(4.2e3, 7.2e3), (6.5e03, 7.2e03), (6.5e03, 5.3e03), (4.9e03, 5.3e03), (4.2e03, 5.7e03)], ('VL1-H', 'BL1-H'), region='in', name='treg')
-    Thelp_gate = PolyGate([(1.8e03, 3.1e03), (1.8e03, 4.9e03), (6.0e03, 4.9e03), (6.0e03, 3.1e03)], ('VL1-H', 'BL1-H'), region='in', name='thelper')
+    Treg_gate = PolyGate(
+        [
+            (4.2e3, 7.2e3),
+            (6.5e03, 7.2e03),
+            (6.5e03, 5.3e03),
+            (4.9e03, 5.3e03),
+            (4.2e03, 5.7e03),
+        ],
+        ("VL1-H", "BL1-H"),
+        region="in",
+        name="treg",
+    )
+    Thelp_gate = PolyGate(
+        [(1.8e03, 3.1e03), (1.8e03, 4.9e03), (6.0e03, 4.9e03), (6.0e03, 3.1e03)],
+        ("VL1-H", "BL1-H"),
+        region="in",
+        name="thelper",
+    )
 
-    _ = sampleCD4.plot(['VL1-H', 'BL1-H'], gates=[Treg_gate, Thelp_gate], gate_colors=['red', 'red'], cmap=cm.jet, ax=ax[1])  # CD4
+    _ = sampleCD4.plot(
+        ["VL1-H", "BL1-H"],
+        gates=[Treg_gate, Thelp_gate],
+        gate_colors=["red", "red"],
+        cmap=cm.jet,
+        ax=ax[1],
+    )  # CD4
     plt.title("CD4+ Cells")
     plt.xlabel("CD25")
     plt.ylabel("FOXP3")
     plt.grid()
 
-    #CD8+ Cells
-    CD3CD8gate = PolyGate([(7.5e3, 8.4e3), (4.7e3, 8.4e3), (4.7e03, 6.5e03), (7.5e03, 6.5e03)], ('VL4-H', 'RL1-H'), region='in', name='treg')
-    _ = NK_CD8_sample.plot(['VL4-H', 'RL1-H'], gates=CD3CD8gate, gate_colors='red', cmap=cm.jet, ax=ax[2])  # CD3, CD8
+    # CD8+ Cells
+    CD3CD8gate = PolyGate(
+        [(7.5e3, 8.4e3), (4.7e3, 8.4e3), (4.7e03, 6.5e03), (7.5e03, 6.5e03)],
+        ("VL4-H", "RL1-H"),
+        region="in",
+        name="treg",
+    )
+    _ = NK_CD8_sample.plot(
+        ["VL4-H", "RL1-H"], gates=CD3CD8gate, gate_colors="red", cmap=cm.jet, ax=ax[2]
+    )  # CD3, CD8
     plt.title("Singlet Lymphocytes")
     plt.xlabel("CD3")
     plt.ylabel("CD8")
     plt.grid()
 
     # NK Cells
-    NKgate = PolyGate([(4.8e3, 5.1e3), (5.9e3, 5.1e3), (5.9e03, 6.1e03), (4.8e03, 6.1e03)], ('VL4-H', 'BL1-H'), region='in', name='treg')
-    CD56brightgate = PolyGate([(4.8e3, 6.3e3), (5.9e3, 6.3e3), (5.9e03, 7.3e03), (4.8e03, 7.3e03)], ('VL4-H', 'BL1-H'), region='in', name='treg')
-    _ = NK_CD8_sample.plot(['VL4-H', 'BL1-H'], gates=[NKgate, CD56brightgate], gate_colors=['red', 'red'], cmap=cm.jet, ax=ax[3])  # CD3, CD56
+    NKgate = PolyGate(
+        [(4.8e3, 5.1e3), (5.9e3, 5.1e3), (5.9e03, 6.1e03), (4.8e03, 6.1e03)],
+        ("VL4-H", "BL1-H"),
+        region="in",
+        name="treg",
+    )
+    CD56brightgate = PolyGate(
+        [(4.8e3, 6.3e3), (5.9e3, 6.3e3), (5.9e03, 7.3e03), (4.8e03, 7.3e03)],
+        ("VL4-H", "BL1-H"),
+        region="in",
+        name="treg",
+    )
+    _ = NK_CD8_sample.plot(
+        ["VL4-H", "BL1-H"],
+        gates=[NKgate, CD56brightgate],
+        gate_colors=["red", "red"],
+        cmap=cm.jet,
+        ax=ax[3],
+    )  # CD3, CD56
     plt.title("Singlet Lymphocytes")
     plt.xlabel("CD3")
     plt.ylabel("CD56")
@@ -73,29 +137,88 @@ def makeFigure():
     sample1A, unstained, isotype = importF("4-23", "1", "A", 1, "IL2R", None)
     sample2B, unstained, isotype = importF("4-23", "1", "B", 2, "IL2R", None)
     sample3C, unstained, isotype = importF("4-23", "1", "C", 3, "IL2R", None)
-    panel1 = sample1A.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']).subsample(0.2)
-    panel2 = sample2B.transform("tlog", channels=['VL4-H', 'BL3-H']).subsample(0.2)
-    panel3 = sample3C.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL3-H']).subsample(0.2)
+    panel1 = sample1A.transform(
+        "tlog", channels=["VL6-H", "VL4-H", "BL1-H", "VL1-H", "BL3-H"]
+    ).subsample(0.2)
+    panel2 = sample2B.transform("tlog", channels=["VL4-H", "BL3-H"]).subsample(0.2)
+    panel3 = sample3C.transform("tlog", channels=["VL6-H", "VL4-H", "BL3-H"]).subsample(
+        0.2
+    )
 
-    cd3cd4_gate = PolyGate([(5.0e03, 7.3e03), (5.3e03, 5.6e03), (8.0e03, 5.6e03), (8.0e03, 7.3e03)], ('VL4-H', 'VL6-H'), region='in', name='cd3cd4')
-    _ = panel1.plot(['VL4-H', 'VL6-H'], gates=cd3cd4_gate, gate_colors=['red'], cmap=cm.jet, ax=ax[4])  # CD3, CD4
+    cd3cd4_gate = PolyGate(
+        [(5.0e03, 7.3e03), (5.3e03, 5.6e03), (8.0e03, 5.6e03), (8.0e03, 7.3e03)],
+        ("VL4-H", "VL6-H"),
+        region="in",
+        name="cd3cd4",
+    )
+    _ = panel1.plot(
+        ["VL4-H", "VL6-H"],
+        gates=cd3cd4_gate,
+        gate_colors=["red"],
+        cmap=cm.jet,
+        ax=ax[4],
+    )  # CD3, CD4
     plt.title("Singlet Lymphocytes")
     plt.xlabel("CD3")
     plt.ylabel("CD4")
     plt.grid()
 
     samplecd3cd4 = panel1.gate(cd3cd4_gate)
-    thelp_gate = PolyGate([(0.2e03, 6.8e03), (0.2e03, 4.4e03), (3.7e03, 4.4e03), (5.7e03, 5.9e03), (5.7e03, 6.8e03)], ('VL1-H', 'BL1-H'), region='in', name='thelp')
-    treg_gate = PolyGate([(3.8e03, 4.4e03), (3.8e03, 3.0e03), (6.5e03, 2.9e03), (6.5e03, 5.0e03), (5.7e03, 5.8e03)], ('VL1-H', 'BL1-H'), region='in', name='treg')
-    _ = samplecd3cd4.plot(['VL1-H', 'BL1-H'], gates=[thelp_gate, treg_gate], gate_colors=['red', 'red'], cmap=cm.jet, ax=ax[5])  # CD3, CD4
+    thelp_gate = PolyGate(
+        [
+            (0.2e03, 6.8e03),
+            (0.2e03, 4.4e03),
+            (3.7e03, 4.4e03),
+            (5.7e03, 5.9e03),
+            (5.7e03, 6.8e03),
+        ],
+        ("VL1-H", "BL1-H"),
+        region="in",
+        name="thelp",
+    )
+    treg_gate = PolyGate(
+        [
+            (3.8e03, 4.4e03),
+            (3.8e03, 3.0e03),
+            (6.5e03, 2.9e03),
+            (6.5e03, 5.0e03),
+            (5.7e03, 5.8e03),
+        ],
+        ("VL1-H", "BL1-H"),
+        region="in",
+        name="treg",
+    )
+    _ = samplecd3cd4.plot(
+        ["VL1-H", "BL1-H"],
+        gates=[thelp_gate, treg_gate],
+        gate_colors=["red", "red"],
+        cmap=cm.jet,
+        ax=ax[5],
+    )  # CD3, CD4
     plt.title("CD3+CD4+ cells")
     plt.xlabel("CD25")
     plt.ylabel("CD127")
     plt.grid()
 
-    nk_gate = PolyGate([(3.3e3, 5.4e3), (5.3e3, 5.4e3), (5.3e3, 7.3e3), (3.3e3, 7.3e3)], ('VL4-H', 'BL3-H'), region='in', name='nk')
-    nkt_gate = PolyGate([(5.6e3, 5.1e3), (7.6e3, 5.1e3), (7.6e3, 7.1e3), (5.6e3, 7.1e3)], ('VL4-H', 'BL3-H'), region='in', name='nkt')
-    _ = panel2.plot(['VL4-H', 'BL3-H'], gates=[nk_gate, nkt_gate], gate_colors=['red', 'red'], cmap=cm.jet, ax=ax[6])  # CD56 vs. CD3
+    nk_gate = PolyGate(
+        [(3.3e3, 5.4e3), (5.3e3, 5.4e3), (5.3e3, 7.3e3), (3.3e3, 7.3e3)],
+        ("VL4-H", "BL3-H"),
+        region="in",
+        name="nk",
+    )
+    nkt_gate = PolyGate(
+        [(5.6e3, 5.1e3), (7.6e3, 5.1e3), (7.6e3, 7.1e3), (5.6e3, 7.1e3)],
+        ("VL4-H", "BL3-H"),
+        region="in",
+        name="nkt",
+    )
+    _ = panel2.plot(
+        ["VL4-H", "BL3-H"],
+        gates=[nk_gate, nkt_gate],
+        gate_colors=["red", "red"],
+        cmap=cm.jet,
+        ax=ax[6],
+    )  # CD56 vs. CD3
     samplenk = panel2.gate(nk_gate)
     samplenkt = panel2.gate(nkt_gate)
     plt.title("Singlet Lymphocytes")
@@ -103,8 +226,15 @@ def makeFigure():
     plt.ylabel("CD56")
     plt.grid()
 
-    cd8_gate = PolyGate([(4.2e3, 5.7e3), (8.1e3, 5.7e3), (8.1e3, 8.0e3), (4.2e3, 8.0e3)], ('VL4-H', 'VL6-H'), region='in', name='cd8')
-    _ = panel3.plot(['VL4-H', 'VL6-H'], gates=cd8_gate, gate_colors=['red'], cmap=cm.jet, ax=ax[7])  # CD8 vs. CD3
+    cd8_gate = PolyGate(
+        [(4.2e3, 5.7e3), (8.1e3, 5.7e3), (8.1e3, 8.0e3), (4.2e3, 8.0e3)],
+        ("VL4-H", "VL6-H"),
+        region="in",
+        name="cd8",
+    )
+    _ = panel3.plot(
+        ["VL4-H", "VL6-H"], gates=cd8_gate, gate_colors=["red"], cmap=cm.jet, ax=ax[7]
+    )  # CD8 vs. CD3
     plt.title("Singlet Lymphocytes")
     plt.xlabel("CD3")
     plt.ylabel("CD8")
@@ -115,26 +245,26 @@ def makeFigure():
             # weird error replace later, axs is not correct object type
             # axs.set(xlabel='CD4',ylabel='Events')
         elif i == 1:
-            axs.set_title('T Cell Gating')
-            axs.set(xlabel='CD25', ylabel='FOXP3')
+            axs.set_title("T Cell Gating")
+            axs.set(xlabel="CD25", ylabel="FOXP3")
         elif i == 2:
-            axs.set_title('CD8+ Cells Gating')
-            axs.set(xlabel='CD3', ylabel='CD8')
+            axs.set_title("CD8+ Cells Gating")
+            axs.set(xlabel="CD3", ylabel="CD8")
         elif i == 3:
-            axs.set_title('NK Cells Gating')
-            axs.set(xlabel='CD3', ylabel='CD56')
+            axs.set_title("NK Cells Gating")
+            axs.set(xlabel="CD3", ylabel="CD56")
         elif i == 4:
-            axs.set_title('CD3+CD4+ Gating')
-            axs.set(xlabel='CD3', ylabel='CD4')
+            axs.set_title("CD3+CD4+ Gating")
+            axs.set(xlabel="CD3", ylabel="CD4")
         elif i == 5:
-            axs.set_title('T reg and T Helper Gating')
-            axs.set(xlabel='CD25', ylabel='CD127')
+            axs.set_title("T reg and T Helper Gating")
+            axs.set(xlabel="CD25", ylabel="CD127")
         elif i == 6:
-            axs.set_title('NK and NKT Gating')
-            axs.set(xlabel='CD3', ylabel='CD56')
+            axs.set_title("NK and NKT Gating")
+            axs.set(xlabel="CD3", ylabel="CD56")
         elif i == 7:
-            axs.set_title('CD3+CD8+ Gating')
-            axs.set(xlabel='CD3', ylabel='CD8')
+            axs.set_title("CD3+CD8+ Gating")
+            axs.set(xlabel="CD3", ylabel="CD8")
         if i != 0:
             axs.grid()
 
@@ -172,7 +302,9 @@ def importF2(pathname, WellRow):
 def receptorPlot(ax1):
 
     df_rec = getReceptors()
-    df_test = df_rec.loc[(df_rec['Cell Type'] == 'T-helper') & (df_rec['Receptor'] == 'CD122')]
+    df_test = df_rec.loc[
+        (df_rec["Cell Type"] == "T-helper") & (df_rec["Receptor"] == "CD122")
+    ]
     print(df_test)
     print("Nan:", df_test.isna().sum())
     # write to csv
@@ -186,7 +318,11 @@ def receptorPlot(ax1):
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
     # plots log10 of mean on
-    print(df_stats.loc[(df_stats['Cell Type'] == 'T-helper') & (df_stats['Receptor'] == 'CD122')])
+    print(
+        df_stats.loc[
+            (df_stats["Cell Type"] == "T-helper") & (df_stats["Receptor"] == "CD122")
+        ]
+    )
     celltype_pointplot(ax1, df_stats, "Mean")
     """
     receptor_levels_Beta = getReceptors(correlation="CD122")
@@ -233,17 +369,34 @@ def receptorPlot(ax1):
 
 
 def calculate_moments(df, cell_names, receptors):
-    """ Calculates mean, variance, and skew for each replicate. """
-    df_stats = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
+    """Calculates mean, variance, and skew for each replicate."""
+    df_stats = pd.DataFrame(
+        columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"]
+    )
     for _, cell in enumerate(cell_names):
         for _, receptor in enumerate(receptors):
             for _, date in enumerate(["4-23", "4-26", "5-16"]):
                 for _, plate in enumerate(["1", "2"]):
-                    df_subset = df.loc[(df["Cell Type"] == cell) & (df["Receptor"] == receptor) & (df["Date"] == date) & (df["Plate"] == plate)]["Count"]
+                    df_subset = df.loc[
+                        (df["Cell Type"] == cell)
+                        & (df["Receptor"] == receptor)
+                        & (df["Date"] == date)
+                        & (df["Plate"] == plate)
+                    ]["Count"]
                     mean_ = np.log10(df_subset.mean())
                     var_ = np.log10(df_subset.var())
                     skew_ = np.log10(df_subset.skew())
-                    df_new = pd.DataFrame(columns=["Cell Type", "Receptor", "Mean", "Variance", "Skew", "Date", "Plate"])
+                    df_new = pd.DataFrame(
+                        columns=[
+                            "Cell Type",
+                            "Receptor",
+                            "Mean",
+                            "Variance",
+                            "Skew",
+                            "Date",
+                            "Plate",
+                        ]
+                    )
                     df_new.loc[0] = [cell, receptor, mean_, var_, skew_, date, plate]
                     df_stats = pd.concat([df_stats, df_new])
 
@@ -251,10 +404,27 @@ def calculate_moments(df, cell_names, receptors):
 
 
 def celltype_pointplot(ax, df, moment):
-    """ Plots a given distribution moment with SD among replicates for all cell types and receptors. """
-    sns.pointplot(x="Cell Type", y=moment, hue="Receptor", data=df, ci='sd', join=False, dodge=True, ax=ax, estimator=sp.stats.gmean)
+    """Plots a given distribution moment with SD among replicates for all cell types and receptors."""
+    sns.pointplot(
+        x="Cell Type",
+        y=moment,
+        hue="Receptor",
+        data=df,
+        ci="sd",
+        join=False,
+        dodge=True,
+        ax=ax,
+        estimator=sp.stats.gmean,
+    )
     ax.set_ylabel("log(" + moment + ")")
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+    ax.set_xticklabels(
+        ax.get_xticklabels(),
+        rotation=25,
+        rotation_mode="anchor",
+        ha="right",
+        position=(0, 0.02),
+        fontsize=7.5,
+    )
 
 
 def getReceptors(correlation=None):
@@ -264,16 +434,28 @@ def getReceptors(correlation=None):
     # create dataframe with gated samples (all replicates)
     df_gates = import_gates()
 
-    if correlation == 'CD122':
+    if correlation == "CD122":
         df_signal = apply_gates("4-23", "1", df_gates, correlation="CD122")
-        df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates, correlation="CD122")])
-        df_signal = pd.concat([df_signal, apply_gates("4-26", "1", df_gates, correlation="CD122")])
-        df_signal = pd.concat([df_signal, apply_gates("4-26", "2", df_gates, correlation="CD122")])
-    elif correlation == 'CD132':
+        df_signal = pd.concat(
+            [df_signal, apply_gates("4-23", "2", df_gates, correlation="CD122")]
+        )
+        df_signal = pd.concat(
+            [df_signal, apply_gates("4-26", "1", df_gates, correlation="CD122")]
+        )
+        df_signal = pd.concat(
+            [df_signal, apply_gates("4-26", "2", df_gates, correlation="CD122")]
+        )
+    elif correlation == "CD132":
         df_signal = apply_gates("4-23", "1", df_gates, correlation="CD132")
-        df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates, correlation="CD132")])
-        df_signal = pd.concat([df_signal, apply_gates("4-26", "1", df_gates, correlation="CD132")])
-        df_signal = pd.concat([df_signal, apply_gates("4-26", "2", df_gates, correlation="CD132")])
+        df_signal = pd.concat(
+            [df_signal, apply_gates("4-23", "2", df_gates, correlation="CD132")]
+        )
+        df_signal = pd.concat(
+            [df_signal, apply_gates("4-26", "1", df_gates, correlation="CD132")]
+        )
+        df_signal = pd.concat(
+            [df_signal, apply_gates("4-26", "2", df_gates, correlation="CD132")]
+        )
     else:
         df_signal = apply_gates("4-23", "1", df_gates)
         df_signal = pd.concat([df_signal, apply_gates("4-23", "2", df_gates)])
@@ -296,49 +478,77 @@ def getReceptors(correlation=None):
         for j, receptor in enumerate(receptors_):
             for _, date in enumerate(dates):
                 for _, plate in enumerate(plates):
-                    data = df_signal.loc[(df_signal["Cell Type"] == cell) & (df_signal["Receptor"] == receptor) & (df_signal["Date"] == date) & (df_signal["Plate"] == plate)][channels_[j]]
+                    data = df_signal.loc[
+                        (df_signal["Cell Type"] == cell)
+                        & (df_signal["Receptor"] == receptor)
+                        & (df_signal["Date"] == date)
+                        & (df_signal["Plate"] == plate)
+                    ][channels_[j]]
                     data = data[data >= 0]
                     rec_counts = np.zeros(len(data))
                     for k, signal in enumerate(data):
                         A, B, C, D = lsq_params[j]
-                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1)**(1 / B)
-                    df_add = pd.DataFrame({"Cell Type": np.tile(cell, len(data)), "Receptor": np.tile(receptor, len(data)),
-                                           "Count": rec_counts, "Date": np.tile(date, len(data)), "Plate": np.tile(plate, len(data))})
+                        rec_counts[k] = C * (((A - D) / (signal - D)) - 1) ** (1 / B)
+                    df_add = pd.DataFrame(
+                        {
+                            "Cell Type": np.tile(cell, len(data)),
+                            "Receptor": np.tile(receptor, len(data)),
+                            "Count": rec_counts,
+                            "Date": np.tile(date, len(data)),
+                            "Plate": np.tile(plate, len(data)),
+                        }
+                    )
                     df_rec = pd.concat([df_rec, df_add])
 
     return df_rec
 
 
 def run_regression():
-    """ Imports bead data and runs regression to get least squares parameters for conversion of signal to receptor count. """
-    sampleD, _ = importF2(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads", "D")
-    sampleE, _ = importF2(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "E")
-    sampleF, _ = importF2(path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "F")
-    sampleI, _ = importF2(path_here + "/data/flow/2019-05-16 Receptor Quant - Beads/", "F")
+    """Imports bead data and runs regression to get least squares parameters for conversion of signal to receptor count."""
+    sampleD, _ = importF2(
+        path_here + "/data/flow/2019-04-23 Receptor Quant - Beads", "D"
+    )
+    sampleE, _ = importF2(
+        path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "E"
+    )
+    sampleF, _ = importF2(
+        path_here + "/data/flow/2019-04-23 Receptor Quant - Beads/", "F"
+    )
+    sampleI, _ = importF2(
+        path_here + "/data/flow/2019-05-16 Receptor Quant - Beads/", "F"
+    )
 
-    recQuant1 = np.array([0., 4407, 59840, 179953, 625180])  # CD25, CD122
-    recQuant2 = np.array([0., 7311, 44263, 161876, 269561])  # CD132
+    recQuant1 = np.array([0.0, 4407, 59840, 179953, 625180])  # CD25, CD122
+    recQuant2 = np.array([0.0, 7311, 44263, 161876, 269561])  # CD132
     recQuant3 = np.array([4407, 59840, 179953, 625180, 0.0])  # CD127
 
-    _, lsq_cd25 = bead_regression(sampleD, channels['D'], recQuant1)
-    _, lsq_cd122 = bead_regression(sampleE, channels['E'], recQuant1, 2, True)
-    _, lsq_cd132 = bead_regression(sampleF, channels['F'], recQuant2)
+    _, lsq_cd25 = bead_regression(sampleD, channels["D"], recQuant1)
+    _, lsq_cd122 = bead_regression(sampleE, channels["E"], recQuant1, 2, True)
+    _, lsq_cd132 = bead_regression(sampleF, channels["F"], recQuant2)
     _, lsq_cd127 = bead_regression(sampleI, channels["I"], recQuant3)
 
     return lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127
 
 
-cellTypeDict = {"Treg": r"$T_{reg}$",
-                "Treg $IL2Ra^{lo}$": r"$T_{reg}$ $IL2Ra^{lo}$",
-                "Treg $IL2Ra^{hi}$": r"$T_{reg}$ $IL2Ra^{hi}$",
-                "Thelper": r"$T_{helper}$",
-                "Thelper $IL2Ra^{lo}$": r"$T_{helper}$ $IL2Ra^{lo}$",
-                "Thelper $IL2Ra^{hi}$": r"$T_{helper}$ $IL2Ra^{hi}$"}
+cellTypeDict = {
+    "Treg": r"$T_{reg}$",
+    "Treg $IL2Ra^{lo}$": r"$T_{reg}$ $IL2Ra^{lo}$",
+    "Treg $IL2Ra^{hi}$": r"$T_{reg}$ $IL2Ra^{hi}$",
+    "Thelper": r"$T_{helper}$",
+    "Thelper $IL2Ra^{lo}$": r"$T_{helper}$ $IL2Ra^{lo}$",
+    "Thelper $IL2Ra^{hi}$": r"$T_{helper}$ $IL2Ra^{hi}$",
+}
 
-receptorDict = {"IL2Ra": "IL2Rα",
-                "IL2Rb": r"$IL2·β$"}
+receptorDict = {"IL2Ra": "IL2Rα", "IL2Rb": r"$IL2·β$"}
 
-hiLoCells = ["$T_{reg}$", "$T_{reg}$ $IL2Ra^{lo}$", "$T_{reg}$ $IL2Ra^{hi}$", "$T_{helper}$", "$T_{helper}$ $IL2Ra^{lo}$", "$T_{helper}$ $IL2Ra^{hi}$"]
+hiLoCells = [
+    "$T_{reg}$",
+    "$T_{reg}$ $IL2Ra^{lo}$",
+    "$T_{reg}$ $IL2Ra^{hi}$",
+    "$T_{helper}$",
+    "$T_{helper}$ $IL2Ra^{lo}$",
+    "$T_{helper}$ $IL2Ra^{hi}$",
+]
 
 
 def IL2RahiLoPlot(ax):
@@ -346,5 +556,10 @@ def IL2RahiLoPlot(ax):
     receptorDF = importReceptors()
     receptorDF = receptorDF.replace(cellTypeDict)
     receptorDF = receptorDF.replace(receptorDict)
-    receptorDF = receptorDF.loc[(receptorDF["Receptor"].isin(["IL2Rα", "$IL2·β$"]) & (receptorDF["Cell Type"].isin(hiLoCells)))]
+    receptorDF = receptorDF.loc[
+        (
+            receptorDF["Receptor"].isin(["IL2Rα", "$IL2·β$"])
+            & (receptorDF["Cell Type"].isin(hiLoCells))
+        )
+    ]
     sns.barplot(x="Cell Type", y="Mean", hue="Receptor", data=receptorDF, ax=ax)

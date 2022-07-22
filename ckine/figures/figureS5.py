@@ -17,15 +17,15 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    #ax, f = getSetup((4, 6), (2, 2), multz={2: 1})
+    # ax, f = getSetup((4, 6), (2, 2), multz={2: 1})
     ax, f = getSetup((3, 3), (1, 1))
     GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
     GenesDF = pd.concat([GenesDF, pd.DataFrame({"Gene": ["IL2RB"]})], ignore_index=True)
     CITE_DF = importRNACITE()
 
     cellTarget = "Treg"
-    #RIDGEdf = CITE_RIDGE(ax[0], cellTarget, RNA=True)
-    #SVMdf = CITE_SVM(ax[1], cellTarget, sampleFrac=0.05, RNA=True)
+    # RIDGEdf = CITE_RIDGE(ax[0], cellTarget, RNA=True)
+    # SVMdf = CITE_SVM(ax[1], cellTarget, sampleFrac=0.05, RNA=True)
     cellCount = 20000
 
     # Get conv factors, average them
@@ -50,7 +50,7 @@ def makeFigure():
         sampleSizes.append(int(meanSize))
 
     offTCells = cellList.copy()
-    offTCells.remove('Treg')
+    offTCells.remove("Treg")
 
     # For each  cellType in list
     for i, cellType in enumerate(cellList):
@@ -60,12 +60,18 @@ def makeFigure():
         # For each Gene (being done on per cell basis)
         for gene in GenesDF.Gene:
             # calculate abundance based on conversion factor
-            if gene == 'IL2RA':
-                convFact = convFactDF.loc[convFactDF["Receptor"] == "IL2Ra"].Weight.values
-            elif gene == 'IL2RB':
-                convFact = convFactDF.loc[convFactDF["Receptor"] == "IL2Rb"].Weight.values
+            if gene == "IL2RA":
+                convFact = convFactDF.loc[
+                    convFactDF["Receptor"] == "IL2Ra"
+                ].Weight.values
+            elif gene == "IL2RB":
+                convFact = convFactDF.loc[
+                    convFactDF["Receptor"] == "IL2Rb"
+                ].Weight.values
             elif gene == "IL7R":
-                convFact = convFactDF.loc[convFactDF["Receptor"] == "IL7Ra"].Weight.values
+                convFact = convFactDF.loc[
+                    convFactDF["Receptor"] == "IL7Ra"
+                ].Weight.values
             else:
                 convFact = meanConv
 
@@ -76,24 +82,26 @@ def makeFigure():
         GenesDF[cellType] = cellType_abdundances
 
     # GeneDF now contains a data of single cell abundances for each cell type for each Gene
-    GenesDF['Selectivity'] = -1
+    GenesDF["Selectivity"] = -1
     # New column which will hold selectivity per Gene
 
-    targCell = 'Treg'
+    targCell = "Treg"
 
-    standardDF = GenesDF.loc[(GenesDF.Gene == 'IL2RA')].sample()
-    standard2DF = GenesDF.loc[(GenesDF.Gene == 'IL2RB')].sample()
+    standardDF = GenesDF.loc[(GenesDF.Gene == "IL2RA")].sample()
+    standard2DF = GenesDF.loc[(GenesDF.Gene == "IL2RB")].sample()
     standardDF = pd.concat([standardDF, standard2DF])
-    standardDF['Type'] = 'Standard'
+    standardDF["Type"] = "Standard"
 
-    for Gene in GenesDF['Gene'].unique():
+    for Gene in GenesDF["Gene"].unique():
         selectedDF = GenesDF.loc[(GenesDF.Gene == Gene)].sample()
-        selectedDF['Type'] = 'Gene'
+        selectedDF["Type"] = "Gene"
         selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
         # New form
         optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, Gene))
-        GenesDF.loc[GenesDF['Gene'] == Gene, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
+        GenesDF.loc[
+            GenesDF["Gene"] == Gene, "Selectivity"
+        ] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
 
@@ -102,10 +110,10 @@ def makeFigure():
         GenesDF.to_csv(join(path_here, "data/GeneSelectivityListRNA.csv"), index=False)
 
     # bar of each Gene
-    GenesDF = GenesDF.sort_values(by=['Selectivity']).tail(10)
-    xvalues = GenesDF['Gene']
-    yvalues = (((GenesDF['Selectivity']) / baseSelectivity) * 100) - 100
-    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
+    GenesDF = GenesDF.sort_values(by=["Selectivity"]).tail(10)
+    xvalues = GenesDF["Gene"]
+    yvalues = (((GenesDF["Selectivity"]) / baseSelectivity) * 100) - 100
+    sns.barplot(x=xvalues, y=yvalues, color="k", ax=ax[0])
     ax[0].set(ylabel="Selectivity (% increase over WT IL2)", title="RNA")
     ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
@@ -114,13 +122,15 @@ def makeFigure():
 
 def cytBindingModel(counts, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    mut = 'IL2'
+    mut = "IL2"
     val = 1
     doseVec = np.array([0.1])
     recCount = np.ravel(counts)
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.power(
+        np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1
+    )
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
     np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
@@ -131,16 +141,22 @@ def cytBindingModel(counts, x=False, date=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(
+                dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs
+            )[0][1]
         else:
-            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+            output[i] = polyc(
+                dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs
+            )[0][
+                1
+            ]  # IL2RB binding only
 
     return output
 
 
 def cytBindingModel_bispecOpt(counts, recXaff, IL2RA=False, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    mut = 'IL2'
+    mut = "IL2"
     val = 1
     doseVec = np.array([0.1])
     recXaff = np.power(10, recXaff)
@@ -148,7 +164,9 @@ def cytBindingModel_bispecOpt(counts, recXaff, IL2RA=False, x=False):
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.power(
+        np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1
+    )
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.append(Affs, recXaff)
     holder = np.full((3, 3), 1e2)
@@ -164,9 +182,25 @@ def cytBindingModel_bispecOpt(counts, recXaff, IL2RA=False, x=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            output[i] = polyc(dose / (val * 1e9), np.power(10, x[0]), recCount, [[val, val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(
+                dose / (val * 1e9),
+                np.power(10, x[0]),
+                recCount,
+                [[val, val, val]],
+                [1.0],
+                Affs,
+            )[0][1]
         else:
-            output[i] = polyc(dose / (val * 1e9), getKxStar(), recCount, [[val, val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+            output[i] = polyc(
+                dose / (val * 1e9),
+                getKxStar(),
+                recCount,
+                [[val, val, val]],
+                [1.0],
+                Affs,
+            )[0][
+                1
+            ]  # IL2RB binding only
 
     return output
 
@@ -175,8 +209,8 @@ def selecCalc(df, targCell, offTCells):
     """Calculates selectivity for no additional Gene"""
     targetBound = 0
     offTargetBound = 0
-    cd25DF = df.loc[(df.Type == 'Standard') & (df.Gene == 'IL2RA')]
-    cd122DF = df.loc[(df.Type == 'Standard') & (df.Gene == 'IL2RB')]
+    cd25DF = df.loc[(df.Type == "Standard") & (df.Gene == "IL2RA")]
+    cd122DF = df.loc[(df.Type == "Standard") & (df.Gene == "IL2RB")]
 
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
@@ -196,9 +230,13 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, Gene):
     targetBound = 0
     offTargetBound = 0
     recXaff = x
-    GeneDF = selectedDF.loc[(selectedDF.Type == 'Gene')]
-    cd25DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Gene == 'IL2RA')]
-    cd122DF = selectedDF.loc[(selectedDF.Type == 'Standard') & (selectedDF.Gene == 'IL2RB')]
+    GeneDF = selectedDF.loc[(selectedDF.Type == "Gene")]
+    cd25DF = selectedDF.loc[
+        (selectedDF.Type == "Standard") & (selectedDF.Gene == "IL2RA")
+    ]
+    cd122DF = selectedDF.loc[
+        (selectedDF.Type == "Standard") & (selectedDF.Gene == "IL2RB")
+    ]
     if Gene == "IL2RA":
         IL2RA = True
     else:
@@ -221,53 +259,91 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, Gene):
 
 
 def optimizeDesign(targCell, offTcells, selectedDF, Gene):
-    """ A more general purpose optimizer """
+    """A more general purpose optimizer"""
     if targCell == "NK":
         X0 = [6.0, 8]
     else:
         X0 = [7.0]
     optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
-    optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, Gene), jac="3-point")
+    optimized = minimize(
+        minSelecFunc,
+        X0,
+        bounds=optBnds,
+        args=(selectedDF, targCell, offTcells, Gene),
+        jac="3-point",
+    )
     optSelectivity = optimized.fun
 
     return optSelectivity
 
 
-cellDict = {"CD4 Naive": "Thelper",
-            "CD4 CTL": "Thelper",
-            "CD4 TCM": "Thelper",
-            "CD4 TEM": "Thelper",
-            "NK": "NK",
-            "CD8 Naive": "CD8",
-            "CD8 TCM": "CD8",
-            "CD8 TEM": "CD8",
-            "Treg": "Treg"}
+cellDict = {
+    "CD4 Naive": "Thelper",
+    "CD4 CTL": "Thelper",
+    "CD4 TCM": "Thelper",
+    "CD4 TEM": "Thelper",
+    "NK": "NK",
+    "CD8 Naive": "CD8",
+    "CD8 TCM": "CD8",
+    "CD8 TEM": "CD8",
+    "Treg": "Treg",
+}
 
 
-markDict = {"IL2RA": "IL2Ra",
-            "IL2RB": "IL2Rb",
-            "IL7R": "IL7Ra",
-            "IL2RG": "gc"}
+markDict = {"IL2RA": "IL2Ra", "IL2RB": "IL2Rb", "IL7R": "IL7Ra", "IL2RG": "gc"}
 
 
 def convFactCalcRNA():
     """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
     CITE_DF = importRNACITE()
-    cellToI = ["CD4 TCM", "CD8 Naive", "NK", "CD8 TEM", "CD4 Naive", "CD4 CTL", "CD8 TCM", "Treg", "CD4 TEM"]
+    cellToI = [
+        "CD4 TCM",
+        "CD8 Naive",
+        "NK",
+        "CD8 TEM",
+        "CD4 Naive",
+        "CD4 CTL",
+        "CD8 TCM",
+        "Treg",
+        "CD4 TEM",
+    ]
     markers = ["IL2RB", "IL7R", "IL2RA", "IL2RG"]
     markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount", "Number"])
     for marker in markers:
         for cell in cellToI:
             cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size})])
+            markerDF = pd.concat(
+                [
+                    markerDF,
+                    pd.DataFrame(
+                        {
+                            "Marker": [marker],
+                            "Cell Type": cell,
+                            "Amount": cellTDF.mean(),
+                            "Number": cellTDF.size,
+                        }
+                    ),
+                ]
+            )
 
     markerDF = markerDF.replace({"Marker": markDict, "Cell Type": cellDict})
     markerDFw = pd.DataFrame(columns=["Marker", "Cell Type", "Average"])
     for marker in markerDF.Marker.unique():
         for cell in markerDF["Cell Type"].unique():
-            subDF = markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)]
-            wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(subDF.Number.values)
-            markerDFw = pd.concat([markerDFw, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Average": wAvg})])
+            subDF = markerDF.loc[
+                (markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)
+            ]
+            wAvg = np.sum(subDF.Amount.values * subDF.Number.values) / np.sum(
+                subDF.Number.values
+            )
+            markerDFw = pd.concat(
+                [
+                    markerDFw,
+                    pd.DataFrame(
+                        {"Marker": [marker], "Cell Type": cell, "Average": wAvg}
+                    ),
+                ]
+            )
 
     recDF = importReceptors()
     weightDF = pd.DataFrame(columns=["Receptor", "Weight"])
@@ -276,8 +352,36 @@ def convFactCalcRNA():
         CITEval = np.array([])
         Quantval = np.array([])
         for cell in markerDF["Cell Type"].unique():
-            CITEval = np.concatenate((CITEval, markerDFw.loc[(markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)].Average.values))
-            Quantval = np.concatenate((Quantval, recDF.loc[(recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)].Mean.values))
-        weightDF = pd.concat([weightDF, pd.DataFrame({"Receptor": [rec], "Weight": np.linalg.lstsq(np.reshape(CITEval, (-1, 1)).astype(np.float), Quantval.astype(np.float), rcond=None)[0]})])
+            CITEval = np.concatenate(
+                (
+                    CITEval,
+                    markerDFw.loc[
+                        (markerDFw["Cell Type"] == cell) & (markerDFw["Marker"] == rec)
+                    ].Average.values,
+                )
+            )
+            Quantval = np.concatenate(
+                (
+                    Quantval,
+                    recDF.loc[
+                        (recDF["Cell Type"] == cell) & (recDF["Receptor"] == rec)
+                    ].Mean.values,
+                )
+            )
+        weightDF = pd.concat(
+            [
+                weightDF,
+                pd.DataFrame(
+                    {
+                        "Receptor": [rec],
+                        "Weight": np.linalg.lstsq(
+                            np.reshape(CITEval, (-1, 1)).astype(np.float),
+                            Quantval.astype(np.float),
+                            rcond=None,
+                        )[0],
+                    }
+                ),
+            ]
+        )
 
     return weightDF

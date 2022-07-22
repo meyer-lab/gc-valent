@@ -31,23 +31,53 @@ def makeDimericGMM():
     Calculate mean and variance of a sample in a pandas dataframe, and plot.
     """
 
-    dataFiles = ["ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric",
-                 "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-062 mono, IL2-118 mono",
-                 "ckine/data/2019-11-27 monomer IL-2 Fc signaling/CD4 T cells - C-term IL2-060 mono, C-term V91K mono",
-                 "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-109 mono, IL2-118 mono",
-                 "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-110 mono, C-term N88D mono",
-                 "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric",
-                 "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-062 mono, IL2-118 mono",
-                 "ckine/data/2019-11-27 monomer IL-2 Fc signaling/NK CD8 T cells - C-term IL2-060 mono, C-term V91K mono",
-                 "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-109 mono, IL2-118 mono",
-                 "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-110 mono, C-term N88D mono"]
-    dates = ["11/8/2019", "11/8/2019", "11/27/2019", "12/5/2019", "12/5/2019", "11/8/2019", "11/8/2019", "11/27/2019", "12/5/2019", "12/5/2019"]
+    dataFiles = [
+        "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric",
+        "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-062 mono, IL2-118 mono",
+        "ckine/data/2019-11-27 monomer IL-2 Fc signaling/CD4 T cells - C-term IL2-060 mono, C-term V91K mono",
+        "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-109 mono, IL2-118 mono",
+        "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-110 mono, C-term N88D mono",
+        "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric",
+        "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-062 mono, IL2-118 mono",
+        "ckine/data/2019-11-27 monomer IL-2 Fc signaling/NK CD8 T cells - C-term IL2-060 mono, C-term V91K mono",
+        "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-109 mono, IL2-118 mono",
+        "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-110 mono, C-term N88D mono",
+    ]
+    dates = [
+        "11/8/2019",
+        "11/8/2019",
+        "11/27/2019",
+        "12/5/2019",
+        "12/5/2019",
+        "11/8/2019",
+        "11/8/2019",
+        "11/27/2019",
+        "12/5/2019",
+        "12/5/2019",
+    ]
     repList = [0, 1, 0, 0, 1, 0, 1, 0, 0, 1]
-    rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    rows = ["A", "B", "C", "D", "E", "F", "G", "H"]
     masterMVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose"})
     MVdf = pds.DataFrame(columns={"Date", "Time", "Ligand", "Dose"})
-    dosemat = np.array([[84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474]])
-    cellTypesT = ['treg', 'nonTreg']
+    dosemat = np.array(
+        [
+            [
+                84,
+                28,
+                9.333333,
+                3.111,
+                1.037037,
+                0.345679,
+                0.115226,
+                0.038409,
+                0.012803,
+                0.004268,
+                0.001423,
+                0.000474,
+            ]
+        ]
+    )
+    cellTypesT = ["treg", "nonTreg"]
     cellTypesNK = ["nk", "cd"]
     TitlesT = ["Treg", "Thelper"]
     TitlesNK = ["NK", "CD8"]
@@ -58,7 +88,9 @@ def makeDimericGMM():
             Tcells = True
         else:
             Tcells = False
-        channelDict = getChannelDict(Tcell=Tcells, LiveCell=False, cellType=False, IL7=False)
+        channelDict = getChannelDict(
+            Tcell=Tcells, LiveCell=False, cellType=False, IL7=False
+        )
         if Tcells:
             for j, row in enumerate(rows):
                 print(filename)
@@ -70,9 +102,13 @@ def makeDimericGMM():
                     _, alldata, indices = count_data(sample, gates, Tcells, True)
                     cellTypeDict[TitlesT[k]] = indices
 
-                for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
+                for ii, sampleii in enumerate(
+                    sample
+                ):  # get pstat data and put it into list form
                     dat_array = sample[ii].get_data()
-                    dat_array = dat_array[channelDict.keys()].rename(columns=channelDict)
+                    dat_array = dat_array[channelDict.keys()].rename(
+                        columns=channelDict
+                    )
                     timelig = mutFunc(row, filename)
                     dat_array["Date"] = dates[i]
                     dat_array["Time"] = timelig[0]
@@ -85,7 +121,9 @@ def makeDimericGMM():
                     MVdf = MVdf.append(dat_array)
 
                 if j == 3 or j == 7:
-                    MVdf['pSTAT5'] = MVdf['pSTAT5'] - MVdf.loc[(MVdf.Dose <= 0.001423)].pSTAT5.mean()
+                    MVdf["pSTAT5"] = (
+                        MVdf["pSTAT5"] - MVdf.loc[(MVdf.Dose <= 0.001423)].pSTAT5.mean()
+                    )
                     masterMVdf = masterMVdf.append(MVdf)
                     MVdf = pds.DataFrame()
         else:
@@ -99,9 +137,13 @@ def makeDimericGMM():
                     _, alldata, indices = count_data(sample, gates, Tcells, True)
                     cellTypeDict[TitlesNK[k]] = indices
 
-                for ii, sampleii in enumerate(sample):  # get pstat data and put it into list form
+                for ii, sampleii in enumerate(
+                    sample
+                ):  # get pstat data and put it into list form
                     dat_array = sample[ii].get_data()
-                    dat_array = dat_array[channelDict.keys()].rename(columns=channelDict)
+                    dat_array = dat_array[channelDict.keys()].rename(
+                        columns=channelDict
+                    )
                     timelig = mutFunc(row, filename)
                     dat_array["Date"] = dates[i]
                     dat_array["Time"] = timelig[0]
@@ -114,7 +156,9 @@ def makeDimericGMM():
                     MVdf = MVdf.append(dat_array)
 
                 if j == 3 or j == 7:
-                    MVdf['pSTAT5'] = MVdf['pSTAT5'] - MVdf.loc[(MVdf.Dose <= 0.001423)].pSTAT5.mean()
+                    MVdf["pSTAT5"] = (
+                        MVdf["pSTAT5"] - MVdf.loc[(MVdf.Dose <= 0.001423)].pSTAT5.mean()
+                    )
                     masterMVdf = masterMVdf.append(MVdf)
                     MVdf = pds.DataFrame()
 
@@ -135,11 +179,17 @@ def timeFunc(letter):
     elif letter == "D" or letter == "H":
         return 0.5
 
+
 # done done
 
 
 def mutFunc(letter, datafile):
-    if datafile == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric" or datafile == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric":
+    if (
+        datafile
+        == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
+        or datafile
+        == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
+    ):
         if letter == "A":
             return [4.0, "WT N-term", 0]
         elif letter == "B":
@@ -156,8 +206,13 @@ def mutFunc(letter, datafile):
             return [1.0, "WT N-term", 1]
         elif letter == "H":
             return [0.5, "WT N-term", 1]
-# done done
-    elif datafile == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-062 mono, IL2-118 mono" or datafile == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-062 mono, IL2-118 mono":
+    # done done
+    elif (
+        datafile
+        == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-062 mono, IL2-118 mono"
+        or datafile
+        == "ckine/data/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-062 mono, IL2-118 mono"
+    ):
         if letter == "A":
             return [4.0, "H16N N-term", 0]
         elif letter == "B":
@@ -174,8 +229,13 @@ def mutFunc(letter, datafile):
             return [1.0, "H16L N-term", 0]
         elif letter == "H":
             return [0.5, "H16L N-term", 0]
-# done done
-    elif datafile == "ckine/data/2019-11-27 monomer IL-2 Fc signaling/CD4 T cells - C-term IL2-060 mono, C-term V91K mono" or datafile == "ckine/data/2019-11-27 monomer IL-2 Fc signaling/NK CD8 T cells - C-term IL2-060 mono, C-term V91K mono":
+    # done done
+    elif (
+        datafile
+        == "ckine/data/2019-11-27 monomer IL-2 Fc signaling/CD4 T cells - C-term IL2-060 mono, C-term V91K mono"
+        or datafile
+        == "ckine/data/2019-11-27 monomer IL-2 Fc signaling/NK CD8 T cells - C-term IL2-060 mono, C-term V91K mono"
+    ):
         if letter == "A":
             return [4.0, "WT C-term", 0]
         elif letter == "B":
@@ -192,8 +252,13 @@ def mutFunc(letter, datafile):
             return [1.0, "V91K C-term", 0]
         elif letter == "H":
             return [0.5, "V91K C-term", 0]
-# done not done
-    elif datafile == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-109 mono, IL2-118 mono" or datafile == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-109 mono, IL2-118 mono":
+    # done not done
+    elif (
+        datafile
+        == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-109 mono, IL2-118 mono"
+        or datafile
+        == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-109 mono, IL2-118 mono"
+    ):
         if letter == "A":
             return [4.0, "R38Q N-term", 0]
         elif letter == "B":
@@ -210,8 +275,13 @@ def mutFunc(letter, datafile):
             return [1.0, "H16L N-term", 0]
         elif letter == "H":
             return [0.5, "H16L N-term", 0]
-# done
-    elif datafile == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-110 mono, C-term N88D mono" or datafile == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-110 mono, C-term N88D mono":
+    # done
+    elif (
+        datafile
+        == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/CD4 T cells - IL2-110 mono, C-term N88D mono"
+        or datafile
+        == "ckine/data/2019-12-05 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-110 mono, C-term N88D mono"
+    ):
         if letter == "A":
             return [4.0, "F42Q N-Term", 0]
         elif letter == "B":
