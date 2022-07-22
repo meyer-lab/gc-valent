@@ -1,21 +1,14 @@
 """
 This creates Figure S4, used to find optimal epitope and epitope classifier via binding model.
 """
-from email.mime import base
 from os.path import dirname, join
 from .figureCommon import getSetup
-from ..imports import importCITE, importReceptors, getBindDict
-from ..MBmodel import polyc, getKxStar
-from scipy.optimize import minimize, Bounds, NonlinearConstraint
-from copy import copy
+from ..imports import importCITE, importReceptors
+from ..MBmodel import polyc, getKxStar, cytBindingModelIL2
+from scipy.optimize import minimize, Bounds
 import pandas as pd
 import seaborn as sns
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import RidgeClassifierCV
-from sklearn.preprocessing import LabelEncoder
-from sklearn.svm import SVC
-from sklearn.preprocessing import LabelBinarizer
 
 path_here = dirname(dirname(__file__))
 
@@ -84,7 +77,7 @@ def makeFigure():
         selectedDF['Type'] = 'Epitope'
         selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
-        optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
+        optSelectivity = 1 / (optimizeDesignSurf(targCell, offTCells, selectedDF, epitope))
         epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
@@ -103,33 +96,6 @@ def makeFigure():
     ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
-
-
-def cytBindingModel(counts, x=False, date=False):
-    """Runs binding model for a given mutein, valency, dose, and cell type."""
-    mut = 'IL2'
-    val = 1
-    doseVec = np.array([0.1])
-    recCount = np.ravel(counts)
-
-    mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
-    Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
-    Affs = np.reshape(Affs, (1, -1))
-    Affs = np.repeat(Affs, 2, axis=0)
-    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
-
-    if doseVec.size == 1:
-        doseVec = np.array([doseVec])
-    output = np.zeros(doseVec.size)
-
-    for i, dose in enumerate(doseVec):
-        if x:
-            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
-        else:
-            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
-
-    return output
 
 
 def cytBindingModel_bispecOpt(counts, recXaff, CD25=False, x=False):
@@ -172,17 +138,17 @@ def selecCalc(df, targCell, offTCells):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts)
+        targetBound += cytBindingModelIL2(counts)
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts)
+            offTargetBound += cytBindingModelIL2(counts)
 
     return (offTargetBound) / (targetBound)
 
 
-def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
+def minSelecFuncSurf(x, selectedDF, targCell, offTCells, epitope):
     """Provides the function to be minimized to get optimal selectivity"""
     targetBound = 0
     offTargetBound = 0
@@ -211,119 +177,17 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, epitope):
     return (offTargetBound) / (targetBound)
 
 
-def optimizeDesign(targCell, offTcells, selectedDF, epitope):
+def optimizeDesignSurf(targCell, offTcells, selectedDF, epitope):
     """ A more general purpose optimizer """
     if targCell == "NK":
         X0 = [6.0, 8]
     else:
         X0 = [7.0]
     optBnds = Bounds(np.full_like(X0, 6.0), np.full_like(X0, 9.0))
-    optimized = minimize(minSelecFunc, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, epitope), jac="3-point")
+    optimized = minimize(minSelecFuncSurf, X0, bounds=optBnds, args=(selectedDF, targCell, offTcells, epitope), jac="3-point")
     optSelectivity = optimized.fun
 
     return optSelectivity
-
-
-def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.2):
-    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
-    SVMmod = SVC()
-    SVC_DF = importCITE()
-    cellToI = SVC_DF.CellType2.unique()
-    SVC_DF = SVC_DF.loc[(SVC_DF["CellType2"].isin(cellToI)), :]
-    SVC_DF = SVC_DF.sample(frac=sampleFrac, random_state=1)
-    cellTypeCol = SVC_DF.CellType2.values
-    SVC_DF = SVC_DF.loc[:, ((SVC_DF.columns != 'CellType1') & (SVC_DF.columns != 'CellType2') & (SVC_DF.columns != 'CellType3') & (SVC_DF.columns != 'Cell'))]
-    factors = SVC_DF.columns
-    X = SVC_DF.values
-    X = StandardScaler().fit_transform(X)
-    CD25col = X[:, np.where(factors == "CD25")].reshape(-1, 1)
-
-    enc = LabelBinarizer()
-    y = enc.fit_transform(cellTypeCol)
-    TregY = y[:, np.where(enc.classes_ == targCell)].ravel()
-
-    AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
-    baselineAcc = SVMmod.fit(CD25col, TregY).score(CD25col, TregY)
-    for marker in factors:
-        SVMmod = SVC()
-        markerCol = X[:, np.where(factors == marker)]
-        CD25MarkX = np.hstack((CD25col, markerCol.reshape(-1, 1)))
-        markAcc = SVMmod.fit(CD25MarkX, TregY).score(CD25MarkX, TregY)
-        AccDF = pd.concat([AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})])
-
-    AccDF = AccDF.sort_values(by="Accuracy")
-    markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
-    AccDF.Markers = "CD25 + " + AccDF.Markers
-
-    return markers
-
-
-def CITE_RIDGE(ax, targCell, numFactors=10):
-    """Fits a ridge classifier to the CITE data and plots those most highly correlated with T reg"""
-    ridgeMod = RidgeClassifierCV()
-    RIDGE_DF = importCITE()
-    cellToI = RIDGE_DF.CellType2.unique()
-    RIDGE_DF = RIDGE_DF.loc[(RIDGE_DF["CellType2"].isin(cellToI)), :]
-    cellTypeCol = RIDGE_DF.CellType2.values
-    RIDGE_DF = RIDGE_DF.loc[:, ((RIDGE_DF.columns != 'CellType1') & (RIDGE_DF.columns != 'CellType2') & (RIDGE_DF.columns != 'CellType3') & (RIDGE_DF.columns != 'Cell'))]
-    factors = RIDGE_DF.columns
-    X = RIDGE_DF.values
-    X = StandardScaler().fit_transform(X)
-
-    le = LabelEncoder()
-    le.fit(cellTypeCol)
-    y = le.transform(cellTypeCol)
-
-    ridgeMod = RidgeClassifierCV(cv=5)
-    ridgeMod.fit(X, y)
-    TargCoefs = ridgeMod.coef_[np.where(le.classes_ == targCell), :].ravel()
-    TargCoefsDF = pd.DataFrame({"Marker": factors, "Coefficient": TargCoefs}).sort_values(by="Coefficient")
-    TargCoefsDF = pd.concat([TargCoefsDF.head(numFactors), TargCoefsDF.tail(numFactors)])
-    #sns.barplot(data=TargCoefsDF, x="Marker", y="Coefficient", ax=ax)
-    #ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-    posCorrs = TargCoefsDF.tail(numFactors).Marker.values
-    negCorrs = TargCoefsDF.head(numFactors).Marker.values
-
-    return posCorrs, negCorrs
-
-
-def distMetricScatt(ax, targCell, numFactors, weight=False):
-    """Finds markers which have average greatest difference from other cells"""
-    CITE_DF = importCITE()
-    cellToI = CITE_DF.CellType2.unique()
-    offTargs = copy(cellToI)
-    offTargs = np.delete(offTargs, np.where(offTargs == targCell))
-    CITE_DF = CITE_DF.loc[(CITE_DF["CellType2"].isin(cellToI)), :]
-    cellTypeCol = CITE_DF.CellType2.values
-
-    markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
-    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
-        for cell in cellToI:
-            cellTDF = CITE_DF.loc[CITE_DF["CellType2"] == cell][marker]
-            markerDF = pd.concat([markerDF, pd.DataFrame({"Marker": [marker], "Cell Type": cell, "Amount": cellTDF.mean(), "Number": cellTDF.size})])
-
-    ratioDF = pd.DataFrame(columns=["Marker", "Ratio"])
-    for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
-        if weight:
-            offT = 0
-            targ = markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Amount.mean()
-            for cell in offTargs:
-                offT += markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Amount.mean()
-            ratioDF = pd.concat([ratioDF, pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT})])
-        else:
-            offT = 0
-            targ = markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Amount.values * \
-                markerDF.loc[(markerDF["Cell Type"] == targCell) & (markerDF["Marker"] == marker)].Number.values
-            for cell in offTargs:
-                offT += markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Amount.values * \
-                    markerDF.loc[(markerDF["Cell Type"] == cell) & (markerDF["Marker"] == marker)].Number.values
-            ratioDF = pd.concat([ratioDF, pd.DataFrame({"Marker": [marker], "Ratio": (targ * len(offTargs)) / offT})])
-
-    ratioDF = ratioDF.sort_values(by="Ratio")
-    posCorrs = ratioDF.tail(numFactors).Marker.values
-
-    markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
-    return(posCorrs)
 
 
 cellDict = {"CD4 Naive": "Thelper",

@@ -3,9 +3,7 @@ This creates Figure 3, tensor factorization of mutant and WT biv and monovalent 
 """
 
 import os
-from os.path import join
 from copy import copy
-import pandas as pd
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, getLigDict
 from ..imports import import_pstat_all
@@ -44,13 +42,6 @@ def makeFigure():
     ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     ax[3].get_legend().remove()
     ax[5].get_legend().remove()
-
-    #mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
-    #mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
-    #mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
-    #ligCompDF = ligCompDF.loc[(ligCompDF["Lig Name"] != "IL15") & (ligCompDF["Lig Name"] != "IL2")]
-    #utAffDF = mutAffDF.rename({"Ligand": "Lig Name"}, axis=1)
-    #affCompPlot(ax[6], ligCompDF, mutAffDF, "IL2Rα $K_{D}$ (nM)")
 
     return f
 

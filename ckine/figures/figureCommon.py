@@ -400,5 +400,4 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
     sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
-    #sns.lineplot(data=predRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")

@@ -1,11 +1,11 @@
 """
 This creates Figure S5, RNA ID with SVM and RNA optimized Gene ID with Model
 """
-from email.mime import base
+
 from os.path import dirname, join
-from .figureCommon import getSetup, Wass_KL_Dist, CITE_RIDGE, CITE_SVM
+from .figureCommon import getSetup, CITE_RIDGE, CITE_SVM
 from ..imports import importRNACITE, importReceptors
-from ..MBmodel import polyc, getKxStar
+from ..MBmodel import polyc, getKxStar, cytBindingModelIL2
 from scipy.optimize import minimize, Bounds
 import pandas as pd
 import seaborn as sns
@@ -91,7 +91,7 @@ def makeFigure():
         selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
         # New form
-        optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, Gene))
+        optSelectivity = 1 / (optimizeDesignRNA(targCell, offTCells, selectedDF, Gene))
         GenesDF.loc[GenesDF['Gene'] == Gene, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
@@ -109,32 +109,6 @@ def makeFigure():
     ax[2].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
-
-
-def cytBindingModel(counts, x=False, date=False):
-    """Runs binding model for a given mutein, valency, dose, and cell type."""
-    mut = 'IL2'
-    val = 1
-    doseVec = np.array([0.1])
-    recCount = np.ravel(counts)
-    mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
-    Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
-    Affs = np.reshape(Affs, (1, -1))
-    Affs = np.repeat(Affs, 2, axis=0)
-    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
-
-    if doseVec.size == 1:
-        doseVec = np.array([doseVec])
-    output = np.zeros(doseVec.size)
-
-    for i, dose in enumerate(doseVec):
-        if x:
-            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
-        else:
-            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
-
-    return output
 
 
 def cytBindingModel_bispecOpt(counts, recXaff, IL2RA=False, x=False):
@@ -180,12 +154,12 @@ def selecCalc(df, targCell, offTCells):
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
         counts = [cd25Count, cd122Count]
-        targetBound += cytBindingModel(counts)
+        targetBound += cytBindingModelIL2(counts)
     for cellT in offTCells:
         for i, cd25Count in enumerate(cd25DF[cellT].item()):
             cd122Count = cd122DF[cellT].item()[i]
             counts = [cd25Count, cd122Count]
-            offTargetBound += cytBindingModel(counts)
+            offTargetBound += cytBindingModelIL2(counts)
 
     return (offTargetBound) / (targetBound)
 
@@ -219,7 +193,7 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, Gene):
     return (offTargetBound) / (targetBound)
 
 
-def optimizeDesign(targCell, offTcells, selectedDF, Gene):
+def optimizeDesignRNA(targCell, offTcells, selectedDF, Gene):
     """ A more general purpose optimizer """
     if targCell == "NK":
         X0 = [6.0, 8]

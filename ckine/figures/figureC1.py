@@ -10,7 +10,7 @@ from copy import copy
 from scipy.optimize import least_squares
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from os.path import dirname, join
+from os.path import join
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, get_cellTypeDict
 from ..imports import import_pstat_all
 
@@ -169,7 +169,7 @@ def PCAheatmap(ax, respDF):
     timeCol = []
     valCol = []
 
-    for i, ligand in enumerate(respDFhm["Ligand"].unique()):
+    for _, ligand in enumerate(respDFhm["Ligand"].unique()):
         for dose in respDFhm.Dose.unique():
             row = pd.DataFrame()
             row["Ligand/Dose"] = [ligand + " - " + str(dose) + " (nM)"]
@@ -215,6 +215,5 @@ def PCAheatmap(ax, respDF):
 
     sns.scatterplot(data=scoresDF, x="Component 1", y="Component 2", hue="Ligand", size="Dose (log)", style="Valency", palette=ligDict, ax=ax[0])
     ax[0].set(xlim=(-13, 13), ylim=(-6, 6), xlabel="PC1 (" + str(varExp[0])[0:4] + "%)", ylabel="PC2 (" + str(varExp[1])[0:4] + "%)")
-    #ax[0].legend(loc="lower left")
     sns.scatterplot(data=loadingsDF, x="Component 1", y="Component 2", hue="Cell", style="Time", ax=ax[1])
     ax[1].set(xlim=(-0.3, 0.3), ylim=(-0.4, 0.4), xlabel="PC1 (" + str(varExp[0])[0:4] + "%)", ylabel="PC2 (" + str(varExp[1])[0:4] + "%)")
