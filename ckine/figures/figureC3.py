@@ -9,7 +9,16 @@ import pandas as pd
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, getLigDict
 from ..imports import import_pstat_all
-from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Time, plot_tFac_Conc, plot_tFac_Cells, facScatterPlot
+from ..tensorFac import (
+    makeTensor,
+    factorTensor,
+    R2Xplot,
+    plot_tFac_Ligs,
+    plot_tFac_Time,
+    plot_tFac_Conc,
+    plot_tFac_Cells,
+    facScatterPlot,
+)
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
@@ -41,16 +50,18 @@ def makeFigure():
 
     legend = ax[3].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[2].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    ax[2].legend(
+        legend.legendHandles, labels, loc="upper left", prop={"size": 10}
+    )  # use this to place universal legend later
     ax[3].get_legend().remove()
     ax[5].get_legend().remove()
 
-    #mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
-    #mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
-    #mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
-    #ligCompDF = ligCompDF.loc[(ligCompDF["Lig Name"] != "IL15") & (ligCompDF["Lig Name"] != "IL2")]
-    #utAffDF = mutAffDF.rename({"Ligand": "Lig Name"}, axis=1)
-    #affCompPlot(ax[6], ligCompDF, mutAffDF, "IL2Rα $K_{D}$ (nM)")
+    # mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
+    # mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
+    # mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
+    # ligCompDF = ligCompDF.loc[(ligCompDF["Lig Name"] != "IL15") & (ligCompDF["Lig Name"] != "IL2")]
+    # utAffDF = mutAffDF.rename({"Ligand": "Lig Name"}, axis=1)
+    # affCompPlot(ax[6], ligCompDF, mutAffDF, "IL2Rα $K_{D}$ (nM)")
 
     return f
 
@@ -58,7 +69,15 @@ def makeFigure():
 def affCompPlot(ax, ligCompDF, mutAffDF, affinity):
     """Plots component values for a given affinity"""
     affCompDF = ligCompDF.merge(mutAffDF)
-    sns.scatterplot(data=affCompDF, x=affinity, y="Component_Val", style="Valency", hue="Component", palette=sns.color_palette(n_colors=3), ax=ax)
+    sns.scatterplot(
+        data=affCompDF,
+        x=affinity,
+        y="Component_Val",
+        style="Valency",
+        hue="Component",
+        palette=sns.color_palette(n_colors=3),
+        ax=ax,
+    )
     if affinity == "IL2Rα $K_{D}$ (nM)":
         ax.set(xscale="log", xlim=(1e-1, 1e1), ylim=(0, 0.6), ylabel="Component Weight")
     elif affinity == "IL2Rβ $K_{D}$ (nM)":

@@ -19,11 +19,22 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     ax, f = getSetup((13, 4), (1, 3))
 
-    receptors = {'Epitope': ['CD25', 'CD122']}
+    receptors = {"Epitope": ["CD25", "CD122"]}
     epitopesDF = pd.DataFrame(receptors)
 
     CITE_DF = importCITE()
-    cellList = ['CD8 Naive', 'CD8 Proliferating', 'CD8 TCM', 'CD8 TEM', 'CD4 Naive', 'CD4 TEM', 'CD4 TCM', 'NK', 'NK Proliferating', 'Treg']
+    cellList = [
+        "CD8 Naive",
+        "CD8 Proliferating",
+        "CD8 TCM",
+        "CD8 TEM",
+        "CD4 Naive",
+        "CD4 TEM",
+        "CD4 TCM",
+        "NK",
+        "NK Proliferating",
+        "Treg",
+    ]
 
     sampleSizes = []
     for cellType in cellList:
@@ -35,7 +46,17 @@ def makeFigure():
         meanSize = np.mean(cellSample)
         sampleSizes.append(int(meanSize))
 
-    offTCells = ['CD8 Naive', 'CD8 Proliferating', 'CD8 TCM', 'CD8 TEM', 'CD4 Naive', 'CD4 TEM', 'CD4 TCM', 'NK', 'NK Proliferating']
+    offTCells = [
+        "CD8 Naive",
+        "CD8 Proliferating",
+        "CD8 TCM",
+        "CD8 TEM",
+        "CD4 Naive",
+        "CD4 TEM",
+        "CD4 TCM",
+        "NK",
+        "NK Proliferating",
+    ]
 
     # For each  cellType in list
     for i, cellType in enumerate(cellList):
@@ -43,18 +64,20 @@ def makeFigure():
         # Generate sample size
         sampleSize = sampleSizes[i]
 
-        cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(sampleSize, random_state=45)  # 45 is okay
+        cellDF = CITE_DF.loc[CITE_DF["CellType2"] == cellType].sample(
+            sampleSize, random_state=45
+        )  # 45 is okay
 
         cellType_abdundances = []
         # For each epitope (being done on per cell basis)
         for e in epitopesDF.Epitope:
             # calculate abundance based on converstion factor
-            if e == 'CD25':
+            if e == "CD25":
                 convFact = 77.136987
-            elif e == 'CD122':
+            elif e == "CD122":
                 convFact = 332.680090
             else:
-                assert(False)
+                assert False
                 convFact = meanConv
 
             citeVal = cellDF[e].to_numpy()
@@ -65,12 +88,12 @@ def makeFigure():
         epitopesDF[cellType] = cellType_abdundances
 
     # New column which will hold selectivity per epitope
-    targCell = 'Treg'
+    targCell = "Treg"
 
-    standardDF = epitopesDF.loc[(epitopesDF.Epitope == 'CD25')].sample()
-    standard2DF = epitopesDF.loc[(epitopesDF.Epitope == 'CD122')].sample()
+    standardDF = epitopesDF.loc[(epitopesDF.Epitope == "CD25")].sample()
+    standard2DF = epitopesDF.loc[(epitopesDF.Epitope == "CD122")].sample()
     standardDF = pd.concat([standardDF, standard2DF])
-    standardDF['Type'] = 'Standard'
+    standardDF["Type"] = "Standard"
 
     # range from pico <-> micromolar
     doseVec = np.logspace(-18, -6, 60)
@@ -81,7 +104,7 @@ def makeFigure():
     # 0-2 IL2 WT
     # 3-5 R38Q
     # 6-7 Live/Dead
-    muts = ['IL2', 'R38Q/H16N']
+    muts = ["IL2", "R38Q/H16N"]
     vals = [1, 2, 4]
 
     for i, dose in enumerate(doseVec):
@@ -89,15 +112,21 @@ def makeFigure():
         for j, mut in enumerate(muts):
             for k, val in enumerate(vals):
                 n = (3 * j) + k
-                treg_sig, offTarg_sig = bindingCalc(standardDF, targCell, offTCells, dose, val, mut)
+                treg_sig, offTarg_sig = bindingCalc(
+                    standardDF, targCell, offTCells, dose, val, mut
+                )
                 treg_sigs[n, i] = treg_sig
                 offTarg_sigs[n, i] = offTarg_sig
 
-        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, dose, 1)
+        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(
+            standardDF, targCell, offTCells, dose, 1
+        )
         treg_sigs[6, i] = treg_sig_bi
         offTarg_sigs[6, i] = offTarg_sig_bi
 
-        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(standardDF, targCell, offTCells, dose, 2)
+        treg_sig_bi, offTarg_sig_bi = bindingCalc_bispec(
+            standardDF, targCell, offTCells, dose, 2
+        )
         treg_sigs[7, i] = treg_sig_bi
         offTarg_sigs[7, i] = offTarg_sig_bi
 
@@ -116,41 +145,88 @@ def makeFigure():
 
     def plotSignals(types, ax):
         # Add standard colors/line types
-        if 'WT' in types:
-            ax.plot(norm(offTarg_sigs[0], offMax), norm(treg_sigs[0], tregMax), label='WT', c='blue')
-            ax.plot(norm(offTarg_sigs[1], offMax), norm(treg_sigs[1], tregMax), label='WT Bival', c='green')
-            ax.plot(norm(offTarg_sigs[2], offMax), norm(treg_sigs[2], tregMax), label='WT Tetraval', c='c')
-        if 'R38Q/H16N' in types:
-            ax.plot(norm(offTarg_sigs[3], offMax), norm(treg_sigs[3], tregMax), '--', label='R38Q/H16N', c='red')
-            ax.plot(norm(offTarg_sigs[4], offMax), norm(treg_sigs[4], tregMax), '--', label='R38Q/H16N Bival', c='y')
-            ax.plot(norm(offTarg_sigs[5], offMax), norm(treg_sigs[5], tregMax), '--', label='R38Q/H16N Tetraval', c='orange')
-        if 'Live/Dead' in types:
-            ax.plot(norm(offTarg_sigs[6], offMax), norm(treg_sigs[6], tregMax), '-.', label='CD25 Live/Dead', c='indigo')
-            ax.plot(norm(offTarg_sigs[7], offMax), norm(treg_sigs[7], tregMax), '-.', label='CD25 Bivalent Live/Dead', c='magenta')
+        if "WT" in types:
+            ax.plot(
+                norm(offTarg_sigs[0], offMax),
+                norm(treg_sigs[0], tregMax),
+                label="WT",
+                c="blue",
+            )
+            ax.plot(
+                norm(offTarg_sigs[1], offMax),
+                norm(treg_sigs[1], tregMax),
+                label="WT Bival",
+                c="green",
+            )
+            ax.plot(
+                norm(offTarg_sigs[2], offMax),
+                norm(treg_sigs[2], tregMax),
+                label="WT Tetraval",
+                c="c",
+            )
+        if "R38Q/H16N" in types:
+            ax.plot(
+                norm(offTarg_sigs[3], offMax),
+                norm(treg_sigs[3], tregMax),
+                "--",
+                label="R38Q/H16N",
+                c="red",
+            )
+            ax.plot(
+                norm(offTarg_sigs[4], offMax),
+                norm(treg_sigs[4], tregMax),
+                "--",
+                label="R38Q/H16N Bival",
+                c="y",
+            )
+            ax.plot(
+                norm(offTarg_sigs[5], offMax),
+                norm(treg_sigs[5], tregMax),
+                "--",
+                label="R38Q/H16N Tetraval",
+                c="orange",
+            )
+        if "Live/Dead" in types:
+            ax.plot(
+                norm(offTarg_sigs[6], offMax),
+                norm(treg_sigs[6], tregMax),
+                "-.",
+                label="CD25 Live/Dead",
+                c="indigo",
+            )
+            ax.plot(
+                norm(offTarg_sigs[7], offMax),
+                norm(treg_sigs[7], tregMax),
+                "-.",
+                label="CD25 Bivalent Live/Dead",
+                c="magenta",
+            )
 
-        #ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
-        ax.set_xlabel('Off Target Signaling', fontsize=12)
-        ax.set_ylabel('Treg Signaling', fontsize=12)
+        # ax.set(xlabel='Treg Signaling',ylabel='Off Target Signaling')
+        ax.set_xlabel("Off Target Signaling", fontsize=12)
+        ax.set_ylabel("Treg Signaling", fontsize=12)
         ax.legend()
 
-    plotSignals(['WT', 'R38Q/H16N'], ax[0])
-    plotSignals(['WT', 'Live/Dead'], ax[1])
-    plotSignals(['R38Q/H16N', 'Live/Dead'], ax[2])
-    f.suptitle('Treg vs. Off Target Signaling Varing Dose Concentration', fontsize=18)
+    plotSignals(["WT", "R38Q/H16N"], ax[0])
+    plotSignals(["WT", "Live/Dead"], ax[1])
+    plotSignals(["R38Q/H16N", "Live/Dead"], ax[2])
+    f.suptitle("Treg vs. Off Target Signaling Varing Dose Concentration", fontsize=18)
 
     return f
 
 
 def cytBindingModel(counts, doseVec, val, mut, x=False, date=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
-    #mut = mut
-    #doseVec = np.array([0.1])
+    # mut = mut
+    # doseVec = np.array([0.1])
     recCount = np.ravel(counts)
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
 
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.power(
+        np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1
+    )
 
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
@@ -162,9 +238,13 @@ def cytBindingModel(counts, doseVec, val, mut, x=False, date=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            output[i] = polyc(dose / (val), np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(
+                dose / (val), np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs
+            )[0][1]
         else:
-            output[i] = polyc(dose / (val), getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(
+                dose / (val), getKxStar(), recCount, [[val, val]], [1.0], Affs
+            )[0][1]
 
     return output
 
@@ -174,8 +254,8 @@ def bindingCalc(df, targCell, offTCells, doseVec, val, mut):
     targetBound = 0
     offTargetBound = 0
 
-    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD25')]
-    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'CD122')]
+    cd25DF = df.loc[(df.Type == "Standard") & (df.Epitope == "CD25")]
+    cd122DF = df.loc[(df.Type == "Standard") & (df.Epitope == "CD122")]
 
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
@@ -194,8 +274,8 @@ def bindingCalc(df, targCell, offTCells, doseVec, val, mut):
 def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
     """Runs binding model for a given mutein, valency, dose, and cell type."""
 
-    mut = 'R38Q/H16N'
-    #doseVec = np.array([0.1])
+    mut = "R38Q/H16N"
+    # doseVec = np.array([0.1])
 
     recXaff = np.power(10, recXaff)
 
@@ -218,9 +298,18 @@ def cytBindingModel_bispec(counts, doseVec, recXaff, val, x=False):
 
     for i, dose in enumerate(doseVec):
         if x:
-            output[i] = polyc(dose / (val), np.power(10, x[0]), recCount, [[val, val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(
+                dose / (val),
+                np.power(10, x[0]),
+                recCount,
+                [[val, val, val]],
+                [1.0],
+                Affs,
+            )[0][1]
         else:
-            output[i] = polyc(dose / (val), getKxStar(), recCount, [[val, val, val]], [1.0], Affs)[0][1]
+            output[i] = polyc(
+                dose / (val), getKxStar(), recCount, [[val, val, val]], [1.0], Affs
+            )[0][1]
 
     return output
 
@@ -230,8 +319,8 @@ def bindingCalc_bispec(df, targCell, offTCells, doseVec, val):
     targetBound = 0
     offTargetBound = 0
 
-    cd25DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'IL2RA')]
-    cd122DF = df.loc[(df.Type == 'Standard') & (df.Epitope == 'IL2RB')]
+    cd25DF = df.loc[(df.Type == "Standard") & (df.Epitope == "IL2RA")]
+    cd122DF = df.loc[(df.Type == "Standard") & (df.Epitope == "IL2RB")]
 
     for i, cd25Count in enumerate(cd25DF[targCell].item()):
         cd122Count = cd122DF[targCell].item()[i]
