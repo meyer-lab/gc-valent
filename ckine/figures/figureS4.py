@@ -77,7 +77,7 @@ def makeFigure():
         selectedDF['Type'] = 'Epitope'
         selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
-        optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, epitope))
+        optSelectivity = 1 / (optimizeDesignSurf(targCell, offTCells, selectedDF, epitope))
         epitopesDF.loc[epitopesDF['Epitope'] == epitope, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))

@@ -91,7 +91,7 @@ def makeFigure():
         selectedDF = pd.concat([selectedDF, standardDF])
         selectedDF.reset_index()
         # New form
-        optSelectivity = 1 / (optimizeDesign(targCell, offTCells, selectedDF, Gene))
+        optSelectivity = 1 / (optimizeDesignRNA(targCell, offTCells, selectedDF, Gene))
         GenesDF.loc[GenesDF['Gene'] == Gene, 'Selectivity'] = optSelectivity  # Store selectivity in DF to be used for plots
 
     baseSelectivity = 1 / (selecCalc(standardDF, targCell, offTCells))
@@ -193,7 +193,7 @@ def minSelecFunc(x, selectedDF, targCell, offTCells, Gene):
     return (offTargetBound) / (targetBound)
 
 
-def optimizeDesign(targCell, offTcells, selectedDF, Gene):
+def optimizeDesignRNA(targCell, offTcells, selectedDF, Gene):
     """ A more general purpose optimizer """
     if targCell == "NK":
         X0 = [6.0, 8]
