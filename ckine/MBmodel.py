@@ -223,3 +223,30 @@ def cytBindingModelLD(mut, val, doseVec, cellType, x=False, date=False):
         else:
             output *= convDict.loc[(convDict.Date == date) & (convDict.Cell == cellType)].Scale.values
     return output
+
+
+def cytBindingModelIL2(counts, x=False, date=False):
+    """Runs binding model for a given mutein, valency, dose, and cell type."""
+    mut = 'IL2'
+    val = 1
+    doseVec = np.array([0.1])
+    recCount = np.ravel(counts)
+
+    mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
+    Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.reshape(Affs, (1, -1))
+    Affs = np.repeat(Affs, 2, axis=0)
+    np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
+
+    if doseVec.size == 1:
+        doseVec = np.array([doseVec])
+    output = np.zeros(doseVec.size)
+
+    for i, dose in enumerate(doseVec):
+        if x:
+            output[i] = polyc(dose / 1e9, np.power(10, x[0]), recCount, [[val, val]], [1.0], Affs)[0][1]
+        else:
+            output[i] = polyc(dose / 1e9, getKxStar(), recCount, [[val, val]], [1.0], Affs)[0][1]  # IL2RB binding only
+
+    return output

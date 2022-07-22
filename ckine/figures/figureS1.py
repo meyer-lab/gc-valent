@@ -70,9 +70,9 @@ def makeFigure():
     plt.grid()
 
     # Gating for live cells
-    sample1A, unstained, isotype = importF("4-23", "1", "A", 1, "IL2R", None)
-    sample2B, unstained, isotype = importF("4-23", "1", "B", 2, "IL2R", None)
-    sample3C, unstained, isotype = importF("4-23", "1", "C", 3, "IL2R", None)
+    sample1A, _, _ = importF("4-23", "1", "A", 1, "IL2R", None)
+    sample2B, _, _ = importF("4-23", "1", "B", 2, "IL2R", None)
+    sample3C, _, _ = importF("4-23", "1", "C", 3, "IL2R", None)
     panel1 = sample1A.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL1-H', 'VL1-H', 'BL3-H']).subsample(0.2)
     panel2 = sample2B.transform("tlog", channels=['VL4-H', 'BL3-H']).subsample(0.2)
     panel3 = sample3C.transform("tlog", channels=['VL6-H', 'VL4-H', 'BL3-H']).subsample(0.2)

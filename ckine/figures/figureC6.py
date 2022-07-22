@@ -1,5 +1,5 @@
 """
-This creates Figure 4, fitting of multivalent binding model to Gc Data.
+This creates Figure 6, assymmetric ligand design and results.
 """
 
 import os
@@ -23,8 +23,6 @@ def makeFigure():
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    ligands = modelDF.Ligand.unique()
-    cells = ["Treg", "Thelper", "NK", "CD8"]
 
     ligandPlot(modelDF, "Treg", ax[3], live_dead=True)
     ligandPlot(modelDF, "Thelper", ax[4], live_dead=True)
