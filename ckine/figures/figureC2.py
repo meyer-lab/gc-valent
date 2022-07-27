@@ -24,11 +24,13 @@ def makeFigure():
     axlabel = copy(ax)
     del axlabel[1]
     del axlabel[11]
+    del axlabel[18]
     subplotLabel(axlabel)
     ax[0].axis("off")
     ax[1].axis("off")
     ax[11].axis("off")
     ax[12].axis("off")
+    ax[18].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
@@ -54,7 +56,7 @@ def makeFigure():
     Wass_KL_Dist(ax[13:15], cellTarget, 10)
     Wass_KL_Dist(ax[15:17], cellTarget, 10, RNA=True)
     CITE_RIDGE(ax[17], cellTarget)
-    CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
+    # CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
 
     return f
 

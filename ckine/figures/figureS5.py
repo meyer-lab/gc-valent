@@ -17,14 +17,14 @@ path_here = dirname(dirname(__file__))
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((4, 6), (2, 2), multz={2: 1})
+    ax, f = getSetup((6, 5), (1, 2))
     GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
     GenesDF = pd.concat([GenesDF, pd.DataFrame({"Gene": ["IL2RB"]})], ignore_index=True)
     CITE_DF = importRNACITE()
 
     cellTarget = "Treg"
     RIDGEdf = CITE_RIDGE(ax[0], cellTarget, RNA=True)
-    SVMdf = CITE_SVM(ax[1], cellTarget, sampleFrac=0.05, RNA=True)
+    #SVMdf = CITE_SVM(ax[1], cellTarget, sampleFrac=0.05, RNA=True)
     cellCount = 3000
 
     # Get conv factors, average them
