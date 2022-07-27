@@ -25,6 +25,7 @@ def makeFigure():
     optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
 
     modelDF = runFullModelMeyer().reset_index()
+    modelDF = modelDF.loc[modelDF.Date == "6/25/22"]
 
     ligandPlot(modelDF, "Treg", ax[6], live_dead=False)
     ligandPlot(modelDF, "Thelper", ax[7], live_dead=False)
