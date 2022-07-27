@@ -23,7 +23,7 @@ def makeFigure():
 
     #make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    modelDF = modelDF.loc[modelDF.Date == "7/22/22"]
+    modelDF = modelDF.loc[modelDF.Date == "6/25/22"]
 
     ligandPlot(modelDF, "Treg", ax[3], live_dead=True)
     ligandPlot(modelDF, "Thelper", ax[4], live_dead=True)
