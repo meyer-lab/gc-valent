@@ -150,16 +150,16 @@ def pop_gate(sample, cell_type, gateDF, date):
     return pop_sample
 
 
-lig_dict = {"01": ["R38Q/H16N", 1],
-            "02": ["R38Q/H16N", 1],
-            "03": ["R38Q/H16N", 2],
-            "04": ["R38Q/H16N", 2],
-            "05": ["R38Q/H16N", 4],
-            "06": ["R38Q/H16N", 4],
-            "07": ["Live/Dead", 2],
-            "08": ["Live/Dead", 2],
-            "09": ["Live/Dead", 4],
-            "10": ["Live/Dead", 4]}
+lig_dict = {"01": ["R38Q/H16N", 1, 1],
+            "02": ["R38Q/H16N", 1, 2],
+            "03": ["R38Q/H16N", 2, 1],
+            "04": ["R38Q/H16N", 2, 2],
+            "05": ["R38Q/H16N", 4, 1],
+            "06": ["R38Q/H16N", 4, 2],
+            "07": ["Live/Dead", 2, 1],
+            "08": ["Live/Dead", 2, 2],
+            "09": ["Live/Dead", 4, 1],
+            "10": ["Live/Dead", 4, 2]}
 
 dose_dict = {"A": 50, "B": 12.954, "C": 3.355, "D": 0.869, "E": 0.2252, "F": 0.058, "G": 0.01512, "H": 0.00392, "I": 0.001}
 
@@ -169,8 +169,8 @@ def make_flow_df(subtract=True):
     columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
     rows = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
     rowminus = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-    dates = ["6_25_22", "7_22_22"]
-    datesFormat = ["6/25/22", "7/22/22"]
+    dates = ["6_25_22", "7_22_22", "8_10_22"]
+    datesFormat = ["6/25/22", "7/22/22", "8/10/22"]
 
     cell_types = ["Treg", "Thelper", "CD8", "NK"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates.csv"))
@@ -187,7 +187,11 @@ def make_flow_df(subtract=True):
                     mean = pop_sample.data["pSTAT5"]
                     mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
                     MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1],
-                                        "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[j]})])
+                                        "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[j], "Replicate": lig_dict[row][2]})])
+    MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 12.954) | (MeyerDF.Replicate != 2) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
+    MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 0.869) | (MeyerDF.Replicate != 2) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
+    MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 0.2252) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
+
     MeyerDF = MeyerDF.groupby(["Ligand", "Valency", "Dose", "Cell", "Date"]).pSTAT5.mean().reset_index()
 
     untreatedDF = pd.DataFrame()
@@ -201,12 +205,15 @@ def make_flow_df(subtract=True):
             untreatedDF = pd.concat([untreatedDF, pd.DataFrame({"Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[i]})])
 
     for date in datesFormat:
-        for ligand in MeyerDF.Ligand.unique():
-            for valency in MeyerDF.loc[MeyerDF.Ligand == ligand].Valency.unique():
-                for dose in MeyerDF.Dose.unique():
-                    for cell in MeyerDF.Cell.unique():
+        for cell in MeyerDF.Cell.unique():
+            for ligand in MeyerDF.Ligand.unique():
+                for valency in MeyerDF.loc[MeyerDF.Ligand == ligand].Valency.unique():
+                    for dose in MeyerDF.Dose.unique():
                         MeyerDF.loc[(MeyerDF.Valency == valency) & (MeyerDF.Ligand == ligand) & (MeyerDF.Cell == cell) & (
                             MeyerDF.Dose == dose) & (MeyerDF.Date == date), "pSTAT5"] -= untreatedDF.loc[(untreatedDF.Cell == cell) & (untreatedDF.Date == date)].pSTAT5.values
-    MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
+            MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
+            MeyerDF.loc[(MeyerDF.Cell == cell) & (MeyerDF.Date == date), "pSTAT5"] -= MeyerDF.loc[(MeyerDF.Cell == cell) & (
+                MeyerDF.Dose <= 0.00392) & (MeyerDF.Date == date)].pSTAT5.mean()
+
     MeyerDF.to_csv(join(path_here, "ckine/data/Meyer_Flow.csv"))
     return MeyerDF

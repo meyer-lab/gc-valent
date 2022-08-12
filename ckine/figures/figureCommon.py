@@ -365,6 +365,7 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
 
 palette_dict = {"R38Q/H16N": "darkorchid",
                 "Live/Dead": "Orange"}
+valency_dict = {1: "k", 2: "teal", 4: "purple"}
 
 
 def ligandPlot(DF, cell, ax, live_dead=False):
@@ -373,8 +374,15 @@ def ligandPlot(DF, cell, ax, live_dead=False):
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "R38Q/H16N")]
     else:
         DF = DF.loc[(DF.Cell == cell) & (DF.Ligand != "Live/Dead")]
-    sns.lineplot(data=DF, x="Dose", y="Predicted", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
-    sns.scatterplot(data=DF, x="Dose", y="Experimental", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+
+    plotDF = DF[["Dose", "Valency", "Ligand", "Date", "Experimental", "Predicted"]].copy()
+    for date in DF.Date.unique():
+        maxobs = DF.loc[(DF.Date == date), "Experimental"].max()
+        plotDF.loc[plotDF.Date == date, "Experimental"] = DF.loc[(DF.Date == date)]["Experimental"].values / maxobs
+        plotDF.loc[plotDF.Date == date, "Predicted"] = DF.loc[(DF.Date == date)]["Predicted"].values / maxobs
+    
+    sns.lineplot(data=plotDF, x="Dose", y="Predicted", hue="Valency", palette=valency_dict, ax=ax)
+    sns.scatterplot(data=plotDF, x="Dose", y="Experimental", hue="Valency", style="Date", palette=valency_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cell)
 
 
@@ -387,17 +395,27 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     else:
         DF = DF.loc[(DF.Ligand != "Live/Dead")]
 
+    for date in DF.Date.unique():
+        max1 = DF.loc[(DF.Date == date) & (DF.Cell == cell1), "Experimental"].max()
+        max2 = DF.loc[(DF.Date == date) & (DF.Cell == cell2), "Experimental"].max()
+        DF.loc[(DF.Date == date) & (DF.Cell == cell1), "Experimental"] /= max1
+        DF.loc[(DF.Date == date) & (DF.Cell == cell1), "Predicted"] /= max1
+        DF.loc[(DF.Date == date) & (DF.Cell == cell2), "Experimental"] /= max2
+        DF.loc[(DF.Date == date) & (DF.Cell == cell2), "Predicted"] /= max2
+
     for dose in DF.Dose.unique():
         for ligand in DF.Ligand.unique():
             for valency in DF.loc[DF.Ligand == ligand].Valency.unique():
-                expRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].Experimental.values / \
-                    (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].Experimental.values + 50)
-                predRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1)].Predicted.values / \
-                    (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2)].Predicted.values + 50)
-                expRatioDF = pd.concat([expRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": expRatio})])
-                predRatioDF = pd.concat([predRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": predRatio})])
+                for date in DF.Date.unique():
+                    expRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1) & (DF.Date == date)].Experimental.values / \
+                        (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2) & (DF.Date == date)].Experimental.values + 0.1)
+                    predRatio = DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell1) & (DF.Date == date)].Predicted.values / \
+                        (DF.loc[(DF.Ligand == ligand) & (DF.Dose == dose) & (DF.Valency == valency) & (DF.Cell == cell2) & (DF.Date == date)].Predicted.values + 0.1)
+                    expRatioDF = pd.concat([expRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": expRatio, "Date": date})])
+                    predRatioDF = pd.concat([predRatioDF, pd.DataFrame({"Dose": dose, "Ligand": ligand, "Valency": valency, "Ratio": predRatio, "Date": date})])
 
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
-    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", palette=palette_dict, ax=ax)
+    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", palette=valency_dict, ax=ax)
+    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Date", palette=valency_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")

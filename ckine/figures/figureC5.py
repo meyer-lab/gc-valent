@@ -10,6 +10,7 @@ from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from .figureCommon import subplotLabel, getSetup, ligandPlot, ligand_ratio_plot
 from ..MBmodel import polyc, getKxStar, runFullModelMeyer
 from ..imports import getBindDict, importReceptors
+from ..flow_meyer import make_flow_df
 
 path_here = dirname(dirname(__file__))
 rcParams['svg.fonttype'] = 'none'
@@ -24,8 +25,9 @@ def makeFigure():
     optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
     optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
 
+    #make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    modelDF = modelDF.loc[modelDF.Date == "6/25/22"]
+    modelDF = modelDF.loc[modelDF.Date == "8/10/22"]
 
     ligandPlot(modelDF, "Treg", ax[6], live_dead=False)
     ligandPlot(modelDF, "Thelper", ax[7], live_dead=False)
