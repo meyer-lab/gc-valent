@@ -188,6 +188,7 @@ def make_flow_df(subtract=True):
                     mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
                     MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1],
                                         "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[j], "Replicate": lig_dict[row][2]})])
+    # Remove cell-deficient wells
     MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 12.954) | (MeyerDF.Replicate != 2) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
     MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 0.869) | (MeyerDF.Replicate != 2) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
     MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 0.2252) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
@@ -211,6 +212,7 @@ def make_flow_df(subtract=True):
                     for dose in MeyerDF.Dose.unique():
                         MeyerDF.loc[(MeyerDF.Valency == valency) & (MeyerDF.Ligand == ligand) & (MeyerDF.Cell == cell) & (
                             MeyerDF.Dose == dose) & (MeyerDF.Date == date), "pSTAT5"] -= untreatedDF.loc[(untreatedDF.Cell == cell) & (untreatedDF.Date == date)].pSTAT5.values
+            # Remove persistent baseline values
             MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
             MeyerDF.loc[(MeyerDF.Cell == cell) & (MeyerDF.Date == date), "pSTAT5"] -= MeyerDF.loc[(MeyerDF.Cell == cell) & (
                 MeyerDF.Dose <= 0.00392) & (MeyerDF.Date == date)].pSTAT5.mean()

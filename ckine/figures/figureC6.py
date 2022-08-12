@@ -21,7 +21,7 @@ def makeFigure():
     ax, f = getSetup((10, 9), (4, 4))
     subplotLabel(ax)
 
-    #make_flow_df()
+    # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
     #modelDF = modelDF.loc[modelDF.Date == "8/10/22"]
 

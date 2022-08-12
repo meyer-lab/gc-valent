@@ -380,7 +380,7 @@ def ligandPlot(DF, cell, ax, live_dead=False):
         maxobs = DF.loc[(DF.Date == date), "Experimental"].max()
         plotDF.loc[plotDF.Date == date, "Experimental"] = DF.loc[(DF.Date == date)]["Experimental"].values / maxobs
         plotDF.loc[plotDF.Date == date, "Predicted"] = DF.loc[(DF.Date == date)]["Predicted"].values / maxobs
-    
+
     sns.lineplot(data=plotDF, x="Dose", y="Predicted", hue="Valency", palette=valency_dict, ax=ax)
     sns.scatterplot(data=plotDF, x="Dose", y="Experimental", hue="Valency", style="Date", palette=valency_dict, ax=ax)
     ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cell)
