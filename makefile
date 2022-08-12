@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-flist = C1 C2 C3 C4 C5 S2 S3 S4 S5 S6
+flist = C1 C2 C3 C4 C5 S2 S3 S4 S5
 
 .PHONY: clean test all
 
