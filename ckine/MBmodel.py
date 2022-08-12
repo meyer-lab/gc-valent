@@ -232,7 +232,7 @@ def cytBindingModelIL2(counts, x=False, date=False):
     doseVec = np.array([0.1])
     recCount = np.ravel(counts)
 
-    mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
+    mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
     Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))

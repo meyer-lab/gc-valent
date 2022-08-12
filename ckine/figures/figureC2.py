@@ -20,7 +20,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((14, 18), (6, 4), multz={0: 2, 4: 1, 8: 1, 12: 1})
+    ax, f = getSetup((10, 13), (6, 4), multz={0: 2, 4: 1, 8: 1, 12: 1})
     axlabel = copy(ax)
     del axlabel[1]
     del axlabel[11]
@@ -53,8 +53,7 @@ def makeFigure():
     cellTarget = "Treg"
     Wass_KL_Dist(ax[13:15], cellTarget, 10)
     Wass_KL_Dist(ax[15:17], cellTarget, 10, RNA=True)
-    CITE_RIDGE(ax[17], cellTarget)
-    CITE_SVM(ax[18], cellTarget, sampleFrac=0.2)
+    #CITE_RIDGE(ax[17], cellTarget)
 
     return f
 
@@ -111,11 +110,11 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, pseudo=0.1, legend=False
     maxLineDF, doseLineDF = maxLineDF.reset_index(), doseLineDF.reset_index()
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", hue="Ligand", style="Valency", ax=ax[1], palette=ligDict, legend=False)
     sns.lineplot(data=maxLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", style="Valency", ax=ax[1], color="k", linewidth=1., legend=False)
-    ax[1].set(xscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(0, None), ylabel=cell1 + " to " + cell2 + " Ratio Max Magnitude")
+    ax[1].set(xscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(0, None), ylabel=cell1 + "/" + cell2 + " Max Magnitude")
 
     sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", hue="Ligand", style="Valency", ax=ax[2], palette=ligDict, legend=False)
     sns.lineplot(data=doseLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", style="Valency", ax=ax[2], color="k", linewidth=1., legend=False)
-    ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2), ylabel=cell1 + " to " + cell2 + " Ratio Max Dose")
+    ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2), ylabel=cell1 + "/" + cell2 + " Max Dose")
 
 
 def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell, pseudo=0.2):
