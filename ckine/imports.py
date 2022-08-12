@@ -110,6 +110,7 @@ def import_pstat_all(singleCell=False, updateLigs=True):
 def import_pstat_all_meyer():
     """ Loads CSV file containing all WT and Mutein pSTAT responses and moments"""
     respDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow.csv"), encoding="latin1")
+    respDF = respDF.loc[respDF.Date != "7/22/22"]
     return respDF
 
 

@@ -21,9 +21,8 @@ def makeFigure():
     ax, f = getSetup((10, 9), (4, 4))
     subplotLabel(ax)
 
-    #make_flow_df()
+    # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    modelDF = modelDF.loc[modelDF.Date == "6/25/22"]
 
     ligandPlot(modelDF, "Treg", ax[3], live_dead=True)
     ligandPlot(modelDF, "Thelper", ax[4], live_dead=True)
