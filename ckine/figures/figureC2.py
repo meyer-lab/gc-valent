@@ -51,9 +51,9 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     cellTarget = "Treg"
-    #Wass_KL_Dist(ax[10:12], cellTarget, 10)
-    #Wass_KL_Dist(ax[12:14], cellTarget, 10, RNA=True)
-    #CITE_RIDGE(ax[17], cellTarget)
+    Wass_KL_Dist(ax[10:12], cellTarget, 10)
+    Wass_KL_Dist(ax[12:14], cellTarget, 10, RNA=True)
+    CITE_RIDGE(ax[17], cellTarget)
 
     return f
 

@@ -22,9 +22,9 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((8, 12), (5, 3))
     subplotLabel(ax)
-    #optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
-    #optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
-    #optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
+    optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
+    optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
+    optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
