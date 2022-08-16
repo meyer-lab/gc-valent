@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 from os.path import join
 from .figureCommon import subplotLabel, getSetup, getLigDict, ligandPlot, ligand_ratio_plot
 from ..MBmodel import getKxStar, polyc, runFullModelMeyer
@@ -13,6 +14,7 @@ from ..flow_meyer import make_flow_df
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
+plt.rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():

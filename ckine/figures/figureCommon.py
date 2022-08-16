@@ -40,7 +40,7 @@ matplotlib.rcParams["legend.borderpad"] = 0.35
 dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
 
 
-def getSetup(figsize, gridd, multz=None, empts=None):
+def getSetup(figsize, gridd, multz=None, empts=None, constrained=True):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid", font_scale=0.7, color_codes=True, palette="colorblind", rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6})
 
@@ -52,7 +52,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
         multz = dict()
 
     # Setup plotting space and grid
-    f = plt.figure(figsize=figsize, constrained_layout=True)
+    f = plt.figure(figsize=figsize, constrained_layout=constrained)
     gs1 = gridspec.GridSpec(*gridd, figure=f)
 
     # Get list of axis objects
@@ -365,7 +365,11 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
 
 palette_dict = {"R38Q/H16N": "darkorchid",
                 "Live/Dead": "Orange"}
-valency_dict = {1: "k", 2: "teal", 4: "purple"}
+valency_dict = {1: "royalblue", 2: "goldenrod", 4: "forestgreen"}
+
+
+def get_valency_dict():
+    return valency_dict
 
 
 def ligandPlot(DF, cell, ax, live_dead=False):

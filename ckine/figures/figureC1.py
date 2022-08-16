@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import numpy as np
+import matplotlib.pyplot as plt
 from copy import copy
 from scipy.optimize import least_squares
 from sklearn.decomposition import PCA
@@ -15,6 +16,7 @@ from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, g
 from ..imports import import_pstat_all
 
 path_here = os.path.dirname(os.path.dirname(__file__))
+plt.rcParams['svg.fonttype'] = 'none'
 ligDict = getLigDict()
 limDict = get_doseLimDict()
 cellDict = get_cellTypeDict()

@@ -1,17 +1,19 @@
 """
 This creates Figure S4, used to find optimal epitope and epitope classifier via binding model.
 """
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
 from os.path import dirname, join
 from .figureCommon import getSetup
 from ..imports import importCITE, importReceptors
 from ..MBmodel import polyc, getKxStar, cytBindingModelIL2
 from scipy.optimize import minimize, Bounds
-import pandas as pd
-import seaborn as sns
-import numpy as np
+
 
 path_here = dirname(dirname(__file__))
-
+plt.rcParams['svg.fonttype'] = 'none'
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
