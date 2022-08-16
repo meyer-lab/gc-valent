@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import numpy as np
+import matplotlib.pyplot as plt
 from copy import copy
 from scipy.optimize import least_squares
 from sklearn.decomposition import PCA
@@ -15,6 +16,7 @@ from .figureCommon import subplotLabel, getSetup, getLigDict, get_doseLimDict, g
 from ..imports import import_pstat_all
 
 path_here = os.path.dirname(os.path.dirname(__file__))
+plt.rcParams['svg.fonttype'] = 'none'
 ligDict = getLigDict()
 limDict = get_doseLimDict()
 cellDict = get_cellTypeDict()
@@ -132,9 +134,10 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
     respDF = respDF.groupby(["Ligand", "Valency", "Cell", "Dose"]).Mean.mean().reset_index()
     hillDF["pSTAT"] /= maxobs
     respDF["Mean"] /= maxobs
-    sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1, 2.5))
+    sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1.5, 2.5))
     sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", size="Valency", ax=ax, legend=False, palette=ligDict)
-    ax.set(xscale="log", xlim=(1e-4, 1e2), title=cell + " at " + str(time) + " hours", ylim=(0, 1.2))
+    ax.set(xscale="log", xlim=(1e-4, 1e2), title=cell + " at " + str(time) + " hours", ylim=(0, 1.2), xlabel="Dose (nM)")
+    ax.set(xticks=[0.0001, 0.01, 1, 100], yticks=[0, 0.5, 1])
     if legend:
         h, l = ax.get_legend_handles_labels()
         ax.legend(h[-3:], l[-3:])

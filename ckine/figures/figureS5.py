@@ -2,18 +2,19 @@
 This creates Figure S5, RNA ID with SVM and RNA optimized Gene ID with Model
 """
 
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
 from os.path import dirname, join
 from .figureCommon import getSetup, CITE_RIDGE, CITE_SVM
 from ..imports import importRNACITE, importReceptors
 from ..MBmodel import polyc, getKxStar, cytBindingModelIL2
 from scipy.optimize import minimize, Bounds
-import pandas as pd
-import seaborn as sns
-import numpy as np
 
 
 path_here = dirname(dirname(__file__))
-
+plt.rcParams['svg.fonttype'] = 'none'
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""

@@ -5,7 +5,8 @@ from os.path import dirname
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import rcParams
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
 from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from .figureCommon import subplotLabel, getSetup, ligandPlot, ligand_ratio_plot
 from ..MBmodel import polyc, getKxStar, runFullModelMeyer
@@ -13,7 +14,7 @@ from ..imports import getBindDict, importReceptors
 from ..flow_meyer import make_flow_df
 
 path_here = dirname(dirname(__file__))
-rcParams['svg.fonttype'] = 'none'
+plt.rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():
@@ -21,12 +22,13 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((8, 12), (5, 3))
     subplotLabel(ax)
-    optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
-    optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
-    optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
+    #optimizeDesign([ax[0], ax[3]], ["Treg"], ["Thelper", "NK", "CD8"])
+    #optimizeDesign([ax[1], ax[4]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
+    #optimizeDesign([ax[2], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
+    print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
 
     ligandPlot(modelDF, "Treg", ax[6], live_dead=False)
     ligandPlot(modelDF, "Thelper", ax[7], live_dead=False)

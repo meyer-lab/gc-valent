@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 
 path_here = os.path.dirname(os.path.dirname(__file__))
+plt.rcParams['svg.fonttype'] = 'none'
 
 
 def makeFigure():

@@ -40,7 +40,7 @@ matplotlib.rcParams["legend.borderpad"] = 0.35
 dosemat = np.array([84, 28, 9.333333, 3.111, 1.037037, 0.345679, 0.115226, 0.038409, 0.012803, 0.004268, 0.001423, 0.000474])
 
 
-def getSetup(figsize, gridd, multz=None, empts=None):
+def getSetup(figsize, gridd, multz=None, empts=None, constrained=True):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid", font_scale=0.7, color_codes=True, palette="colorblind", rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6})
 
@@ -52,7 +52,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
         multz = dict()
 
     # Setup plotting space and grid
-    f = plt.figure(figsize=figsize, constrained_layout=True)
+    f = plt.figure(figsize=figsize, constrained_layout=constrained)
     gs1 = gridspec.GridSpec(*gridd, figure=f)
 
     # Get list of axis objects
@@ -107,7 +107,7 @@ def genFigure():
     if sys.argv[1] == 'C2':
         # Overlay Figure 2 cartoon
         overlayCartoon(fdir + 'figureC2.svg',
-                       './ckine/graphics/selectivityCartoon.svg', 1200, 350, scalee=0.03)
+                       './ckine/graphics/selectivityCartoon.svg', 1200, 350, scalee=0.02)
 
         # overlayCartoon(fdir + 'figureC2.svg',
         #               './ckine/graphics/citeCartoon.svg', 2300, 20500, scalee=0.043)
@@ -188,7 +188,7 @@ def getLigDict():
     pSTATDF = import_pstat_all(True, False)
     ligands = pSTATDF.Ligand.unique()
     #palette = sns.color_palette("Spectral", ligands.size)
-    palette = sns.color_palette(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a"])
+    palette = sns.color_palette(["royalblue", "#1f78b4", "limegreen", "#33a02c", "#fb9a99", "#e31a1c", "orange", "#ff7f00", "deeppink", "#6a3d9a"])
 
     ligDict = {}
     for i, ligand in enumerate(ligands):
@@ -365,7 +365,11 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
 
 palette_dict = {"R38Q/H16N": "darkorchid",
                 "Live/Dead": "Orange"}
-valency_dict = {1: "k", 2: "teal", 4: "purple"}
+valency_dict = {1: "royalblue", 2: "goldenrod", 4: "limegreen"}
+
+
+def get_valency_dict():
+    return valency_dict
 
 
 def ligandPlot(DF, cell, ax, live_dead=False):
@@ -380,10 +384,10 @@ def ligandPlot(DF, cell, ax, live_dead=False):
         maxobs = DF.loc[(DF.Date == date), "Experimental"].max()
         plotDF.loc[plotDF.Date == date, "Experimental"] = DF.loc[(DF.Date == date)]["Experimental"].values / maxobs
         plotDF.loc[plotDF.Date == date, "Predicted"] = DF.loc[(DF.Date == date)]["Predicted"].values / maxobs
-
+    plotDF = plotDF.replace(cellTypeDict)
     sns.lineplot(data=plotDF, x="Dose", y="Predicted", hue="Valency", palette=valency_dict, ax=ax)
     sns.scatterplot(data=plotDF, x="Dose", y="Experimental", hue="Valency", style="Date", palette=valency_dict, ax=ax)
-    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cell)
+    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cellTypeDict[cell], xticks=[0.001, 0.01, 0.1, 1, 10, 100], yticks=[0, 0.5, 1])
 
 
 def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
@@ -418,4 +422,5 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     predRatioDF = predRatioDF.reset_index()
     sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", palette=valency_dict, ax=ax)
     sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Date", palette=valency_dict, ax=ax)
-    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cell1 + " to " + cell2 + " Ratio")
+    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
+    ax.set(xticks=[0.001, 0.01, 0.1, 1, 10, 100], yticks=[0, 2, 4, 6, 8, 10])

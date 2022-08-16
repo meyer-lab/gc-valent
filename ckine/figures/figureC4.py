@@ -10,33 +10,33 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
-from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, get_cellTypeDict
+from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, get_cellTypeDict, get_valency_dict
 from ..PCA import nllsq_EC50
 from ..MBmodel import getKxStar, runFullModel, cytBindingModel, polyc
 from ..imports import getBindDict, importReceptors
 
-cellDict = get_cellTypeDict()
 path_here = os.path.dirname(os.path.dirname(__file__))
+plt.rcParams['svg.fonttype'] = 'none'
 cellTypeDict = get_cellTypeDict()
 doseLimDict = get_doseLimDict()
+cellDict = get_cellTypeDict()
+valDict = get_valency_dict()
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 9), (4, 4), multz={9: 1})
+    ax, f = getSetup((10, 6.75), (3, 4), constrained=True)
     axlabel = copy(ax)
     del axlabel[1]
     del axlabel[1]
     del axlabel[1]
-    del axlabel[2]
     subplotLabel(axlabel)
 
     ax[0].axis("off")
     ax[1].axis("off")
     ax[2].axis("off")
     ax[3].axis("off")
-    ax[5].axis("off")
 
     # minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
     # print(minSolved)
@@ -44,23 +44,17 @@ def makeFigure():
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
 
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
-    Pred_Exp_plot(ax[4], modelDF)
-    legend = ax[4].get_legend()
-    labels = (x.get_text() for x in legend.get_texts())
-    ax[5].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 8.5})  # use this to place universal legend later
-    ax[4].get_legend().remove()
 
-    R2_Plot_Cells(ax[6], modelDF)
-    R2_Plot_Ligs(ax[7], modelDF)
-    MonVsBivalent(ax[8], modelDF, ligs=True)
+    
+    R2_Plot_Cells(ax[4], modelDF)
+    R2_Plot_Ligs(ax[5], modelDF)
+    R2_Plot_Conc(ax[6], modelDF)
+    timePlot(ax[7])
 
-    R2_Plot_Conc(ax[9], modelDF)
-    timePlot(ax[10])
-
-    IL2RaEffPlot(ax[11], modelDF, "Treg", IL2RBaff=1e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]), labels=["10", "1", "0.1"])
-    IL2RaEffPlot(ax[12], modelDF, "NK", IL2RBaff=1e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]), labels=["10", "1", "0.1"])
-    recSigPlot(ax[13], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=1e8, IL2Ra_aff=1e8, label="10")
-    recSigPlot(ax[14], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=1e8, IL2Ra_aff=1e9, label="1")
+    IL2RaEffPlot(ax[8], modelDF, "Treg", IL2RBaff=1e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]), labels=["10", "1", "0.1"])
+    IL2RaEffPlot(ax[9], modelDF, "NK", IL2RBaff=1e8, IL2Ra_affs=np.array([1e8, 1e9, 1e10]), labels=["10", "1", "0.1"])
+    recSigPlot(ax[10], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=1e8, IL2Ra_aff=1e8, label="10")
+    recSigPlot(ax[11], modelDF, IL2RBrec=1000, IL2Rarecs=[100, 1000, 10000], IL2RBaff=1e8, IL2Ra_aff=1e9, label="1")
 
     return f
 
@@ -84,7 +78,7 @@ def R2_Plot_Cells(ax, df):
             accDF = pd.concat([accDF, pd.DataFrame({"Cell Type": [cell], "Valency": [val], "Accuracy": [r2]})])
 
     accDF = accDF.replace(cellDict)
-    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    sns.barplot(x="Cell Type", y="Accuracy", hue="Valency", data=accDF, palette=valDict, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
 
@@ -97,13 +91,9 @@ def R2_Plot_Ligs(ax, df):
             preds = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            if val == 1:
-                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand + " (Mono)"], "Valency": [val], "Accuracy": [r2]})])
-            else:
-                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand + " (Biv)"], "Valency": [val], "Accuracy": [r2]})])
-    sns.barplot(x="Ligand", y="Accuracy", data=accDF, color='k', ax=ax)
-    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+            accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]})])
+    sns.barplot(x="Accuracy", y="Ligand", data=accDF, hue="Valency", palette=valDict, ax=ax)
+    ax.set(xlim=(0, 1), xlabel=r"Accuracy ($R^2$)")
 
 
 def R2_Plot_Conc(ax, df):
@@ -116,7 +106,7 @@ def R2_Plot_Conc(ax, df):
             r2 = r2_score(exps, preds)
             accDF = pd.concat([accDF, pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]})])
     accDF = accDF.reset_index()
-    sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", size="Valency", data=accDF, ax=ax)
+    sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", palette=valDict, data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
 
 
@@ -235,7 +225,7 @@ def timePlot(ax):
             exps = df.loc[(df.Time == time[0]) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
             accDF = pd.concat([accDF, pd.DataFrame({"Time": time, "Valency": [val], "Accuracy": [r2]})])
-    sns.barplot(x="Time", y="Accuracy", hue="Valency", data=accDF, ax=ax)
+    sns.barplot(x="Time", y="Accuracy", hue="Valency", palette=valDict, data=accDF, ax=ax)
     ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 
@@ -263,7 +253,7 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs, labels):
                 outputDF = pd.concat([outputDF, pd.DataFrame({r"IL2Rα $K_D$ (nM)": labels[i], "Concentration": [dose], "Valency": [val], "Predicted pSTAT5 MFI": predVal})])
 
     outputDF = outputDF.reset_index()
-    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", size="Valency", hue=r"IL2Rα $K_D$ (nM)", ax=ax)
+    sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", hue="Valency", size=r"IL2Rα $K_D$ (nM)", palette=valDict, ax=ax)
     ax.set(xscale="log", ylim=doseLimDict[cellTypeDict[cell]], title=cellDict[cell])
 
 
@@ -286,5 +276,5 @@ def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
                 outputDF = pd.concat([outputDF, pd.DataFrame({r"IL2Rα Abundance": [alphaRec], "Concentration": [dose], "Valency": [val], "Active Binding Complexes": predVal})])
 
     outputDF = outputDF.reset_index()
-    sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", hue=r"IL2Rα Abundance", ax=ax, size="Valency")
+    sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", size=r"IL2Rα Abundance", hue="Valency", palette=valDict, ax=ax)
     ax.set(xscale="log", ylim=(0, IL2RBrec), title=(r"IL2Rα $K_D$ (nM) = " + label))

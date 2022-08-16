@@ -5,12 +5,15 @@ This creates Figure 3, tensor factorization of mutant and WT biv and monovalent 
 import os
 from copy import copy
 import seaborn as sns
+import matplotlib.pyplot as plt
 from .figureCommon import subplotLabel, getSetup, getLigDict
 from ..imports import import_pstat_all
 from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Time, plot_tFac_Conc, plot_tFac_Cells, facScatterPlot
 
 path_here = os.path.dirname(os.path.dirname(__file__))
+plt.rcParams['svg.fonttype'] = 'none'
 ligDict = getLigDict()
+
 
 
 def makeFigure():

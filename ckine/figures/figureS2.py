@@ -2,10 +2,11 @@
 This creates Figure S2, dose response of all IL-2 cytokines using binding model.
 """
 
-import numpy as np
+import matplotlib.pyplot as plt
 from .figureCommon import getSetup, plotDoseResponses
 from ..MBmodel import runFullModel
 
+plt.rcParams['svg.fonttype'] = 'none'
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""

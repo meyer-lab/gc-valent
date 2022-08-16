@@ -2,9 +2,11 @@
 This creates Figure S3, single cell analysis."""
 
 import numpy as np
+import matplotlib.pyplot as plt
 from .figureCommon import getSetup, plotDoseResponses
 from ..MBmodel import runFullModel
 
+plt.rcParams['svg.fonttype'] = 'none'
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
