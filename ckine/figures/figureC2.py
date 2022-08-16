@@ -22,7 +22,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((7.5, 13), (6, 3), multz={0: 1, 3: 1, 6: 1, 9: 1, 12: 1})
+    ax, f = getSetup((7.5, 13), (6, 3), multz={0: 1, 3: 1, 6: 1, 9: 1})
     axlabel = copy(ax)
     del axlabel[1]
     subplotLabel(axlabel)
@@ -51,9 +51,9 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     cellTarget = "Treg"
-    Wass_KL_Dist(ax[10:12], cellTarget, 10)
-    Wass_KL_Dist(ax[12:14], cellTarget, 10, RNA=True)
-    CITE_RIDGE(ax[17], cellTarget)
+    Wass_KL_Dist(ax[9:11], cellTarget, 10)
+    Wass_KL_Dist(ax[11:13], cellTarget, 10, RNA=True)
+    CITE_RIDGE(ax[13], cellTarget)
 
     return f
 
