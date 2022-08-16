@@ -7,9 +7,10 @@ import seaborn as sns
 import tensorly as tl
 from tensorly.decomposition import non_negative_parafac, non_negative_parafac_hals
 from copy import copy
-from .figures.figureCommon import get_cellTypeDict
+from .figures.figureCommon import get_cellTypeDict, get_valency_dict
 
 cellDict = get_cellTypeDict()
+valDict = get_valency_dict()
 
 
 def makeTensor(sigDF, Variance=False):
@@ -133,5 +134,5 @@ def facScatterPlot(ax, tFacDFLig):
             isoDF = scattDF.loc[(scattDF.Ligand == ligand) & (scattDF.Valency == valency)]
             scattDF = pd.concat([scattDF, pd.DataFrame({"Component 1 + 3": isoDF.loc[isoDF.Component == 1].Component_Val.values + isoDF.loc[isoDF.Component == 3].Component_Val.values,
                                                         "Component 2": isoDF.loc[isoDF.Component == 2].Component_Val.values, "Valency": valency})])
-    sns.scatterplot(data=scattDF, x="Component 1 + 3", y="Component 2", hue="Valency", style="Valency", size="Valency", ax=ax)
+    sns.scatterplot(data=scattDF, x="Component 1 + 3", y="Component 2", hue="Valency", style="Valency", size="Valency", palette=valDict, ax=ax)
     ax.set(xlim=(0, 0.8), ylim=(0, 0.8))

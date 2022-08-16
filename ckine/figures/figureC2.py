@@ -22,15 +22,13 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((10, 13), (6, 4), multz={0: 2, 4: 1, 8: 1, 12: 1})
+    ax, f = getSetup((7.5, 13), (6, 3), multz={0: 1, 3: 1, 6: 1, 9: 1, 12: 1})
     axlabel = copy(ax)
     del axlabel[1]
-    del axlabel[11]
     subplotLabel(axlabel)
     ax[0].axis("off")
     ax[1].axis("off")
-    ax[11].axis("off")
-    ax[12].axis("off")
+    ax[8].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ $K_{D}$ (nM)"}, axis=1)
@@ -45,16 +43,16 @@ def makeFigure():
 
     mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
 
-    ratioConc(ax[2:5], respDF, r"T$_{reg}$", "NK", time, mutAffDF, pseudo=pseudo, legend=True)
-    ratioConc(ax[5:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", time, mutAffDF, pseudo=pseudo, legend=True)
-    ratioConc(ax[8:11], respDF, r"T$_{reg}$", r"T$_{helper}$", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[2:4], respDF, r"T$_{reg}$", "NK", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[4:6], respDF, r"T$_{reg}$", r"CD8$^{+}$", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[6:8], respDF, r"T$_{reg}$", r"T$_{helper}$", time, mutAffDF, pseudo=pseudo, legend=True)
 
     legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     cellTarget = "Treg"
-    Wass_KL_Dist(ax[13:15], cellTarget, 10)
-    Wass_KL_Dist(ax[15:17], cellTarget, 10, RNA=True)
+    #Wass_KL_Dist(ax[10:12], cellTarget, 10)
+    #Wass_KL_Dist(ax[12:14], cellTarget, 10, RNA=True)
     #CITE_RIDGE(ax[17], cellTarget)
 
     return f
@@ -114,9 +112,9 @@ def ratioConc(ax, respDF, cell1, cell2, time, mutAffDF, pseudo=0.1, legend=False
     sns.lineplot(data=maxLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Max", style="Valency", ax=ax[1], color="k", linewidth=1., legend=False)
     ax[1].set(xscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(0, None), ylabel=cell1 + "/" + cell2 + " Max Magnitude")
 
-    sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", hue="Ligand", style="Valency", ax=ax[2], palette=ligDict, legend=False)
-    sns.lineplot(data=doseLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", style="Valency", ax=ax[2], color="k", linewidth=1., legend=False)
-    ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2), ylabel=cell1 + "/" + cell2 + " Max Dose")
+    #sns.scatterplot(data=fitDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", hue="Ligand", style="Valency", ax=ax[2], palette=ligDict, legend=False)
+    #sns.lineplot(data=doseLineDF, x="IL2Rα $K_{D}$ (nM)", y=cell2 + " Dose", style="Valency", ax=ax[2], color="k", linewidth=1., legend=False)
+    #ax[2].set(xscale="log", yscale="log", title="Ratio of " + cell1 + " to " + cell2, xlim=(1e-1, 1e1), ylim=(1e-2, 1e2), ylabel=cell1 + "/" + cell2 + " Max Dose (nM)")
 
 
 def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell, pseudo=0.2):
