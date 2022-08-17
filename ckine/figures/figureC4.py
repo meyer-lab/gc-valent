@@ -91,7 +91,10 @@ def R2_Plot_Ligs(ax, df):
             preds = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]})])
+            if val == 1:
+                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [" " + ligand], "Valency": [val], "Accuracy": [r2]})])
+            else:
+                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]})])
     sns.barplot(x="Accuracy", y="Ligand", data=accDF, hue="Valency", palette=valDict, ax=ax)
     ax.set(xlim=(0, 1), xlabel=r"Accuracy ($R^2$)")
 
