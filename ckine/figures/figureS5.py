@@ -18,13 +18,12 @@ plt.rcParams['svg.fonttype'] = 'none'
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((6, 4), (1, 2))
+    ax, f = getSetup((3, 3), (1, 1))
     GenesDF = pd.read_csv(join(path_here, "data/RNAseq_TregUnique.csv"), index_col=0)
     GenesDF = pd.concat([GenesDF, pd.DataFrame({"Gene": ["IL2RB"]})], ignore_index=True)
     CITE_DF = importRNACITE()
 
     cellTarget = "Treg"
-    RIDGEdf = CITE_RIDGE(ax[0], cellTarget, RNA=True)
     #SVMdf = CITE_SVM(ax[1], cellTarget, sampleFrac=0.05, RNA=True)
     cellCount = 3000
 
@@ -105,9 +104,9 @@ def makeFigure():
     GenesDF = GenesDF.sort_values(by=['Selectivity']).tail(10)
     xvalues = GenesDF['Gene']
     yvalues = (((GenesDF['Selectivity']) / baseSelectivity) * 100) - 100
-    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[1])
-    ax[1].set(ylabel="Selectivity (% increase over WT IL2)", title="RNA")
-    ax[1].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
+    sns.barplot(x=xvalues, y=yvalues, color='k', ax=ax[0])
+    ax[0].set(ylabel="Selectivity (% increase over WT IL2)", title="RNA")
+    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=45, ha="right")
 
     return f
 

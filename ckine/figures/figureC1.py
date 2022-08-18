@@ -24,12 +24,12 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((15, 18), (6, 4), multz={0: 1, 4: 7})
-    axlabel = copy(ax)
-    del axlabel[1]
-    subplotLabel(axlabel)
-    ax[0].axis("off")
-    ax[1].axis("off")
+    ax, f = getSetup((6, 3), (1, 2))#, multz={0: 1, 4: 7})
+    #axlabel = copy(ax)
+    #del axlabel[1]
+    #subplotLabel(axlabel)
+    #ax[0].axis("off")
+    #ax[1].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ  $K_{D}$ (nM)"}, axis=1)
@@ -42,12 +42,13 @@ def makeFigure():
     respDF = respDF.loc[respDF.Ligand != "IL15"]
     mutAffDF = mutAffDF.loc[mutAffDF.Ligand != "IL15"]
 
-    affPlot(ax[2], respDF, mutAffDF)
-    legend = ax[2].get_legend()
-    labels = (x.get_text() for x in legend.get_texts())
-    ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    ax[2].get_legend().remove()
-    fullHeatMap(ax[3], respDF)
+    #affPlot(ax[2], respDF, mutAffDF)
+    #legend = ax[2].get_legend()
+    #labels = (x.get_text() for x in legend.get_texts())
+    #ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    #ax[2].get_legend().remove()
+    PCAheatmap(ax[0:2], respDF)
+    """
     dosePlot(ax[4], respDF, 1, r"T$_{reg}$", ligList=["IL2", "R38Q N-term"], legend=True)
     dosePlot(ax[5], respDF, 1, r"T$_{helper}$", ligList=["IL2", "R38Q N-term"])
     dosePlot(ax[6], respDF, 1, r"CD8$^{+}$", ligList=["IL2", "R38Q N-term"])
@@ -60,6 +61,7 @@ def makeFigure():
     dosePlot(ax[13], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
     dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$", ligList=["H16N N-term"])
     dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
+    """
 
     return f
 

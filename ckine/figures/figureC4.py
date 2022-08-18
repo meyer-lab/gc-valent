@@ -91,7 +91,10 @@ def R2_Plot_Ligs(ax, df):
             preds = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Predicted.values
             exps = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Experimental.values
             r2 = r2_score(exps, preds)
-            accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]})])
+            if val == 1:
+                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [" " + ligand], "Valency": [val], "Accuracy": [r2]})])
+            else:
+                accDF = pd.concat([accDF, pd.DataFrame({"Ligand": [ligand], "Valency": [val], "Accuracy": [r2]})])
     sns.barplot(x="Accuracy", y="Ligand", data=accDF, hue="Valency", palette=valDict, ax=ax)
     ax.set(xlim=(0, 1), xlabel=r"Accuracy ($R^2$)")
 
@@ -107,7 +110,7 @@ def R2_Plot_Conc(ax, df):
             accDF = pd.concat([accDF, pd.DataFrame({"Concentration": [conc], "Valency": [val], "Accuracy": [r2]})])
     accDF = accDF.reset_index()
     sns.lineplot(x="Concentration", y="Accuracy", hue="Valency", palette=valDict, data=accDF, ax=ax)
-    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log")
+    ax.set(ylim=(0, 1), ylabel=r"Accuracy ($R^2$)", xlabel="Dose (nM)", xscale="log", xticks=[1e-4, 1e-2, 1e0, 1e2])
 
 
 def MonVsBivalent(ax, dfAll, ligs=True):
@@ -254,7 +257,7 @@ def IL2RaEffPlot(ax, modelDF, cell, IL2RBaff, IL2Ra_affs, labels):
 
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="Predicted pSTAT5 MFI", hue="Valency", size=r"IL2Rα $K_D$ (nM)", palette=valDict, ax=ax)
-    ax.set(xscale="log", ylim=doseLimDict[cellTypeDict[cell]], title=cellDict[cell])
+    ax.set(xscale="log", ylim=doseLimDict[cellTypeDict[cell]], title=cellDict[cell], xticks=[1e-4, 1e-2, 1e0, 1e2])
 
 
 def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
@@ -277,4 +280,4 @@ def recSigPlot(ax, modelDF, IL2RBrec, IL2Rarecs, IL2RBaff, IL2Ra_aff, label):
 
     outputDF = outputDF.reset_index()
     sns.lineplot(data=outputDF, x="Concentration", y="Active Binding Complexes", size=r"IL2Rα Abundance", hue="Valency", palette=valDict, ax=ax)
-    ax.set(xscale="log", ylim=(0, IL2RBrec), title=(r"IL2Rα $K_D$ (nM) = " + label))
+    ax.set(xscale="log", ylim=(0, IL2RBrec), title=(r"IL2Rα $K_D$ (nM) = " + label), xticks=[1e-4, 1e-2, 1e0, 1e2])
