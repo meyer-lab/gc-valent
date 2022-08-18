@@ -193,6 +193,7 @@ def getLigDict():
     ligDict = {}
     for i, ligand in enumerate(ligands):
         ligDict[ligand] = palette[i]
+    ligDict["Live/Dead"] = "orange"
     return ligDict
 
 
@@ -387,7 +388,10 @@ def ligandPlot(DF, cell, ax, live_dead=False):
     plotDF = plotDF.replace(cellTypeDict)
     sns.lineplot(data=plotDF, x="Dose", y="Predicted", hue="Valency", palette=valency_dict, ax=ax)
     sns.scatterplot(data=plotDF, x="Dose", y="Experimental", hue="Valency", style="Date", palette=valency_dict, ax=ax)
-    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="pSTAT5 (MFI)", title=cellTypeDict[cell], xticks=[0.001, 0.01, 0.1, 1, 10, 100], yticks=[0, 0.5, 1])
+    if live_dead:
+        ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="pSTAT5", title=cellTypeDict[cell], xticks=[0.0001, 0.01, 1, 100], yticks=[0, 0.5, 1], ylim=[0, 1.25])
+    else:
+        ax.set(xscale="log", xlabel="Dose R38Q/H16N (nM)", ylabel="pSTAT5", title=cellTypeDict[cell], xticks=[0.0001, 0.01, 1, 100], yticks=[0, 0.5, 1], ylim=[0, 1.25])
 
 
 def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
@@ -422,5 +426,8 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     predRatioDF = predRatioDF.reset_index()
     sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", palette=valency_dict, ax=ax)
     sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Date", palette=valency_dict, ax=ax)
-    ax.set(xscale="log", xlabel="Dose (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
-    ax.set(xticks=[0.001, 0.01, 0.1, 1, 10, 100], yticks=[0, 2, 4, 6, 8, 10])
+    if live_dead:
+        ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
+    else:
+        ax.set(xscale="log", xlabel="R38Q/H16N (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
+    ax.set(xticks=[0.0001, 0.01, 1, 100], yticks=[0, 2, 4, 6, 8, 10])
