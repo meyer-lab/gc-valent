@@ -24,12 +24,12 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((6, 3), (1, 2))#, multz={0: 1, 4: 7})
-    #axlabel = copy(ax)
-    #del axlabel[1]
-    #subplotLabel(axlabel)
-    #ax[0].axis("off")
-    #ax[1].axis("off")
+    ax, f = getSetup((6, 3), (1, 2), multz={0: 1, 4: 7})
+    axlabel = copy(ax)
+    del axlabel[1]
+    subplotLabel(axlabel)
+    ax[0].axis("off")
+    ax[1].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ  $K_{D}$ (nM)"}, axis=1)
