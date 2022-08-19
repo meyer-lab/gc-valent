@@ -7,10 +7,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from copy import copy
 from os.path import join
 from .figureCommon import subplotLabel, getSetup, getLigDict, ligandPlot, ligand_ratio_plot
 from ..MBmodel import getKxStar, polyc, runFullModelMeyer
 from ..flow_meyer import make_flow_df
+from ..imports import importReceptors
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
@@ -20,21 +22,91 @@ plt.rcParams['svg.fonttype'] = 'none'
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 9), (4, 4))
-    subplotLabel(ax)
+    ax, f = getSetup((9, 7), (3, 4))
+    axlabel = copy(ax)
+    del axlabel[3]
+    subplotLabel(axlabel)
+    ax[2].axis("off")
+    ax[3].axis("off")
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
 
-    ligandPlot(modelDF, "Treg", ax[3], live_dead=True)
-    ligandPlot(modelDF, "Thelper", ax[4], live_dead=True)
-    ligandPlot(modelDF, "NK", ax[5], live_dead=True)
-    ligandPlot(modelDF, "CD8", ax[6], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[7], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "NK", ax[8], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[9], live_dead=True)
+    assymetry_Plot(ax[4])
+    ligandPlot(modelDF, "Treg", ax[5], live_dead=True)
+    ligandPlot(modelDF, "Thelper", ax[6], live_dead=True)
+    ligandPlot(modelDF, "NK", ax[7], live_dead=True)
+    ligandPlot(modelDF, "CD8", ax[8], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[9], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "NK", ax[10], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[11], live_dead=True)
 
     return f
+
+
+affsDict = {"IL2": np.array([[1.00000000e+02, 7.51879699e+09], [1.00000000e+08, 1.00000000e+02]]),
+            "R38Q/H16N": np.array([[1.00000000e+02, 4.47427293e+07], [1.40845070e+09, 1.00000000e+02]]),
+            "Live/Dead": np.array([[1.00000000e+02, 4.47427293e+07], [1.40845070e+09, 1.00000000e+02], [1.66666667e+08, 1.00000000e+02]])}
+
+
+def assymetry_Plot(ax):
+    """Plots theoretical selectivity vs. potency for Tregs for three constructs - WT, R38Q/H16N and Live/Dead"""
+    IL2RBaff = np.logspace(6, 10, num=100)
+    targCell = "Treg"
+    cellTypes = ["Treg", "Thelper", "CD8", "NK"]
+    ligs = ["IL2", "R38Q/H16N", "Live/Dead"]
+    recDF = importReceptors()
+    specDF = pd.DataFrame()
+    pointDF = pd.DataFrame()
+
+    for aff in IL2RBaff:
+        for lig in ligs:
+            targ = 0
+            offTarg = 0
+            for cell in cellTypes:
+                recCount = np.ravel([recDF.loc[(recDF.Receptor == "IL2Ra") & (recDF["Cell Type"] == cell)].Mean.values,
+                                     recDF.loc[(recDF.Receptor == "IL2Rb") & (recDF["Cell Type"] == cell)].Mean.values])
+                if lig == "Live/Dead":
+                    Affs = copy(affsDict[lig])
+                    Affs[0, 1] = aff
+                    bound = polyc(1e-9, getKxStar(), recCount, [[2, 2, 2]], [1.0], Affs)[0][1]
+                else:
+                    Affs = copy(affsDict[lig])
+                    Affs[0, 1] = aff
+                    bound = polyc(1e-9, getKxStar(), recCount, [[4, 4]], [1.0], Affs)[0][1]
+                if cell == targCell:
+                    targ += bound
+                else:
+                    offTarg += bound
+            specDF = pd.concat([specDF, pd.DataFrame({"IL2RB Affinity": [aff], "Ligand": lig, "Potency": targ, "Selectivity": targ / offTarg})])
+
+    for lig in ligs:
+        targ = 0
+        offTarg = 0
+        for cell in cellTypes:
+            recCount = np.ravel([recDF.loc[(recDF.Receptor == "IL2Ra") & (recDF["Cell Type"] == cell)].Mean.values,
+                                 recDF.loc[(recDF.Receptor == "IL2Rb") & (recDF["Cell Type"] == cell)].Mean.values])
+            if lig == "Live/Dead":
+                Affs = copy(affsDict[lig])
+                bound = polyc(1e-9, getKxStar(), recCount, [[2, 2, 2]], [1.0], Affs)[0][1]
+            else:
+                Affs = copy(affsDict[lig])
+                bound = polyc(1e-9, getKxStar(), recCount, [[4, 4]], [1.0], Affs)[0][1]
+            if cell == targCell:
+                targ += bound
+            else:
+                offTarg += bound
+        pointDF = pd.concat([pointDF, pd.DataFrame({"Ligand": [lig], "Potency": targ, "Selectivity": targ / offTarg})])
+
+    pointDF.Potency /= specDF.Potency.max()
+    pointDF.Selectivity /= specDF.Selectivity.max()
+    specDF.Potency /= specDF.Potency.max()
+    specDF.Selectivity /= specDF.Selectivity.max()
+    specDF = specDF.reset_index().drop("index", axis=1)
+    pointDF = pointDF.reset_index().drop("index", axis=1)
+
+    sns.scatterplot(data=pointDF, x="Potency", y="Selectivity", hue="Ligand", ax=ax, palette=ligDict)
+    sns.lineplot(data=specDF, x="Potency", y="Selectivity", hue="Ligand", ax=ax, palette=ligDict)
 
 
 def YT1_Plot(ax, estRec):
