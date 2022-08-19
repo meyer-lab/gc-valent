@@ -42,13 +42,15 @@ def makeFigure():
     respDF = respDF.loc[respDF.Ligand != "IL15"]
     mutAffDF = mutAffDF.loc[mutAffDF.Ligand != "IL15"]
 
-    #affPlot(ax[2], respDF, mutAffDF)
-    #legend = ax[2].get_legend()
-    #labels = (x.get_text() for x in legend.get_texts())
-    #ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    #ax[2].get_legend().remove()
-    PCAheatmap(ax[0:2], respDF)
-    """
+
+    affPlot(ax[2], respDF, mutAffDF)
+    legend = ax[2].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    ax[2].get_legend().remove()
+    fullHeatMap(ax[3], respDF)
+    #PCAheatmap(ax[0:2], respDF)
+
     dosePlot(ax[4], respDF, 1, r"T$_{reg}$", ligList=["IL2", "R38Q N-term"], legend=True)
     dosePlot(ax[5], respDF, 1, r"T$_{helper}$", ligList=["IL2", "R38Q N-term"])
     dosePlot(ax[6], respDF, 1, r"CD8$^{+}$", ligList=["IL2", "R38Q N-term"])
@@ -61,7 +63,7 @@ def makeFigure():
     dosePlot(ax[13], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
     dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$", ligList=["H16N N-term"])
     dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
-    """
+
 
     return f
 
