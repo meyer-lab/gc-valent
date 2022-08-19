@@ -48,6 +48,8 @@ def makeFigure():
     ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
     ax[2].get_legend().remove()
     fullHeatMap(ax[3], respDF)
+    #PCAheatmap(ax[0:2], respDF)
+    
     dosePlot(ax[4], respDF, 1, r"T$_{reg}$", ligList=["IL2", "R38Q N-term"], legend=True)
     dosePlot(ax[5], respDF, 1, r"T$_{helper}$", ligList=["IL2", "R38Q N-term"])
     dosePlot(ax[6], respDF, 1, r"CD8$^{+}$", ligList=["IL2", "R38Q N-term"])
@@ -132,10 +134,11 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
 
     hillDF = hillDF.groupby(["Ligand", "Valency", "Dose"]).pSTAT.mean().reset_index()
     respDF = respDF.groupby(["Ligand", "Valency", "Cell", "Dose"]).Mean.mean().reset_index()
+    respDF = respDF.reset_index()
     hillDF["pSTAT"] /= maxobs
     respDF["Mean"] /= maxobs
     sns.lineplot(data=hillDF, x="Dose", y="pSTAT", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1.5, 2.5))
-    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", size="Valency", ax=ax, legend=False, palette=ligDict)
+    sns.scatterplot(data=respDF, x="Dose", y="Mean", hue="Ligand", size="Valency", ax=ax, legend=True, palette=ligDict)
     ax.set(xscale="log", xlim=(1e-4, 1e2), title=cell + " at " + str(time) + " hours", ylim=(0, 1.2), xlabel="Dose (nM)")
     ax.set(xticks=[0.0001, 0.01, 1, 100], yticks=[0, 0.5, 1])
     if legend:
