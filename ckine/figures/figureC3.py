@@ -15,7 +15,6 @@ plt.rcParams['svg.fonttype'] = 'none'
 ligDict = getLigDict()
 
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 

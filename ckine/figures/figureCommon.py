@@ -16,6 +16,7 @@ from sklearn.metrics import balanced_accuracy_score
 from scipy import stats
 from sklearn.neighbors import KernelDensity
 from sklearn.svm import SVC
+from scipy.optimize import least_squares
 from copy import copy
 from matplotlib import gridspec, pyplot as plt
 from ..imports import import_pstat_all, importCITE, importRNACITE
@@ -99,10 +100,10 @@ def genFigure():
     ff = eval(nameOut + '.makeFigure()')
     ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
 
-    #if sys.argv[1] == 'C1':
-        # Overlay Figure 1 cartoon
-        #overlayCartoon(fdir + 'figureC1.svg',
-        #               './ckine/graphics/muteinsCartoon.svg', 1200, 350, scalee=0.040)
+    # if sys.argv[1] == 'C1':
+    # Overlay Figure 1 cartoon
+    # overlayCartoon(fdir + 'figureC1.svg',
+    #               './ckine/graphics/muteinsCartoon.svg', 1200, 350, scalee=0.040)
 
     if sys.argv[1] == 'C2':
         # Overlay Figure 2 cartoon
@@ -337,16 +338,12 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
     AccDF = pd.DataFrame(columns=["Markers", "Accuracy"])
     baselineAccMod = SVMmod.fit(CD122col, TregY)
     baselineAcc = balanced_accuracy_score(TregY, baselineAccMod.predict(CD122col))
-    print(baselineAcc)
-    print(np.where((factors == IL2RB)))
     for marker in factors:
         SVMmod = SVC()
-        print(marker)
         markerCol = X[:, np.where(factors == marker)]
         CD122MarkX = np.hstack((CD122col, markerCol.reshape(-1, 1)))
         fitMod = SVMmod.fit(CD122MarkX, TregY)
         markAcc = balanced_accuracy_score(TregY, fitMod.predict(CD122MarkX))
-        print(markAcc)
         AccDF = pd.concat([AccDF, pd.DataFrame({"Markers": [marker], "Accuracy": [markAcc]})])
 
     AccDF = AccDF.sort_values(by="Accuracy")
@@ -358,7 +355,7 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     ax.set(ylabel="Balanced Accuracy")
     if RNA:
-        ax.set(title="SVM Accuracy - RNA", ylim=(0.4, 0.5))
+        ax.set(title="SVM Accuracy - RNA", ylim=(0.4, 0.6))
     else:
         ax.set(title="SVM Accuracy - Surface Markers", ylim=(0.4, 0.8))
     return markers
@@ -431,3 +428,55 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     else:
         ax.set(xscale="log", xlabel="R38Q/H16N (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
     ax.set(xticks=[0.0001, 0.01, 1, 100], yticks=[0, 2, 4, 6, 8, 10])
+
+
+ligDict = getLigDict()
+
+
+def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell, pseudo=0.2, plot=True):
+    """Plots the various affinities for IL-2 Muteins"""
+    doses = np.log10(np.logspace(np.log10(respDF.Dose.min()), np.log10(respDF.Dose.max()), 100)) + 4
+    x0 = [4, 1, 2]
+    hillDF = pd.DataFrame()
+    Ligands = respDF.Ligand.unique()
+    respDF = respDF.loc[(respDF.Time == time)]
+
+    for ligand in respDF.Ligand.unique():
+        for valency in respDF.loc[respDF.Ligand == ligand].Valency.unique():
+            targIsoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency) & (respDF.Cell == targCell)]
+            targXData = np.nan_to_num(np.log10(targIsoData.Dose.values)) + 4
+            targYData = np.nan_to_num(targIsoData.Mean.values)
+            targFit = least_squares(hill_residuals, x0, args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+
+            offTIsoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency) & (respDF.Cell == offTargCell)]
+            offTargXData = np.nan_to_num(np.log10(offTIsoData.Dose.values)) + 4
+            offTargYData = np.nan_to_num(offTIsoData.Mean.values)
+            offTargFit = least_squares(hill_residuals, x0, args=(offTargXData, offTargYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+            hillDF = pd.concat([hillDF, pd.DataFrame({"Ligand": ligand, "Valency": valency, "Cell": targCell, "Dose": np.power(
+                10, doses - 4), targCell: hill_equation(targFit.x, doses), offTargCell: hill_equation(offTargFit.x, doses)})])
+
+    for cell in [targCell, offTargCell]:
+        maxobs = hillDF.loc[(hillDF.Ligand == "IL2")][cell].max()
+        hillDF[cell] /= maxobs
+    hillDF["Ratio"] = hillDF[targCell] / (pseudo + hillDF[offTargCell])
+
+    hillDF = hillDF.groupby(["Ligand", "Valency", "Dose"]).Ratio.mean().reset_index()
+    hillDF = hillDF.loc[(hillDF.Ligand != "IL15") & (hillDF.Ligand != "IL2")]
+    if plot:
+        sns.lineplot(data=hillDF, x="Dose", y="Ratio", hue="Ligand", size="Valency", ax=ax, palette=ligDict, sizes=(1, 2.5))
+        ax.set(xscale="log", xlim=(1e-4, 1e2), ylim=(0, 5))
+    return hillDF
+
+
+def hill_equation(x, dose):
+    """ Calculates EC50 from Hill Equation. """
+    #print(x, dose)
+    EMax = np.power(10, x[0])
+    n = x[1]
+    EC50 = x[2]
+    return EMax * np.power(dose, n) / (np.power(EC50, n) + np.power(dose, n))
+
+
+def hill_residuals(x, dose, y):
+    """ Residual function for Hill Equation. """
+    return hill_equation(x, dose) - y
