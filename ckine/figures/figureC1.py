@@ -42,7 +42,6 @@ def makeFigure():
     respDF = respDF.loc[respDF.Ligand != "IL15"]
     mutAffDF = mutAffDF.loc[mutAffDF.Ligand != "IL15"]
 
-
     affPlot(ax[2], respDF, mutAffDF)
     legend = ax[2].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
@@ -63,7 +62,6 @@ def makeFigure():
     dosePlot(ax[13], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
     dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$", ligList=["H16N N-term"])
     dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
-
 
     return f
 

@@ -45,7 +45,6 @@ def makeFigure():
 
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
 
-    
     R2_Plot_Cells(ax[4], modelDF)
     R2_Plot_Ligs(ax[5], modelDF)
     R2_Plot_Conc(ax[6], modelDF)
