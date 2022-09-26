@@ -169,8 +169,8 @@ def make_flow_df(subtract=True):
     columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
     rows = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
     rowminus = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-    dates = ["6_25_22", "7_22_22", "8_10_22"]
-    datesFormat = ["6/25/22", "7/22/22", "8/10/22"]
+    dates = ["6_25_22", "7_22_22", "8_10_22", "9_19_22"]
+    datesFormat = ["6/25/22", "7/22/22", "8/10/22", "9/19/22"]
 
     cell_types = ["Treg", "Thelper", "CD8", "NK"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates.csv"))
