@@ -13,19 +13,22 @@ cellDict = get_cellTypeDict()
 valDict = get_valency_dict()
 
 
-def makeTensor(sigDF, Variance=False):
+def makeTensor(sigDF, meyer_data=False, variance=False):
     """Makes tensor of data with dimensions mutein x time point x concentration x cell type"""
     ligands = sigDF.Ligand.unique()
     tps = sigDF.Time.unique()
     concs = sigDF.Dose.unique()
-    cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+    if meyer_data:
+        cellTypes = ['Treg', 'Thelper', 'CD8', 'NK']
+    else:
+        cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
     tensor = np.empty((len(ligands), len(tps), len(concs), len(cellTypes)))
     tensor[:] = np.nan
     for i, lig in enumerate(ligands):
         for j, tp in enumerate(tps):
             for k, conc in enumerate(concs):
                 for ii, cell in enumerate(cellTypes):
-                    if not Variance:
+                    if not variance:
                         entry = sigDF.loc[(sigDF.Ligand == lig) & (sigDF.Time == tp) & (sigDF.Dose == conc) & (sigDF.Cell == cell)].Mean.values
                     else:
                         entry = sigDF.loc[(sigDF.Ligand == lig) & (sigDF.Time == tp) & (sigDF.Dose == conc) & (sigDF.Cell == cell)].Variance.values
@@ -78,6 +81,8 @@ def plot_tFac_Ligs(ax, tFac, respDF, numComps=3):
             valency = 1
         elif row.Ligand.split(" ")[-1] == "(Biv)":
             valency = 2
+        elif row.Ligand.split(" ")[-1] == "(Tetra)":
+            valency = 4
         tFacDFlig.iloc[index, tFacDFlig.columns.get_loc("Valency")] = valency
         tFacDFlig.iloc[index, tFacDFlig.columns.get_loc("Lig Name")] = " ".join(row.Ligand.split(" ")[0:-1])
 
@@ -112,9 +117,12 @@ def plot_tFac_Conc(ax, tFac, respDF):
     ax.set(title="Concentration", xlabel="Concentration (nM)", xlim=(concs[-1], concs[0]), ylabel="Component Weight", ylim=(0, 1), xscale='log')
 
 
-def plot_tFac_Cells(ax, tFac, respDF, numComps=3):
+def plot_tFac_Cells(ax, tFac, meyer_data=False, numComps=3):
     """Plots tensor factorization of cells"""
-    cells = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+    if meyer_data:
+        cells = ['Treg', 'Thelper', 'CD8', 'NK']
+    else:
+        cells = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
     cellFacs = tFac[1][3]
     tFacDFcell = pd.DataFrame()
     for i in range(0, numComps):

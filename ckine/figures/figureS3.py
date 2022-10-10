@@ -1,5 +1,5 @@
 """
-This creates Figure 3, tensor factorization of mutant and WT biv and monovalent ligands.
+This creates S3.
 """
 
 import os

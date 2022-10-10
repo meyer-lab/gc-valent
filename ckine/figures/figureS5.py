@@ -1,5 +1,5 @@
 """
-This creates Figure S3, single cell analysis."""
+This creates Figure S5, single cell analysis."""
 
 import numpy as np
 import matplotlib.pyplot as plt

@@ -384,7 +384,22 @@ def ligandPlot(DF, cell, ax, live_dead=False):
         plotDF.loc[plotDF.Date == date, "Predicted"] = DF.loc[(DF.Date == date)]["Predicted"].values / maxobs
     plotDF = plotDF.replace(cellTypeDict)
     sns.lineplot(data=plotDF, x="Dose", y="Predicted", hue="Valency", palette=valency_dict, ax=ax)
-    sns.scatterplot(data=plotDF, x="Dose", y="Experimental", hue="Valency", style="Date", palette=valency_dict, ax=ax)
+    sns.lineplot(
+        data=plotDF,
+        x="Dose",
+        y="Experimental",
+        hue="Valency",
+        palette=valency_dict,
+        linewidth=0,
+        markers=True,
+        err_style="bars",
+        err_kws={
+            "capsize": 3,
+            "elinewidth": 1},
+        legend=False,
+        ax=ax)
+    plotDF = plotDF.groupby(["Ligand", "Valency", "Dose"]).Experimental.mean().reset_index()
+    sns.scatterplot(data=plotDF, x="Dose", y="Experimental", hue="Valency", s=12, palette=valency_dict, ax=ax)
     if live_dead:
         ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="pSTAT5", title=cellTypeDict[cell], xticks=[0.0001, 0.01, 1, 100], yticks=[0, 0.5, 1], ylim=[0, 1.25])
     else:
@@ -421,8 +436,9 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
 
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
-    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", palette=valency_dict, ax=ax)
-    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Date", palette=valency_dict, ax=ax)
+    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", palette=valency_dict, ax=ax, markers=True, err_style="bars", err_kws={"capsize": 3, "elinewidth": 1},)
+    expRatioDF = expRatioDF.groupby(["Ligand", "Valency", "Dose"]).Ratio.mean().reset_index()
+    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", s=15, palette=valency_dict, ax=ax)
     if live_dead:
         ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
     else:
