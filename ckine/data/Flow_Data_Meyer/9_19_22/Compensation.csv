@@ -1,0 +1,42 @@
+﻿FITC-A,Pacific Blue-A,0
+PE-A,Pacific Blue-A,0.7
+BV605-A,Pacific Blue-A,0.57
+Alexa Fluor 647-A,Pacific Blue-A,0
+Alexa Fluor 700-A,Pacific Blue-A,0
+APC-Cy7-A,Pacific Blue-A,0
+Pacific Blue-A,FITC-A,0.04
+PE-A,FITC-A,5.68
+BV605-A,FITC-A,0.74
+Alexa Fluor 647-A,FITC-A,0
+Alexa Fluor 700-A,FITC-A,0
+APC-Cy7-A,FITC-A,0
+Pacific Blue-A,PE-A,0
+FITC-A,PE-A,3.46
+BV605-A,PE-A,20.05
+Alexa Fluor 647-A,PE-A,0
+Alexa Fluor 700-A,PE-A,0.06
+APC-Cy7-A,PE-A,0
+Pacific Blue-A,BV605-A,1.71
+FITC-A,BV605-A,0.5
+PE-A,BV605-A,0.4
+Alexa Fluor 647-A,BV605-A,0
+Alexa Fluor 700-A,BV605-A,0.18
+APC-Cy7-A,BV605-A,0.04
+Pacific Blue-A,Alexa Fluor 647-A,0
+FITC-A,Alexa Fluor 647-A,0.49
+PE-A,Alexa Fluor 647-A,2.02
+BV605-A,Alexa Fluor 647-A,0.5
+Alexa Fluor 700-A,Alexa Fluor 647-A,280.48
+APC-Cy7-A,Alexa Fluor 647-A,38.33
+Pacific Blue-A,Alexa Fluor 700-A,0
+FITC-A,Alexa Fluor 700-A,0
+PE-A,Alexa Fluor 700-A,0
+BV605-A,Alexa Fluor 700-A,0.4
+Alexa Fluor 647-A,Alexa Fluor 700-A,0.4
+APC-Cy7-A,Alexa Fluor 700-A,20.55
+Pacific Blue-A,APC-Cy7-A,0
+FITC-A,APC-Cy7-A,0
+PE-A,APC-Cy7-A,0
+BV605-A,APC-Cy7-A,0
+Alexa Fluor 647-A,APC-Cy7-A,2.6
+Alexa Fluor 700-A,APC-Cy7-A,9
