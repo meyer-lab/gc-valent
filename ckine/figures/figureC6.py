@@ -9,10 +9,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from copy import copy
 from os.path import join
-from .figureCommon import subplotLabel, getSetup, getLigDict, ligandPlot, ligand_ratio_plot
+from .figureCommon import subplotLabel, getSetup, getLigDict, ligand_ratio_plot
 from ..MBmodel import getKxStar, polyc, runFullModelMeyer
 from ..flow_meyer import make_flow_df
-from ..imports import importReceptors
+from ..imports import importReceptors, import_pstat_all_meyer
+from ..tensorFac import makeTensor, factorTensor, R2Xplot, plot_tFac_Ligs, plot_tFac_Conc, plot_tFac_Cells
+
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 ligDict = getLigDict()
@@ -22,9 +24,10 @@ plt.rcParams['svg.fonttype'] = 'none'
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((9, 7), (3, 4))
+    ax, f = getSetup((9, 6.75), (3, 4))
     axlabel = copy(ax)
     del axlabel[3]
+    del axlabel[-1]
     subplotLabel(axlabel)
     ax[2].axis("off")
     ax[3].axis("off")
@@ -33,13 +36,26 @@ def makeFigure():
     modelDF = runFullModelMeyer().reset_index()
 
     assymetry_Plot(ax[4])
-    ligandPlot(modelDF, "Treg", ax[5], live_dead=True)
-    ligandPlot(modelDF, "Thelper", ax[6], live_dead=True)
-    ligandPlot(modelDF, "NK", ax[7], live_dead=True)
-    ligandPlot(modelDF, "CD8", ax[8], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[9], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "NK", ax[10], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[11], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[5], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "NK", ax[6], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[7], live_dead=True)
+
+    respDF = import_pstat_all_meyer()
+    respDF.loc[(respDF.Valency == 1), "Ligand"] = (respDF.loc[(respDF.Valency == 1)].Ligand + " (Mono)").values
+    respDF.loc[(respDF.Valency == 2), "Ligand"] = (respDF.loc[(respDF.Valency == 2)].Ligand + " (Biv)").values
+    respDF.loc[(respDF.Valency == 4), "Ligand"] = (respDF.loc[(respDF.Valency == 4)].Ligand + " (Tetra)").values
+
+    respDF = respDF.rename({"pSTAT5": "Mean"}, axis=1)
+    respDF["Time"] = 1
+    numComps = 3
+    respTensor = makeTensor(respDF, meyer_data=True)
+    tFacAllM = factorTensor(respTensor, numComps=numComps)
+    tFacAllM.normalize()
+
+    R2Xplot(ax[8], respTensor, 5)
+    plot_tFac_Ligs(ax[9], tFacAllM, respDF, numComps=numComps)
+    plot_tFac_Cells(ax[10], tFacAllM, meyer_data=True, numComps=numComps)
+    plot_tFac_Conc(ax[11], tFacAllM, respDF)
 
     return f
 

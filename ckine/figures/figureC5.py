@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from copy import copy
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize, Bounds, NonlinearConstraint
-from .figureCommon import subplotLabel, getSetup, ligandPlot, ligand_ratio_plot
+from .figureCommon import subplotLabel, getSetup, ligand_ratio_plot
 from ..MBmodel import polyc, getKxStar, runFullModelMeyer
 from ..imports import getBindDict, importReceptors
 from ..flow_meyer import make_flow_df
@@ -21,12 +21,14 @@ plt.rcParams['svg.fonttype'] = 'none'
 def makeFigure():
     """ Make figure 6. """
     # Get list of axis objects
-    ax, f = getSetup((9, 9), (4, 4))
+    ax, f = getSetup((9, 6.75), (3, 4))
     axlabel = copy(ax)
     del axlabel[7]
+    del axlabel[-1]
     subplotLabel(axlabel)
     ax[6].axis("off")
     ax[7].axis("off")
+    ax[11].axis("off")
     optimizeDesign([ax[0], ax[1]], ["Treg"], ["Thelper", "NK", "CD8"])
     optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
     optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
@@ -35,13 +37,9 @@ def makeFigure():
     modelDF = runFullModelMeyer().reset_index()
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
 
-    ligandPlot(modelDF, "Treg", ax[8], live_dead=False)
-    ligandPlot(modelDF, "Thelper", ax[9], live_dead=False)
-    ligandPlot(modelDF, "NK", ax[10], live_dead=False)
-    ligandPlot(modelDF, "CD8", ax[11], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[12], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "NK", ax[13], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[14], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[8], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "NK", ax[9], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[10], live_dead=False)
 
     return f
 

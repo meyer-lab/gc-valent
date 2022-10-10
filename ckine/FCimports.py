@@ -81,7 +81,7 @@ def subtract_unstained_signal(sample, channels, receptors, unstainedWell, isotyp
         if _ < len(isotypes):
             for i, iso in enumerate(isotypes):
                 if iso.ID == receptors[_]:
-                    assert(isotypes[i].ID == receptors[_])
+                    assert (isotypes[i].ID == receptors[_])
                     fileFound = True
                     meanBackground = compareSignals(isotypes[i], unstainedWell, channel)  # Returns larger of two background signals
                     break

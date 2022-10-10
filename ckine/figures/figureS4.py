@@ -1,5 +1,5 @@
 """
-This creates Figure S2, dose response of all IL-2 cytokines using binding model.
+This creates Figure S4, dose response of all IL-2 cytokines using binding model.
 """
 
 import matplotlib.pyplot as plt
