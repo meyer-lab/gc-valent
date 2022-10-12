@@ -411,7 +411,6 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     """Plots a cell type response"""
     expRatioDF = pd.DataFrame()
     predRatioDF = pd.DataFrame()
-    palette = getLigDict()
     if live_dead:
         DF = DF.loc[(DF.Ligand != "R38Q/H16N")]
     else:
@@ -438,9 +437,9 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
 
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
-    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", ax=ax, markers=True, err_style="bars", err_kws={"capsize": 3, "elinewidth": 1}, palette=palette)
+    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", palette=valency_dict, ax=ax, markers=True, err_style="bars", err_kws={"capsize": 3, "elinewidth": 1},)
     expRatioDF = expRatioDF.groupby(["Ligand", "Valency", "Dose"]).Ratio.mean().reset_index()
-    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Ligand", style="Valency", s=15, ax=ax, palette=palette)
+    sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", s=15, palette=valency_dict, ax=ax)
     if live_dead:
         ax.set(xscale="log", xlabel="Dose Live/Dead (nM)", ylabel="Ratio", title=cellTypeDict[cell1] + " to " + cellTypeDict[cell2] + " Ratio")
     else:
