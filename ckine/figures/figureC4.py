@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 from copy import copy
-from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, get_cellTypeDict, get_valency_dict
+from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, get_cellTypeDict, get_valency_dict, ligand_ratio_plot
 from ..PCA import nllsq_EC50
 from ..MBmodel import getKxStar, runFullModel, cytBindingModel, polyc
 from ..imports import getBindDict, importReceptors

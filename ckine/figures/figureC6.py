@@ -55,7 +55,7 @@ def makeFigure():
     R2Xplot(ax[8], respTensor, 5)
     plot_tFac_Ligs(ax[9], tFacAllM, respDF, numComps=numComps)
     plot_tFac_Cells(ax[10], tFacAllM, meyer_data=True, numComps=numComps)
-    plot_tFac_Conc(ax[11], tFacAllM, respDF)
+    plot_tFac_Conc(ax[11], tFacAllM, respDF, meyer_data=True)
 
     return f
 
