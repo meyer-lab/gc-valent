@@ -349,11 +349,11 @@ def CITE_SVM(ax, targCell, numFactors=10, sampleFrac=0.5, RNA=False):
 
     AccDF = AccDF.sort_values(by="Accuracy")
     markers = copy(AccDF.tail(numFactors).Markers.values)  # Here
-    AccDF.Markers = IL2RB + " + " + AccDF.Markers
+    AccDF.Markers = "IL2RB" + " + " + AccDF.Markers
 
-    plot_DF = pd.concat([AccDF.tail(numFactors), pd.DataFrame({"Markers": ["CD122 only"], "Accuracy": [baselineAcc]})])
+    plot_DF = pd.concat([AccDF.tail(numFactors), pd.DataFrame({"Markers": ["IL2RB only"], "Accuracy": [baselineAcc]})])
     sns.barplot(data=plot_DF, x="Markers", y="Accuracy", ax=ax, color='k')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=75)
     ax.set(ylabel="Balanced Accuracy")
     if RNA:
         ax.set(title="SVM Accuracy - RNA", ylim=(0.4, 0.6))
