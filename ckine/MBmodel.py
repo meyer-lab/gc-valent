@@ -140,7 +140,7 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
             else:
                 expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
                 predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
-                slope = np.linalg.lstsq(np.reshape(predVec.astype(np.float), (-1, 1)), np.reshape(expVec.astype(np.float), (-1, 1)), rcond=None)[0][0]
+                slope = np.linalg.lstsq(np.reshape(predVec.astype(float), (-1, 1)), np.reshape(expVec.astype(float), (-1, 1)), rcond=None)[0][0]
                 masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
                 dateConvDF = pd.concat([dateConvDF, pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell})])
     if saveDict:
@@ -179,7 +179,7 @@ def runFullModelMeyer(x=False, saveDict=False):
         for cell in masterSTAT.Cell.unique():
             expVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Experimental.values
             predVec = masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell)].Predicted.values
-            slope = np.linalg.lstsq(np.reshape(predVec.astype(np.float), (-1, 1)), np.reshape(expVec.astype(np.float), (-1, 1)), rcond=None)[0][0]
+            slope = np.linalg.lstsq(np.reshape(predVec.astype(float), (-1, 1)), np.reshape(expVec.astype(float), (-1, 1)), rcond=None)[0][0]
             masterSTAT.loc[(masterSTAT.Date == date) & (masterSTAT.Cell == cell), "Predicted"] = predVec * slope
             dateConvDF = pd.concat([dateConvDF, pd.DataFrame({"Date": date, "Scale": slope, "Cell": cell})])
     if saveDict:

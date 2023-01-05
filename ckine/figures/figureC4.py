@@ -139,12 +139,12 @@ def MonVsBivalent(ax, dfAll, ligs=True):
                 predVecBin = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
                 expVec = dfCopy.loc[(dfCopy.Date == date) & (dfCopy.Cell == cell[0:-13])].Experimental.values
                 predVec = dfCopy.loc[(dfCopy.Date == date) & (dfCopy.Cell == cell[0:-13])].MonPredict.values
-                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)).astype(np.float), np.reshape(expVec, (-1, 1)).astype(np.float), rcond=None)[0][0]
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)).astype(float), np.reshape(expVec, (-1, 1)).astype(float), rcond=None)[0][0]
                 df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVecBin * slope
             else:
                 expVec = df.loc[(df.Date == date) & (df.Cell == cell)].Experimental.values
                 predVec = df.loc[(df.Date == date) & (df.Cell == cell)].MonPredict.values
-                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)).astype(np.float), np.reshape(expVec, (-1, 1)).astype(np.float), rcond=None)[0][0]
+                slope = np.linalg.lstsq(np.reshape(predVec, (-1, 1)).astype(float), np.reshape(expVec, (-1, 1)).astype(float), rcond=None)[0][0]
                 df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVec * slope
 
     if ligs:
