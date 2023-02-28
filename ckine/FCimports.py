@@ -53,6 +53,7 @@ def importF(date, plate, wellRow, panel, receptorType, wellNum, comp=True):
         else:
             unstainedWell = FCMeasurement(ID="Unstained Sample", datafile=str(path))  # Stores data from unstainedWell separately
     file.sort()
+    print(pathname)
     assert file != []
     # Go through each file and assign the file contents to entry in the array sample
     for entry in file:
@@ -86,7 +87,6 @@ def subtract_unstained_signal(sample, channels, receptors, unstainedWell, isotyp
                     meanBackground = compareSignals(isotypes[i], unstainedWell, channel)  # Returns larger of two background signals
                     break
         if not fileFound:
-            print("Isotype File Not Found")
             meanBackground = np.mean(unstainedWell.data[channel])
         sample[channel] = np.maximum(sample[channel] - meanBackground, 0.0)
 
@@ -162,7 +162,7 @@ def apply_gates(date, plate, gates_df, subpopulations=False, correlation=None):
         receptors = ['CD25', 'CD122', 'CD132']
         channels = ["VL1-H", "BL5-H", "RL1-H"]
     for i, r in enumerate(receptors):
-        cellTypes = ['T-helper', 'T-reg', 'NK', 'CD8+']
+        cellTypes = ['T-helper', 'T-reg', 'NK', 'CD8+', "BNK"]
         for j, cellType in enumerate(cellTypes):
             if i == 0 and j == 0:
                 df, unstainedWell, isotypes = samp_Gate(date, plate, gates_df, cellType, r, correlation, subPop=subpopulations)
@@ -253,7 +253,7 @@ def cellGateDat(cellType):
         row = 'C'
         panel = 3
         subPopName = ['Naive CD8+', 'Mem CD8+']
-    elif cellType == "NK":
+    elif cellType in ("NK", "BNK"):
         tchannels = ['VL4-H', 'BL3-H']
         row = 'B'
         panel = 2

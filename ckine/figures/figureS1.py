@@ -21,7 +21,6 @@ def makeFigure():
 
     ax, f = getSetup((10, 8), (3, 4), multz={8: 1, 10: 1})
     subplotLabel(ax)
-
     Tcell_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/CD4 T cells - IL2-060 mono, IL2-060 dimeric"
     NK_CD8_pathname = path_here + "/data/flow/2019-11-08 monomer IL-2 Fc signaling/NK CD8 T cells - IL2-060 mono, IL2-060 dimeric"
 
@@ -174,20 +173,17 @@ def receptorPlot(ax1):
 
     df_rec = getReceptors()
     df_test = df_rec.loc[(df_rec['Cell Type'] == 'T-helper') & (df_rec['Receptor'] == 'CD122')]
-    print(df_test)
-    print("Nan:", df_test.isna().sum())
     # write to csv
     update_path = path_here + "/data/receptor_levels.csv"
     df_rec.to_csv(str(update_path), index=False, header=True)
 
-    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
+    cell_names = ["T-reg", "T-helper", "NK", "CD8+", "BNK"]
     receptors_ = ["CD25", "CD122", "CD132", "CD127"]
 
     # calculate mean, variance, and skew for each replicate
     df_stats = calculate_moments(df_rec, cell_names, receptors_)
 
     # plots log10 of mean on
-    print(df_stats.loc[(df_stats['Cell Type'] == 'T-helper') & (df_stats['Receptor'] == 'CD122')])
     celltype_pointplot(ax1, df_stats, "Mean")
     """
     receptor_levels_Beta = getReceptors(correlation="CD122")
@@ -256,6 +252,7 @@ def celltype_pointplot(ax, df, moment):
     sns.pointplot(x="Cell Type", y=moment, hue="Receptor", data=df, ci='sd', join=False, dodge=True, ax=ax, estimator=sp.stats.gmean)
     ax.set_ylabel("log(" + moment + ")")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+    print(df.groupby(["Cell Type", "Receptor"]).Mean.mean())
 
 
 def getReceptors(correlation=None):
@@ -285,7 +282,7 @@ def getReceptors(correlation=None):
 
     # make new dataframe for receptor counts
     df_rec = pd.DataFrame(columns=["Cell Type", "Receptor", "Count", "Date", "Plate"])
-    cell_names = ["T-reg", "T-helper", "NK", "CD8+"]
+    cell_names = ["T-reg", "T-helper", "NK", "CD8+", "BNK"]
     receptors_ = ["CD25", "CD122", "CD132", "CD127"]
     channels_ = ["VL1-H", "BL5-H", "RL1-H", "BL1-H"]
     lsq_params = [lsq_cd25, lsq_cd122, lsq_cd132, lsq_cd127]
