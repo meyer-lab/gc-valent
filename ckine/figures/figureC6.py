@@ -70,7 +70,7 @@ def assymetry_Plot(ax):
     """Plots theoretical selectivity vs. potency for Tregs for three constructs - WT, R38Q/H16N and Live/Dead"""
     IL2RBaff = np.logspace(6, 10, num=100)
     targCell = "Treg"
-    cellTypes = ["Treg", "Thelper", "CD8", "NK"]
+    cellTypes = ["Treg", "Thelper", "CD8", "NK", "NKBright"]
     ligs = ["IL2", "R38Q/H16N", "Live/Dead"]
     recDF = importReceptors()
     specDF = pd.DataFrame()
@@ -97,7 +97,7 @@ def assymetry_Plot(ax):
                     offTarg += bound
             specDF = pd.concat([specDF, pd.DataFrame({"IL2RB Affinity": [aff], "Ligand": lig, "Potency": targ, "Selectivity": targ / offTarg})])
 
-    for lig in ligs:
+    for i, lig in enumerate(ligs):
         targ = 0
         offTarg = 0
         for cell in cellTypes:
@@ -113,7 +113,7 @@ def assymetry_Plot(ax):
                 targ += bound
             else:
                 offTarg += bound
-        pointDF = pd.concat([pointDF, pd.DataFrame({"Ligand": [lig], "Potency": targ, "Selectivity": targ / offTarg})])
+        pointDF = pd.concat([pointDF, pd.DataFrame({"Ligand": lig, "Potency": targ, "Selectivity": targ / offTarg}, index=[i])])
 
     pointDF.Potency /= specDF.Potency.max()
     pointDF.Selectivity /= specDF.Selectivity.max()

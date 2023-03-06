@@ -33,7 +33,7 @@ def makeFigure():
     optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
     optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
 
-    make_flow_df()
+    # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
 
