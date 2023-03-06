@@ -118,6 +118,7 @@ def makeGate(lowerCorner, upperCorner, channels, name):
 cellTypes = ["NK", "CD8", "Thelper", "Treg"]
 
 gate_dict = {"NK": ["NK Gate"],
+             "NKBright": ["NK Bright Gate"],
              "CD8": ["CD8 Gate"],
              "Treg": ["CD4 Gate", "Treg Gate"],
              "Thelper": ["CD4 Gate", "Thelper Gate"]}
@@ -172,11 +173,12 @@ def make_flow_df(subtract=True):
     dates = ["6_25_22", "7_22_22", "8_10_22", "9_19_22"]
     datesFormat = ["6/25/22", "7/22/22", "8/10/22", "9/19/22"]
 
-    cell_types = ["Treg", "Thelper", "CD8", "NK"]
+    cell_types = ["Treg", "Thelper", "CD8", "NK", "NKBright"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates.csv"))
     MeyerDF = pd.DataFrame([])
 
     for j, date in enumerate(dates):
+        print(date)
         for column in columns:
             for i, row in enumerate(rows):
                 sample = FCMeasurement(ID=column + row, datafile=(join(path_here, "ckine/data/Flow_Data_Meyer/" + date + "/Specimen_001_" + column + rowminus[i] + "_" + column + row + ".fcs")))
@@ -204,6 +206,8 @@ def make_flow_df(subtract=True):
             mean = pop_sample.data["pSTAT5"]
             mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
             untreatedDF = pd.concat([untreatedDF, pd.DataFrame({"Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[i]})])
+    untreatedDF = untreatedDF.fillna(value=0)
+    untreatedDF.pSTAT5 = untreatedDF.pSTAT5.clip(lower=0)
 
     for date in datesFormat:
         for cell in MeyerDF.Cell.unique():
@@ -216,6 +220,5 @@ def make_flow_df(subtract=True):
             MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
             MeyerDF.loc[(MeyerDF.Cell == cell) & (MeyerDF.Date == date), "pSTAT5"] -= MeyerDF.loc[(MeyerDF.Cell == cell) & (
                 MeyerDF.Dose <= 0.00392) & (MeyerDF.Date == date)].pSTAT5.mean()
-
     MeyerDF.to_csv(join(path_here, "ckine/data/Meyer_Flow.csv"))
     return MeyerDF

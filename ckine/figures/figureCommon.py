@@ -190,12 +190,12 @@ def getLigDict():
     pSTATDF = import_pstat_all(True, False)
     ligands = pSTATDF.Ligand.unique()
     #palette = sns.color_palette("Spectral", ligands.size)
-    palette = sns.color_palette(["royalblue", "#1f78b4", "limegreen", "#33a02c", "#fb9a99", "#e31a1c", "orange", "#ff7f00", "deeppink", "#6a3d9a"])
+    palette = sns.color_palette(["royalblue", "#1f78b4", "limegreen", "#33a02c", "#fb9a99", "#e31a1c", "orange", "#ff7f00", "deeppink", "#6a3d9a", "orange"])
 
     ligDict = {}
     for i, ligand in enumerate(ligands):
         ligDict[ligand] = palette[i]
-    ligDict["Live/Dead"] = "orange"
+    ligDict["Live/Dead"] = palette[-1]
     return ligDict
 
 
@@ -206,7 +206,8 @@ cellTypeDict = {"Treg": r"T$_{reg}$",
                 "Thelper $IL2Ra^{lo}$": r"T$_{helper}$ $IL2Ra^{lo}$",
                 "Thelper": r"T$_{helper}$",
                 "NK": "NK",
-                "CD8": r"CD8$^{+}$"}
+                "CD8": r"CD8$^{+}$",
+                "NKBright": r"NK$^{Bright}$"}
 
 doseLimDict = {r"T$_{reg}$": (0, 50000),
                r"T$_{reg}$ $IL2Ra^{hi}$": (0, 50000),
