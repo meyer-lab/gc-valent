@@ -77,7 +77,7 @@ def affPlot(ax, respDF, mutAffDF):
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Monovalent"
         elif valencies == 2:
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Bivalent"
-    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", ax=ax, palette=ligDict)
+    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Ligand", ax=ax, palette=ligDict, s=60)
 
 
 def fullHeatMap(ax, respDF):
