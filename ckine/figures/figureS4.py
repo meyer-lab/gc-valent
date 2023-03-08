@@ -19,6 +19,6 @@ def makeFigure():
 
     for i, lig in enumerate(ligands):
         for j, cell in enumerate(cells):
-            plotDoseResponses(ax[4 * i + j], modelDF, lig, cell)
+            plotDoseResponses(ax[5 * i + j], modelDF, lig, cell)
 
     return f

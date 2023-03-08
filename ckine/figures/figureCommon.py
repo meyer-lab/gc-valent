@@ -129,7 +129,8 @@ def genFigure():
 cellSTATlimDict = {"Treg": (0, 60000),
                    "Thelper": (0, 40000),
                    "CD8": (0, 30000),
-                   "NK": (0, 8000)}
+                   "NK": (0, 8000),
+                   "NKBright": (0, 8000)}
 
 
 def plotDoseResponses(ax, df, mut, cellType, val=False):
@@ -216,6 +217,7 @@ doseLimDict = {r"T$_{reg}$": (0, 50000),
                r"T$_{helper}$ $IL2Ra^{hi}$": (0, 25000),
                r"T$_{helper}$ $IL2Ra^{lo}$": (0, 25000),
                "NK": (0, 5000),
+               r"NK$^{Bright}$": (0, 5000),
                r"CD8$^{+}$": (0, 8000)}
 
 
