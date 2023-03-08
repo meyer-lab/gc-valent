@@ -14,8 +14,8 @@ def makeFigure():
     modelDF = runFullModel(time=[0.5, 1], saveDict=False)
 
     ligands = modelDF.Ligand.unique()
-    cells = ["Treg", "Thelper", "NK", "CD8"]
-    ax, f = getSetup((10, 16), (len(ligands), 4))
+    cells = ["Treg", "Thelper", "NK", "NKBright", "CD8"]
+    ax, f = getSetup((12.5, 16), (len(ligands), 5))
 
     for i, lig in enumerate(ligands):
         for j, cell in enumerate(cells):

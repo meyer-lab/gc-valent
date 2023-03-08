@@ -19,9 +19,9 @@ def makeTensor(sigDF, meyer_data=False, variance=False):
     tps = sigDF.Time.unique()
     concs = sigDF.Dose.unique()
     if meyer_data:
-        cellTypes = ['Treg', 'Thelper', 'CD8', 'NK']
+        cellTypes = ['Treg', 'Thelper', 'CD8', 'NK', 'NKBright']
     else:
-        cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+        cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK', 'NKBright']
     tensor = np.empty((len(ligands), len(tps), len(concs), len(cellTypes)))
     tensor[:] = np.nan
     for i, lig in enumerate(ligands):
@@ -126,9 +126,9 @@ def plot_tFac_Conc(ax, tFac, respDF, meyer_data=False):
 def plot_tFac_Cells(ax, tFac, meyer_data=False, numComps=3):
     """Plots tensor factorization of cells"""
     if meyer_data:
-        cells = ['Treg', 'Thelper', 'CD8', 'NK']
+        cells = ['Treg', 'Thelper', 'CD8', 'NK', 'NKBright']
     else:
-        cells = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+        cells = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK', 'NKBright']
     cellFacs = tFac[1][3]
     tFacDFcell = pd.DataFrame()
     for i in range(0, numComps):

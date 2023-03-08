@@ -24,7 +24,7 @@ plt.rcParams['svg.fonttype'] = 'none'
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((9, 6.75), (3, 4))
+    ax, f = getSetup((9, 6.25), (4, 4))
     axlabel = copy(ax)
     del axlabel[3]
     del axlabel[-1]
@@ -38,7 +38,8 @@ def makeFigure():
     assymetry_Plot(ax[4])
     ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[5], live_dead=True)
     ligand_ratio_plot(modelDF, "Treg", "NK", ax[6], live_dead=True)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[7], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "NKBright", ax[7], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[8], live_dead=True)
 
     respDF = import_pstat_all_meyer()
     respDF.loc[(respDF.Valency == 1), "Ligand"] = (respDF.loc[(respDF.Valency == 1)].Ligand + " (Mono)").values
@@ -52,10 +53,10 @@ def makeFigure():
     tFacAllM = factorTensor(respTensor, numComps=numComps)
     tFacAllM.normalize()
 
-    R2Xplot(ax[8], respTensor, 5)
-    plot_tFac_Ligs(ax[9], tFacAllM, respDF, numComps=numComps)
-    plot_tFac_Cells(ax[10], tFacAllM, meyer_data=True, numComps=numComps)
-    plot_tFac_Conc(ax[11], tFacAllM, respDF, meyer_data=True)
+    R2Xplot(ax[9], respTensor, 5)
+    plot_tFac_Ligs(ax[10], tFacAllM, respDF, numComps=numComps)
+    plot_tFac_Cells(ax[11], tFacAllM, meyer_data=True, numComps=numComps)
+    plot_tFac_Conc(ax[12], tFacAllM, respDF, meyer_data=True)
 
 
     return f

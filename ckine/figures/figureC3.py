@@ -35,7 +35,7 @@ def makeFigure():
     R2Xplot(ax[1], respTensor, 5)
     ligCompDF = plot_tFac_Ligs(ax[3], tFacAllM, respDF, numComps=numComps)
     plot_tFac_Conc(ax[4], tFacAllM, respDF)
-    plot_tFac_Cells(ax[5], tFacAllM, respDF, numComps=numComps)
+    plot_tFac_Cells(ax[5], tFacAllM, meyer_data=False, numComps=numComps)
     plot_tFac_Time(ax[6], tFacAllM, respDF)
     facScatterPlot(ax[7], ligCompDF)
 
