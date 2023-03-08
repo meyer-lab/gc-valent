@@ -68,7 +68,7 @@ def Pred_Exp_plot(ax, df):
 def R2_Plot_Cells(ax, df):
     """Plots all accuracies per cell"""
     accDF = pd.DataFrame(columns={"Cell Type", "Valency", "Accuracy"})
-    cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK']
+    cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK', 'NKBright']
     for cell in cellTypes:
         for val in df.Valency.unique():
             preds = df.loc[(df.Cell == cell) & (df.Valency == val)].Predicted.values

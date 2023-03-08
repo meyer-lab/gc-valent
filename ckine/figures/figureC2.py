@@ -22,7 +22,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((7.5, 13), (6, 3), multz={0: 1, 3: 1, 6: 1, 9: 1})
+    ax, f = getSetup((7.5, 15.1666), (7, 3), multz={0: 1, 3: 1, 6: 1, 9: 1})
     axlabel = copy(ax)
     del axlabel[1]
     subplotLabel(axlabel)
@@ -42,10 +42,10 @@ def makeFigure():
     pseudo = 0.15
 
     mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
-
     ratioConc(ax[2:4], respDF, r"T$_{reg}$", "NK", time, mutAffDF, pseudo=pseudo, legend=True)
-    ratioConc(ax[4:6], respDF, r"T$_{reg}$", r"CD8$^{+}$", time, mutAffDF, pseudo=pseudo, legend=True)
-    ratioConc(ax[6:8], respDF, r"T$_{reg}$", r"T$_{helper}$", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[4:6], respDF, r"T$_{reg}$", r"NK$^{Bright}$", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[6:8], respDF, r"T$_{reg}$", r"CD8$^{+}$", time, mutAffDF, pseudo=pseudo, legend=True)
+    ratioConc(ax[8:10], respDF, r"T$_{reg}$", r"T$_{helper}$", time, mutAffDF, pseudo=pseudo, legend=True)
 
     legend = getLigandLegend()
     labels = (x.get_text() for x in legend.get_texts())

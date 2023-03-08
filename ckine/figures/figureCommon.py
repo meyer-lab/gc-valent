@@ -129,7 +129,8 @@ def genFigure():
 cellSTATlimDict = {"Treg": (0, 60000),
                    "Thelper": (0, 40000),
                    "CD8": (0, 30000),
-                   "NK": (0, 8000)}
+                   "NK": (0, 8000),
+                   "NKBright": (0, 8000)}
 
 
 def plotDoseResponses(ax, df, mut, cellType, val=False):
@@ -216,6 +217,7 @@ doseLimDict = {r"T$_{reg}$": (0, 50000),
                r"T$_{helper}$ $IL2Ra^{hi}$": (0, 25000),
                r"T$_{helper}$ $IL2Ra^{lo}$": (0, 25000),
                "NK": (0, 5000),
+               r"NK$^{Bright}$": (0, 5000),
                r"CD8$^{+}$": (0, 8000)}
 
 
@@ -498,3 +500,26 @@ def hill_equation(x, dose):
 def hill_residuals(x, dose, y):
     """ Residual function for Hill Equation. """
     return hill_equation(x, dose) - y
+
+
+def make_EC50_DF(respDF, time, meyer=False):
+    """Plots the various affinities for IL-2 Muteins"""
+    doses = np.log10(np.logspace(np.log10(respDF.Dose.min()), np.log10(respDF.Dose.max()), 100)) + 4
+    x0 = [4, 1, 4]
+    EC50_DF = pd.DataFrame()
+    if not meyer:
+        respDF = respDF.loc[(respDF.Time == time)]
+    cells = respDF.Cell.unique()
+
+    for cell in cells:
+        for ligand in respDF.Ligand.unique():
+            for valency in respDF.loc[respDF.Ligand == ligand].Valency.unique():
+                targIsoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency) & (respDF.Cell == cell)]
+                targXData = np.nan_to_num(np.log10(targIsoData.Dose.values)) + 4
+                targYData = np.nan_to_num(targIsoData.Mean.values)
+                targFit = least_squares(hill_residuals, x0, args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+                EC50_DF = pd.concat([EC50_DF, pd.DataFrame({"Cell": cell, "Ligand": ligand, "Valency": valency, "EC50": [np.power(10, targFit.x[2] - 4)]})])
+    if meyer:
+        EC50_DF.to_csv("ckine/data/EC50_DF_Meyer.csv")
+    else:
+        EC50_DF.to_csv("ckine/data/EC50_DF.csv")

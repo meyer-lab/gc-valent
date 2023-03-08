@@ -22,7 +22,7 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((9, 2.5), (1, 4))
+    ax, f = getSetup((11.25, 2.5), (1, 5))
     axlabel = copy(ax)
     del axlabel[0]
     subplotLabel(axlabel)
@@ -41,6 +41,7 @@ def makeFigure():
     mutAffDF = mutAffDF.loc[(mutAffDF.Ligand != "IL15") & (mutAffDF.Ligand != "IL2")]
 
     maxRatConc(ax[1], respDF, r"T$_{reg}$", "NK", time, mutAffDF, pseudo=pseudo, legend=True)
+    maxRatConc(ax[1], respDF, r"T$_{reg}$", r"NK$^{Bright}$", time, mutAffDF, pseudo=pseudo, legend=True)
     maxRatConc(ax[2], respDF, r"T$_{reg}$", r"CD8$^{+}$", time, mutAffDF, pseudo=pseudo, legend=True)
     maxRatConc(ax[3], respDF, r"T$_{reg}$", r"T$_{helper}$", time, mutAffDF, pseudo=pseudo, legend=True)
 

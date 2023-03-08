@@ -28,10 +28,9 @@ def makeFigure():
     subplotLabel(axlabel)
     ax[6].axis("off")
     ax[7].axis("off")
-    ax[11].axis("off")
-    optimizeDesign([ax[0], ax[1]], ["Treg"], ["Thelper", "NK", "CD8"])
-    optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8"], legend=False)
-    optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8"], IL7=True, legend=False)
+    optimizeDesign([ax[0], ax[1]], ["Treg"], ["Thelper", "NK", "CD8", "NKBright"])
+    optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8", "NKBright"], legend=False)
+    optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8", "NKBright"], IL7=True, legend=False)
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
@@ -39,7 +38,8 @@ def makeFigure():
 
     ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[8], live_dead=False)
     ligand_ratio_plot(modelDF, "Treg", "NK", ax[9], live_dead=False)
-    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[10], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "NKBright", ax[10], live_dead=False)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[11], live_dead=False)
 
     return f
 
@@ -47,7 +47,8 @@ def makeFigure():
 cellTypeDict = {"Treg": r"T$_{reg}$",
                 "Thelper": r"T$_{helper}$",
                 "NK": "NK",
-                "CD8": r"CD8$^{+}$"}
+                "CD8": r"CD8$^{+}$",
+                "NKBright": r"NK$^{Bright}$"}
 
 
 def cytBindingModelOpt(x, val, cellType, IL7=False):
