@@ -38,8 +38,8 @@ def makeFigure():
     ax[2].axis("off")
     ax[3].axis("off")
 
-    # minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
-    # print(minSolved)
+    #minSolved = minimize(runFullModel, x0=-12.0, args=([0.5, 1], False, True))
+    #print(minSolved)
 
     modelDF = runFullModel(time=[0.5, 1.0], saveDict=False, singleCell=True)  # Change to save
 

@@ -24,12 +24,12 @@ cellDict = get_cellTypeDict()
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
-    ax, f = getSetup((15, 18), (6, 4), multz={0: 1, 4: 7})
+    ax, f = getSetup((8, 4), (1, 2))
     axlabel = copy(ax)
     del axlabel[1]
     subplotLabel(axlabel)
-    ax[0].axis("off")
-    ax[1].axis("off")
+    #ax[0].axis("off")
+    #ax[1].axis("off")
 
     mutAffDF = pd.read_csv(join(path_here, "data/WTmutAffData.csv"))
     mutAffDF = mutAffDF.rename({"Mutein": "Ligand", "IL2RaKD": "IL2Rα $K_{D}$ (nM)", "IL2RBGKD": "IL2Rβ  $K_{D}$ (nM)"}, axis=1)
@@ -42,14 +42,14 @@ def makeFigure():
     respDF = respDF.loc[respDF.Ligand != "IL15"]
     mutAffDF = mutAffDF.loc[mutAffDF.Ligand != "IL15"]
 
-    affPlot(ax[2], respDF, mutAffDF)
-    legend = ax[2].get_legend()
-    labels = (x.get_text() for x in legend.get_texts())
-    ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
-    ax[2].get_legend().remove()
-    fullHeatMap(ax[3], respDF)
-    #PCAheatmap(ax[0:2], respDF)
-
+    #affPlot(ax[2], respDF, mutAffDF)
+    #legend = ax[2].get_legend()
+    #labels = (x.get_text() for x in legend.get_texts())
+    #ax[1].legend(legend.legendHandles, labels, loc="upper left", prop={"size": 10})  # use this to place universal legend later
+    #ax[2].get_legend().remove()
+    #fullHeatMap(ax[3], respDF)
+    PCAheatmap(ax[0:2], respDF)
+    """
     dosePlot(ax[4], respDF, 1, r"T$_{reg}$", ligList=["IL2", "R38Q N-term"], legend=True)
     dosePlot(ax[5], respDF, 1, r"T$_{helper}$", ligList=["IL2", "R38Q N-term"])
     dosePlot(ax[6], respDF, 1, r"CD8$^{+}$", ligList=["IL2", "R38Q N-term"])
@@ -62,7 +62,7 @@ def makeFigure():
     dosePlot(ax[13], respDF, 1, r"T$_{reg}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
     dosePlot(ax[14], respDF, 1, r"T$_{helper}$ $IL2Ra^{hi}$", ligList=["H16N N-term"])
     dosePlot(ax[15], respDF, 1, r"T$_{helper}$ $IL2Ra^{lo}$", ligList=["H16N N-term"])
-
+    """
     return f
 
 
@@ -77,7 +77,7 @@ def affPlot(ax, respDF, mutAffDF):
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Monovalent"
         elif valencies == 2:
             mutAffDF.loc[mutAffDF.Ligand == ligand, "Valency"] = "Bivalent"
-    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Ligand", ax=ax, palette=ligDict, s=60)
+    sns.scatterplot(data=mutAffDF, x="IL2Rα $K_{D}$ (nM)", y="IL2Rβ  $K_{D}$ (nM)", hue="Ligand", style="Ligand", ax=ax, palette=ligDict, s=90)
 
 
 def fullHeatMap(ax, respDF):
@@ -91,7 +91,7 @@ def fullHeatMap(ax, respDF):
         for dose in respDFhm.Dose.unique():
             row = pd.DataFrame()
             row["Ligand/Dose"] = [ligand + " - " + str(dose) + " (nM)"]
-            for cell in respDF.Cell.unique():
+            for cell in ['T$_{reg}$', 'T$_{helper}$', 'NK', 'NK$^{Bright}$','CD8$^{+}$', 'T$_{reg}$ $IL2Ra^{lo}$', 'T$_{reg}$ $IL2Ra^{hi}$', 'T$_{helper}$ $IL2Ra^{lo}$', 'T$_{helper}$ $IL2Ra^{hi}$']:
                 normMax = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Cell == cell)].Mean.max()
                 for time in respDFhm.Time.unique():
                     entry = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Dose == dose) & (respDFhm.Cell == cell) & (respDFhm.Time == time)].Mean.values / normMax
@@ -178,7 +178,7 @@ def PCAheatmap(ax, respDF):
         for dose in respDFhm.Dose.unique():
             row = pd.DataFrame()
             row["Ligand/Dose"] = [ligand + " - " + str(dose) + " (nM)"]
-            for cell in respDF.Cell.unique():
+            for cell in ['T$_{reg}$', 'T$_{helper}$', 'NK', 'CD8$^{+}$', 'T$_{reg}$ $IL2Ra^{lo}$', 'T$_{reg}$ $IL2Ra^{hi}$', 'T$_{helper}$ $IL2Ra^{lo}$', 'T$_{helper}$ $IL2Ra^{hi}$', 'NK$^{Bright}$']:
                 normMax = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Cell == cell)].Mean.max()
                 for time in respDFhm.Time.unique():
                     entry = respDFhm.loc[(respDFhm.Ligand == ligand) & (respDFhm.Dose == dose) & (respDFhm.Cell == cell) & (respDFhm.Time == time)].Mean.values / normMax

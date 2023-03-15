@@ -12,7 +12,7 @@ path_here = dirname(dirname(__file__))
 
 
 def getKxStar():
-    return 2.1958e-12
+    return 2.187e-12
 
 
 def Req_func2(Req, L0, KxStar, Rtot, Cplx, Ctheta, Kav):
