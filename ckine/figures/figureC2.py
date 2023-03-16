@@ -13,7 +13,6 @@ from copy import copy
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_cellTypeDict, getLigandLegend, Wass_KL_Dist, CITE_RIDGE, hillRatioDosePlot
 from ..imports import import_pstat_all
 
-
 path_here = os.path.dirname(os.path.dirname(__file__))
 plt.rcParams['svg.fonttype'] = 'none'
 ligDict = getLigDict()
@@ -35,7 +34,6 @@ def makeFigure():
 
     # Imports receptor levels from .csv created by figC5
     respDF = import_pstat_all(True, False)
-    respDF = respDF.replace(cellDict)
     respDF = respDF.rename({"Bivalent": "Valency"}, axis=1)
     respDF["Valency"] = respDF["Valency"] + 1
     time = 4.0
