@@ -509,6 +509,8 @@ def make_EC50_DF(respDF, time, meyer=False):
     EC50_DF = pd.DataFrame()
     if not meyer:
         respDF = respDF.loc[(respDF.Time == time)]
+    else:
+        respDF = respDF.rename({"pSTAT5": "Mean"}, axis=1)
     cells = respDF.Cell.unique()
 
     for cell in cells:
@@ -519,7 +521,16 @@ def make_EC50_DF(respDF, time, meyer=False):
                 targYData = np.nan_to_num(targIsoData.Mean.values)
                 targFit = least_squares(hill_residuals, x0, args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
                 EC50_DF = pd.concat([EC50_DF, pd.DataFrame({"Cell": cell, "Ligand": ligand, "Valency": valency, "EC50": [np.power(10, targFit.x[2] - 4)]})])
+
+    EC50_DF.loc[(EC50_DF.Valency == 1), "Ligand"] = (EC50_DF.loc[(EC50_DF.Valency == 1)].Ligand + " (Mono)").values
+    EC50_DF.loc[(EC50_DF.Valency == 2), "Ligand"] = (EC50_DF.loc[(EC50_DF.Valency == 2)].Ligand + " (Biv)").values
+    EC50_DF.loc[(EC50_DF.Valency == 4), "Ligand"] = (EC50_DF.loc[(EC50_DF.Valency == 4)].Ligand + " (Tetra)").values
+
     if meyer:
+        EC50_DF = EC50_DF.pivot(index='Ligand', columns='Cell', values='EC50')
+        EC50_DF = EC50_DF.where(EC50_DF < 99, "N/A")
         EC50_DF.to_csv("ckine/data/EC50_DF_Meyer.csv")
     else:
+        EC50_DF = EC50_DF.pivot(index='Ligand', columns='Cell', values='EC50')
+        EC50_DF = EC50_DF.where(EC50_DF < 99, "N/A")
         EC50_DF.to_csv("ckine/data/EC50_DF.csv")
