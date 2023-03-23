@@ -232,8 +232,8 @@ def make_flow_df(subtract=True):
     for date in datesFormat:
         for cell in MeyerDF.Cell.unique():
             # Remove persistent baseline values
-            MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
             MeyerDF.loc[(MeyerDF.Cell == cell) & (MeyerDF.Date == date), "pSTAT5"] -= MeyerDF.loc[(MeyerDF.Cell == cell) & (
                 MeyerDF.Dose <= 0.00392) & (MeyerDF.Date == date)].pSTAT5.mean()
+            MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
     MeyerDF.to_csv(join(path_here, "ckine/data/Meyer_Flow.csv"))
     return MeyerDF
