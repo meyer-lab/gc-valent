@@ -26,4 +26,6 @@ def makeFigure():
     ligandPlot(modelDF, "NKBright", ax[3], live_dead=True)
     ligandPlot(modelDF, "CD8", ax[4], live_dead=True)
 
+    
+
     return f
