@@ -155,7 +155,6 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
 def runFullModelMeyer(x=False, saveDict=False):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all_meyer()
-    #statDF = statDF.loc[statDF.Ligand != "Live/Dead"]
 
     dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
     masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"})

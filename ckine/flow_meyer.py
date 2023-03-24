@@ -18,13 +18,22 @@ warnings.filterwarnings("ignore")
 gate_df = pd.DataFrame()
 
 
-flow_dict = {"Pacific Blue-A": "FoxP3",
-             "FITC-A": "CD8",
-             "PE-A": "CD4",
-             "BV605-A": "CD56",
-             "Alexa Fluor 700-A": "pSTAT5",
-             "APC-Cy7-A": "CD25",
-             "Alexa Fluor 647-A": "CD3"}
+flow_dict_1 = {"Pacific Blue-A": "FoxP3",
+"FITC-A": "CD8",
+"PE-A": "CD4",
+"BV605-A": "CD56",
+"Alexa Fluor 700-A": "pSTAT5",
+"APC-Cy7-A": "CD25",
+"Alexa Fluor 647-A": "CD3"}
+
+
+flow_dict_2 = {"Pacific Blue-A": "FoxP3",
+"FITC-A": "CD8",
+"PE-A": "CD4",
+"BV605-A": "CD56",
+"Alexa Fluor 700-A": "pSTAT5",
+"APC-Cy7-A": "CD25",
+"PerCP-Cy5-5-A": "CD3"}
 
 
 def compile_untreated(date, cellFrac):
@@ -40,7 +49,7 @@ def compile_untreated(date, cellFrac):
 def combineWells(samples, cellFrac, date):
     """Accepts sample array returned from importF, and array of channels, returns combined well data"""
     comp_mat = compMatrix(date)
-    markers = np.array(["Pacific Blue-A", "FITC-A", "PE-A", "BV605-A", "Alexa Fluor 700-A", "APC-Cy7-A", "Alexa Fluor 647-A"])
+    markers = np.array(["Pacific Blue-A", "FITC-A", "PE-A", "BV605-A", "Alexa Fluor 700-A", "APC-Cy7-A", "Alexa Fluor 647-A", "PerCP-Cy5-5-A"])
     log_markers = markers[np.isin(markers, samples[0].data.columns)]
     samples[0] = applyMatrix(samples[0], comp_mat)
     samples[0] = samples[0].transform("tlog", channels=log_markers)
@@ -50,7 +59,10 @@ def combineWells(samples, cellFrac, date):
         sample = applyMatrix(sample, comp_mat)
         sample = sample.transform("tlog", channels=log_markers)
         combinedSamples.data = pd.concat([combinedSamples.data, sample.data.sample(frac=cellFrac)])
-    combinedSamples.data = combinedSamples.data.rename(flow_dict, axis=1)
+    if date == "3_17_23":
+        combinedSamples.data = combinedSamples.data.rename(flow_dict_2, axis=1)
+    else:
+        combinedSamples.data = combinedSamples.data.rename(flow_dict_1, axis=1)
     combinedSamples.data = combinedSamples.data.astype(int)
     combinedSamples.data = combinedSamples.data.clip(lower=0, upper=5e5)
     return combinedSamples
@@ -103,10 +115,13 @@ def process_sample(sample, date):
     """Relabels and logs a sample"""
     comp_mat = compMatrix(date)
     sample = applyMatrix(sample, comp_mat)
-    markers = np.array(["Pacific Blue-A", "FITC-A", "PE-A", "BV605-A", "APC-Cy7-A", "Alexa Fluor 647-A"])
+    markers = np.array(["Pacific Blue-A", "FITC-A", "PE-A", "BV605-A", "APC-Cy7-A", "Alexa Fluor 647-A", "PerCP-Cy5-5-A"])
     log_markers = markers[np.isin(markers, sample.data.columns)]
     sample = sample.transform("tlog", channels=log_markers)
-    sample.data = sample.data.rename(flow_dict, axis=1)
+    if date == "3_17_23":
+        sample.data = sample.data.rename(flow_dict_2, axis=1)
+    else:
+        sample.data = sample.data.rename(flow_dict_1, axis=1)
     return sample, log_markers
 
 
@@ -114,8 +129,6 @@ def makeGate(lowerCorner, upperCorner, channels, name):
     """Returns square gate using upper and lower corners"""
     return PolyGate([(lowerCorner[0], lowerCorner[1]), (upperCorner[0], lowerCorner[1]), (upperCorner[0], upperCorner[1]), (lowerCorner[0], upperCorner[1])], channels, region='in', name=name)
 
-
-cellTypes = ["NK", "CD8", "Thelper", "Treg"]
 
 gate_dict = {"NK": ["NK Gate"],
              "NKBright": ["NK Bright Gate"],
@@ -170,8 +183,8 @@ def make_flow_df(subtract=True):
     columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
     rows = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
     rowminus = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-    dates = ["6_25_22", "7_22_22", "8_10_22", "9_19_22"]
-    datesFormat = ["6/25/22", "7/22/22", "8/10/22", "9/19/22"]
+    dates = ["6_25_22", "7_22_22", "8_10_22", "9_19_22", "3_17_23"]
+    datesFormat = ["6/25/22", "7/22/22", "8/10/22", "9/19/22", "3/17/23"]
 
     cell_types = ["Treg", "Thelper", "CD8", "NK", "NKBright"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates.csv"))
@@ -187,38 +200,40 @@ def make_flow_df(subtract=True):
                 for cell_type in cell_types:
                     pop_sample = pop_gate(sample, cell_type, gateDF, datesFormat[j])
                     mean = pop_sample.data["pSTAT5"]
-                    mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
+                    if len(mean) == 0:
+                        mean = 0
+                    else:
+                        mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
                     MeyerDF = pd.concat([MeyerDF, pd.DataFrame({"Ligand": lig_dict[row][0], "Valency": lig_dict[row][1],
                                         "Dose": dose_dict[column], "Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[j], "Replicate": lig_dict[row][2]})])
     # Remove cell-deficient wells
     MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 12.954) | (MeyerDF.Replicate != 2) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
     MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 0.869) | (MeyerDF.Replicate != 2) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
     MeyerDF = MeyerDF.loc[(MeyerDF.Date != "8/10/22") | (MeyerDF.Dose != 0.2252) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
+    MeyerDF = MeyerDF.loc[(MeyerDF.Date != "9/19/22") | (MeyerDF.Dose != 0.00392) | (MeyerDF.Ligand != "Live/Dead") | (MeyerDF.Valency != 4)]
 
     MeyerDF = MeyerDF.groupby(["Ligand", "Valency", "Dose", "Cell", "Date"]).pSTAT5.mean().reset_index()
 
     untreatedDF = pd.DataFrame()
     for i, date in enumerate(dates):
         untreated_sample = compile_untreated(date, cellFrac=1.0)
-        untreated_sample = live_PBMC_gate(sample, gateDF, datesFormat[i])
+        untreated_sample = live_PBMC_gate(untreated_sample, gateDF, datesFormat[i])
         for cell_type in cell_types:
             pop_sample = pop_gate(untreated_sample, cell_type, gateDF, datesFormat[i])
             mean = pop_sample.data["pSTAT5"]
-            mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
+            if len(mean) == 0:
+                mean = 0
+            else:
+                mean = np.mean(mean.values[mean.values < np.quantile(mean.values, 0.995)])
             untreatedDF = pd.concat([untreatedDF, pd.DataFrame({"Cell": cell_type, "pSTAT5": [mean], "Date": datesFormat[i]})])
     untreatedDF = untreatedDF.fillna(value=0)
     untreatedDF.pSTAT5 = untreatedDF.pSTAT5.clip(lower=0)
 
     for date in datesFormat:
         for cell in MeyerDF.Cell.unique():
-            for ligand in MeyerDF.Ligand.unique():
-                for valency in MeyerDF.loc[MeyerDF.Ligand == ligand].Valency.unique():
-                    for dose in MeyerDF.Dose.unique():
-                        MeyerDF.loc[(MeyerDF.Valency == valency) & (MeyerDF.Ligand == ligand) & (MeyerDF.Cell == cell) & (
-                            MeyerDF.Dose == dose) & (MeyerDF.Date == date), "pSTAT5"] -= untreatedDF.loc[(untreatedDF.Cell == cell) & (untreatedDF.Date == date)].pSTAT5.values
             # Remove persistent baseline values
-            MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
             MeyerDF.loc[(MeyerDF.Cell == cell) & (MeyerDF.Date == date), "pSTAT5"] -= MeyerDF.loc[(MeyerDF.Cell == cell) & (
                 MeyerDF.Dose <= 0.00392) & (MeyerDF.Date == date)].pSTAT5.mean()
+            MeyerDF.pSTAT5 = MeyerDF.pSTAT5.clip(lower=0)
     MeyerDF.to_csv(join(path_here, "ckine/data/Meyer_Flow.csv"))
     return MeyerDF

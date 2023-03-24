@@ -95,17 +95,17 @@
                	Name: Unnamed Gate 3
                 ",8/10/22
 0,Treg Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
-               	Vertices: [(4500.0, 5500.0), (7000.0, 4200.0), (7000.0, 6500.0), (4500.0, 6500.0)]
+               	Vertices: [(4500.0, 6000.0), (7000.0, 5300.0), (7000.0, 7000.0), (4500.0, 7000.0)]
                	Channel(s): ['CD25', 'FoxP3']
                	Name: PBMC
                 ",8/10/22
 0,Thelper Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
-               	Vertices: [(1000.0, 1000.0), (1000.0, 5000.0), (5000.0, 5000.0), (6000.0, 4000.0), (6000.0, 1000.0)]
+               	Vertices: [(1000.0, 1000.0), (1000.0, 6000.0), (4500.0, 6000.0), (7000.0, 5300.0), (7000.0, 1000.0)]
                	Channel(s): ['CD25', 'FoxP3']
                	Name: PBMC
                 ",8/10/22
 0,CD8 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
-               	Vertices: [(5000.0, 5000.0), (7750.0, 5800.0), (7200.0, 7200.0), (5000.0, 6000.0)]
+               	Vertices: [(5000.0, 5700.0), (7750.0, 6400.0), (7200.0, 8200.0), (5000.0, 7000.0)]
                	Channel(s): ['CD3', 'CD8']
                	Name: PBMC
                 ",8/10/22
@@ -150,12 +150,52 @@
                	Name: PBMC
                 ",9/19/22
 0,NK Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
-               	Vertices: [(2000.0, 5600.0), (5000.0, 5600.0), (5000.0, 7500.0), (2000.0, 7500.0)]
+               	Vertices: [(2000.0, 5600.0), (5000.0, 5600.0), (5000.0, 7700.0), (2000.0, 7700.0)]
                	Channel(s): ['CD3', 'CD56']
                	Name: PBMC
                 ",9/19/22
 0,NK Bright Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
-               	Vertices: [(2000.0, 7500.0), (5000.0, 7500.0), (5000.0, 10000.0), (2000.0, 10000.0)]
+               	Vertices: [(2000.0, 7700.0), (5000.0, 7700.0), (5000.0, 10000.0), (2000.0, 10000.0)]
                	Channel(s): ['CD3', 'CD56']
                	Name: PBMC
                 ",9/19/22
+0,PBMC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(40000.0, 15000.0), (55000.0, 15000.0), (75000.0, 20000.0), (90000.0, 30000.0), (110000.0, 50000.0), (120000.0, 90000.0), (85000.0, 130000.0), (60000.0, 75000.0), (50000.0, 55000.0), (42000.0, 32000.0)]
+               	Channel(s): ['FSC-H', 'SSC-H']
+               	Name: PBMC
+                ",3/17/23
+0,Live Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(20000.0, 15000.0), (170000.0, 130000.0), (120000.0, 130000.0), (10000.0, 20000.0)]
+               	Channel(s): ['SSC-A', 'SSC-H']
+               	Name: PBMC
+                ",3/17/23
+0,CD4 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(6000.0, -100000.0), (100000.0, -100000.0), (100000.0, 100000.0), (6000.0, 100000.0)]
+               	Channel(s): ['CD4', 'pSTAT5']
+               	Name: Unnamed Gate 5
+                ",3/17/23
+0,Treg Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(4500.0, 5000.0), (7000.0, 4100.0), (7000.0, 6500.0), (4500.0, 6500.0)]
+               	Channel(s): ['CD25', 'FoxP3']
+               	Name: PBMC
+                ",3/17/23
+0,Thelper Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(1000.0, 1000.0), (1000.0, 5000.0), (4500.0, 5000.0), (7000.0, 4100.0), (6000.0, 1000.0)]
+               	Channel(s): ['CD25', 'FoxP3']
+               	Name: PBMC
+                ",3/17/23
+0,CD8 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(5000.0, 5000.0), (8000.0, 6000.0), (7300.0, 7300.0), (5300.0, 6400.0)]
+               	Channel(s): ['CD3', 'CD8']
+               	Name: PBMC
+                ",3/17/23
+0,NK Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(2000.0, 5400.0), (5000.0, 5400.0), (5000.0, 7300.0), (2000.0, 7300.0)]
+               	Channel(s): ['CD3', 'CD56']
+               	Name: PBMC
+                ",3/17/23
+0,NK Bright Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(2000.0, 7300.0), (6000.0, 7300.0), (6000.0, 10000.0), (2000.0, 10000.0)]
+               	Channel(s): ['CD3', 'CD56']
+               	Name: PBMC
+                ",3/17/23
