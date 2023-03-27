@@ -12,7 +12,7 @@ from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from .figureCommon import subplotLabel, getSetup, ligand_ratio_plot
 from ..MBmodel import polyc, getKxStar, runFullModelMeyer
 from ..imports import getBindDict, importReceptors
-from ..flow_meyer import make_flow_df
+from ..flow_meyer import make_flow_df, make_flow_df_ILCs
 
 path_here = dirname(dirname(__file__))
 plt.rcParams['svg.fonttype'] = 'none'
@@ -33,6 +33,7 @@ def makeFigure():
     optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8", "NKBright"], IL7=True, legend=False)
 
     # make_flow_df()
+    # make_flow_df_ILCs()
     modelDF = runFullModelMeyer().reset_index()
     print(r2_score(modelDF.Experimental.values, modelDF.Predicted.values))
 
