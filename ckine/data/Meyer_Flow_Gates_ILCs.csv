@@ -1,0 +1,121 @@
+,Gate Label,Gate,Donor
+0,PBMC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(60000.0, 15000.0), (90000.0, 15000.0), (110000.0, 20000.0), (125000.0, 30000.0), (120000.0, 50000.0), (90000.0, 45000.0), (60000.0, 32000.0)]
+               	Channel(s): ['FSC-H', 'SSC-H']
+               	Name: PBMC
+                ",303
+0,Live Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(20000.0, 15000.0), (65000.0, 60000.0), (55000.0, 60000.0), (10000.0, 20000.0)]
+               	Channel(s): ['SSC-A', 'SSC-H']
+               	Name: PBMC
+                ",303
+0,T Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 5300.0), (1000000.0, 5300.0), (1000000.0, 100000.0), (0.0, 100000.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 2
+                ",303
+0,Treg Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(3500.0, 6500.0), (7000.0, 6000.0), (7000.0, 8500.0), (3500.0, 8500.0)]
+               	Channel(s): ['CD25', 'FoxP3']
+               	Name: PBMC
+                ",303
+0,ILC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 0.0), (1000000.0, 0.0), (1000000.0, 5300.0), (0.0, 5300.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 1
+                ",303
+0,ILC2 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(5500.0, 1500.0), (50000.0, 1500.0), (50000.0, 50000.0), (5500.0, 50000.0)]
+               	Channel(s): ['CRTH2', 'CD127']
+               	Name: PBMC
+                ",303
+0,PBMC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(60000.0, 15000.0), (90000.0, 15000.0), (110000.0, 20000.0), (125000.0, 30000.0), (120000.0, 50000.0), (90000.0, 45000.0), (60000.0, 32000.0)]
+               	Channel(s): ['FSC-H', 'SSC-H']
+               	Name: PBMC
+                ",334
+0,Live Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(20000.0, 15000.0), (65000.0, 60000.0), (55000.0, 60000.0), (10000.0, 20000.0)]
+               	Channel(s): ['SSC-A', 'SSC-H']
+               	Name: PBMC
+                ",334
+0,T Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 5000.0), (1000000.0, 5000.0), (1000000.0, 100000.0), (0.0, 100000.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 4
+                ",334
+0,Treg Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(2500.0, 6500.0), (7000.0, 6000.0), (7000.0, 8500.0), (2500.0, 8500.0)]
+               	Channel(s): ['CD25', 'FoxP3']
+               	Name: PBMC
+                ",334
+0,ILC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 0.0), (1000000.0, 0.0), (1000000.0, 5000.0), (0.0, 5000.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 3
+                ",334
+0,ILC2 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(5000.0, 1500.0), (50000.0, 1500.0), (50000.0, 50000.0), (5000.0, 50000.0)]
+               	Channel(s): ['CRTH2', 'CD127']
+               	Name: PBMC
+                ",334
+0,PBMC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(60000.0, 15000.0), (90000.0, 15000.0), (110000.0, 20000.0), (125000.0, 30000.0), (120000.0, 50000.0), (90000.0, 45000.0), (60000.0, 32000.0)]
+               	Channel(s): ['FSC-H', 'SSC-H']
+               	Name: PBMC
+                ",850
+0,Live Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(20000.0, 15000.0), (65000.0, 60000.0), (55000.0, 60000.0), (10000.0, 20000.0)]
+               	Channel(s): ['SSC-A', 'SSC-H']
+               	Name: PBMC
+                ",850
+0,T Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 5000.0), (1000000.0, 5000.0), (1000000.0, 100000.0), (0.0, 100000.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 6
+                ",850
+0,Treg Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(4000.0, 6500.0), (7000.0, 6500.0), (7000.0, 8500.0), (4000.0, 8500.0)]
+               	Channel(s): ['CD25', 'FoxP3']
+               	Name: PBMC
+                ",850
+0,ILC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 0.0), (1000000.0, 0.0), (1000000.0, 5000.0), (0.0, 5000.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 5
+                ",850
+0,ILC2 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(5000.0, 1500.0), (50000.0, 1500.0), (50000.0, 50000.0), (5000.0, 50000.0)]
+               	Channel(s): ['CRTH2', 'CD127']
+               	Name: PBMC
+                ",850
+0,PBMC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(60000.0, 15000.0), (90000.0, 15000.0), (110000.0, 20000.0), (125000.0, 30000.0), (120000.0, 50000.0), (90000.0, 45000.0), (60000.0, 32000.0)]
+               	Channel(s): ['FSC-H', 'SSC-H']
+               	Name: PBMC
+                ",X
+0,Live Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(20000.0, 15000.0), (65000.0, 60000.0), (55000.0, 60000.0), (10000.0, 20000.0)]
+               	Channel(s): ['SSC-A', 'SSC-H']
+               	Name: PBMC
+                ",X
+0,T Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 5200.0), (1000000.0, 5200.0), (1000000.0, 100000.0), (0.0, 100000.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 8
+                ",X
+0,Treg Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(2500.0, 6800.0), (7000.0, 6800.0), (7000.0, 8500.0), (2500.0, 8500.0)]
+               	Channel(s): ['CD25', 'FoxP3']
+               	Name: PBMC
+                ",X
+0,ILC Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(0.0, 0.0), (1000000.0, 0.0), (1000000.0, 5200.0), (0.0, 5200.0)]
+               	Channel(s): ['FSC-A', 'Lin']
+               	Name: Unnamed Gate 7
+                ",X
+0,ILC2 Gate,"Gate Type: <class 'FlowCytometryTools.core.gates.PolyGate'>
+               	Vertices: [(5000.0, 1000.0), (50000.0, 1000.0), (50000.0, 50000.0), (5000.0, 50000.0)]
+               	Channel(s): ['CRTH2', 'CD127']
+               	Name: PBMC
+                ",X
