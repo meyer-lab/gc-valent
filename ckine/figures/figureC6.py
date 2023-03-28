@@ -34,7 +34,6 @@ def makeFigure():
 
     # make_flow_df()
     modelDF = runFullModelMeyer().reset_index()
-    modelDF = modelDF.loc[modelDF.Date.isin(["3/24/23_1", "3/24/23_2"])]
 
     assymetry_Plot(ax[4])
     ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[5], live_dead=True)
