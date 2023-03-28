@@ -28,9 +28,9 @@ def makeFigure():
     subplotLabel(axlabel)
     ax[6].axis("off")
     ax[7].axis("off")
-    optimizeDesign([ax[0], ax[1]], ["Treg"], ["Thelper", "NK", "CD8", "NKBright"])
-    optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8", "NKBright"], legend=False)
-    optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8", "NKBright"], IL7=True, legend=False)
+    #optimizeDesign([ax[0], ax[1]], ["Treg"], ["Thelper", "NK", "CD8", "NKBright"])
+    #optimizeDesign([ax[2], ax[3]], ["NK"], ["Thelper", "Treg", "CD8", "NKBright"], legend=False)
+    #optimizeDesign([ax[4], ax[5]], ["Thelper"], ["Treg", "NK", "CD8", "NKBright"], IL7=True, legend=False)
 
     # make_flow_df()
     # make_flow_df_ILCs()
