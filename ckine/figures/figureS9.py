@@ -10,13 +10,12 @@ from matplotlib import cm
 
 path_here = os.path.dirname(os.path.dirname(__file__))
 plt.rcParams['svg.fonttype'] = 'none'
-path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 6), (2, 4))
+    ax, f = getSetup((7.5, 4.5), (2, 4))
     subplotLabel(ax)
 
     donor = "X"
@@ -56,9 +55,14 @@ def makeFigure():
     
     SC_Data = pd.read_csv(join(path_here, "data/Meyer_Flow_ILCs_SC.csv"))
     sns.histplot(data=SC_Data[SC_Data.Cell == "Treg"], x="CD25", hue="Cell", ax=ax[5])
+    ax[5].set(xlim=(0, 10000))
     sns.histplot(data=SC_Data[SC_Data.Cell == "ILC2"], x="CD25", hue="Cell", ax=ax[6])
+    ax[6].set(xlim=(0, 10000))
 
     ILC_Data = pd.read_csv(join(path_here, "data/Meyer_Flow_ILCs.csv"))
     sns.barplot(data=ILC_Data, x="Donor", y="CD25", hue="Cell", ax=ax[7])
+    ax[7].set(ylim=(0, 8000))
+    ax[7].set_xticklabels(ax[7].get_xticklabels(), rotation=45, ha="right")
+    plt.grid()
 
     return f
