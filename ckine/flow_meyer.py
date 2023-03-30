@@ -9,6 +9,7 @@ import textwrap
 import pandas as pd
 import numpy as np
 import warnings
+from copy import copy
 from FlowCytometryTools import PolyGate, FCMeasurement
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -158,9 +159,10 @@ def pop_gate(sample, cell_type, gateDF, date):
     """Extracts cell population sample"""
     gateDF = gateDF.loc[gateDF.Date == date]
     gates = gate_dict[cell_type]
+    pop_sample = copy(sample)
     for gate_name in gates:
         gate = form_gate(gateDF.loc[(gateDF["Gate Label"] == gate_name)].Gate.values[0])
-        pop_sample = sample.gate(gate)
+        pop_sample = pop_sample.gate(gate)
     return pop_sample
 
 
@@ -324,9 +326,10 @@ def pop_gate_ILCs(sample, cell_type, gateDF, donor):
     """Extracts cell population sample"""
     gateDF = gateDF.loc[gateDF.Donor == donor]
     gates = gate_dict_ILCs[cell_type]
+    pop_sample = copy(sample)
     for gate_name in gates:
         gate = form_gate(gateDF.loc[(gateDF["Gate Label"] == gate_name)].Gate.values[0])
-        pop_sample = sample.gate(gate)
+        pop_sample = pop_sample.gate(gate)
     return pop_sample
 
 
@@ -338,6 +341,7 @@ def make_flow_df_ILCs(subtract=True):
     cell_types = ["Treg", "ILC2"]
     gateDF = pd.read_csv(join(path_here, "ckine/data/Meyer_Flow_Gates_ILCs.csv"))
     MeyerDF = pd.DataFrame([])
+    MeyerDF_SC = pd.DataFrame([])
 
     for i, donor in enumerate(donors):
         print(donor)
@@ -347,6 +351,8 @@ def make_flow_df_ILCs(subtract=True):
         for cell_type in cell_types:
             pop_sample = pop_gate_ILCs(sample, cell_type, gateDF, donorFormat[i].split(" ")[-1])
             mean = pop_sample.data["CD25"]
+            mean = mean.loc[mean >= 5]
+            MeyerDF_SC = pd.concat([MeyerDF_SC, pd.DataFrame({ "Cell": cell_type, "CD25": mean.values, "Donor": donorFormat[i]})])
             if len(mean) == 0:
                 mean = 0
             else:
@@ -354,4 +360,5 @@ def make_flow_df_ILCs(subtract=True):
             MeyerDF = pd.concat([MeyerDF, pd.DataFrame({ "Cell": cell_type, "CD25": [mean], "Donor": donorFormat[i]})])
 
     MeyerDF.to_csv(join(path_here, "ckine/data/Meyer_Flow_ILCs.csv"))
+    MeyerDF_SC.to_csv(join(path_here, "ckine/data/Meyer_Flow_ILCs_SC.csv"))
     return MeyerDF
