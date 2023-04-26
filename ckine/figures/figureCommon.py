@@ -271,9 +271,9 @@ def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
         posCorrs = ratioDF.tail(numFactors).Marker.values
         corrsDF = pd.concat([corrsDF, pd.DataFrame({"Distance": distance, "Marker": posCorrs})])
         markerDF = markerDF.loc[markerDF["Marker"].isin(posCorrs)]
-        sns.barplot(data=ratioDF.tail(numFactors), x="Marker", y=distance, ax=ax[i], color='k')
-        ax[i].set(yscale="log")
-        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=45)
+        sns.barplot(data=ratioDF.tail(numFactors), y="Marker", x=distance, ax=ax[i], color='k')
+        ax[i].set(xscale="log")
+        #ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=45)
     if RNA:
         ax[0].set(title="Wasserstein Distance - RNA")
         ax[1].set(title="KL Divergence - RNA")
@@ -415,7 +415,7 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
     expRatioDF = pd.DataFrame()
     predRatioDF = pd.DataFrame()
     if live_dead:
-        DF = DF.loc[(DF.Valency != 1)]
+        DF = DF.loc[(DF.Valency != 1) & (DF.Ligand != "R38Q/H16N")]
     else:
         DF = DF.loc[(DF.Ligand != "Live/Dead")]
 
@@ -440,7 +440,7 @@ def ligand_ratio_plot(DF, cell1, cell2, ax, live_dead=False):
 
     expRatioDF = expRatioDF.reset_index()
     predRatioDF = predRatioDF.reset_index()
-    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Ligand", palette=valency_dict, ax=ax, markers=True, err_style="bars", err_kws={"capsize": 0, "elinewidth": 0},  legend=False)
+    sns.lineplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Ligand", palette=valency_dict, ax=ax, markers=True, err_style="bars", err_kws={"capsize": 2, "elinewidth": 1},  legend=False)
     expRatioDF = expRatioDF.groupby(["Ligand", "Valency", "Dose"]).Ratio.mean().reset_index()
     sns.scatterplot(data=expRatioDF, x="Dose", y="Ratio", hue="Valency", style="Ligand", s=15, palette=valency_dict, ax=ax, legend=False)
     if live_dead:
