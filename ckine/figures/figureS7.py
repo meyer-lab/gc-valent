@@ -15,7 +15,7 @@ plt.rcParams['svg.fonttype'] = 'none'
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
 
-    ax, f = getSetup((10, 2), (1, 5))
+    ax, f = getSetup((7, 7), (3, 3))
     subplotLabel(ax)
 
     modelDF = runFullModelMeyer().reset_index()
@@ -25,6 +25,10 @@ def makeFigure():
     ligandPlot(modelDF, "NK", ax[2], live_dead=True)
     ligandPlot(modelDF, "NKBright", ax[3], live_dead=True)
     ligandPlot(modelDF, "CD8", ax[4], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "Thelper", ax[5], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "NK", ax[6], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "NKBright", ax[7], live_dead=True)
+    ligand_ratio_plot(modelDF, "Treg", "CD8", ax[8], live_dead=True)
 
     
 
