@@ -419,7 +419,7 @@ def StatGini(sampleType, ax, cell_type, date, Tcells=True):
 
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0.0, 0.0, 0.0], [10, 10.0, 10 ** 5.0]), jac="3-point")
+    lsq_res = least_squares(residuals, x0, method="dogbox", args=(xdata, ydata), bounds=([0.0, 0.0, 0.0], [10, 10.0, 10 ** 5.0]), jac="3-point")
     return lsq_res.x[0]
 
 

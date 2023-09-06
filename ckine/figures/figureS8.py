@@ -4,10 +4,8 @@ This creates Figure 3, tensor factorization of mutant and WT biv and monovalent 
 
 import os
 import pandas as pd
-import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import least_squares
 from os.path import join
 from copy import copy
 from .figureCommon import subplotLabel, getSetup, getLigDict, get_cellTypeDict, make_EC50_DF
