@@ -7,7 +7,7 @@ from scipy.optimize import least_squares
 import numpy as np
 import pandas as pd
 import warnings
-from FlowCytometryTools import FCMeasurement, QuadGate, ThresholdGate, PolyGate
+from FlowCytometryTools import FCMeasurement, QuadGate, ThresholdGate
 
 path_here = dirname(dirname(__file__))
 
@@ -175,7 +175,7 @@ def nllsq(x, y):
     upper = np.array([1.0, 1.1, 1.0e6, 1.0e9])
     x0 = (upper - lower) / 2.0 + lower
 
-    lsq = least_squares(lambda pp: exp_dec(x, pp) - y, x0, bounds=(lower, upper), jac="3-point")
+    lsq = least_squares(lambda pp: exp_dec(x, pp) - y, x0, method="dogbox", bounds=(lower, upper), jac="3-point")
     return lsq.x
 
 
