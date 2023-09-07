@@ -466,12 +466,12 @@ def hillRatioDosePlot(ax, respDF, time, targCell, offTargCell, pseudo=0.2, plot=
             targIsoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency) & (respDF.Cell == targCell)]
             targXData = np.nan_to_num(np.log10(targIsoData.Dose.values)) + 4
             targYData = np.nan_to_num(targIsoData.Mean.values)
-            targFit = least_squares(hill_residuals, x0, args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+            targFit = least_squares(hill_residuals, x0, method="dogbox", args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
 
             offTIsoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency) & (respDF.Cell == offTargCell)]
             offTargXData = np.nan_to_num(np.log10(offTIsoData.Dose.values)) + 4
             offTargYData = np.nan_to_num(offTIsoData.Mean.values)
-            offTargFit = least_squares(hill_residuals, x0, args=(offTargXData, offTargYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+            offTargFit = least_squares(hill_residuals, x0, method="dogbox", args=(offTargXData, offTargYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
             hillDF = pd.concat([hillDF, pd.DataFrame({"Ligand": ligand, "Valency": valency, "Cell": targCell, "Dose": np.power(
                 10, doses - 4), targCell: hill_equation(targFit.x, doses), offTargCell: hill_equation(offTargFit.x, doses)})])
 
@@ -519,7 +519,7 @@ def make_EC50_DF(respDF, time, meyer=False):
                 targIsoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency) & (respDF.Cell == cell)]
                 targXData = np.nan_to_num(np.log10(targIsoData.Dose.values)) + 4
                 targYData = np.nan_to_num(targIsoData.Mean.values)
-                targFit = least_squares(hill_residuals, x0, args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+                targFit = least_squares(hill_residuals, x0, method="dogbox", args=(targXData, targYData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
                 EC50_DF = pd.concat([EC50_DF, pd.DataFrame({"Cell": cell, "Ligand": ligand, "Valency": valency, "EC50": [np.power(10, targFit.x[2] - 4)]})])
 
     EC50_DF.loc[(EC50_DF.Valency == 1), "Ligand"] = (EC50_DF.loc[(EC50_DF.Valency == 1)].Ligand + " (Mono)").values

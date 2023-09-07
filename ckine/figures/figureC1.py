@@ -110,7 +110,7 @@ def fullHeatMap(ax, respDF):
 def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
     """Plots the various affinities for IL-2 Muteins"""
     doses = np.log10(np.logspace(np.log10(respDF.Dose.min()), np.log10(respDF.Dose.max()), 100)) + 4
-    x0 = [4, 1, 2]
+    x0 = [4.0, 1.0, 2.0]
     hillDF = pd.DataFrame()
     if not ligList:
         Ligands = respDF.Ligand.unique()
@@ -125,7 +125,7 @@ def dosePlot(ax, respDF, time, cell, ligList=False, legend=False):
             isoData = respDF.loc[(respDF.Ligand == ligand) & (respDF.Valency == valency)]
             xData = np.nan_to_num(np.log10(isoData.Dose.values)) + 4
             yData = np.nan_to_num(isoData.Mean.values)
-            fit = least_squares(hill_residuals, x0, args=(xData, yData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
+            fit = least_squares(hill_residuals, x0, method="dogbox", args=(xData, yData), bounds=([0.0, 0.0, 2], [5, 10.0, 6]), jac="3-point")
             hillDF = pd.concat([hillDF, pd.DataFrame({"Ligand": ligand, "Valency": valency, "Dose": np.power(10, doses - 4), "pSTAT": hill_equation(fit.x, doses)})])
 
     maxobs = hillDF.loc[(hillDF.Ligand == "IL2")].pSTAT.max()

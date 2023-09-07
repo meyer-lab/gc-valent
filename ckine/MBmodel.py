@@ -78,7 +78,7 @@ def cytBindingModel(mut, val, doseVec, cellType, x=False, date=False):
 
     mutAffDF = pd.read_csv(join(path_here, "ckine/data/WTmutAffData.csv"))
     Affs = mutAffDF.loc[(mutAffDF.Mutein == mut)]
-    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values]) / 1e9, -1)
+    Affs = np.power(np.array([Affs["IL2RaKD"].values, Affs["IL2RBGKD"].values], dtype=float) / 1e9, -1)
     Affs = np.reshape(Affs, (1, -1))
     Affs = np.repeat(Affs, 2, axis=0)
     np.fill_diagonal(Affs, 1e2)  # Each cytokine can only bind one a and one b
@@ -109,8 +109,8 @@ def runFullModel(x=False, time=[0.5], saveDict=False, singleCell=False):
     statDF = statDF.loc[(statDF.Ligand != "H16L N-term (Mono)") & (statDF.Ligand != "IL15 (Mono)")]
     statDF = statDF.loc[(statDF.Time.isin(time))]
 
-    dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
-    masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Time", "Dose", "Valency", "Experimental", "Predicted"})
+    dateConvDF = pd.DataFrame(columns=["Date", "Scale", "Cell"])
+    masterSTAT = pd.DataFrame(columns=["Ligand", "Date", "Cell", "Time", "Dose", "Valency", "Experimental", "Predicted"])
     dates = statDF.Date.unique()
 
     for (date, lig, conc, cell, time), group in statDF.groupby(["Date", "Ligand", "Dose", "Cell", "Time"]):
@@ -156,8 +156,8 @@ def runFullModelMeyer(x=False, saveDict=False):
     """Runs model for all data points and outputs date conversion dict for binding to pSTAT. Can be used to fit Kx"""
     statDF = import_pstat_all_meyer()
 
-    dateConvDF = pd.DataFrame(columns={"Date", "Scale", "Cell"})
-    masterSTAT = pd.DataFrame(columns={"Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"})
+    dateConvDF = pd.DataFrame(columns=["Date", "Scale", "Cell"])
+    masterSTAT = pd.DataFrame(columns=["Ligand", "Date", "Cell", "Dose", "Valency", "Experimental", "Predicted"])
     dates = statDF.Date.unique()
 
     for (date, lig, val, conc, cell), group in statDF.groupby(["Date", "Ligand", "Valency", "Dose", "Cell"]):

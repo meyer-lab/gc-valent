@@ -12,7 +12,6 @@ from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from .figureCommon import subplotLabel, getSetup, ligand_ratio_plot
 from ..MBmodel import polyc, getKxStar, runFullModelMeyer
 from ..imports import getBindDict, importReceptors
-from ..flow_meyer import make_flow_df, make_flow_df_ILCs
 
 path_here = dirname(dirname(__file__))
 plt.rcParams['svg.fonttype'] = 'none'
@@ -91,10 +90,10 @@ def optimizeDesign(ax, targCell, offTcells, IL7=False, legend=True):
     sigDF = pd.DataFrame()
 
     if IL7:
-        optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL7Rα"})
+        optDF = pd.DataFrame(columns=["Valency", "Selectivity", "IL7Rα"])
         X0 = [8]  # Ka IL7
     else:
-        optDF = pd.DataFrame(columns={"Valency", "Selectivity", "IL2Rα", r"IL-2Rβ/γ$_c$"})
+        optDF = pd.DataFrame(columns=["Valency", "Selectivity", "IL2Rα", r"IL-2Rβ/γ$_c$"])
         if targCell[0] == "NK":
             X0 = [6.0, 8]  # IL2Ra, IL2Rb
         else:

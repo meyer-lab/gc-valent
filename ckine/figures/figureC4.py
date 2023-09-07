@@ -8,7 +8,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
-from scipy.optimize import minimize
 from copy import copy
 from .figureCommon import subplotLabel, getSetup, get_cellTypeDict, get_doseLimDict, get_cellTypeDict, get_valency_dict, ligand_ratio_plot
 from ..PCA import nllsq_EC50
@@ -67,7 +66,7 @@ def Pred_Exp_plot(ax, df):
 
 def R2_Plot_Cells(ax, df):
     """Plots all accuracies per cell"""
-    accDF = pd.DataFrame(columns={"Cell Type", "Valency", "Accuracy"})
+    accDF = pd.DataFrame(columns=["Cell Type", "Valency", "Accuracy"])
     cellTypes = ['Treg $IL2Ra^{hi}$', 'Treg', 'Treg $IL2Ra^{lo}$', 'Thelper $IL2Ra^{hi}$', 'Thelper', 'Thelper $IL2Ra^{lo}$', 'CD8', 'NK', 'NKBright']
     for cell in cellTypes:
         for val in df.Valency.unique():
@@ -84,7 +83,7 @@ def R2_Plot_Cells(ax, df):
 
 def R2_Plot_Ligs(ax, df):
     """Plots all accuracies per ligand"""
-    accDF = pd.DataFrame(columns={"Ligand", "Valency", "Accuracy"})
+    accDF = pd.DataFrame(columns=["Ligand", "Valency", "Accuracy"])
     for ligand in df.Ligand.unique():
         for val in df.loc[df.Ligand == ligand].Valency.unique():
             preds = df.loc[(df.Ligand == ligand) & (df.Valency == val)].Predicted.values
@@ -100,7 +99,7 @@ def R2_Plot_Ligs(ax, df):
 
 def R2_Plot_Conc(ax, df):
     """Plots all accuracies per concentration"""
-    accDF = pd.DataFrame(columns={"Concentration", "Valency", "Accuracy"})
+    accDF = pd.DataFrame(columns=["Concentration", "Valency", "Accuracy"])
     for conc in df.Dose.unique():
         for val in df.loc[(df.Dose == conc)].Valency.unique():
             preds = df.loc[(df.Dose == conc) & (df.Valency == val)].Predicted.values
@@ -148,7 +147,7 @@ def MonVsBivalent(ax, dfAll, ligs=True):
                 df.loc[(df.Date == date) & (df.Cell == cell), "MonPredict"] = predVec * slope
 
     if ligs:
-        accDF = pd.DataFrame(columns={"Ligand", "Prediction Label", "Accuracy"})
+        accDF = pd.DataFrame(columns=["Ligand", "Prediction Label", "Accuracy"])
         for ligand in df.Ligand.unique():
             BivPreds = df.loc[(df.Ligand == ligand)].Predicted.values
             MonPreds = df.loc[(df.Ligand == ligand)].MonPredict.values
@@ -219,7 +218,7 @@ def EC50comp(ax, dfAll, time):
 def timePlot(ax):
     """Plots all experimental vs. Predicted Values"""
     times = [[0.5], [1.], [2.], [4.]]
-    accDF = pd.DataFrame(columns={"Time", "Valency", "Accuracy"})
+    accDF = pd.DataFrame(columns=["Time", "Valency", "Accuracy"])
     for time in times:
         df = runFullModel(time=time, saveDict=False)
         for val in df.Valency.unique():
