@@ -250,10 +250,13 @@ def Wass_KL_Dist(ax, targCell, numFactors, RNA=False):
 
     markerDF = pd.DataFrame(columns=["Marker", "Cell Type", "Amount"])
     for marker in CITE_DF.loc[:, ((CITE_DF.columns != 'CellType1') & (CITE_DF.columns != 'CellType2') & (CITE_DF.columns != 'CellType3') & (CITE_DF.columns != 'Cell'))].columns:
-        markAvg = np.mean(CITE_DF[marker].values)
+        marker_values = CITE_DF[marker].to_numpy()
+        markAvg = np.mean(marker_values)
+        cell_type_idxs = (CITE_DF["CellType2"] == targCell).to_numpy()
+
         if markAvg > 0.0001:
-            targCellMark = CITE_DF.loc[CITE_DF["CellType2"] == targCell][marker].values / markAvg
-            offTargCellMark = CITE_DF.loc[CITE_DF["CellType2"] != targCell][marker].values / markAvg
+            targCellMark = marker_values[cell_type_idxs] / markAvg
+            offTargCellMark = marker_values[np.logical_not(cell_type_idxs)] / markAvg
             if np.mean(targCellMark) > np.mean(offTargCellMark):
                 kdeTarg = KernelDensity(kernel='gaussian').fit(targCellMark.reshape(-1, 1))
                 kdeOffTarg = KernelDensity(kernel='gaussian').fit(offTargCellMark.reshape(-1, 1))
