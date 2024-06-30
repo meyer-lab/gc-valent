@@ -1,4 +1,3 @@
-# An activation model for common-gamma chain cytokines
+# Multivalent, asymmetric IL-2–Fc fusions show enhanced selectivity for regulatory T cells
 
-![Test](https://github.com/meyer-lab/gc-valent/workflows/Test/badge.svg)
-![Build](https://github.com/meyer-lab/gc-valent/workflows/Build/badge.svg)
+Analysis code for [Orcutt-Jahns _et al_](https://doi.org/https://doi.org/10.1126/scisignal.adg0699)
