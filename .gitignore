@@ -1,0 +1,10 @@
+**/__pycache__/
+.hypothesis
+**/.ipynb_checkpoints
+venv
+ckine/ckine.so
+**/.DS_Store
+.vscode/settings.json
+ckine/data/flow
+
+output

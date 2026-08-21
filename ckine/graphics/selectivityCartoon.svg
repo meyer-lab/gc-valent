@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 17717 4713" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1.5125,0,0,1.24628,1033.23,-643.735)">
+        <rect x="1758.33" y="904.426" width="78.089" height="2817.47"/>
+    </g>
+    <g transform="matrix(1.40218e-16,-1.5125,2.30564,9.28168e-17,1612.33,6745.82)">
+        <rect x="1758.33" y="904.426" width="78.089" height="2817.47"/>
+    </g>
+    <g transform="matrix(1,0,0,1,1724.74,-11.8329)">
+        <text x="2815.24px" y="4500.71px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:420.806px;">Cytokine Concentration</text>
+    </g>
+    <g transform="matrix(6.07153e-17,-1,1,6.07153e-17,-1040.89,6054.38)">
+        <text x="2815.24px" y="4500.71px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:420.806px;">Response</text>
+    </g>
+    <g transform="matrix(1.10165,0,0,1.1819,2734.26,1884.12)">
+        <path d="M-788.341,-1160.25C-786.215,-1156 -786.072,-1155.51 -786.072,-1151.32C-786.072,-1147.58 -782.818,-1144.55 -778.81,-1144.55C-774.802,-1144.55 -771.548,-1147.58 -771.548,-1151.32C-771.548,-1158.18 -771.695,-1159.01 -775.176,-1165.97C-776.869,-1169.36 -781.193,-1170.83 -784.826,-1169.25C-788.459,-1167.67 -790.034,-1163.64 -788.341,-1160.25Z"/>
+    </g>
+    <g transform="matrix(1.16046,0,0,1,2318.06,17.5396)">
+        <path d="M1361.89,3779.53C1573.86,3776.18 1997.79,3769.47 2304.6,3755.48C2824.81,3731.76 2982.49,3429.41 3245.07,2245.93C3429.53,1414.55 3546.44,978.865 3870.72,785.36C4236.78,566.921 4518.9,632.131 4823.24,614.173C5113.96,597.019 5523.27,595.878 5762.15,590.551C5944.54,586.484 6354.45,589.128 6559.41,590.45" style="fill:none;stroke:rgb(74,184,67);stroke-width:107.7px;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,2521.14,342.18)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">2</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,-1994.06,906.904)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">T<tspan x="4486px 4779.07px " y="2008.18px 2008.18px ">ar</tspan>get Cells</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,-2260.83,1472.49)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">Of<tspan x="4769.29px 4915.69px " y="2008.18px 2008.18px ">f-</tspan>target Cells</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,8123.69,1429.26)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">Low of<tspan x="5765.56px 5911.96px " y="2008.18px 2008.18px ">f-</tspan>target</text>
+        <text x="4744.84px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">response</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,8393.66,2393.28)">
+        <text x="4852.01px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;">Poor</text>
+        <text x="4222.52px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;">Selectivity</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,13118.1,2393.28)">
+        <text x="4852.01px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;">Poor</text>
+        <text x="4222.52px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;">Selectivity</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,10755.9,2395.57)">
+        <text x="4764.01px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;">Good</text>
+        <text x="4222.52px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;">Selectivity</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,8360.8,423.038)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">Low target</text>
+        <text x="4368.93px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">response</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,10657.2,423.038)">
+        <text x="4266.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">High target</text>
+        <text x="4471.46px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">response</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,13019.4,423.038)">
+        <text x="4266.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">High target</text>
+        <text x="4471.46px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(74,184,67);">response</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,10485.9,1429.26)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">Low of<tspan x="5765.56px 5911.96px " y="2008.18px 2008.18px ">f-</tspan>target</text>
+        <text x="4744.84px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">response</text>
+    </g>
+    <g transform="matrix(0.630734,0,0,0.711639,12810,1429.26)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">High of<tspan x="5882.63px 6029.03px " y="2008.18px 2008.18px ">f-</tspan>target</text>
+        <text x="4803.38px" y="2552.38px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:526.953px;fill:rgb(255,54,63);">response</text>
+    </g>
+    <g transform="matrix(0.743916,0,0,0.677962,-4796.97,960.312)">
+        <rect x="6962.02" y="1465.46" width="3104.96" height="1678.53" style="fill:rgb(74,184,67);fill-opacity:0;stroke:black;stroke-width:58.54px;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,9784.12,-720.812)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">2</text>
+    </g>
+    <g transform="matrix(1,0,0,1,158.683,342.18)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">1</text>
+    </g>
+    <g transform="matrix(1,0,0,1,7438.2,-720.812)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">1</text>
+    </g>
+    <g transform="matrix(1,0,0,1,8958.38,-1465.29)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">Region</text>
+    </g>
+    <g transform="matrix(1,0,0,1,4909.88,338.216)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">3</text>
+    </g>
+    <g transform="matrix(1,0,0,1,12140.4,-724.776)">
+        <text x="4222.52px" y="2008.18px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:624.36px;">3</text>
+    </g>
+    <g transform="matrix(1.0663,0,0,1,2447.52,17.5396)">
+        <path d="M1343.48,3858.31C1563.54,3860.14 2003.64,3863.8 2310.45,3849.8C2830.66,3826.08 4301.62,4083.4 4710.55,2957.22C4990.64,2185.84 5017.99,1151.38 5226.56,880.074C5450.26,589.089 5727.08,645.695 5949.13,630.613C6101.26,620.279 6722.38,632.117 7032.94,638.035" style="fill:none;stroke:rgb(255,0,11);stroke-opacity:0.79;stroke-width:112.87px;"/>
+    </g>
+    <g transform="matrix(1,0,0,0.959235,2480.04,181.919)">
+        <path d="M3078.94,366.273C3060.87,1556.53 3042.81,2746.78 3024.74,3937.03" style="fill:none;stroke:black;stroke-opacity:0.48;stroke-width:42.52px;stroke-dasharray:42.52,85.05,0,0;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,171.774,18.1751)">
+        <rect x="10336.1" y="1422.25" width="7169.57" height="5.847" style="fill:rgb(74,184,67);fill-opacity:0;stroke:black;stroke-width:41.67px;"/>
+    </g>
+    <g transform="matrix(2.94636e-17,-0.481178,1.86957,1.14478e-16,10327.7,9198.48)">
+        <rect x="10336.1" y="1422.25" width="7169.57" height="5.847" style="fill:rgb(74,184,67);fill-opacity:0;stroke:black;stroke-width:30.52px;"/>
+    </g>
+    <g transform="matrix(2.94636e-17,-0.481178,1.86957,1.14478e-16,12689.9,9211.25)">
+        <rect x="10336.1" y="1422.25" width="7169.57" height="5.847" style="fill:rgb(74,184,67);fill-opacity:0;stroke:black;stroke-width:30.52px;"/>
+    </g>
+    <g transform="matrix(1,0,0,0.959235,5165.91,180.154)">
+        <path d="M3078.94,366.273C3060.87,1556.53 3042.81,2746.78 3024.74,3937.03" style="fill:none;stroke:black;stroke-opacity:0.48;stroke-width:42.52px;stroke-dasharray:42.52,85.05,0,0;"/>
+    </g>
+</svg>
